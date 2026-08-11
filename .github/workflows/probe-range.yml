@@ -1,0 +1,41 @@
+name: Probe ArcGIS range predicates
+on:
+  push:
+    branches: [probe-range]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - shell: bash
+        run: |
+          python - <<'PY'
+          import json,urllib.parse,urllib.request
+          from pathlib import Path
+          O=Path('probe_range');O.mkdir(exist_ok=True)
+          B='https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/MapServer/3/query'
+          T="(nmbairro LIKE 'BRO JARDIM AMERICA%' OR nmbairro LIKE 'BRO NOVA SUICA%') AND uso=1 AND propriedad=1"
+          def q(w,order=''):
+            p={'where':w,'outFields':'OBJECTID,ESRI_OID,nrinscr,nmbairro,nrquadra,nrlote,uso,propriedad','returnGeometry':'false','resultRecordCount':'20','f':'json'}
+            if order:p['orderByFields']=order
+            data=urllib.parse.urlencode(p).encode();req=urllib.request.Request(B,data=data,headers={'User-Agent':'AMC-ProbeRange/1.0','Content-Type':'application/x-www-form-urlencoded'})
+            try:
+              with urllib.request.urlopen(req,timeout=120) as r:return {'ok':True,'body':json.loads(r.read())}
+            except Exception as e:
+              try:return {'ok':False,'error':repr(e),'body':e.read().decode()}
+              except:return {'ok':False,'error':repr(e)}
+          tests={
+            'objectid_gt':q(f'({T}) AND OBJECTID > 0','OBJECTID ASC'),
+            'objectid_between':q(f'({T}) AND OBJECTID BETWEEN 0 AND 5000','OBJECTID ASC'),
+            'esri_gt_zero':q(f'({T}) AND ESRI_OID > 0','ESRI_OID ASC'),
+            'esri_between':q(f'({T}) AND ESRI_OID BETWEEN 0 AND 5000','ESRI_OID ASC'),
+            'esri_ge':q(f'({T}) AND ESRI_OID >= 0','ESRI_OID ASC'),
+          }
+          (O/'probe.json').write_text(json.dumps(tests,ensure_ascii=False,indent=2),encoding='utf-8')
+          print(json.dumps({k:(v['ok'],len((v.get('body') or {}).get('features',[])) if isinstance(v.get('body'),dict) else None) for k,v in tests.items()},indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: probe-range
+          path: probe_range/
