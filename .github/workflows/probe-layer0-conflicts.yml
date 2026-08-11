@@ -1,0 +1,34 @@
+name: Probe layer0 lot boundaries for three conflicts
+on:
+  push:
+    branches: [probe-layer0-conflicts]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - shell: bash
+        run: |
+          python - <<'PY'
+          import json,urllib.parse,urllib.request
+          B='https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/MapServer/0/query'
+          envs={
+            'q41_23DE':[-49.29112,-16.69769,-49.29072,-16.69720],
+            'q461_l14':[-49.27590,-16.72262,-49.27502,-16.72210]
+          }
+          out={}
+          for k,(xmin,ymin,xmax,ymax) in envs.items():
+            geom=json.dumps({'xmin':xmin,'ymin':ymin,'xmax':xmax,'ymax':ymax,'spatialReference':{'wkid':4326}},separators=(',',':'))
+            p={'where':'1=1','geometry':geom,'geometryType':'esriGeometryEnvelope','inSR':'4326','spatialRel':'esriSpatialRelIntersects','outFields':'OBJECTID,id,nm_lot,nm_imovel,id_qdr,ci_lot,ci_qdr,ci,in_cond,nm_cond','returnGeometry':'true','outSR':'4326','f':'geojson'}
+            data=urllib.parse.urlencode(p).encode();req=urllib.request.Request(B,data=data,headers={'User-Agent':'AMC-Layer0Probe/1.0','Content-Type':'application/x-www-form-urlencoded'})
+            with urllib.request.urlopen(req,timeout=120) as r:o=json.loads(r.read())
+            out[k]=o
+            print('\n',k,'features',len(o.get('features',[])))
+            for f in o.get('features',[]):print(f.get('properties'))
+          open('layer0_conflicts.geojson','w').write(json.dumps(out,ensure_ascii=False,separators=(',',':')))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: layer0-conflict-probe
+          path: layer0_conflicts.geojson
