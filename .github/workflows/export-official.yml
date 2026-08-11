@@ -1,0 +1,124 @@
+name: Export official Goiânia cadastral lots
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BASE: https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/MapServer
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Export official ArcGIS data
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, urllib.parse, urllib.request, time, os
+          from pathlib import Path
+
+          BASE = os.environ['BASE']
+          OUT = Path('official_export')
+          OUT.mkdir(exist_ok=True)
+          UA = {'User-Agent': 'AMC-JardimAmerica-OfficialExport/1.0'}
+
+          def get_json(url, params, tries=4, timeout=120):
+              qs = urllib.parse.urlencode(params)
+              full = url + '?' + qs
+              last = None
+              for i in range(tries):
+                  try:
+                      req = urllib.request.Request(full, headers=UA)
+                      with urllib.request.urlopen(req, timeout=timeout) as r:
+                          raw = r.read()
+                      obj = json.loads(raw)
+                      if isinstance(obj, dict) and obj.get('error'):
+                          raise RuntimeError(obj['error'])
+                      return obj
+                  except Exception as e:
+                      last = e
+                      time.sleep(2 * (i+1))
+              raise RuntimeError(f'Failed {full}: {last}')
+
+          # Metadata for evidence of official source and fields.
+          meta = get_json(f'{BASE}/3', {'f':'pjson'})
+          (OUT/'layer3_metadata.json').write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding='utf-8')
+
+          where = "(UPPER(nmbairro) LIKE '%JARDIM%AMERICA%' OR UPPER(nmbairro) LIKE '%NOVA%SUICA%') AND uso1 = 1 AND propriedad = 1"
+          fields = ','.join([
+              'ESRI_OID','nrinscr','nmlogradou','nrquadra','nrlote','nmbairro',
+              'areaterr','propriedad','uso1','insubprinc','ttsublot','nrimovel',
+              'incompl','instatus','inposfisc','inrecadast','uso','uso2','situacao',
+              'in_valido','ci','id','id_qdr','x_coord','y_coord','dtgeo','dtultalter'
+          ])
+
+          # Count then paginate; no simplification/geometry precision parameters are supplied.
+          count = get_json(f'{BASE}/3/query', {
+              'where': where, 'returnCountOnly':'true', 'f':'json'
+          })['count']
+          page_size = 2000
+          features = []
+          for offset in range(0, count, page_size):
+              fc = get_json(f'{BASE}/3/query', {
+                  'where': where,
+                  'outFields': fields,
+                  'returnGeometry':'true',
+                  'returnZ':'false','returnM':'false',
+                  'outSR':'4326',
+                  'orderByFields':'ESRI_OID ASC',
+                  'resultOffset': str(offset),
+                  'resultRecordCount': str(page_size),
+                  'f':'geojson'
+              })
+              features.extend(fc.get('features', []))
+
+          export = {'type':'FeatureCollection','features':features}
+          (OUT/'cadastro_residencial_particular.geojson').write_text(
+              json.dumps(export, ensure_ascii=False, separators=(',',':')), encoding='utf-8')
+
+          # Official neighborhood polygons for independent location audit.
+          b_where = "UPPER(nm_bai) LIKE '%JARDIM%AMERICA%' OR UPPER(nm_bai) LIKE '%NOVA%SUICA%'"
+          bairros = get_json(f'{BASE}/2/query', {
+              'where': b_where,
+              'outFields':'OBJECTID,id,nm_bai,nm,nm1,nm2,nm3,ql_bai',
+              'returnGeometry':'true','returnZ':'false','returnM':'false',
+              'outSR':'4326','f':'geojson'
+          })
+          (OUT/'divisas_bairros.geojson').write_text(
+              json.dumps(bairros, ensure_ascii=False, separators=(',',':')), encoding='utf-8')
+
+          # Cross-check against the ownership-specific layer 4 from Mapa_UsoDoSoloNew.
+          USO_BASE = 'https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Mapa_UsoDoSoloNew/MapServer'
+          count_layer4 = get_json(f'{USO_BASE}/4/query', {
+              'where': "(UPPER(nmbairro) LIKE '%JARDIM%AMERICA%' OR UPPER(nmbairro) LIKE '%NOVA%SUICA%') AND uso1 = 1",
+              'returnCountOnly':'true','f':'json'
+          }).get('count')
+
+          manifest = {
+              'source_layer3': f'{BASE}/3',
+              'source_layer4_particular': f'{USO_BASE}/4',
+              'where_layer3': where,
+              'count_layer3': count,
+              'features_downloaded': len(features),
+              'count_layer4_crosscheck': count_layer4,
+              'outSR': 4326,
+              'geometry_simplification': False,
+              'maxAllowableOffset': None,
+              'geometryPrecision': None,
+              'generated_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+          }
+          (OUT/'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
+          print(json.dumps(manifest, ensure_ascii=False, indent=2))
+          PY
+
+      - name: Upload official export
+        uses: actions/upload-artifact@v4
+        with:
+          name: official-goiania-export
+          path: official_export/
+          if-no-files-found: error
