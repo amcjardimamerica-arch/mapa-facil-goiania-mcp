@@ -1,0 +1,169 @@
+name: Final correct official export via ESRI_OID SQL
+
+on:
+  push:
+    branches: [final-correct-esri-where]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Export exact residential-private physical lots
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, urllib.parse, urllib.request, time, re, collections
+          from pathlib import Path
+          OUT=Path('final_correct'); OUT.mkdir(exist_ok=True)
+          BASE='https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/MapServer'
+          UA={'User-Agent':'AMC-FinalCorrect/1.0'}
+          TARGET="(nmbairro LIKE 'BRO JARDIM AMERICA%' OR nmbairro LIKE 'BRO NOVA SUICA%') AND uso=1 AND propriedad=1"
+
+          def post(params, tries=7, timeout=180):
+              url=f'{BASE}/3/query'; data=urllib.parse.urlencode(params).encode('utf-8'); last=None
+              for i in range(tries):
+                  try:
+                      req=urllib.request.Request(url,data=data,headers={**UA,'Content-Type':'application/x-www-form-urlencoded'})
+                      with urllib.request.urlopen(req,timeout=timeout) as r: obj=json.loads(r.read())
+                      if isinstance(obj,dict) and obj.get('error'): raise RuntimeError(obj['error'])
+                      return obj
+                  except Exception as e:
+                      last=e; print('retry',i+1,repr(e),flush=True); time.sleep(1.5*(i+1))
+              raise RuntimeError(last)
+
+          # Query ID list multiple times; use an exact set seen at least twice.
+          id_sets=[]
+          for i in range(4):
+              obj=post({'where':TARGET,'returnIdsOnly':'true','f':'json'})
+              if obj.get('objectIdFieldName')!='ESRI_OID': raise RuntimeError(f"Unexpected OID field {obj.get('objectIdFieldName')}")
+              s=frozenset(int(x) for x in (obj.get('objectIds') or [])); id_sets.append(s)
+              print('ids pass',i+1,len(s),flush=True); time.sleep(1)
+          counts=collections.Counter(id_sets)
+          ids_set,frequency=counts.most_common(1)[0]
+          if frequency<2: raise RuntimeError('No stable ESRI_OID set repeated at least twice')
+          ids=sorted(ids_set)
+          print('stable ids',len(ids),'frequency',frequency,flush=True)
+
+          fields='ESRI_OID,OBJECTID,nrinscr,tplogradou,nmlogradou,nrquadra,nrlote,nmbairro,areaterr,propriedad,uso,uso1,uso2,insubprinc,ttsublot,dtgeo,dtultalter'
+
+          def fetch_attrs_exact(wanted, depth=0):
+              wanted=sorted(set(int(x) for x in wanted))
+              if not wanted:return {}
+              # Split proactively for long IN clauses, and recursively on server errors/missing rows.
+              if len(wanted)>700:
+                  out={}
+                  for i in range(0,len(wanted),700): out.update(fetch_attrs_exact(wanted[i:i+700],depth+1))
+                  return out
+              clause='ESRI_OID IN ('+','.join(map(str,wanted))+')'
+              try:
+                  obj=post({'where':f'({TARGET}) AND {clause}','outFields':fields,'returnGeometry':'false','f':'json'},tries=4)
+              except Exception:
+                  if len(wanted)<=25: raise
+                  mid=len(wanted)//2
+                  out=fetch_attrs_exact(wanted[:mid],depth+1); out.update(fetch_attrs_exact(wanted[mid:],depth+1)); return out
+              want=set(wanted); got={}
+              for f in obj.get('features',[]):
+                  a=f.get('attributes') or {}
+                  try: oid=int(a.get('ESRI_OID'))
+                  except: continue
+                  if oid in want and (a.get('nmbairro') or '').strip() in ('BRO JARDIM AMERICA','BRO NOVA SUICA') and a.get('uso')==1 and a.get('propriedad')==1:
+                      got[oid]=a
+              missing=sorted(want-set(got))
+              if missing:
+                  if len(wanted)<=25: raise RuntimeError(f'missing eligible attrs {missing}')
+                  got.update(fetch_attrs_exact(missing,depth+1))
+              return got
+
+          amap={}
+          for i in range(0,len(ids),1400):
+              amap.update(fetch_attrs_exact(ids[i:i+1400]))
+              print('attrs exact',len(amap),'/',len(ids),flush=True)
+          if set(amap)!=set(ids): raise RuntimeError(f'attribute set mismatch got={len(amap)} want={len(ids)}')
+
+          def normid(s):
+              s=''.join(str(s or '').strip().upper().split())
+              return str(int(s)) if s.isdigit() else s
+          def score(a):
+              try: sub=int(a.get('insubprinc'))
+              except: sub=10**9
+              try: tt=int(a.get('ttsublot'))
+              except: tt=10**9
+              # Prefer an explicit base/main sublot where present; next prefer a single-sublot cadastral record;
+              # otherwise use the lowest official sublot code and stable OID. No geometry is synthesized.
+              return (0 if sub==0 else 1, 0 if tt==1 else 1, sub, int(a.get('ESRI_OID') or 10**9))
+
+          groups={}
+          for oid in ids:
+              a=amap[oid]
+              b=(a.get('nmbairro') or '').strip(); q=normid(a.get('nrquadra')); l=normid(a.get('nrlote'))
+              groups.setdefault((b,q,l),[]).append(a)
+          chosen=[]; dups=[]; by_bairro=collections.Counter()
+          for key,arr in groups.items():
+              arr.sort(key=score); keep=arr[0]; chosen.append(int(keep['ESRI_OID'])); by_bairro[key[0]]+=1
+              if len(arr)>1:
+                  dups.append({'bairro':key[0],'quadra':key[1],'lote':key[2],'count':len(arr),'kept_oid':keep['ESRI_OID'],'kept_nrinscr':keep['nrinscr'],'kept_insubprinc':keep.get('insubprinc'),'kept_ttsublot':keep.get('ttsublot'),'other_oids':[int(x['ESRI_OID']) for x in arr[1:]]})
+          chosen=sorted(set(chosen))
+          print('unique physical QL',len(chosen),'by bairro',dict(by_bairro),flush=True)
+
+          def fetch_geo_exact(wanted, depth=0):
+              wanted=sorted(set(int(x) for x in wanted))
+              if not wanted:return {}
+              if len(wanted)>350:
+                  out={}
+                  for i in range(0,len(wanted),350): out.update(fetch_geo_exact(wanted[i:i+350],depth+1))
+                  return out
+              clause='ESRI_OID IN ('+','.join(map(str,wanted))+')'
+              try:
+                  obj=post({'where':f'({TARGET}) AND {clause}','outFields':fields,'returnGeometry':'true','outSR':'4326','returnZ':'false','returnM':'false','f':'geojson'},tries=4)
+              except Exception:
+                  if len(wanted)<=20: raise
+                  mid=len(wanted)//2
+                  out=fetch_geo_exact(wanted[:mid],depth+1); out.update(fetch_geo_exact(wanted[mid:],depth+1)); return out
+              want=set(wanted); got={}
+              for f in obj.get('features',[]):
+                  p=f.get('properties') or {}
+                  try: oid=int(p.get('ESRI_OID'))
+                  except: continue
+                  if oid in want and (p.get('nmbairro') or '').strip() in ('BRO JARDIM AMERICA','BRO NOVA SUICA') and p.get('uso')==1 and p.get('propriedad')==1 and f.get('geometry'):
+                      got[oid]=f
+              missing=sorted(want-set(got))
+              if missing:
+                  if len(wanted)<=20: raise RuntimeError(f'missing eligible geometry {missing}')
+                  got.update(fetch_geo_exact(missing,depth+1))
+              return got
+
+          gmap={}
+          for i in range(0,len(chosen),700):
+              gmap.update(fetch_geo_exact(chosen[i:i+700]))
+              print('geometry exact',len(gmap),'/',len(chosen),flush=True)
+          if set(gmap)!=set(chosen): raise RuntimeError(f'geometry set mismatch got={len(gmap)} want={len(chosen)}')
+          features=[gmap[oid] for oid in chosen]
+
+          # Final independent payload checks before artifact creation.
+          for f in features:
+              p=f['properties']
+              if (p.get('nmbairro') or '').strip() not in ('BRO JARDIM AMERICA','BRO NOVA SUICA') or p.get('uso')!=1 or p.get('propriedad')!=1:
+                  raise RuntimeError(f'Ineligible feature escaped filter: {p}')
+          (OUT/'cadastro_residencial_particular_physical.geojson').write_text(json.dumps({'type':'FeatureCollection','features':features},ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+          (OUT/'eligible_attributes.json').write_text(json.dumps({'count':len(ids),'records':[{'attributes':amap[oid]} for oid in ids]},ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+          (OUT/'duplicate_groups.json').write_text(json.dumps(dups,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+          manifest={
+              'source':BASE+'/3','where':TARGET,'id_pass_counts':[len(x) for x in id_sets],'stable_id_set_frequency':frequency,
+              'raw_eligible_records':len(ids),'unique_bairro_quadra_lote':len(groups),'selected_records':len(chosen),
+              'counts_by_raw_bairro_unique_ql':dict(by_bairro),'duplicate_records_consolidated':len(ids)-len(chosen),'duplicate_ql_groups':len(dups),
+              'selection_rule':'one official Cadastro Imobiliario record per bairro+quadra+lote; prefer insubprinc=0, then ttsublot=1, then lowest insubprinc, then ESRI_OID',
+              'query_method':'Every batch uses SQL WHERE ESRI_OID IN (...) plus the full target filter. ArcGIS objectIds parameter is not used.',
+              'outSR':4326,'no_geometry_simplification':True,'generated_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())
+          }
+          (OUT/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
+          print(json.dumps(manifest,ensure_ascii=False,indent=2),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-correct-official-export
+          path: final_correct/
+          if-no-files-found: error
