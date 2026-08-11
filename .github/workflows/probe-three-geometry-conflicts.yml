@@ -1,0 +1,46 @@
+name: Probe three geometry conflicts
+on:
+  push:
+    branches: [probe-three-geometry-conflicts]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - shell: bash
+        run: |
+          python - <<'PY'
+          import json,urllib.parse,urllib.request,math
+          nums=['30511105300017','30511105300025','31003000910004']
+          B='https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/MapServer/3/query'
+          def req(n):
+            p={'where':f"nrinscr='{n}' AND uso=1 AND propriedad=1",'outFields':'OBJECTID,ESRI_OID,nrinscr,nmbairro,nrquadra,nrlote,areaterr,nmlogradou,insubprinc,ttsublot','returnGeometry':'true','outSR':'4326','f':'geojson'}
+            data=urllib.parse.urlencode(p).encode();r=urllib.request.Request(B,data=data,headers={'User-Agent':'AMC-Probe3/1.0','Content-Type':'application/x-www-form-urlencoded'})
+            with urllib.request.urlopen(r,timeout=120) as z:return json.loads(z.read())
+          def stats(g):
+            cs=g.get('coordinates') or []
+            pts=[]
+            def walk(x):
+              if isinstance(x,(list,tuple)) and len(x)>=2 and isinstance(x[0],(int,float)) and isinstance(x[1],(int,float)):pts.append((float(x[0]),float(x[1])));return
+              if isinstance(x,(list,tuple)):
+                for y in x:walk(y)
+            walk(cs)
+            xs=[p[0] for p in pts];ys=[p[1] for p in pts]
+            return {'type':g.get('type'),'vertices':len(pts),'unique_vertices':len(set(pts)),'bbox':[min(xs),min(ys),max(xs),max(ys)] if pts else None,'coordset_hash':hash(tuple(sorted(set(pts))))}
+          out={}
+          for n in nums:
+            calls=[]
+            for i in range(5):
+              o=req(n);calls.append([{'properties':f.get('properties'),'stats':stats(f.get('geometry') or {}),'geometry':f.get('geometry')} for f in o.get('features',[])])
+            out[n]=calls
+            print('\nNR',n)
+            for i,c in enumerate(calls,1):
+              print('call',i,'count',len(c))
+              for j,f in enumerate(c):print(j,f['properties'],f['stats'])
+          open('probe_three.json','w').write(json.dumps(out,ensure_ascii=False,separators=(',',':')))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: probe-three-geometry-conflicts
+          path: probe_three.json
