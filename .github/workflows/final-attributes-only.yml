@@ -1,0 +1,82 @@
+name: Final official attributes only
+
+on:
+  push:
+    branches: [final-attributes-only]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Export complete official attributes and selected physical records
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,urllib.parse,urllib.request,time,collections
+          from pathlib import Path
+          O=Path('final_attributes');O.mkdir(exist_ok=True)
+          B='https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/MapServer/3/query'
+          T="nmbairro LIKE 'BRO JARDIM AMERICA%' OR nmbairro LIKE 'BRO NOVA SUICA%'"
+          F='OBJECTID,ESRI_OID,nrinscr,tplogradou,nmlogradou,nrquadra,nrlote,nmbairro,areaterr,propriedad,uso,uso1,uso2,insubprinc,ttsublot,dtgeo,dtultalter'
+          def post(p,tries=8):
+            data=urllib.parse.urlencode(p).encode();last=None
+            for i in range(tries):
+              try:
+                req=urllib.request.Request(B,data=data,headers={'User-Agent':'AMC-FinalAttrs/1.0','Content-Type':'application/x-www-form-urlencoded'})
+                with urllib.request.urlopen(req,timeout=180) as r:o=json.loads(r.read())
+                if isinstance(o,dict) and o.get('error'):raise RuntimeError(o['error'])
+                return o
+              except Exception as e:last=e;print('retry',i+1,repr(e),flush=True);time.sleep(1.2*(i+1))
+            raise RuntimeError(last)
+          def rk(a):return (int(a['OBJECTID']),int(a['ESRI_OID']),str(a.get('nrinscr') or '').strip())
+          rec={};repeats=0;stats=[]
+          def collect(lo,hi,depth=0):
+            global repeats
+            o=post({'where':f'({T}) AND OBJECTID BETWEEN {lo} AND {hi}','outFields':F,'returnGeometry':'false','resultRecordCount':'2000','f':'json'})
+            fs=o.get('features') or []
+            if o.get('exceededTransferLimit') or len(fs)>=2000:
+              if lo==hi:raise RuntimeError('single OBJECTID transfer limit')
+              m=(lo+hi)//2;collect(lo,m,depth+1);collect(m+1,hi,depth+1);return
+            new=0
+            for f in fs:
+              a=f.get('attributes') or {};k=rk(a)
+              if not(lo<=k[0]<=hi):raise RuntimeError('OBJECTID escaped range')
+              if (a.get('nmbairro') or '').strip() not in ('BRO JARDIM AMERICA','BRO NOVA SUICA'):raise RuntimeError('bairro escaped')
+              if k in rec:
+                if rec[k]!=a:raise RuntimeError(f'conflicting key {k}')
+                repeats+=1
+              else:rec[k]=a;new+=1
+            stats.append({'lo':lo,'hi':hi,'depth':depth,'returned':len(fs),'new':new})
+          for lo in range(102,805308,10000):
+            collect(lo,min(805307,lo+9999));print('through',min(805307,lo+9999),len(rec),flush=True)
+          rows=list(rec.values())
+          eligible=[a for a in rows if a.get('uso')==1 and a.get('propriedad')==1]
+          def nid(x):
+            s=''.join(str(x or '').strip().upper().split());return str(int(s)) if s.isdigit() else s
+          def sc(a):
+            try:sub=int(a.get('insubprinc'))
+            except:sub=10**9
+            try:tt=int(a.get('ttsublot'))
+            except:tt=10**9
+            return (0 if sub==0 else 1,0 if tt==1 else 1,sub,int(a['OBJECTID']),int(a['ESRI_OID']),str(a.get('nrinscr') or ''))
+          groups={}
+          for a in eligible:groups.setdefault(((a.get('nmbairro') or '').strip(),nid(a.get('nrquadra')),nid(a.get('nrlote'))),[]).append(a)
+          selected=[];dups=[];byb=collections.Counter()
+          for k,v in groups.items():
+            v.sort(key=sc);z=v[0];selected.append(z);byb[k[0]]+=1
+            if len(v)>1:dups.append({'bairro':k[0],'quadra':k[1],'lote':k[2],'count':len(v),'kept':z,'discarded':[{'OBJECTID':x['OBJECTID'],'ESRI_OID':x['ESRI_OID'],'nrinscr':x.get('nrinscr')} for x in v[1:]]})
+          raw=collections.Counter((a.get('nmbairro') or '').strip() for a in rows)
+          (O/'all_target_attributes.json').write_text(json.dumps({'count':len(rows),'records':[{'attributes':a} for a in sorted(rows,key=sc)]},ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+          (O/'eligible_attributes.json').write_text(json.dumps({'count':len(eligible),'records':[{'attributes':a} for a in sorted(eligible,key=sc)]},ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+          (O/'selected_physical_records.json').write_text(json.dumps({'count':len(selected),'records':selected},ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+          (O/'duplicate_groups.json').write_text(json.dumps(dups,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+          man={'source':'Feature_Base/MapServer/3','method':'closed OBJECTID ranges; composite identity OBJECTID+ESRI_OID+nrinscr','all_target_records':len(rows),'all_target_counts_by_bairro':dict(raw),'raw_eligible_records':len(eligible),'unique_bairro_quadra_lote':len(groups),'selected_records':len(selected),'counts_by_raw_bairro_unique_ql':dict(byb),'duplicate_records_consolidated':len(eligible)-len(selected),'duplicate_ql_groups':len(dups),'exact_duplicate_response_rows_removed':repeats,'residential_semantic_mapping':'verified current API: uso=1 residential; uso1 separate secondary attribute','generated_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
+          (O/'manifest.json').write_text(json.dumps(man,ensure_ascii=False,indent=2),encoding='utf-8');print(json.dumps(man,ensure_ascii=False,indent=2),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-official-attributes
+          path: final_attributes/
+          if-no-files-found: error
