@@ -1,0 +1,40 @@
+name: Probe actual ArcGIS object ID field
+
+on:
+  push:
+    branches: [probe-objectid]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe ID semantics
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,urllib.parse,urllib.request
+          from pathlib import Path
+          OUT=Path('oid_probe');OUT.mkdir(exist_ok=True)
+          B='https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/MapServer'
+          def post(params):
+            data=urllib.parse.urlencode(params).encode();req=urllib.request.Request(B+'/3/query',data=data,headers={'User-Agent':'AMC-OIDProbe/1.0','Content-Type':'application/x-www-form-urlencoded'})
+            with urllib.request.urlopen(req,timeout=120) as r:return json.loads(r.read())
+          w="(nmbairro LIKE 'BRO JARDIM AMERICA%' OR nmbairro LIKE 'BRO NOVA SUICA%') AND uso=1 AND propriedad=1"
+          ids=post({'where':w,'returnIdsOnly':'true','f':'json'})
+          first=(ids.get('objectIds') or [])[:10]
+          result={'ids_response':{'objectIdFieldName':ids.get('objectIdFieldName'),'first_ids':first,'count':len(ids.get('objectIds') or [])}}
+          for field in ['ESRI_OID','OBJECTID']:
+            result[field+'_by_where']=post({'where':field+' IN ('+','.join(map(str,first))+')','outFields':'OBJECTID,ESRI_OID,nrinscr,nmbairro,nrquadra,nrlote,uso,uso1,propriedad','returnGeometry':'false','f':'json'})
+          result['by_objectIds']=post({'objectIds':','.join(map(str,first)),'outFields':'OBJECTID,ESRI_OID,nrinscr,nmbairro,nrquadra,nrlote,uso,uso1,propriedad','returnGeometry':'false','f':'json'})
+          (OUT/'probe.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+          print(json.dumps(result,ensure_ascii=False,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oid-probe
+          path: oid_probe/
+          if-no-files-found: error
