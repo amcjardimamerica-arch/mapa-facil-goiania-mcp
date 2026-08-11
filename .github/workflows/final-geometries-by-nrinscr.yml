@@ -1,0 +1,117 @@
+name: Final official geometries by nrinscr
+
+on:
+  push:
+    branches: [final-geometries-by-nrinscr]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  geometry:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download validated attribute artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: final-official-attributes
+          path: final_attributes
+          repository: amcjardimamerica-arch/mapa-facil-goiania-mcp
+          run-id: 31530300264
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Fetch official geometries using stable cadastral registration
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,urllib.parse,urllib.request,time,collections,math,shutil
+          from pathlib import Path
+          A=Path('final_attributes')
+          O=Path('final_geometry');O.mkdir(exist_ok=True)
+          B='https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/MapServer/3/query'
+          F='OBJECTID,ESRI_OID,nrinscr,tplogradou,nmlogradou,nrquadra,nrlote,nmbairro,areaterr,propriedad,uso,uso1,uso2,insubprinc,ttsublot,dtgeo,dtultalter'
+          sel=json.loads((A/'selected_physical_records.json').read_text(encoding='utf-8'))['records']
+          by={str(a['nrinscr']).strip():a for a in sel}
+          if len(by)!=len(sel):raise RuntimeError('selected nrinscr not unique')
+          def nid(x):
+            s=''.join(str(x or '').strip().upper().split());return str(int(s)) if s.isdigit() else s
+          def txt(x):return ' '.join(str(x or '').strip().split())
+          def q(s):return "'"+str(s).replace("'","''")+"'"
+          def post(p,tries=7):
+            data=urllib.parse.urlencode(p).encode();last=None
+            for i in range(tries):
+              try:
+                req=urllib.request.Request(B,data=data,headers={'User-Agent':'AMC-FinalGeometry/1.0','Content-Type':'application/x-www-form-urlencoded'})
+                with urllib.request.urlopen(req,timeout=180) as r:o=json.loads(r.read())
+                if isinstance(o,dict) and o.get('error'):raise RuntimeError(o['error'])
+                return o
+              except Exception as e:last=e;print('retry',i+1,repr(e),flush=True);time.sleep(1.2*(i+1))
+            raise RuntimeError(last)
+          geoms={};duplicates=[];mismatches=[];leaf=0
+          def fetch(inscrs):
+            global leaf
+            inscrs=sorted(set(inscrs))
+            if not inscrs:return
+            if len(inscrs)>80:
+              for i in range(0,len(inscrs),80):fetch(inscrs[i:i+80])
+              return
+            clause='nrinscr IN ('+','.join(q(x) for x in inscrs)+')'
+            where=f"(nmbairro LIKE 'BRO JARDIM AMERICA%' OR nmbairro LIKE 'BRO NOVA SUICA%') AND uso=1 AND propriedad=1 AND {clause}"
+            try:o=post({'where':where,'outFields':F,'returnGeometry':'true','outSR':'4326','returnZ':'false','returnM':'false','resultRecordCount':'500','f':'geojson'},tries=5)
+            except Exception:
+              if len(inscrs)<=1:raise
+              m=len(inscrs)//2;fetch(inscrs[:m]);fetch(inscrs[m:]);return
+            fs=o.get('features') or []
+            if o.get('exceededTransferLimit') or len(fs)>=500:
+              if len(inscrs)<=1:raise RuntimeError(f'transfer limit for nrinscr {inscrs[0]}')
+              m=len(inscrs)//2;fetch(inscrs[:m]);fetch(inscrs[m:]);return
+            leaf+=1
+            found=set()
+            for f in fs:
+              p=f.get('properties') or {};ins=str(p.get('nrinscr') or '').strip()
+              if ins not in by or ins not in inscrs or not f.get('geometry'):continue
+              a=by[ins]
+              checks={
+                'bairro':txt(p.get('nmbairro'))==txt(a.get('nmbairro')),
+                'quadra':nid(p.get('nrquadra'))==nid(a.get('nrquadra')),
+                'lote':nid(p.get('nrlote'))==nid(a.get('nrlote')),
+                'uso':p.get('uso')==1 and a.get('uso')==1,
+                'propriedad':p.get('propriedad')==1 and a.get('propriedad')==1,
+                'areaterr': (p.get('areaterr') is not None and a.get('areaterr') is not None and abs(float(p.get('areaterr'))-float(a.get('areaterr')))<1e-7),
+                'logradouro':txt(p.get('nmlogradou'))==txt(a.get('nmlogradou')),
+              }
+              if not all(checks.values()):
+                mismatches.append({'nrinscr':ins,'checks':checks,'selected':a,'returned':p});continue
+              # View OIDs can vary between calls. Stable cadastral attributes come from selected record; geometry is this official query result.
+              out={'type':'Feature','properties':a,'geometry':f['geometry']}
+              if ins in geoms:
+                if geoms[ins]['geometry']!=out['geometry']:duplicates.append(ins)
+              else:geoms[ins]=out
+              found.add(ins)
+            missing=[x for x in inscrs if x not in found and x not in geoms]
+            if missing:
+              if len(inscrs)<=1:raise RuntimeError(f'No official GeoJSON geometry returned for nrinscr {missing}')
+              # Retry only missing registrations in smaller requests; do not silently discard them.
+              fetch(missing)
+          nums=sorted(by)
+          for i in range(0,len(nums),160):
+            fetch(nums[i:i+160]);print('geometry',len(geoms),'/',len(nums),flush=True)
+          if mismatches:raise RuntimeError(f'Geometry cadastral mismatches: {mismatches[:5]} count={len(mismatches)}')
+          if duplicates:raise RuntimeError(f'Conflicting duplicate geometries for nrinscr: {sorted(set(duplicates))[:20]}')
+          missing=sorted(set(nums)-set(geoms))
+          if missing:raise RuntimeError(f'Missing geometry count={len(missing)} sample={missing[:20]}')
+          fc={'type':'FeatureCollection','features':[geoms[str(a['nrinscr']).strip()] for a in sel]}
+          (O/'cadastro_residencial_particular_physical.geojson').write_text(json.dumps(fc,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+          for nm in ['manifest.json','all_target_attributes.json','eligible_attributes.json','duplicate_groups.json','selected_physical_records.json']:
+            shutil.copy2(A/nm,O/nm)
+          gman={'source':'Feature_Base/MapServer/3','geometry_key':'stable official nrinscr; bairro+quadra+lote+uso+propriedad+areaterr+logradouro revalidated on geometry response','selected_records':len(sel),'geometry_records':len(geoms),'leaf_requests':leaf,'outSR':4326,'no_geometry_simplification':True,'transient_view_oids_not_used_as_join_key':True,'generated_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
+          (O/'geometry_manifest.json').write_text(json.dumps(gman,ensure_ascii=False,indent=2),encoding='utf-8')
+          print(json.dumps(gman,ensure_ascii=False,indent=2))
+          PY
+      - name: Upload final official geometry dataset
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-official-geometry-dataset
+          path: final_geometry/
+          if-no-files-found: error
