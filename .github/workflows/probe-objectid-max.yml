@@ -1,0 +1,23 @@
+name: Probe OBJECTID min max
+on:
+  push:
+    branches: [probe-objectid-max]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - shell: bash
+        run: |
+          python - <<'PY'
+          import json,urllib.parse,urllib.request
+          B='https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/MapServer/3/query'
+          T="nmbairro LIKE 'BRO JARDIM AMERICA%' OR nmbairro LIKE 'BRO NOVA SUICA%'"
+          stats=json.dumps([{'statisticType':'min','onStatisticField':'OBJECTID','outStatisticFieldName':'min_oid'},{'statisticType':'max','onStatisticField':'OBJECTID','outStatisticFieldName':'max_oid'},{'statisticType':'count','onStatisticField':'OBJECTID','outStatisticFieldName':'n'}])
+          def q(p):
+            data=urllib.parse.urlencode(p).encode();req=urllib.request.Request(B,data=data,headers={'User-Agent':'AMC-MaxProbe/1.0','Content-Type':'application/x-www-form-urlencoded'})
+            with urllib.request.urlopen(req,timeout=120) as r:return json.loads(r.read())
+          out={'stats':q({'where':T,'outStatistics':stats,'returnGeometry':'false','f':'json'}),'desc':q({'where':T,'outFields':'OBJECTID,ESRI_OID,nmbairro','returnGeometry':'false','orderByFields':'OBJECTID DESC','resultRecordCount':'5','f':'json'}),'asc':q({'where':T,'outFields':'OBJECTID,ESRI_OID,nmbairro','returnGeometry':'false','orderByFields':'OBJECTID ASC','resultRecordCount':'5','f':'json'})}
+          print(json.dumps(out,ensure_ascii=False,indent=2))
+          PY
