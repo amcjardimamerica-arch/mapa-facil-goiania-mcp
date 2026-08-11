@@ -1,0 +1,33 @@
+name: Probe geometry JSON for missing registrations
+on:
+  push:
+    branches: [probe-geometry-json]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - shell: bash
+        run: |
+          python - <<'PY'
+          import json,urllib.parse,urllib.request
+          B='https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/MapServer/3/query'
+          nums=['30501900410003','30502001150006','30502002840014']
+          def q(n,f):
+            p={'where':f"nrinscr='{n}'",'outFields':'OBJECTID,ESRI_OID,nrinscr,nmbairro,nrquadra,nrlote,uso,propriedad','returnGeometry':'true','outSR':'4326','f':f}
+            data=urllib.parse.urlencode(p).encode();req=urllib.request.Request(B,data=data,headers={'User-Agent':'AMC-GeomProbe/1.0','Content-Type':'application/x-www-form-urlencoded'})
+            try:
+              with urllib.request.urlopen(req,timeout=120) as r:return json.loads(r.read())
+            except Exception as e:return {'EXCEPTION':repr(e)}
+          out={}
+          for n in nums:
+            out[n]={'json':q(n,'json'),'geojson':q(n,'geojson')}
+          for n,z in out.items():
+            print('\nNR',n)
+            for fmt,o in z.items():
+              print(fmt,'error',o.get('error') if isinstance(o,dict) else None,'features',len(o.get('features',[])) if isinstance(o,dict) else None)
+              if isinstance(o,dict) and o.get('features'):
+                f=o['features'][0];print(' attrs/props',f.get('attributes') or f.get('properties'));print(' geom keys',(f.get('geometry') or {}).keys())
+          print(json.dumps(out,ensure_ascii=False)[:5000])
+          PY
