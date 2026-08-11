@@ -1,0 +1,82 @@
+name: Final official geometries concurrent
+on:
+  push:
+    branches: [final-geometries-concurrent]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  geometry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: final-official-attributes
+          path: final_attributes
+          repository: amcjardimamerica-arch/mapa-facil-goiania-mcp
+          run-id: 31530300264
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - shell: bash
+        run: |
+          python - <<'PY'
+          import json,urllib.parse,urllib.request,time,concurrent.futures,shutil,threading
+          from pathlib import Path
+          A=Path('final_attributes');O=Path('final_geometry');O.mkdir(exist_ok=True)
+          B='https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/MapServer/3/query'
+          F='nrinscr,tplogradou,nmlogradou,nrquadra,nrlote,nmbairro,areaterr,propriedad,uso,uso1,uso2,insubprinc,ttsublot'
+          sel=json.loads((A/'selected_physical_records.json').read_text())['records']; by={str(a['nrinscr']).strip():a for a in sel}
+          if len(by)!=6005: raise RuntimeError(f'expected 6005 unique nrinscr, got {len(by)}')
+          def nid(x):
+            s=''.join(str(x or '').strip().upper().split());return str(int(s)) if s.isdigit() else s
+          def txt(x):return ' '.join(str(x or '').strip().split())
+          def quote(x):return "'"+x.replace("'","''")+"'"
+          def request(batch,tries=6):
+            clause='nrinscr IN ('+','.join(quote(x) for x in batch)+')'
+            where=f"(nmbairro LIKE 'BRO JARDIM AMERICA%' OR nmbairro LIKE 'BRO NOVA SUICA%') AND uso=1 AND propriedad=1 AND {clause}"
+            p={'where':where,'outFields':F,'returnGeometry':'true','outSR':'4326','returnZ':'false','returnM':'false','resultRecordCount':'250','f':'geojson'}
+            data=urllib.parse.urlencode(p).encode(); last=None
+            for i in range(tries):
+              try:
+                req=urllib.request.Request(B,data=data,headers={'User-Agent':'AMC-ConcurrentGeom/1.0','Content-Type':'application/x-www-form-urlencoded'})
+                with urllib.request.urlopen(req,timeout=150) as r:o=json.loads(r.read())
+                if o.get('error'): raise RuntimeError(o['error'])
+                return o
+              except Exception as e:last=e;time.sleep(1.0*(i+1))
+            raise RuntimeError(last)
+          def validate_feature(f):
+            p=f.get('properties') or {}; ins=str(p.get('nrinscr') or '').strip(); a=by.get(ins)
+            if not a or not f.get('geometry'): return None
+            ok=(txt(p.get('nmbairro'))==txt(a.get('nmbairro')) and nid(p.get('nrquadra'))==nid(a.get('nrquadra')) and nid(p.get('nrlote'))==nid(a.get('nrlote')) and p.get('uso')==1 and p.get('propriedad')==1 and abs(float(p.get('areaterr'))-float(a.get('areaterr')))<1e-7 and txt(p.get('nmlogradou'))==txt(a.get('nmlogradou')))
+            if not ok: raise RuntimeError(f'cadastro mismatch {ins}')
+            return ins,{'type':'Feature','properties':a,'geometry':f['geometry']}
+          def fetch_batch(batch):
+            o=request(batch); got={}
+            if o.get('exceededTransferLimit') or len(o.get('features',[]))>=250:
+              if len(batch)==1: raise RuntimeError(f'transfer limit {batch[0]}')
+              m=len(batch)//2; a=fetch_batch(batch[:m]);a.update(fetch_batch(batch[m:]));return a
+            for f in o.get('features',[]):
+              v=validate_feature(f)
+              if v: got[v[0]]=v[1]
+            missing=[x for x in batch if x not in got]
+            if missing:
+              if len(batch)==1: raise RuntimeError(f'no geometry {batch[0]}')
+              # independently retry missing entries in smaller chunks
+              for i in range(0,len(missing),8): got.update(fetch_batch(missing[i:i+8]))
+            return got
+          nums=sorted(by); batches=[nums[i:i+40] for i in range(0,len(nums),40)]; out={}; lock=threading.Lock()
+          with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:
+            futs=[ex.submit(fetch_batch,b) for b in batches]
+            for n,fut in enumerate(concurrent.futures.as_completed(futs),1):
+              z=fut.result()
+              with lock: out.update(z); print('completed batches',n,'geometry',len(out),'/',len(nums),flush=True)
+          if set(out)!=set(nums): raise RuntimeError(f'missing {len(set(nums)-set(out))}')
+          fc={'type':'FeatureCollection','features':[out[str(a['nrinscr']).strip()] for a in sel]}
+          (O/'cadastro_residencial_particular_physical.geojson').write_text(json.dumps(fc,ensure_ascii=False,separators=(',',':')))
+          for nm in ['manifest.json','all_target_attributes.json','eligible_attributes.json','duplicate_groups.json','selected_physical_records.json']: shutil.copy2(A/nm,O/nm)
+          (O/'geometry_manifest.json').write_text(json.dumps({'selected_records':6005,'geometry_records':len(out),'geometry_key':'nrinscr with bairro+quadra+lote+uso+propriedad+areaterr+logradouro validation','outSR':4326,'no_geometry_simplification':True,'concurrent_workers':6},ensure_ascii=False,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-official-geometry-dataset-concurrent
+          path: final_geometry/
+          if-no-files-found: error
