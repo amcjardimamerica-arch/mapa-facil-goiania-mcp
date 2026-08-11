@@ -1,0 +1,67 @@
+name: Inspect official Goiânia cadastral values
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query official ArcGIS statistics
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, urllib.parse, urllib.request, time
+          from pathlib import Path
+          OUT=Path('stats_export'); OUT.mkdir(exist_ok=True)
+          BASE='https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/MapServer'
+          def get(layer, params):
+              u=f'{BASE}/{layer}/query?'+urllib.parse.urlencode(params)
+              req=urllib.request.Request(u,headers={'User-Agent':'AMC-ArcGIS-Stats/1.0'})
+              with urllib.request.urlopen(req,timeout=120) as r: obj=json.loads(r.read())
+              if isinstance(obj,dict) and obj.get('error'): raise RuntimeError(obj['error'])
+              return obj
+          stat=json.dumps([{'statisticType':'count','onStatisticField':'ESRI_OID','outStatisticFieldName':'n'}])
+          groups={}
+          for field in ['nmbairro','uso1','propriedad','uso']:
+              groups[field]=get(3,{
+                  'where':'1=1','outFields':field,
+                  'groupByFieldsForStatistics':field,
+                  'orderByFields':'n DESC',
+                  'outStatistics':stat,'returnGeometry':'false','f':'json'
+              })
+          # Combined groups limited to neighborhood names containing America/Suica variants.
+          where="UPPER(nmbairro) LIKE '%AMERICA%' OR UPPER(nmbairro) LIKE '%SUICA%' OR UPPER(nmbairro) LIKE '%SUÍCA%' OR UPPER(nmbairro) LIKE '%SUIÇA%' OR UPPER(nmbairro) LIKE '%SUÍÇA%'"
+          groups['target_combo']=get(3,{
+              'where':where,'outFields':'nmbairro,uso1,propriedad,uso',
+              'groupByFieldsForStatistics':'nmbairro,uso1,propriedad,uso',
+              'orderByFields':'nmbairro ASC, n DESC',
+              'outStatistics':stat,'returnGeometry':'false','f':'json'
+          })
+          groups['known_468_16']=get(3,{
+              'where':"TRIM(nrquadra) = '468' AND TRIM(nrlote) = '16'",
+              'outFields':'ESRI_OID,nrinscr,nmlogradou,nrquadra,nrlote,nmbairro,areaterr,propriedad,uso,uso1,uso2,insubprinc,ttsublot',
+              'returnGeometry':'false','f':'json'
+          })
+          groups['known_606_17']=get(3,{
+              'where':"TRIM(nrquadra) = '606' AND TRIM(nrlote) = '17'",
+              'outFields':'ESRI_OID,nrinscr,nmlogradou,nrquadra,nrlote,nmbairro,areaterr,propriedad,uso,uso1,uso2,insubprinc,ttsublot',
+              'returnGeometry':'false','f':'json'
+          })
+          groups['bairro_names']=get(2,{
+              'where':'1=1','outFields':'OBJECTID,nm_bai,nm,nm1,nm2,nm3,ql_bai',
+              'returnGeometry':'false','f':'json'
+          })
+          (OUT/'stats.json').write_text(json.dumps(groups,ensure_ascii=False,indent=2),encoding='utf-8')
+          print('done')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stats-goiania-export
+          path: stats_export/
+          if-no-files-found: error
