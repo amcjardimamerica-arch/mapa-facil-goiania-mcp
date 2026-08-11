@@ -1,0 +1,120 @@
+name: Final official export by OBJECTID keyset
+
+on:
+  push:
+    branches: [final-objectid-keyset]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Export all target attributes and exact selected geometries by OBJECTID
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, urllib.parse, urllib.request, time, collections
+          from pathlib import Path
+          OUT=Path('final_objectid');OUT.mkdir(exist_ok=True)
+          BASE='https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/MapServer'
+          UA={'User-Agent':'AMC-FinalObjectIDKeyset/1.0'}
+          TARGET="nmbairro LIKE 'BRO JARDIM AMERICA%' OR nmbairro LIKE 'BRO NOVA SUICA%'"
+          FIELDS='OBJECTID,ESRI_OID,nrinscr,tplogradou,nmlogradou,nrquadra,nrlote,nmbairro,areaterr,propriedad,uso,uso1,uso2,insubprinc,ttsublot,dtgeo,dtultalter'
+          def post(p,tries=8):
+              data=urllib.parse.urlencode(p).encode();last=None
+              for i in range(tries):
+                  try:
+                      req=urllib.request.Request(BASE+'/3/query',data=data,headers={**UA,'Content-Type':'application/x-www-form-urlencoded'})
+                      with urllib.request.urlopen(req,timeout=180) as r:o=json.loads(r.read())
+                      if isinstance(o,dict) and o.get('error'):raise RuntimeError(o['error'])
+                      return o
+                  except Exception as e:last=e;print('retry',i+1,repr(e),flush=True);time.sleep(1.2*(i+1))
+              raise RuntimeError(last)
+          # Stable keyset pagination on OBJECTID; proven separately to support range predicates and ordering.
+          attrs={};last=0;pages=0
+          while True:
+              w=f'({TARGET}) AND OBJECTID > {last}'
+              o=post({'where':w,'outFields':FIELDS,'returnGeometry':'false','orderByFields':'OBJECTID ASC','resultRecordCount':'1000','f':'json'})
+              fs=o.get('features') or []
+              if not fs:break
+              ids=[]
+              for f in fs:
+                  a=f.get('attributes') or {};oid=int(a['OBJECTID']);ids.append(oid)
+                  if oid<=last:raise RuntimeError(f'non-increasing OBJECTID {oid} <= {last}')
+                  if (a.get('nmbairro') or '').strip() not in ('BRO JARDIM AMERICA','BRO NOVA SUICA'):raise RuntimeError(f'escaped target {a}')
+                  attrs[oid]=a
+              if ids!=sorted(ids) or len(ids)!=len(set(ids)):raise RuntimeError('OBJECTID page not sorted/unique')
+              last=max(ids);pages+=1;print('attrs page',pages,'got',len(fs),'total',len(attrs),'last',last,flush=True)
+              if len(fs)<1000:
+                  # One extra keyset query will terminate naturally if no more records.
+                  pass
+          if not attrs:raise RuntimeError('No target records')
+          all_ids=sorted(attrs)
+          # Eligible = verified current API semantics: uso 1 residential code is held by field uso=1; private propriedad=1.
+          eligible={oid:a for oid,a in attrs.items() if a.get('uso')==1 and a.get('propriedad')==1}
+          def nid(s):
+              s=''.join(str(s or '').strip().upper().split());return str(int(s)) if s.isdigit() else s
+          def score(a):
+              try:sub=int(a.get('insubprinc'))
+              except:sub=10**9
+              try:tt=int(a.get('ttsublot'))
+              except:tt=10**9
+              return (0 if sub==0 else 1,0 if tt==1 else 1,sub,int(a['OBJECTID']))
+          groups={}
+          for oid,a in eligible.items():groups.setdefault(((a.get('nmbairro') or '').strip(),nid(a.get('nrquadra')),nid(a.get('nrlote'))),[]).append(a)
+          chosen=[];dups=[];byb=collections.Counter()
+          for k,arr in groups.items():
+              arr.sort(key=score);z=arr[0];chosen.append(int(z['OBJECTID']));byb[k[0]]+=1
+              if len(arr)>1:dups.append({'bairro':k[0],'quadra':k[1],'lote':k[2],'count':len(arr),'kept_objectid':z['OBJECTID'],'kept_esri_oid':z.get('ESRI_OID'),'kept_nrinscr':z.get('nrinscr'),'kept_insubprinc':z.get('insubprinc'),'kept_ttsublot':z.get('ttsublot'),'other_objectids':[int(x['OBJECTID']) for x in arr[1:]]})
+          chosen=sorted(set(chosen));print('all target',len(attrs),'eligible',len(eligible),'physical QL',len(chosen),dict(byb),flush=True)
+          def geos(ids):
+              ids=sorted(set(ids));out={}
+              if not ids:return out
+              if len(ids)>180:
+                  for i in range(0,len(ids),180):out.update(geos(ids[i:i+180]))
+                  return out
+              bb=collections.defaultdict(list)
+              for oid in ids:bb[(eligible[oid].get('nmbairro') or '').strip()].append(oid)
+              for raw,ii in bb.items():
+                  clause='OBJECTID IN ('+','.join(map(str,ii))+')'
+                  w=f"nmbairro LIKE '{raw}%' AND uso=1 AND propriedad=1 AND {clause}"
+                  try:o=post({'where':w,'outFields':FIELDS,'returnGeometry':'true','outSR':'4326','returnZ':'false','returnM':'false','f':'geojson'},tries=5)
+                  except Exception:
+                      if len(ii)<=6:raise
+                      m=len(ii)//2;out.update(geos(ii[:m]));out.update(geos(ii[m:]));continue
+                  got={}
+                  for f in o.get('features',[]):
+                      p=f.get('properties') or {}
+                      try:oid=int(p.get('OBJECTID'))
+                      except:continue
+                      if oid in ii and (p.get('nmbairro') or '').strip()==raw and p.get('uso')==1 and p.get('propriedad')==1 and f.get('geometry'):got[oid]=f
+                  miss=sorted(set(ii)-set(got))
+                  if miss:
+                      if len(ii)<=6:raise RuntimeError(f'missing geometry {miss}')
+                      got.update(geos(miss))
+                  out.update(got)
+              return out
+          gm={}
+          for i in range(0,len(chosen),360):gm.update(geos(chosen[i:i+360]));print('geoms',len(gm),'/',len(chosen),flush=True)
+          if set(gm)!=set(chosen):raise RuntimeError(f'geometry mismatch {len(gm)} != {len(chosen)}')
+          # Independent eligibility checks on fetched payload.
+          for oid,f in gm.items():
+              p=f.get('properties') or {}
+              if int(p.get('OBJECTID'))!=oid or (p.get('nmbairro') or '').strip() not in ('BRO JARDIM AMERICA','BRO NOVA SUICA') or p.get('uso')!=1 or p.get('propriedad')!=1 or not f.get('geometry'):raise RuntimeError(f'bad final payload {p}')
+          gc={raw:int(post({'where':f"nmbairro LIKE '{raw}%'",'returnCountOnly':'true','f':'json'}).get('count') or 0) for raw in ('BRO JARDIM AMERICA','BRO NOVA SUICA')}
+          ecount=int(post({'where':f'({TARGET}) AND uso=1 AND propriedad=1','returnCountOnly':'true','f':'json'}).get('count') or 0)
+          (OUT/'cadastro_residencial_particular_physical.geojson').write_text(json.dumps({'type':'FeatureCollection','features':[gm[x] for x in chosen]},ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+          (OUT/'all_target_attributes.json').write_text(json.dumps({'count':len(attrs),'records':[{'attributes':attrs[x]} for x in all_ids]},ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+          (OUT/'eligible_attributes.json').write_text(json.dumps({'count':len(eligible),'records':[{'attributes':eligible[x]} for x in sorted(eligible)]},ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+          (OUT/'duplicate_groups.json').write_text(json.dumps(dups,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+          man={'source':BASE+'/3','method':'OBJECTID keyset pagination WHERE OBJECTID > last ORDER BY OBJECTID; geometry via SQL OBJECTID IN; no resultOffset, no objectIds parameter, no returnIdsOnly','attribute_pages':pages,'all_target_records':len(attrs),'global_raw_bairro_count_diagnostic':gc,'raw_eligible_records':len(eligible),'eligible_count_diagnostic':ecount,'unique_bairro_quadra_lote':len(groups),'selected_records':len(chosen),'counts_by_raw_bairro_unique_ql':dict(byb),'duplicate_records_consolidated':len(eligible)-len(chosen),'duplicate_ql_groups':len(dups),'selection_rule':'one official record per bairro+quadra+lote; prefer insubprinc=0, then ttsublot=1, then lowest insubprinc, then OBJECTID','outSR':4326,'no_geometry_simplification':True,'generated_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
+          (OUT/'manifest.json').write_text(json.dumps(man,ensure_ascii=False,indent=2),encoding='utf-8');print(json.dumps(man,ensure_ascii=False,indent=2),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-objectid-keyset-official-export
+          path: final_objectid/
+          if-no-files-found: error
