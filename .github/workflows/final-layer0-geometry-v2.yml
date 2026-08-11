@@ -1,0 +1,88 @@
+name: Final official geometry from Divisas de Lote v2
+on:
+  push:
+    branches: [final-layer0-geometry-v2]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  geometry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: final-official-attributes
+          path: final_attributes
+          repository: amcjardimamerica-arch/mapa-facil-goiania-mcp
+          run-id: 31530300264
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - shell: bash
+        run: |
+          python - <<'PY'
+          import json,urllib.parse,urllib.request,time,collections,concurrent.futures,shutil,re
+          from pathlib import Path
+          A=Path('final_attributes');O=Path('final_layer0_v2');O.mkdir(exist_ok=True)
+          B='https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/MapServer/0/query'
+          sel=json.loads((A/'selected_physical_records.json').read_text())['records']
+          def nid(x):
+            s=''.join(str(x or '').strip().upper().split());return str(int(s)) if re.fullmatch(r'\d+',s) else s
+          def quote(x):return "'"+x.replace("'","''")+"'"
+          targets={}
+          for a in sel:
+            ins=str(a.get('nrinscr') or '').strip(); targets[ins]=(ins[:10],nid(a.get('nrlote')),a)
+          cis=sorted(set(v[0] for v in targets.values()))
+          def fetch_batch(batch,tries=6):
+            p={'where':'ci IN ('+','.join(quote(x) for x in batch)+')','outFields':'OBJECTID,id,nm_lot,nm_imovel,id_qdr,ci_lot,ci_qdr,ci,in_cond,nm_cond','returnGeometry':'true','outSR':'4326','returnZ':'false','returnM':'false','resultRecordCount':'5000','f':'geojson'}
+            data=urllib.parse.urlencode(p).encode();last=None
+            for i in range(tries):
+              try:
+                req=urllib.request.Request(B,data=data,headers={'User-Agent':'AMC-Layer0FinalV2/1.0','Content-Type':'application/x-www-form-urlencoded'})
+                with urllib.request.urlopen(req,timeout=150) as r:o=json.loads(r.read())
+                if o.get('error') or o.get('exceededTransferLimit'):raise RuntimeError(o.get('error') or 'transfer limit')
+                return o.get('features') or []
+              except Exception as e:last=e;time.sleep(1.0*(i+1))
+            if len(batch)==1:raise RuntimeError(last)
+            m=len(batch)//2;return fetch_batch(batch[:m])+fetch_batch(batch[m:])
+          batches=[cis[i:i+80] for i in range(0,len(cis),80)]; feats=[]
+          with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:
+            futs=[ex.submit(fetch_batch,b) for b in batches]
+            for n,fut in enumerate(concurrent.futures.as_completed(futs),1):
+              feats.extend(fut.result());print('batch',n,'/',len(batches),'features',len(feats),flush=True)
+          unique={int(f['properties']['OBJECTID']):f for f in feats if f.get('geometry') and f.get('properties',{}).get('OBJECTID') is not None}
+          by_ci=collections.defaultdict(list); by_ci_lot=collections.defaultdict(list)
+          for f in unique.values():
+            p=f['properties'];ci=str(p.get('ci') or '').strip();lot=nid(p.get('nm_lot'));by_ci[ci].append(f);by_ci_lot[(ci,lot)].append(f)
+          out=[]; multipart=[]; fallback_unique_ci=[]; unresolved=[]
+          for a in sel:
+            ins=str(a['nrinscr']).strip();ci,lot,_=targets[ins]
+            exact=by_ci_lot.get((ci,lot),[]); allci=by_ci.get(ci,[])
+            if exact: cand=exact; method='ci+nm_lot'
+            elif len(allci)==1: cand=allci; method='unique_ci'; fallback_unique_ci.append({'nrinscr':ins,'ci':ci,'cadastral_lot':lot,'layer0_nm_lot':str(allci[0]['properties'].get('nm_lot') or '').strip()})
+            else:
+              unresolved.append({'nrinscr':ins,'ci':ci,'lote':lot,'quadra':a.get('nrquadra'),'bairro':a.get('nmbairro'),'ci_candidates':[f['properties'] for f in allci]});continue
+            geoms=[];seen=set()
+            for f in cand:
+              sig=json.dumps(f['geometry'],sort_keys=True,separators=(',',':'))
+              if sig not in seen:seen.add(sig);geoms.append(f['geometry'])
+            if len(geoms)==1:geom=geoms[0]
+            else:
+              polys=[]
+              for g in geoms:
+                if g.get('type')=='Polygon':polys.append(g['coordinates'])
+                elif g.get('type')=='MultiPolygon':polys.extend(g['coordinates'])
+                else:raise RuntimeError('unsupported geometry')
+              geom={'type':'MultiPolygon','coordinates':polys};multipart.append({'nrinscr':ins,'quadra':a.get('nrquadra'),'lote':a.get('nrlote'),'ci':ci,'components':len(polys),'method':method,'objectids':[f['properties'].get('OBJECTID') for f in cand]})
+            out.append({'type':'Feature','properties':a,'geometry':geom})
+          if unresolved:raise RuntimeError(f'unresolved geometry count={len(unresolved)} sample={unresolved[:20]}')
+          if len(out)!=len(sel):raise RuntimeError(f'output {len(out)} != {len(sel)}')
+          (O/'cadastro_residencial_particular_physical.geojson').write_text(json.dumps({'type':'FeatureCollection','features':out},ensure_ascii=False,separators=(',',':')))
+          for nm in ['manifest.json','all_target_attributes.json','eligible_attributes.json','duplicate_groups.json','selected_physical_records.json']:shutil.copy2(A/nm,O/nm)
+          gman={'source':'Feature_Base/MapServer/0 Divisas de Lote','primary_join':'nrinscr first 10 digits = ci AND nrlote = nm_lot','fallback':'if nm_lot differs, accept ci only when exactly one official lot feature exists for that ci','selected_records':len(sel),'geometry_records':len(out),'unique_ci_prefixes':len(cis),'layer0_features_fetched':len(unique),'fallback_unique_ci_count':len(fallback_unique_ci),'fallback_unique_ci':fallback_unique_ci,'multipart_lots':multipart,'multipart_count':len(multipart),'missing_count':0,'outSR':4326,'no_geometry_simplification':True,'generated_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
+          (O/'geometry_manifest.json').write_text(json.dumps(gman,ensure_ascii=False,indent=2))
+          print(json.dumps({'selected':len(sel),'features':len(out),'fallback_unique_ci':len(fallback_unique_ci),'multipart_count':len(multipart),'multipart_sample':multipart[:20]},ensure_ascii=False,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-layer0-official-geometry-v2
+          path: final_layer0_v2/
+          if-no-files-found: error
