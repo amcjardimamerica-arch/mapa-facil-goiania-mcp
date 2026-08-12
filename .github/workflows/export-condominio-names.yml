@@ -10,9 +10,6 @@ on:
 permissions:
   contents: read
 
-env:
-  LAYER: https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/FeatureServer/0
-
 jobs:
   export:
     runs-on: ubuntu-latest
@@ -21,13 +18,16 @@ jobs:
         shell: bash
         run: |
           python - <<'PY'
-          import json, os, time, urllib.parse, urllib.request
+          import json, time, urllib.parse, urllib.request
           from pathlib import Path
 
-          layer = os.environ['LAYER']
+          layers = {
+              'feature_base': 'https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/FeatureServer/0',
+              'mapa_basico3': 'https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Mapa_Basico3/MapServer/330',
+          }
           out = Path('condominio_names')
           out.mkdir(exist_ok=True)
-          ua = {'User-Agent':'AMC-JardimAmerica-CondominioNames/1.0'}
+          ua = {'User-Agent':'AMC-JardimAmerica-CondominioNames/1.1'}
 
           def post_json(url, params, tries=5, timeout=180):
               data = urllib.parse.urlencode(params).encode('utf-8')
@@ -45,29 +45,23 @@ jobs:
                       time.sleep(2*(i+1))
               raise RuntimeError(last)
 
-          meta_req = urllib.request.Request(layer + '?f=pjson', headers=ua)
-          with urllib.request.urlopen(meta_req, timeout=120) as r:
-              meta = json.loads(r.read())
-          (out/'layer0_metadata.json').write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding='utf-8')
-
           where = "in_cond = 1 OR (nm_cond IS NOT NULL AND nm_cond <> '')"
-          params = {
-              'where': where,
-              'outFields': 'OBJECTID,id,ci,nm_lot,nm_imovel,in_cond,nm_cond,id_qdr',
-              'returnGeometry':'false',
-              'orderByFields':'OBJECTID ASC',
-              'f':'json'
-          }
-          obj = post_json(layer + '/query', params)
-          feats = obj.get('features', [])
-          (out/'official_condominio_names.json').write_text(json.dumps(feats, ensure_ascii=False, indent=2), encoding='utf-8')
-          manifest = {
-              'source': layer,
-              'where': where,
-              'features': len(feats),
-              'exceededTransferLimit': obj.get('exceededTransferLimit'),
-              'generated_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
-          }
+          manifest = {'where':where,'generated_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),'sources':{}}
+          for key, layer in layers.items():
+              meta_req = urllib.request.Request(layer + '?f=pjson', headers=ua)
+              with urllib.request.urlopen(meta_req, timeout=120) as r:
+                  meta = json.loads(r.read())
+              (out/f'{key}_metadata.json').write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding='utf-8')
+              obj = post_json(layer + '/query', {
+                  'where': where,
+                  'outFields': 'OBJECTID,id,ci,nm_lot,nm_imovel,in_cond,nm_cond,id_qdr',
+                  'returnGeometry':'false',
+                  'orderByFields':'OBJECTID ASC',
+                  'f':'json'
+              })
+              feats = obj.get('features', [])
+              (out/f'{key}_condominio_names.json').write_text(json.dumps(feats, ensure_ascii=False, indent=2), encoding='utf-8')
+              manifest['sources'][key] = {'source':layer,'features':len(feats),'exceededTransferLimit':obj.get('exceededTransferLimit')}
           (out/'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
           print(json.dumps(manifest, ensure_ascii=False, indent=2))
           PY
@@ -75,6 +69,6 @@ jobs:
       - name: Upload official condominium names
         uses: actions/upload-artifact@v4
         with:
-          name: official-condominio-names
+          name: official-condominio-names-v2
           path: condominio_names/
           if-no-files-found: error
