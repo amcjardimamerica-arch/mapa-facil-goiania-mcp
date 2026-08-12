@@ -1,0 +1,80 @@
+name: Export official condominium names
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/export-condominio-names.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  LAYER: https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Feature_Base/FeatureServer/0
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query official Mapa Facil condominium fields
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os, time, urllib.parse, urllib.request
+          from pathlib import Path
+
+          layer = os.environ['LAYER']
+          out = Path('condominio_names')
+          out.mkdir(exist_ok=True)
+          ua = {'User-Agent':'AMC-JardimAmerica-CondominioNames/1.0'}
+
+          def post_json(url, params, tries=5, timeout=180):
+              data = urllib.parse.urlencode(params).encode('utf-8')
+              last = None
+              for i in range(tries):
+                  try:
+                      req = urllib.request.Request(url, data=data, headers=ua, method='POST')
+                      with urllib.request.urlopen(req, timeout=timeout) as r:
+                          obj = json.loads(r.read())
+                      if isinstance(obj, dict) and obj.get('error'):
+                          raise RuntimeError(obj['error'])
+                      return obj
+                  except Exception as e:
+                      last = e
+                      time.sleep(2*(i+1))
+              raise RuntimeError(last)
+
+          meta_req = urllib.request.Request(layer + '?f=pjson', headers=ua)
+          with urllib.request.urlopen(meta_req, timeout=120) as r:
+              meta = json.loads(r.read())
+          (out/'layer0_metadata.json').write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding='utf-8')
+
+          where = "in_cond = 1 OR (nm_cond IS NOT NULL AND nm_cond <> '')"
+          params = {
+              'where': where,
+              'outFields': 'OBJECTID,id,ci,nm_lot,nm_imovel,in_cond,nm_cond,id_qdr',
+              'returnGeometry':'false',
+              'orderByFields':'OBJECTID ASC',
+              'f':'json'
+          }
+          obj = post_json(layer + '/query', params)
+          feats = obj.get('features', [])
+          (out/'official_condominio_names.json').write_text(json.dumps(feats, ensure_ascii=False, indent=2), encoding='utf-8')
+          manifest = {
+              'source': layer,
+              'where': where,
+              'features': len(feats),
+              'exceededTransferLimit': obj.get('exceededTransferLimit'),
+              'generated_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+          }
+          (out/'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
+          print(json.dumps(manifest, ensure_ascii=False, indent=2))
+          PY
+
+      - name: Upload official condominium names
+        uses: actions/upload-artifact@v4
+        with:
+          name: official-condominio-names
+          path: condominio_names/
+          if-no-files-found: error
