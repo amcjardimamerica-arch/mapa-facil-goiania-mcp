@@ -1,0 +1,4469 @@
+[
+  {
+    "servico": "MapaServer/Feature_Base_202406291035",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Divisas de Lote",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Área Pública",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Número Predial Oficial",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Setor Cadastral",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Segmento de Logradouro",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Logradouro",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Cadastro Atividade Econômica",
+        "type": null
+      },
+      {
+        "id": 10,
+        "name": "Logradouro por Bairro",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Feature_Base",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Divisas de Lote",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Cadastro Imobiário",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Área Pública",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Número Predial Oficial",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Setor Cadastral",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Segmento de Logradouro",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Logradouro",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Cadastro Atividade Econômica",
+        "type": null
+      },
+      {
+        "id": 10,
+        "name": "Logradouro por Bairro",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Feature_BaseTeste",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Divisas de Lote",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Cadastro Imobiário",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Área Pública",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Número Predial Oficial",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Setor Cadastral",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Segmento de Logradouro",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Logradouro",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Cadastro Atividade Econômica",
+        "type": null
+      },
+      {
+        "id": 10,
+        "name": "Logradouro por Bairro",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Acessibilidade",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "EDUCAÇÃO",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Estabelecimentos Municipais de Educação - fonte: SIGGO",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Estabelecimentos de Educação - fonte: SIGGO",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Escolas Públicas - fonte: SIEG",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Estabelecimentos de Educação - fontes: CAE e SIGGO",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Creches e Berçários - 8511200",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Alfabetização e Pré-escola - 8512100",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Ensino Fundamental - 8513900",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Ensino Médio - 8520100",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Ensino Superior - 8531700",
+        "type": null
+      },
+      {
+        "id": 10,
+        "name": "SAÚDE",
+        "type": null
+      },
+      {
+        "id": 11,
+        "name": "Estabelecimentos Municipais de Saúde - SIGGO",
+        "type": null
+      },
+      {
+        "id": 12,
+        "name": "Estabelecimentos de Saúde - fontes: CAE e SIGGO",
+        "type": null
+      },
+      {
+        "id": 13,
+        "name": "Atividades de Atendimento Hospitalar - 8610101",
+        "type": null
+      },
+      {
+        "id": 14,
+        "name": "Atividades de Prontosocorro e Urgências - 8610102",
+        "type": null
+      },
+      {
+        "id": 15,
+        "name": "Atividade Medica Ambulatorial - 8630501",
+        "type": null
+      },
+      {
+        "id": 16,
+        "name": "Servico de Dialise e Nefrologia - 8640203",
+        "type": null
+      },
+      {
+        "id": 17,
+        "name": "Servicos de Quimioterapia - 8640210",
+        "type": null
+      },
+      {
+        "id": 18,
+        "name": "Servicos de Radioterapia - 8640211",
+        "type": null
+      },
+      {
+        "id": 19,
+        "name": "Atividades de Assistencia a Deficientes Físicos com Internação - 8711503",
+        "type": null
+      },
+      {
+        "id": 20,
+        "name": "COMÉRCIO",
+        "type": null
+      },
+      {
+        "id": 21,
+        "name": "Estabelecimentos Comerciais - fontes: CAE e SIGGO",
+        "type": null
+      },
+      {
+        "id": 22,
+        "name": "Shopping Center",
+        "type": null
+      },
+      {
+        "id": 23,
+        "name": "Hipermercado - 4711301",
+        "type": null
+      },
+      {
+        "id": 24,
+        "name": "Supermercado - 4711302",
+        "type": null
+      },
+      {
+        "id": 25,
+        "name": "Lojas de Departamentos e Magazines - 4713001",
+        "type": null
+      },
+      {
+        "id": 26,
+        "name": "FINANÇAS",
+        "type": null
+      },
+      {
+        "id": 27,
+        "name": "Sedes ou Agências Bancárias - fontes: CAE e SIGGO",
+        "type": null
+      },
+      {
+        "id": 28,
+        "name": "Bancos Comerciais - 6421200",
+        "type": null
+      },
+      {
+        "id": 29,
+        "name": "Bancos Multiplos - 6422100",
+        "type": null
+      },
+      {
+        "id": 30,
+        "name": "Caixas Economicas - 6423900",
+        "type": null
+      },
+      {
+        "id": 31,
+        "name": "OUTROS",
+        "type": null
+      },
+      {
+        "id": 32,
+        "name": "Centrais de Atendimento Integrado - fonte: SEGPLAN",
+        "type": null
+      },
+      {
+        "id": 33,
+        "name": "Vapt Vupt",
+        "type": null
+      },
+      {
+        "id": 34,
+        "name": "Outros Estabelecimentos - fontes: CAE e SIGGO",
+        "type": null
+      },
+      {
+        "id": 35,
+        "name": "Agência de Correios - 5310501",
+        "type": null
+      },
+      {
+        "id": 36,
+        "name": "Agencias de Correios Franqueadas - 5310502",
+        "type": null
+      },
+      {
+        "id": 37,
+        "name": "Casas Lotericas - 8299706",
+        "type": null
+      },
+      {
+        "id": 38,
+        "name": "TRANSPORTE",
+        "type": null
+      },
+      {
+        "id": 39,
+        "name": "Transporte Público - fonte: CMTC",
+        "type": null
+      },
+      {
+        "id": 40,
+        "name": "Terminais de Ônibus",
+        "type": null
+      },
+      {
+        "id": 41,
+        "name": "Plataformas e Pontos de Ônibus",
+        "type": null
+      },
+      {
+        "id": 42,
+        "name": "Linhas de Ônibus",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Basico3",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 184,
+        "name": "Escala 1:1000",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Rótulos",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Nome de Bairro",
+        "type": null
+      },
+      {
+        "id": 51,
+        "name": "bai_016",
+        "type": null
+      },
+      {
+        "id": 477,
+        "name": "bai_004",
+        "type": null
+      },
+      {
+        "id": 478,
+        "name": "Nome de Logradouro",
+        "type": null
+      },
+      {
+        "id": 181,
+        "name": "seg_256",
+        "type": null
+      },
+      {
+        "id": 182,
+        "name": "seg_064",
+        "type": null
+      },
+      {
+        "id": 183,
+        "name": "seg_016",
+        "type": null
+      },
+      {
+        "id": 192,
+        "name": "seg_004",
+        "type": null
+      },
+      {
+        "id": 185,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 186,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 187,
+        "name": "seg_096",
+        "type": null
+      },
+      {
+        "id": 188,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 325,
+        "name": "seg_032",
+        "type": null
+      },
+      {
+        "id": 326,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 327,
+        "name": "seg_012",
+        "type": null
+      },
+      {
+        "id": 193,
+        "name": "seg_008",
+        "type": null
+      },
+      {
+        "id": 241,
+        "name": "seg_006",
+        "type": null
+      },
+      {
+        "id": 194,
+        "name": "seg_002",
+        "type": null
+      },
+      {
+        "id": 195,
+        "name": "Nome de Quadra",
+        "type": null
+      },
+      {
+        "id": 33,
+        "name": "qdr_016",
+        "type": null
+      },
+      {
+        "id": 34,
+        "name": "qdr_004",
+        "type": null
+      },
+      {
+        "id": 35,
+        "name": "qdr_001",
+        "type": null
+      },
+      {
+        "id": 196,
+        "name": "Nome de Lote",
+        "type": null
+      },
+      {
+        "id": 40,
+        "name": "lot_004",
+        "type": null
+      },
+      {
+        "id": 41,
+        "name": "lot_001",
+        "type": null
+      },
+      {
+        "id": 310,
+        "name": "lot_002",
+        "type": null
+      },
+      {
+        "id": 311,
+        "name": "Divisas de Lote",
+        "type": null
+      },
+      {
+        "id": 312,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 313,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 314,
+        "name": "Escala 1:2.000",
+        "type": null
+      },
+      {
+        "id": 315,
+        "name": "Rótulos",
+        "type": null
+      },
+      {
+        "id": 203,
+        "name": "Nome de Bairro",
+        "type": null
+      },
+      {
+        "id": 237,
+        "name": "bai_016",
+        "type": null
+      },
+      {
+        "id": 238,
+        "name": "bai_004",
+        "type": null
+      },
+      {
+        "id": 239,
+        "name": "bai_048",
+        "type": null
+      },
+      {
+        "id": 240,
+        "name": "Nome de Logradouro",
+        "type": null
+      },
+      {
+        "id": 242,
+        "name": "seg_256",
+        "type": null
+      },
+      {
+        "id": 243,
+        "name": "seg_064",
+        "type": null
+      },
+      {
+        "id": 246,
+        "name": "seg_016",
+        "type": null
+      },
+      {
+        "id": 256,
+        "name": "seg_004",
+        "type": null
+      },
+      {
+        "id": 244,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 245,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 257,
+        "name": "seg_096",
+        "type": null
+      },
+      {
+        "id": 258,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 250,
+        "name": "seg_032",
+        "type": null
+      },
+      {
+        "id": 262,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 263,
+        "name": "seg_012",
+        "type": null
+      },
+      {
+        "id": 253,
+        "name": "seg_008",
+        "type": null
+      },
+      {
+        "id": 254,
+        "name": "seg_006",
+        "type": null
+      },
+      {
+        "id": 289,
+        "name": "seg_002",
+        "type": null
+      },
+      {
+        "id": 255,
+        "name": "Nome de Quadra",
+        "type": null
+      },
+      {
+        "id": 247,
+        "name": "qdr_016",
+        "type": null
+      },
+      {
+        "id": 248,
+        "name": "qdr_004",
+        "type": null
+      },
+      {
+        "id": 249,
+        "name": "qdr_001",
+        "type": null
+      },
+      {
+        "id": 259,
+        "name": "qdr_008",
+        "type": null
+      },
+      {
+        "id": 260,
+        "name": "qdr_002",
+        "type": null
+      },
+      {
+        "id": 261,
+        "name": "Nome de Lote",
+        "type": null
+      },
+      {
+        "id": 251,
+        "name": "lot_004",
+        "type": null
+      },
+      {
+        "id": 252,
+        "name": "lot_001",
+        "type": null
+      },
+      {
+        "id": 264,
+        "name": "lot_002",
+        "type": null
+      },
+      {
+        "id": 265,
+        "name": "Divisas de Lote",
+        "type": null
+      },
+      {
+        "id": 266,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 267,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 268,
+        "name": "Escala 1:4.000",
+        "type": null
+      },
+      {
+        "id": 269,
+        "name": "Rótulos",
+        "type": null
+      },
+      {
+        "id": 270,
+        "name": "Nome de Bairro",
+        "type": null
+      },
+      {
+        "id": 45,
+        "name": "bai_016",
+        "type": null
+      },
+      {
+        "id": 46,
+        "name": "bai_004",
+        "type": null
+      },
+      {
+        "id": 271,
+        "name": "Nome de Logradouro",
+        "type": null
+      },
+      {
+        "id": 230,
+        "name": "seg_256",
+        "type": null
+      },
+      {
+        "id": 231,
+        "name": "seg_064",
+        "type": null
+      },
+      {
+        "id": 232,
+        "name": "seg_016",
+        "type": null
+      },
+      {
+        "id": 233,
+        "name": "seg_004",
+        "type": null
+      },
+      {
+        "id": 234,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 235,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 272,
+        "name": "seg_096",
+        "type": null
+      },
+      {
+        "id": 273,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 274,
+        "name": "seg_032",
+        "type": null
+      },
+      {
+        "id": 275,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 276,
+        "name": "seg_012",
+        "type": null
+      },
+      {
+        "id": 277,
+        "name": "seg_008",
+        "type": null
+      },
+      {
+        "id": 278,
+        "name": "seg_006",
+        "type": null
+      },
+      {
+        "id": 279,
+        "name": "seg_002",
+        "type": null
+      },
+      {
+        "id": 280,
+        "name": "Nome de Quadra",
+        "type": null
+      },
+      {
+        "id": 25,
+        "name": "qdr_016",
+        "type": null
+      },
+      {
+        "id": 26,
+        "name": "qdr_004",
+        "type": null
+      },
+      {
+        "id": 27,
+        "name": "qdr_001",
+        "type": null
+      },
+      {
+        "id": 281,
+        "name": "Nome de Lote",
+        "type": null
+      },
+      {
+        "id": 37,
+        "name": "lot_004",
+        "type": null
+      },
+      {
+        "id": 38,
+        "name": "lot_001",
+        "type": null
+      },
+      {
+        "id": 282,
+        "name": "lot_002",
+        "type": null
+      },
+      {
+        "id": 283,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 284,
+        "name": "Divisas de Lote",
+        "type": null
+      },
+      {
+        "id": 285,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 286,
+        "name": "Escala 1:6.000",
+        "type": null
+      },
+      {
+        "id": 287,
+        "name": "Rótulos",
+        "type": null
+      },
+      {
+        "id": 288,
+        "name": "Nome de Bairro",
+        "type": null
+      },
+      {
+        "id": 301,
+        "name": "bai_016",
+        "type": null
+      },
+      {
+        "id": 209,
+        "name": "bai_004",
+        "type": null
+      },
+      {
+        "id": 290,
+        "name": "bai_048",
+        "type": null
+      },
+      {
+        "id": 291,
+        "name": "Nome de Logradouro",
+        "type": null
+      },
+      {
+        "id": 223,
+        "name": "seg_256",
+        "type": null
+      },
+      {
+        "id": 224,
+        "name": "seg_064",
+        "type": null
+      },
+      {
+        "id": 225,
+        "name": "seg_016",
+        "type": null
+      },
+      {
+        "id": 226,
+        "name": "seg_004",
+        "type": null
+      },
+      {
+        "id": 227,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 228,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 292,
+        "name": "seg_096",
+        "type": null
+      },
+      {
+        "id": 293,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 294,
+        "name": "seg_032",
+        "type": null
+      },
+      {
+        "id": 295,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 296,
+        "name": "seg_012",
+        "type": null
+      },
+      {
+        "id": 297,
+        "name": "seg_008",
+        "type": null
+      },
+      {
+        "id": 298,
+        "name": "seg_006",
+        "type": null
+      },
+      {
+        "id": 299,
+        "name": "seg_002",
+        "type": null
+      },
+      {
+        "id": 300,
+        "name": "Nome de Quadra",
+        "type": null
+      },
+      {
+        "id": 211,
+        "name": "qdr_016",
+        "type": null
+      },
+      {
+        "id": 302,
+        "name": "qdr_004",
+        "type": null
+      },
+      {
+        "id": 213,
+        "name": "qdr_001",
+        "type": null
+      },
+      {
+        "id": 335,
+        "name": "qdr_008",
+        "type": null
+      },
+      {
+        "id": 303,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 304,
+        "name": "Divisas de Lote",
+        "type": null
+      },
+      {
+        "id": 305,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 306,
+        "name": "Escala 1:8.000",
+        "type": null
+      },
+      {
+        "id": 307,
+        "name": "Rótulos",
+        "type": null
+      },
+      {
+        "id": 308,
+        "name": "Nome de Bairro",
+        "type": null
+      },
+      {
+        "id": 204,
+        "name": "bai_016",
+        "type": null
+      },
+      {
+        "id": 205,
+        "name": "bai_004",
+        "type": null
+      },
+      {
+        "id": 206,
+        "name": "bai_048",
+        "type": null
+      },
+      {
+        "id": 309,
+        "name": "Nome de Logradouro",
+        "type": null
+      },
+      {
+        "id": 197,
+        "name": "seg_256",
+        "type": null
+      },
+      {
+        "id": 198,
+        "name": "seg_064",
+        "type": null
+      },
+      {
+        "id": 199,
+        "name": "seg_016",
+        "type": null
+      },
+      {
+        "id": 200,
+        "name": "seg_004",
+        "type": null
+      },
+      {
+        "id": 201,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 202,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 316,
+        "name": "seg_096",
+        "type": null
+      },
+      {
+        "id": 317,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 318,
+        "name": "seg_032",
+        "type": null
+      },
+      {
+        "id": 319,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 320,
+        "name": "seg_012",
+        "type": null
+      },
+      {
+        "id": 321,
+        "name": "seg_008",
+        "type": null
+      },
+      {
+        "id": 322,
+        "name": "seg_006",
+        "type": null
+      },
+      {
+        "id": 323,
+        "name": "seg_002",
+        "type": null
+      },
+      {
+        "id": 324,
+        "name": "Nome de Quadra",
+        "type": null
+      },
+      {
+        "id": 189,
+        "name": "qdr_016",
+        "type": null
+      },
+      {
+        "id": 190,
+        "name": "qdr_004",
+        "type": null
+      },
+      {
+        "id": 191,
+        "name": "qdr_001",
+        "type": null
+      },
+      {
+        "id": 328,
+        "name": "qdr_008",
+        "type": null
+      },
+      {
+        "id": 329,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 330,
+        "name": "Divisas de Lote",
+        "type": null
+      },
+      {
+        "id": 331,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 332,
+        "name": "Escala 1:12.000",
+        "type": null
+      },
+      {
+        "id": 333,
+        "name": "Rótulos",
+        "type": null
+      },
+      {
+        "id": 334,
+        "name": "Nome de Bairro",
+        "type": null
+      },
+      {
+        "id": 338,
+        "name": "bai_016",
+        "type": null
+      },
+      {
+        "id": 168,
+        "name": "bai_004",
+        "type": null
+      },
+      {
+        "id": 336,
+        "name": "bai_048",
+        "type": null
+      },
+      {
+        "id": 337,
+        "name": "Nome de Logradouro",
+        "type": null
+      },
+      {
+        "id": 160,
+        "name": "seg_256",
+        "type": null
+      },
+      {
+        "id": 161,
+        "name": "seg_064",
+        "type": null
+      },
+      {
+        "id": 348,
+        "name": "seg_016",
+        "type": null
+      },
+      {
+        "id": 163,
+        "name": "seg_004",
+        "type": null
+      },
+      {
+        "id": 164,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 165,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 339,
+        "name": "seg_096",
+        "type": null
+      },
+      {
+        "id": 340,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 341,
+        "name": "seg_032",
+        "type": null
+      },
+      {
+        "id": 342,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 343,
+        "name": "seg_012",
+        "type": null
+      },
+      {
+        "id": 344,
+        "name": "seg_008",
+        "type": null
+      },
+      {
+        "id": 345,
+        "name": "seg_006",
+        "type": null
+      },
+      {
+        "id": 346,
+        "name": "seg_002",
+        "type": null
+      },
+      {
+        "id": 347,
+        "name": "Nome de Quadra",
+        "type": null
+      },
+      {
+        "id": 359,
+        "name": "qdr_016",
+        "type": null
+      },
+      {
+        "id": 171,
+        "name": "qdr_004",
+        "type": null
+      },
+      {
+        "id": 172,
+        "name": "qdr_001",
+        "type": null
+      },
+      {
+        "id": 349,
+        "name": "qdr_008",
+        "type": null
+      },
+      {
+        "id": 350,
+        "name": "qdr_002",
+        "type": null
+      },
+      {
+        "id": 351,
+        "name": "qdr_012",
+        "type": null
+      },
+      {
+        "id": 352,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 353,
+        "name": "Divisas de Lote",
+        "type": null
+      },
+      {
+        "id": 354,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 355,
+        "name": "Escala 1:16.000",
+        "type": null
+      },
+      {
+        "id": 356,
+        "name": "Rótulos",
+        "type": null
+      },
+      {
+        "id": 357,
+        "name": "Nome de Bairro",
+        "type": null
+      },
+      {
+        "id": 48,
+        "name": "bai_016",
+        "type": null
+      },
+      {
+        "id": 49,
+        "name": "bai_004",
+        "type": null
+      },
+      {
+        "id": 358,
+        "name": "Nome de Logradouro",
+        "type": null
+      },
+      {
+        "id": 425,
+        "name": "seg_256",
+        "type": null
+      },
+      {
+        "id": 154,
+        "name": "seg_064",
+        "type": null
+      },
+      {
+        "id": 155,
+        "name": "seg_016",
+        "type": null
+      },
+      {
+        "id": 156,
+        "name": "seg_004",
+        "type": null
+      },
+      {
+        "id": 157,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 158,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 360,
+        "name": "seg_096",
+        "type": null
+      },
+      {
+        "id": 361,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 362,
+        "name": "seg_032",
+        "type": null
+      },
+      {
+        "id": 363,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 364,
+        "name": "seg_012",
+        "type": null
+      },
+      {
+        "id": 365,
+        "name": "seg_008",
+        "type": null
+      },
+      {
+        "id": 366,
+        "name": "seg_006",
+        "type": null
+      },
+      {
+        "id": 367,
+        "name": "seg_002",
+        "type": null
+      },
+      {
+        "id": 368,
+        "name": "Nome de Quadra",
+        "type": null
+      },
+      {
+        "id": 29,
+        "name": "qdr_016",
+        "type": null
+      },
+      {
+        "id": 30,
+        "name": "qdr_004",
+        "type": null
+      },
+      {
+        "id": 31,
+        "name": "qdr_001",
+        "type": null
+      },
+      {
+        "id": 369,
+        "name": "qdr_008",
+        "type": null
+      },
+      {
+        "id": 370,
+        "name": "qdr_002",
+        "type": null
+      },
+      {
+        "id": 371,
+        "name": "qdr_012",
+        "type": null
+      },
+      {
+        "id": 372,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 373,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 374,
+        "name": "Escala 1:24.000",
+        "type": null
+      },
+      {
+        "id": 375,
+        "name": "Rótulos",
+        "type": null
+      },
+      {
+        "id": 376,
+        "name": "Nome de Bairro",
+        "type": null
+      },
+      {
+        "id": 142,
+        "name": "bai_016",
+        "type": null
+      },
+      {
+        "id": 143,
+        "name": "bai_004",
+        "type": null
+      },
+      {
+        "id": 377,
+        "name": "bai_048",
+        "type": null
+      },
+      {
+        "id": 378,
+        "name": "Nome de Logradouro",
+        "type": null
+      },
+      {
+        "id": 145,
+        "name": "qdr_016",
+        "type": null
+      },
+      {
+        "id": 146,
+        "name": "qdr_004",
+        "type": null
+      },
+      {
+        "id": 147,
+        "name": "qdr_001",
+        "type": null
+      },
+      {
+        "id": 379,
+        "name": "seg_004",
+        "type": null
+      },
+      {
+        "id": 380,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 381,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 382,
+        "name": "seg_096",
+        "type": null
+      },
+      {
+        "id": 383,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 384,
+        "name": "seg_032",
+        "type": null
+      },
+      {
+        "id": 385,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 386,
+        "name": "seg_012",
+        "type": null
+      },
+      {
+        "id": 387,
+        "name": "seg_008",
+        "type": null
+      },
+      {
+        "id": 388,
+        "name": "seg_006",
+        "type": null
+      },
+      {
+        "id": 389,
+        "name": "seg_002",
+        "type": null
+      },
+      {
+        "id": 390,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 391,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 392,
+        "name": "Escala 1:32.000",
+        "type": null
+      },
+      {
+        "id": 393,
+        "name": "Rótulos",
+        "type": null
+      },
+      {
+        "id": 394,
+        "name": "SIGGOPROD.SIGGO.BairroAnno32",
+        "type": null
+      },
+      {
+        "id": 138,
+        "name": "bai_016",
+        "type": null
+      },
+      {
+        "id": 139,
+        "name": "bai_004",
+        "type": null
+      },
+      {
+        "id": 140,
+        "name": "bai_048",
+        "type": null
+      },
+      {
+        "id": 395,
+        "name": "SIGGOPROD.SIGGO.LogAnno32",
+        "type": null
+      },
+      {
+        "id": 132,
+        "name": "seg_256",
+        "type": null
+      },
+      {
+        "id": 133,
+        "name": "seg_064",
+        "type": null
+      },
+      {
+        "id": 134,
+        "name": "seg_016",
+        "type": null
+      },
+      {
+        "id": 135,
+        "name": "seg_004",
+        "type": null
+      },
+      {
+        "id": 136,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 396,
+        "name": "seg_128",
+        "type": null
+      },
+      {
+        "id": 397,
+        "name": "seg_096",
+        "type": null
+      },
+      {
+        "id": 398,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 399,
+        "name": "seg_032",
+        "type": null
+      },
+      {
+        "id": 400,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 401,
+        "name": "seg_012",
+        "type": null
+      },
+      {
+        "id": 402,
+        "name": "seg_008",
+        "type": null
+      },
+      {
+        "id": 403,
+        "name": "seg_006",
+        "type": null
+      },
+      {
+        "id": 404,
+        "name": "seg_002",
+        "type": null
+      },
+      {
+        "id": 405,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 406,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 407,
+        "name": "Escala 1:48.000",
+        "type": null
+      },
+      {
+        "id": 408,
+        "name": "Rótulos",
+        "type": null
+      },
+      {
+        "id": 409,
+        "name": "SIGGOPROD.SIGGO.BairroAnno48",
+        "type": null
+      },
+      {
+        "id": 114,
+        "name": "bai_016",
+        "type": null
+      },
+      {
+        "id": 115,
+        "name": "bai_004",
+        "type": null
+      },
+      {
+        "id": 116,
+        "name": "bai_048",
+        "type": null
+      },
+      {
+        "id": 410,
+        "name": "SIGGOPROD.SIGGO.LogAnno48",
+        "type": null
+      },
+      {
+        "id": 108,
+        "name": "seg_256",
+        "type": null
+      },
+      {
+        "id": 109,
+        "name": "seg_064",
+        "type": null
+      },
+      {
+        "id": 110,
+        "name": "seg_016",
+        "type": null
+      },
+      {
+        "id": 111,
+        "name": "seg_004",
+        "type": null
+      },
+      {
+        "id": 112,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 411,
+        "name": "seg_128",
+        "type": null
+      },
+      {
+        "id": 412,
+        "name": "seg_096",
+        "type": null
+      },
+      {
+        "id": 413,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 414,
+        "name": "seg_032",
+        "type": null
+      },
+      {
+        "id": 415,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 416,
+        "name": "seg_012",
+        "type": null
+      },
+      {
+        "id": 417,
+        "name": "seg_008",
+        "type": null
+      },
+      {
+        "id": 418,
+        "name": "seg_006",
+        "type": null
+      },
+      {
+        "id": 419,
+        "name": "seg_002",
+        "type": null
+      },
+      {
+        "id": 420,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 421,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 422,
+        "name": "Escala 1:64.000",
+        "type": null
+      },
+      {
+        "id": 423,
+        "name": "Rótulos",
+        "type": null
+      },
+      {
+        "id": 424,
+        "name": "SIGGOPROD.SIGGO.LogAnno64",
+        "type": null
+      },
+      {
+        "id": 103,
+        "name": "seg_256",
+        "type": null
+      },
+      {
+        "id": 458,
+        "name": "seg_064",
+        "type": null
+      },
+      {
+        "id": 105,
+        "name": "seg_016",
+        "type": null
+      },
+      {
+        "id": 106,
+        "name": "seg_004",
+        "type": null
+      },
+      {
+        "id": 426,
+        "name": "seg_192",
+        "type": null
+      },
+      {
+        "id": 427,
+        "name": "seg_128",
+        "type": null
+      },
+      {
+        "id": 428,
+        "name": "seg_096",
+        "type": null
+      },
+      {
+        "id": 429,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 430,
+        "name": "seg_032",
+        "type": null
+      },
+      {
+        "id": 431,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 432,
+        "name": "seg_012",
+        "type": null
+      },
+      {
+        "id": 433,
+        "name": "seg_008",
+        "type": null
+      },
+      {
+        "id": 434,
+        "name": "seg_006",
+        "type": null
+      },
+      {
+        "id": 435,
+        "name": "seg_002",
+        "type": null
+      },
+      {
+        "id": 436,
+        "name": "Nome de Bairro",
+        "type": null
+      },
+      {
+        "id": 43,
+        "name": "Padrão",
+        "type": null
+      },
+      {
+        "id": 437,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 438,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 439,
+        "name": "Escala 1:96.000",
+        "type": null
+      },
+      {
+        "id": 440,
+        "name": "Rótulos",
+        "type": null
+      },
+      {
+        "id": 441,
+        "name": "SIGGOPROD.SIGGO.BairroAnno96",
+        "type": null
+      },
+      {
+        "id": 94,
+        "name": "Padrão",
+        "type": null
+      },
+      {
+        "id": 95,
+        "name": "64000",
+        "type": null
+      },
+      {
+        "id": 442,
+        "name": "SIGGOPROD.SIGGO.LogAnno96",
+        "type": null
+      },
+      {
+        "id": 89,
+        "name": "seg_256",
+        "type": null
+      },
+      {
+        "id": 90,
+        "name": "seg_064",
+        "type": null
+      },
+      {
+        "id": 91,
+        "name": "seg_016",
+        "type": null
+      },
+      {
+        "id": 92,
+        "name": "seg_004",
+        "type": null
+      },
+      {
+        "id": 443,
+        "name": "seg_192",
+        "type": null
+      },
+      {
+        "id": 444,
+        "name": "seg_128",
+        "type": null
+      },
+      {
+        "id": 445,
+        "name": "seg_096",
+        "type": null
+      },
+      {
+        "id": 446,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 447,
+        "name": "seg_032",
+        "type": null
+      },
+      {
+        "id": 448,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 449,
+        "name": "seg_012",
+        "type": null
+      },
+      {
+        "id": 450,
+        "name": "seg_008",
+        "type": null
+      },
+      {
+        "id": 451,
+        "name": "seg_006",
+        "type": null
+      },
+      {
+        "id": 452,
+        "name": "seg_002",
+        "type": null
+      },
+      {
+        "id": 453,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 454,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 455,
+        "name": "Escala 1:128.000",
+        "type": null
+      },
+      {
+        "id": 456,
+        "name": "Rótulos",
+        "type": null
+      },
+      {
+        "id": 457,
+        "name": "SIGGOPROD.SIGGO.BairroAnno128",
+        "type": null
+      },
+      {
+        "id": 459,
+        "name": "Padrão",
+        "type": null
+      },
+      {
+        "id": 461,
+        "name": "64000",
+        "type": null
+      },
+      {
+        "id": 460,
+        "name": "SIGGOPROD.SIGGO.LogAnno128",
+        "type": null
+      },
+      {
+        "id": 0,
+        "name": "seg_256",
+        "type": null
+      },
+      {
+        "id": 74,
+        "name": "seg_064",
+        "type": null
+      },
+      {
+        "id": 75,
+        "name": "seg_016",
+        "type": null
+      },
+      {
+        "id": 76,
+        "name": "seg_004",
+        "type": null
+      },
+      {
+        "id": 462,
+        "name": "seg_192",
+        "type": null
+      },
+      {
+        "id": 463,
+        "name": "seg_128",
+        "type": null
+      },
+      {
+        "id": 464,
+        "name": "seg_096",
+        "type": null
+      },
+      {
+        "id": 465,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 466,
+        "name": "seg_032",
+        "type": null
+      },
+      {
+        "id": 467,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 468,
+        "name": "seg_012",
+        "type": null
+      },
+      {
+        "id": 469,
+        "name": "seg_008",
+        "type": null
+      },
+      {
+        "id": 470,
+        "name": "seg_006",
+        "type": null
+      },
+      {
+        "id": 471,
+        "name": "seg_002",
+        "type": null
+      },
+      {
+        "id": 472,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 473,
+        "name": "Escala 1:192.000",
+        "type": null
+      },
+      {
+        "id": 474,
+        "name": "Rótulos",
+        "type": null
+      },
+      {
+        "id": 475,
+        "name": "SIGGOPROD.SIGGO.BairroAnno192",
+        "type": null
+      },
+      {
+        "id": 57,
+        "name": "bai_256",
+        "type": null
+      },
+      {
+        "id": 476,
+        "name": "SIGGOPROD.SIGGO.LogAnno192",
+        "type": null
+      },
+      {
+        "id": 52,
+        "name": "seg_256",
+        "type": null
+      },
+      {
+        "id": 53,
+        "name": "seg_064",
+        "type": null
+      },
+      {
+        "id": 54,
+        "name": "seg_016",
+        "type": null
+      },
+      {
+        "id": 55,
+        "name": "seg_004",
+        "type": null
+      },
+      {
+        "id": 479,
+        "name": "seg_192",
+        "type": null
+      },
+      {
+        "id": 480,
+        "name": "seg_128",
+        "type": null
+      },
+      {
+        "id": 481,
+        "name": "seg_096",
+        "type": null
+      },
+      {
+        "id": 482,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 483,
+        "name": "seg_032",
+        "type": null
+      },
+      {
+        "id": 484,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 485,
+        "name": "seg_012",
+        "type": null
+      },
+      {
+        "id": 486,
+        "name": "seg_008",
+        "type": null
+      },
+      {
+        "id": 487,
+        "name": "seg_006",
+        "type": null
+      },
+      {
+        "id": 488,
+        "name": "seg_002",
+        "type": null
+      },
+      {
+        "id": 489,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 490,
+        "name": "Escala 1:256.000",
+        "type": null
+      },
+      {
+        "id": 491,
+        "name": "SIGGOPROD.SIGGO.LogAnno256",
+        "type": null
+      },
+      {
+        "id": 59,
+        "name": "seg_256",
+        "type": null
+      },
+      {
+        "id": 60,
+        "name": "seg_064",
+        "type": null
+      },
+      {
+        "id": 61,
+        "name": "seg_016",
+        "type": null
+      },
+      {
+        "id": 62,
+        "name": "seg_004",
+        "type": null
+      },
+      {
+        "id": 492,
+        "name": "seg_192",
+        "type": null
+      },
+      {
+        "id": 493,
+        "name": "seg_128",
+        "type": null
+      },
+      {
+        "id": 494,
+        "name": "seg_096",
+        "type": null
+      },
+      {
+        "id": 495,
+        "name": "seg_048",
+        "type": null
+      },
+      {
+        "id": 496,
+        "name": "seg_032",
+        "type": null
+      },
+      {
+        "id": 497,
+        "name": "seg_024",
+        "type": null
+      },
+      {
+        "id": 498,
+        "name": "seg_012",
+        "type": null
+      },
+      {
+        "id": 499,
+        "name": "seg_008",
+        "type": null
+      },
+      {
+        "id": 500,
+        "name": "seg_006",
+        "type": null
+      },
+      {
+        "id": 501,
+        "name": "seg_002",
+        "type": null
+      },
+      {
+        "id": 502,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 503,
+        "name": "Divisas de Município",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_COMURG",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Pontos de Interesse da COMURG",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Divisão da Coleta de Residos Domiciliares Orgânicos ",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Aterro Sanitário",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Circuitos de Coleta de Resíduos Domiciliares Orgânicos",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Circuitos Classificados por Dia",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Circuitos Classificados por Período",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Circuitos Classificados por Dia e Período",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Circuitos Classificados por Divisão",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Circuitos de Coleta Orgânica monocromatico",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Documentacao",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Lote Documentos",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Lote Vistórias",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Bairro Documentos",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Edificios",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Edifício em altura",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "0 - 3",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "4 - 10",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "11 - 20",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "21 - 30",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "+30",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": " Planta de Valores",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": " Planta de Valores",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Energia",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Iluminação Pública",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Barramento Poste",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Tipo de Lâmpada",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Potência da Lâmpada",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Poste",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Subestação de Energia",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Rede Eletrica Abastecimento",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Rede Eletrica Primária",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Rede Eletrica Secundária",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_ExpansaoUrbana",
+    "capabilities": null,
+    "maxRecordCount": null,
+    "spatialReference": null,
+    "layers": []
+  },
+  {
+    "servico": "MapaServer/Mapa_Fiscalizacao",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Divisas de Subzona Fiscal",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Legislacao",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Lei Complemantar 181/2008",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Lei Complementar 228/2012",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Limites",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Divisas de Município",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Escala 64000",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Escala 256000",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Circunscrição Cartorária",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Divisas de Macrozona",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Divisas de Região Administrativa (7)",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Divisas de Região (12)",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Divisas de Setor Cadastral",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Escala 64000",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Escala 256000",
+        "type": null
+      },
+      {
+        "id": 10,
+        "name": "Zonas Eleitorais",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_MeioAmbiente1",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 2,
+        "name": "Árvores",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_MeioAmbiente_202206301502",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Erosão",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Nascente",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Árvores",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Árvore",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Plantio",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Remoção de Toco",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Declividade Maior que 30%",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Curva de Nível (5 m)",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Hidrografia",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Vegetação",
+        "type": null
+      },
+      {
+        "id": 10,
+        "name": "Área de Proteção Permanente",
+        "type": null
+      },
+      {
+        "id": 11,
+        "name": "Parque",
+        "type": null
+      },
+      {
+        "id": 12,
+        "name": "Unidade de Conservação",
+        "type": null
+      },
+      {
+        "id": 13,
+        "name": "Área de Proteção Ambiental",
+        "type": null
+      },
+      {
+        "id": 14,
+        "name": "Risco Geológico",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_MeioAmbiente",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Erosão",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Nascente",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Árvores",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Árvore",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Plantio",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Remoção de Toco",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Declividade Maior que 30%",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Curva de Nível (5 m)",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Hidrografia",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Vegetação",
+        "type": null
+      },
+      {
+        "id": 10,
+        "name": "Área de Proteção Permanente",
+        "type": null
+      },
+      {
+        "id": 11,
+        "name": "Parque",
+        "type": null
+      },
+      {
+        "id": 12,
+        "name": "Unidade de Conservação",
+        "type": null
+      },
+      {
+        "id": 13,
+        "name": "Área de Proteção Ambiental",
+        "type": null
+      },
+      {
+        "id": 14,
+        "name": "Risco Geológico",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_ModeloEspacial_202401291642",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Est",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Cor",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Declividade acima de 30%",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Vias",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Eixo de Desenvolvimento - ED",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Área Especial de Desenvolvimento Econômico - AEDE",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Área Básica de Desenvolvimento Ecológico-Econômico - ABADEE",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Áreas Adensáveis - AA",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Áreas de Desaceleração de Densidade - ADD",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Áreas de Programas Especiais de Interesse Social - AEIS",
+        "type": null
+      },
+      {
+        "id": 10,
+        "name": "Áreas de Ocupação Sustentável - AOS",
+        "type": null
+      },
+      {
+        "id": 11,
+        "name": "Áreas de Patrimonio Cultural -Apac",
+        "type": null
+      },
+      {
+        "id": 12,
+        "name": "Áreas de Restrição Aeroportuária - Ara",
+        "type": null
+      },
+      {
+        "id": 13,
+        "name": "Áreas de Restrição Ambiental Rural - Arar",
+        "type": null
+      },
+      {
+        "id": 14,
+        "name": "Áreas de Restrição Ambiental Urbana - Arau",
+        "type": null
+      },
+      {
+        "id": 15,
+        "name": "Áreas de Restrição Militar - Arm",
+        "type": null
+      },
+      {
+        "id": 16,
+        "name": "Influência das Vias Expressas - Ive",
+        "type": null
+      },
+      {
+        "id": 17,
+        "name": "Macrozoneamento",
+        "type": null
+      },
+      {
+        "id": 18,
+        "name": "Macrozoneamento",
+        "type": null
+      },
+      {
+        "id": 19,
+        "name": "LIMITE DO MUNICÍPIO",
+        "type": null
+      },
+      {
+        "id": 20,
+        "name": "MUNICÍPIOS ENTORNO",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_ModeloEspacial_Desenvolvimento",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Proposta Modelo Espacial",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Corredores - Visão 1",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Corredores Exclusivos",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Corredores Preferenciais",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Corredores Eestratégicos",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Corredores - Visão 2",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Corredores Exclusivos",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Corredor Anhanguera",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Corredor Campus UFG",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Corredor Goiás BRT NS",
+        "type": null
+      },
+      {
+        "id": 10,
+        "name": "Corredor Leste Oeste",
+        "type": null
+      },
+      {
+        "id": 11,
+        "name": "Corredor Mutirão",
+        "type": null
+      },
+      {
+        "id": 12,
+        "name": "Corredor Noroeste",
+        "type": null
+      },
+      {
+        "id": 13,
+        "name": "Corredor Pio XII",
+        "type": null
+      },
+      {
+        "id": 14,
+        "name": "Corredor Santa Maria",
+        "type": null
+      },
+      {
+        "id": 15,
+        "name": "Corredor T-7",
+        "type": null
+      },
+      {
+        "id": 16,
+        "name": "Corredor T-9",
+        "type": null
+      },
+      {
+        "id": 17,
+        "name": "Corredor T-63",
+        "type": null
+      },
+      {
+        "id": 18,
+        "name": "Corredor Av 85",
+        "type": null
+      },
+      {
+        "id": 19,
+        "name": "Corredores Preferenciais",
+        "type": null
+      },
+      {
+        "id": 20,
+        "name": "Corredor Parque Atheneu",
+        "type": null
+      },
+      {
+        "id": 21,
+        "name": "Corredor Castelo Branco",
+        "type": null
+      },
+      {
+        "id": 22,
+        "name": "Corredor Campus Universitário",
+        "type": null
+      },
+      {
+        "id": 23,
+        "name": "Corredor Independência",
+        "type": null
+      },
+      {
+        "id": 24,
+        "name": "Corredor Segunda Radial",
+        "type": null
+      },
+      {
+        "id": 25,
+        "name": "Corredor Rua C-104",
+        "type": null
+      },
+      {
+        "id": 26,
+        "name": "Corredor Av Veneza",
+        "type": null
+      },
+      {
+        "id": 27,
+        "name": "Corredor Av 24 de Outubro",
+        "type": null
+      },
+      {
+        "id": 28,
+        "name": "Corredor Pedro Ludovico",
+        "type": null
+      },
+      {
+        "id": 29,
+        "name": "Corredor Central",
+        "type": null
+      },
+      {
+        "id": 30,
+        "name": "Corredor São Francisco",
+        "type": null
+      },
+      {
+        "id": 31,
+        "name": "Corredor BR-060",
+        "type": null
+      },
+      {
+        "id": 32,
+        "name": "Corredor GO-060",
+        "type": null
+      },
+      {
+        "id": 33,
+        "name": "Corredor GYN-24",
+        "type": null
+      },
+      {
+        "id": 34,
+        "name": "Corredor GO-070",
+        "type": null
+      },
+      {
+        "id": 35,
+        "name": "Corredor Goiás BRT - Extensão",
+        "type": null
+      },
+      {
+        "id": 36,
+        "name": "Corredores Estratégicos",
+        "type": null
+      },
+      {
+        "id": 37,
+        "name": "Corredor Marginal Leste",
+        "type": null
+      },
+      {
+        "id": 38,
+        "name": "Corredor Perimetral Oeste",
+        "type": null
+      },
+      {
+        "id": 39,
+        "name": "Corredor T-8",
+        "type": null
+      },
+      {
+        "id": 40,
+        "name": "Mancha Incluída",
+        "type": null
+      },
+      {
+        "id": 41,
+        "name": "Mancha Excluída",
+        "type": null
+      },
+      {
+        "id": 42,
+        "name": "Mancha Modificada",
+        "type": null
+      },
+      {
+        "id": 43,
+        "name": "Unidades Territoriais",
+        "type": null
+      },
+      {
+        "id": 44,
+        "name": "Área de Patrimônio Cultural (APAC)",
+        "type": null
+      },
+      {
+        "id": 45,
+        "name": "Área do Bem Tombado",
+        "type": null
+      },
+      {
+        "id": 46,
+        "name": "Área de Entorno do Bem Tombado",
+        "type": null
+      },
+      {
+        "id": 47,
+        "name": "Área Adensável (AA)",
+        "type": null
+      },
+      {
+        "id": 48,
+        "name": "Área de Desaceleração de Densidade (ADD)",
+        "type": null
+      },
+      {
+        "id": 49,
+        "name": "Área Especial de Interesse Social III",
+        "type": null
+      },
+      {
+        "id": 50,
+        "name": "Área Especial de Interesse Social III, Pós LC 171/2007",
+        "type": null
+      },
+      {
+        "id": 51,
+        "name": "Macrozona Construída",
+        "type": null
+      },
+      {
+        "id": 52,
+        "name": "Macrozonas Rurais",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_ModeloEspacial",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Plano Diretor 2022",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Corredores",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Declividade acima de 30%",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Vias",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Eixo de Desenvolvimento - ED",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Influência das Vias Expressas - Ive",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Programas Especiais ",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Áreas de Programas Especiais de Interesse Social - AEIS",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Áreas de Programas Especiais de Interesse Urbanístico",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Áreas de Programas Especiais de Interesse Ambiental",
+        "type": null
+      },
+      {
+        "id": 10,
+        "name": "Áreas de Programas Especiais de Interesse Econômico",
+        "type": null
+      },
+      {
+        "id": 11,
+        "name": "Áreas de Restrição Ambiental Rural - Arar",
+        "type": null
+      },
+      {
+        "id": 12,
+        "name": "Área Especial de Desenvolvimento Econômico - AEDE",
+        "type": null
+      },
+      {
+        "id": 13,
+        "name": "Área Básica de Desenvolvimento Ecológico-Econômico - ABADEE",
+        "type": null
+      },
+      {
+        "id": 14,
+        "name": "Area de Proteção Permanente - APP",
+        "type": null
+      },
+      {
+        "id": 15,
+        "name": "Áreas de Recuperação e Conservação Temporárias",
+        "type": null
+      },
+      {
+        "id": 16,
+        "name": "Unidades de Conservação",
+        "type": null
+      },
+      {
+        "id": 17,
+        "name": "UPI's",
+        "type": null
+      },
+      {
+        "id": 18,
+        "name": "UUS's",
+        "type": null
+      },
+      {
+        "id": 19,
+        "name": "Áreas Verdes",
+        "type": null
+      },
+      {
+        "id": 20,
+        "name": "Áreas de Restrição Ambiental Urbana - Arau",
+        "type": null
+      },
+      {
+        "id": 21,
+        "name": "Area de Proteção Permanente - APP",
+        "type": null
+      },
+      {
+        "id": 22,
+        "name": "Áreas de Recuperação e Conservação Temporárias",
+        "type": null
+      },
+      {
+        "id": 23,
+        "name": "Unidades de Conservação",
+        "type": null
+      },
+      {
+        "id": 24,
+        "name": "UPI's",
+        "type": null
+      },
+      {
+        "id": 25,
+        "name": "UUS's",
+        "type": null
+      },
+      {
+        "id": 26,
+        "name": "Áreas Verdes",
+        "type": null
+      },
+      {
+        "id": 27,
+        "name": "Jardim Botânico",
+        "type": null
+      },
+      {
+        "id": 28,
+        "name": "Áreas de Patrimonio Cultural -Apac",
+        "type": null
+      },
+      {
+        "id": 29,
+        "name": "Áreas de Ocupação Sustentável - AOS",
+        "type": null
+      },
+      {
+        "id": 30,
+        "name": "Áreas de Desaceleração de Densidade - ADD",
+        "type": null
+      },
+      {
+        "id": 31,
+        "name": "Áreas Adensáveis - AA",
+        "type": null
+      },
+      {
+        "id": 32,
+        "name": "Outorga Onerosa de Alteração de Uso - OOAU",
+        "type": null
+      },
+      {
+        "id": 33,
+        "name": "Macrozoneamento",
+        "type": null
+      },
+      {
+        "id": 34,
+        "name": "LIMITE DO MUNICÍPIO",
+        "type": null
+      },
+      {
+        "id": 35,
+        "name": "MUNICÍPIOS ENTORNO",
+        "type": null
+      },
+      {
+        "id": 36,
+        "name": "Plano Diretor 2007",
+        "type": null
+      },
+      {
+        "id": 37,
+        "name": "Restrição Aeroportuária",
+        "type": null
+      },
+      {
+        "id": 38,
+        "name": "Área de Aproximação do Aeroporto",
+        "type": null
+      },
+      {
+        "id": 39,
+        "name": "Área de Cone de Ruído do Aeródromo",
+        "type": null
+      },
+      {
+        "id": 40,
+        "name": "Área de Segurança e Proteção Aeroportuária",
+        "type": null
+      },
+      {
+        "id": 41,
+        "name": "Desenvolvimento Econômico",
+        "type": null
+      },
+      {
+        "id": 42,
+        "name": "Unidade de Uso Sustentável",
+        "type": null
+      },
+      {
+        "id": 43,
+        "name": "Área de Influência das Vias Especiais",
+        "type": null
+      },
+      {
+        "id": 44,
+        "name": "Área de Restrição Militar",
+        "type": null
+      },
+      {
+        "id": 45,
+        "name": "Área Adensável",
+        "type": null
+      },
+      {
+        "id": 46,
+        "name": "Área de Desaceleração de Densidade",
+        "type": null
+      },
+      {
+        "id": 47,
+        "name": "Área Especial de Interesse Social III",
+        "type": null
+      },
+      {
+        "id": 48,
+        "name": "Área Especial de Interesse Social III, Pós LC 171/2007",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_OcupacaoIlegal",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Regularização Fundiária (Em Processo)",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Regularização Fundiária (Regularizada)",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Ortofoto2006v2",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Município de Goiânia",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "siggodes.siggo.Ortofoto2006",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Ortofoto2011_D",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 1,
+        "name": "Ortofoto 2006",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Ortofoto 2011",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Ortofoto2011v2",
+    "capabilities": "Map",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 1,
+        "name": "Ortofoto 2006",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Ortofoto 2011",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Ortofoto2016_D",
+    "capabilities": "Map",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Município de Goiânia",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Ortofoto2016",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Município de Goiânia",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Ortofoto2016v2",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Município de Goiânia",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Ortofoto2016v8_D",
+    "capabilities": "Map",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Município de Goiânia",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Ortofoto 2016",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_PatrimonioHistorico",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "PHS (Classificação da Área)",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "PHS (Área Interna Pública)",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "PHS (Imóveis)",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "PHS (Árvores Históricas)",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "PHS (Área Pública Municipal)",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "PHS (Traçado Tombado)",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "PHS (Áreas de Interesse)",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_PontosNotaveis",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Equipamento de Educação Municipal",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Equipamento de Saúde",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Grande Equipamento",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Patrimônio Histórico",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Planos de Zona de Proteção de Aeródromos (PZPA)",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Plano Básico de Zona e Proteção de Aeródromo (PBZPA)",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Pista",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Faixa de Pista",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Superfície de Aproximação",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Superfície de Aproximação Interna",
+        "type": null
+      },
+      {
+        "id": 10,
+        "name": "Superfície de Decolagem",
+        "type": null
+      },
+      {
+        "id": 11,
+        "name": "Superfície de Pouso Interrompido",
+        "type": null
+      },
+      {
+        "id": 12,
+        "name": "Superfície de Transição",
+        "type": null
+      },
+      {
+        "id": 13,
+        "name": "Superfície de Transição Interna",
+        "type": null
+      },
+      {
+        "id": 14,
+        "name": "Superfície Horizontal Interna",
+        "type": null
+      },
+      {
+        "id": 15,
+        "name": "Superfície Horizontal Externa",
+        "type": null
+      },
+      {
+        "id": 16,
+        "name": "Superfície Cônica",
+        "type": null
+      },
+      {
+        "id": 17,
+        "name": "Superfície Proteção Voo Visual Área 1",
+        "type": null
+      },
+      {
+        "id": 18,
+        "name": "Superfície Proteção Voo Visual Área 2",
+        "type": null
+      },
+      {
+        "id": 19,
+        "name": "Superfície Proteção Voo Visual Área 3",
+        "type": null
+      },
+      {
+        "id": 20,
+        "name": "Plano Básico de Zona e Proteção de Heliponto (PBZPH)",
+        "type": null
+      },
+      {
+        "id": 21,
+        "name": "Área de Aproximação",
+        "type": null
+      },
+      {
+        "id": 22,
+        "name": "Área de Decolagem",
+        "type": null
+      },
+      {
+        "id": 23,
+        "name": "Área Toque Fato",
+        "type": null
+      },
+      {
+        "id": 24,
+        "name": "Área de Segurança",
+        "type": null
+      },
+      {
+        "id": 25,
+        "name": "Plano Específico de Zoneamento de Ruído (PEZR)",
+        "type": null
+      },
+      {
+        "id": 26,
+        "name": "AEA-1 (65 - 70 dB)",
+        "type": null
+      },
+      {
+        "id": 27,
+        "name": "AEA-2 (70 - 75 dB)",
+        "type": null
+      },
+      {
+        "id": 28,
+        "name": "AEA-3 (75 - 80 dB)",
+        "type": null
+      },
+      {
+        "id": 29,
+        "name": "AEA-4 (80 - 85 dB)",
+        "type": null
+      },
+      {
+        "id": 30,
+        "name": "AEA-5 (acima de 85 dB)",
+        "type": null
+      },
+      {
+        "id": 31,
+        "name": "Plano de Zona de Proteção de Auxílios à Navegação Aérea (PZPANA)",
+        "type": null
+      },
+      {
+        "id": 32,
+        "name": "NDB GOI",
+        "type": null
+      },
+      {
+        "id": 33,
+        "name": "D-VOR GNV",
+        "type": null
+      },
+      {
+        "id": 34,
+        "name": "PAPI",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_PUAMA",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "PUAMA",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Área de Implantação dos Parques do PUAMA (v.2021-08-04)",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "AID-PUAMA - Área de Influência Direta do PUAMA (v.2021-08-04)",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "500m em torno do Parque Linear e Ambientais (v.2021-04-08)",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Área de Influência Direta PUAMA",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Bairro Beneficiado - Lei 9.123 ou 10.344",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Bairro Beneficiado - Decreto 2.747/2016",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Gleba Beneficiada",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_QuickBird2002",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": []
+  },
+  {
+    "servico": "MapaServer/Mapa_RedeViaria",
+    "capabilities": "Data,Map,Query",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Rótulos",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Nome de Logradouro",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Logradouro Principal",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Escala 4000",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Escala 16000",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Escala 64000",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Escala 256000",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Corredor do Transporte Coletivo",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Escala abaixo de 4000",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Escala acima de 4000",
+        "type": null
+      },
+      {
+        "id": 10,
+        "name": "Pavimentação de Logradouro",
+        "type": null
+      },
+      {
+        "id": 11,
+        "name": "Escala 4000",
+        "type": null
+      },
+      {
+        "id": 12,
+        "name": "Escala 16000",
+        "type": null
+      },
+      {
+        "id": 13,
+        "name": "Escala 64000",
+        "type": null
+      },
+      {
+        "id": 14,
+        "name": "Escala 256000",
+        "type": null
+      },
+      {
+        "id": 15,
+        "name": "Logradouro",
+        "type": null
+      },
+      {
+        "id": 16,
+        "name": "Vias Propostas",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Sanemanento",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Esgoto",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Abastecimento de Água Potável",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_SaudeFamilia",
+    "capabilities": null,
+    "maxRecordCount": null,
+    "spatialReference": null,
+    "layers": []
+  },
+  {
+    "servico": "MapaServer/Mapa_Simplifica_Goiania_UsoDoSolo",
+    "capabilities": "Map,Query",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Divisas de Lote",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Segmento de Logradouro",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Logradouros",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Unidades Territoriais",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Tableau1",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 102100,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Logradouro",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Logradouro",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Restrição Aeroportuária",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Área de Aproximação do Aeroporto",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Área de Cone de Ruído do Aeródromo",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Área de Segurança e Proteção Aeroportuária",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Desenvolvimento Econômico",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Unidade de Uso Sustentável",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Área de Influência das Vias Especiais",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Área de Restrição Militar",
+        "type": null
+      },
+      {
+        "id": 10,
+        "name": "Área Adensável",
+        "type": null
+      },
+      {
+        "id": 11,
+        "name": "Área de Desaceleração de Densidade",
+        "type": null
+      },
+      {
+        "id": 12,
+        "name": "Área Especial de Interesse Social III",
+        "type": null
+      },
+      {
+        "id": 13,
+        "name": "Área Especial de Interesse Social III, Pós LC 171/2007",
+        "type": null
+      },
+      {
+        "id": 14,
+        "name": "Divisas de Lote",
+        "type": null
+      },
+      {
+        "id": 15,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 16,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 17,
+        "name": "Divisas de Região",
+        "type": null
+      },
+      {
+        "id": 18,
+        "name": "Divisas de Município",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Tableau2",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 102100,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Logradouro",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Logradouro",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Restrição Aeroportuária",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Área de Aproximação do Aeroporto",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Área de Cone de Ruído do Aeródromo",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Área de Segurança e Proteção Aeroportuária",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Desenvolvimento Econômico",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Unidade de Uso Sustentável",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Área de Influência das Vias Especiais",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Área de Restrição Militar",
+        "type": null
+      },
+      {
+        "id": 10,
+        "name": "Área Adensável",
+        "type": null
+      },
+      {
+        "id": 11,
+        "name": "Área de Desaceleração de Densidade",
+        "type": null
+      },
+      {
+        "id": 12,
+        "name": "Área Especial de Interesse Social III",
+        "type": null
+      },
+      {
+        "id": 13,
+        "name": "Área Especial de Interesse Social III, Pós LC 171/2007",
+        "type": null
+      },
+      {
+        "id": 14,
+        "name": "Divisas de Lote",
+        "type": null
+      },
+      {
+        "id": 15,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 16,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 17,
+        "name": "Divisas de Região",
+        "type": null
+      },
+      {
+        "id": 18,
+        "name": "Divisas de Município",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Telecomunicacao",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": []
+  },
+  {
+    "servico": "MapaServer/Mapa_TelecomunicacaoNew",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Antenas de Rádio/Telefonia Móvel",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Pontos de Interesse MetroGyn",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Fibra MetroGyn",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Tributario_Web",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Unidade Territorial",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_UsoDoSoloNew",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 500000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Cadastro Imobiliário (Proprietário)",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Estatual",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Federal",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Municipal",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Particular",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Religioso",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Não Identificado",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Área Pública Municipal (Proprietário)",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Estadual",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Federal",
+        "type": null
+      },
+      {
+        "id": 10,
+        "name": "Municipal",
+        "type": null
+      },
+      {
+        "id": 11,
+        "name": "Particular",
+        "type": null
+      },
+      {
+        "id": 12,
+        "name": "Não Identificado",
+        "type": null
+      },
+      {
+        "id": 13,
+        "name": "Parcelamento em aprovação",
+        "type": null
+      },
+      {
+        "id": 14,
+        "name": "Glebas",
+        "type": null
+      },
+      {
+        "id": 15,
+        "name": "Numeração Predial Oficial",
+        "type": null
+      },
+      {
+        "id": 16,
+        "name": "Vazios Urbanos",
+        "type": null
+      },
+      {
+        "id": 17,
+        "name": "Rótulo Número Oficial",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/Mapa_Vetor",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 30000,
+    "spatialReference": 31982,
+    "layers": []
+  },
+  {
+    "servico": "MapaServer/ModeloEspacial_Des2019",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Modelo Espacial - Projeto de Lei",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Eixo de Desenvolvimento",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Macrozona Construída",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Área do Bem Tombado",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Área de Entorno do Bem Tombado",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Área Adensável - AA",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Área de Desaceleração de Densidade - ADD",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Área de Preservação Permanente - APP",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Área de Ocupação Sustentável - AOS",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Macrozonas Rurais",
+        "type": null
+      }
+    ]
+  },
+  {
+    "servico": "MapaServer/SampleWorldCities",
+    "capabilities": "Map,Query,Data",
+    "maxRecordCount": 1000,
+    "spatialReference": 31982,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Divisas de Lote",
+        "type": null
+      },
+      {
+        "id": 1,
+        "name": "Divisas de Quadra",
+        "type": null
+      },
+      {
+        "id": 2,
+        "name": "Divisas de Bairro",
+        "type": null
+      },
+      {
+        "id": 3,
+        "name": "Cadastro Imobiário",
+        "type": null
+      },
+      {
+        "id": 4,
+        "name": "Área Pública",
+        "type": null
+      },
+      {
+        "id": 5,
+        "name": "Número Predial Oficial",
+        "type": null
+      },
+      {
+        "id": 6,
+        "name": "Setor Cadastral",
+        "type": null
+      },
+      {
+        "id": 7,
+        "name": "Segmento de Logradouro",
+        "type": null
+      },
+      {
+        "id": 8,
+        "name": "Logradouro",
+        "type": null
+      },
+      {
+        "id": 9,
+        "name": "Cadastro Atividade Econômica",
+        "type": null
+      },
+      {
+        "id": 10,
+        "name": "Logradouro por Bairro",
+        "type": null
+      }
+    ]
+  }
+]

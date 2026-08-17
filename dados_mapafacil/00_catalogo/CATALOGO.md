@@ -1,0 +1,1094 @@
+# Catálogo completo do servidor ArcGIS — Mapa Fácil Goiânia
+
+Levantado em 2026-08-17T16:50:58.268424Z
+
+Total de serviços (MapServer): 44
+Total de camadas somando todos os serviços: 824
+
+## MapaServer/Feature_Base_202406291035
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000000
+- spatialReference (wkid): 31982
+- camadas (10):
+  - [0] Divisas de Lote (None)
+  - [1] Divisas de Quadra (None)
+  - [2] Divisas de Bairro (None)
+  - [4] Área Pública (None)
+  - [5] Número Predial Oficial (None)
+  - [6] Setor Cadastral (None)
+  - [7] Segmento de Logradouro (None)
+  - [8] Logradouro (None)
+  - [9] Cadastro Atividade Econômica (None)
+  - [10] Logradouro por Bairro (None)
+
+## MapaServer/Feature_Base
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000000
+- spatialReference (wkid): 31982
+- camadas (11):
+  - [0] Divisas de Lote (None)
+  - [1] Divisas de Quadra (None)
+  - [2] Divisas de Bairro (None)
+  - [3] Cadastro Imobiário (None)
+  - [4] Área Pública (None)
+  - [5] Número Predial Oficial (None)
+  - [6] Setor Cadastral (None)
+  - [7] Segmento de Logradouro (None)
+  - [8] Logradouro (None)
+  - [9] Cadastro Atividade Econômica (None)
+  - [10] Logradouro por Bairro (None)
+
+## MapaServer/Feature_BaseTeste
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (11):
+  - [0] Divisas de Lote (None)
+  - [1] Divisas de Quadra (None)
+  - [2] Divisas de Bairro (None)
+  - [3] Cadastro Imobiário (None)
+  - [4] Área Pública (None)
+  - [5] Número Predial Oficial (None)
+  - [6] Setor Cadastral (None)
+  - [7] Segmento de Logradouro (None)
+  - [8] Logradouro (None)
+  - [9] Cadastro Atividade Econômica (None)
+  - [10] Logradouro por Bairro (None)
+
+## MapaServer/Mapa_Acessibilidade
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (43):
+  - [0] EDUCAÇÃO (None)
+  - [1] Estabelecimentos Municipais de Educação - fonte: SIGGO (None)
+  - [2] Estabelecimentos de Educação - fonte: SIGGO (None)
+  - [3] Escolas Públicas - fonte: SIEG (None)
+  - [4] Estabelecimentos de Educação - fontes: CAE e SIGGO (None)
+  - [5] Creches e Berçários - 8511200 (None)
+  - [6] Alfabetização e Pré-escola - 8512100 (None)
+  - [7] Ensino Fundamental - 8513900 (None)
+  - [8] Ensino Médio - 8520100 (None)
+  - [9] Ensino Superior - 8531700 (None)
+  - [10] SAÚDE (None)
+  - [11] Estabelecimentos Municipais de Saúde - SIGGO (None)
+  - [12] Estabelecimentos de Saúde - fontes: CAE e SIGGO (None)
+  - [13] Atividades de Atendimento Hospitalar - 8610101 (None)
+  - [14] Atividades de Prontosocorro e Urgências - 8610102 (None)
+  - [15] Atividade Medica Ambulatorial - 8630501 (None)
+  - [16] Servico de Dialise e Nefrologia - 8640203 (None)
+  - [17] Servicos de Quimioterapia - 8640210 (None)
+  - [18] Servicos de Radioterapia - 8640211 (None)
+  - [19] Atividades de Assistencia a Deficientes Físicos com Internação - 8711503 (None)
+  - [20] COMÉRCIO (None)
+  - [21] Estabelecimentos Comerciais - fontes: CAE e SIGGO (None)
+  - [22] Shopping Center (None)
+  - [23] Hipermercado - 4711301 (None)
+  - [24] Supermercado - 4711302 (None)
+  - [25] Lojas de Departamentos e Magazines - 4713001 (None)
+  - [26] FINANÇAS (None)
+  - [27] Sedes ou Agências Bancárias - fontes: CAE e SIGGO (None)
+  - [28] Bancos Comerciais - 6421200 (None)
+  - [29] Bancos Multiplos - 6422100 (None)
+  - [30] Caixas Economicas - 6423900 (None)
+  - [31] OUTROS (None)
+  - [32] Centrais de Atendimento Integrado - fonte: SEGPLAN (None)
+  - [33] Vapt Vupt (None)
+  - [34] Outros Estabelecimentos - fontes: CAE e SIGGO (None)
+  - [35] Agência de Correios - 5310501 (None)
+  - [36] Agencias de Correios Franqueadas - 5310502 (None)
+  - [37] Casas Lotericas - 8299706 (None)
+  - [38] TRANSPORTE (None)
+  - [39] Transporte Público - fonte: CMTC (None)
+  - [40] Terminais de Ônibus (None)
+  - [41] Plataformas e Pontos de Ônibus (None)
+  - [42] Linhas de Ônibus (None)
+
+## MapaServer/Mapa_Basico3
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (385):
+  - [184] Escala 1:1000 (None)
+  - [1] Rótulos (None)
+  - [2] Nome de Bairro (None)
+  - [51] bai_016 (None)
+  - [477] bai_004 (None)
+  - [478] Nome de Logradouro (None)
+  - [181] seg_256 (None)
+  - [182] seg_064 (None)
+  - [183] seg_016 (None)
+  - [192] seg_004 (None)
+  - [185] seg_048 (None)
+  - [186] seg_024 (None)
+  - [187] seg_096 (None)
+  - [188] seg_048 (None)
+  - [325] seg_032 (None)
+  - [326] seg_024 (None)
+  - [327] seg_012 (None)
+  - [193] seg_008 (None)
+  - [241] seg_006 (None)
+  - [194] seg_002 (None)
+  - [195] Nome de Quadra (None)
+  - [33] qdr_016 (None)
+  - [34] qdr_004 (None)
+  - [35] qdr_001 (None)
+  - [196] Nome de Lote (None)
+  - [40] lot_004 (None)
+  - [41] lot_001 (None)
+  - [310] lot_002 (None)
+  - [311] Divisas de Lote (None)
+  - [312] Divisas de Quadra (None)
+  - [313] Divisas de Bairro (None)
+  - [314] Escala 1:2.000 (None)
+  - [315] Rótulos (None)
+  - [203] Nome de Bairro (None)
+  - [237] bai_016 (None)
+  - [238] bai_004 (None)
+  - [239] bai_048 (None)
+  - [240] Nome de Logradouro (None)
+  - [242] seg_256 (None)
+  - [243] seg_064 (None)
+  - [246] seg_016 (None)
+  - [256] seg_004 (None)
+  - [244] seg_048 (None)
+  - [245] seg_024 (None)
+  - [257] seg_096 (None)
+  - [258] seg_048 (None)
+  - [250] seg_032 (None)
+  - [262] seg_024 (None)
+  - [263] seg_012 (None)
+  - [253] seg_008 (None)
+  - [254] seg_006 (None)
+  - [289] seg_002 (None)
+  - [255] Nome de Quadra (None)
+  - [247] qdr_016 (None)
+  - [248] qdr_004 (None)
+  - [249] qdr_001 (None)
+  - [259] qdr_008 (None)
+  - [260] qdr_002 (None)
+  - [261] Nome de Lote (None)
+  - [251] lot_004 (None)
+  - [252] lot_001 (None)
+  - [264] lot_002 (None)
+  - [265] Divisas de Lote (None)
+  - [266] Divisas de Quadra (None)
+  - [267] Divisas de Bairro (None)
+  - [268] Escala 1:4.000 (None)
+  - [269] Rótulos (None)
+  - [270] Nome de Bairro (None)
+  - [45] bai_016 (None)
+  - [46] bai_004 (None)
+  - [271] Nome de Logradouro (None)
+  - [230] seg_256 (None)
+  - [231] seg_064 (None)
+  - [232] seg_016 (None)
+  - [233] seg_004 (None)
+  - [234] seg_048 (None)
+  - [235] seg_024 (None)
+  - [272] seg_096 (None)
+  - [273] seg_048 (None)
+  - [274] seg_032 (None)
+  - [275] seg_024 (None)
+  - [276] seg_012 (None)
+  - [277] seg_008 (None)
+  - [278] seg_006 (None)
+  - [279] seg_002 (None)
+  - [280] Nome de Quadra (None)
+  - [25] qdr_016 (None)
+  - [26] qdr_004 (None)
+  - [27] qdr_001 (None)
+  - [281] Nome de Lote (None)
+  - [37] lot_004 (None)
+  - [38] lot_001 (None)
+  - [282] lot_002 (None)
+  - [283] Divisas de Quadra (None)
+  - [284] Divisas de Lote (None)
+  - [285] Divisas de Bairro (None)
+  - [286] Escala 1:6.000 (None)
+  - [287] Rótulos (None)
+  - [288] Nome de Bairro (None)
+  - [301] bai_016 (None)
+  - [209] bai_004 (None)
+  - [290] bai_048 (None)
+  - [291] Nome de Logradouro (None)
+  - [223] seg_256 (None)
+  - [224] seg_064 (None)
+  - [225] seg_016 (None)
+  - [226] seg_004 (None)
+  - [227] seg_048 (None)
+  - [228] seg_024 (None)
+  - [292] seg_096 (None)
+  - [293] seg_048 (None)
+  - [294] seg_032 (None)
+  - [295] seg_024 (None)
+  - [296] seg_012 (None)
+  - [297] seg_008 (None)
+  - [298] seg_006 (None)
+  - [299] seg_002 (None)
+  - [300] Nome de Quadra (None)
+  - [211] qdr_016 (None)
+  - [302] qdr_004 (None)
+  - [213] qdr_001 (None)
+  - [335] qdr_008 (None)
+  - [303] Divisas de Quadra (None)
+  - [304] Divisas de Lote (None)
+  - [305] Divisas de Bairro (None)
+  - [306] Escala 1:8.000 (None)
+  - [307] Rótulos (None)
+  - [308] Nome de Bairro (None)
+  - [204] bai_016 (None)
+  - [205] bai_004 (None)
+  - [206] bai_048 (None)
+  - [309] Nome de Logradouro (None)
+  - [197] seg_256 (None)
+  - [198] seg_064 (None)
+  - [199] seg_016 (None)
+  - [200] seg_004 (None)
+  - [201] seg_048 (None)
+  - [202] seg_024 (None)
+  - [316] seg_096 (None)
+  - [317] seg_048 (None)
+  - [318] seg_032 (None)
+  - [319] seg_024 (None)
+  - [320] seg_012 (None)
+  - [321] seg_008 (None)
+  - [322] seg_006 (None)
+  - [323] seg_002 (None)
+  - [324] Nome de Quadra (None)
+  - [189] qdr_016 (None)
+  - [190] qdr_004 (None)
+  - [191] qdr_001 (None)
+  - [328] qdr_008 (None)
+  - [329] Divisas de Quadra (None)
+  - [330] Divisas de Lote (None)
+  - [331] Divisas de Bairro (None)
+  - [332] Escala 1:12.000 (None)
+  - [333] Rótulos (None)
+  - [334] Nome de Bairro (None)
+  - [338] bai_016 (None)
+  - [168] bai_004 (None)
+  - [336] bai_048 (None)
+  - [337] Nome de Logradouro (None)
+  - [160] seg_256 (None)
+  - [161] seg_064 (None)
+  - [348] seg_016 (None)
+  - [163] seg_004 (None)
+  - [164] seg_048 (None)
+  - [165] seg_024 (None)
+  - [339] seg_096 (None)
+  - [340] seg_048 (None)
+  - [341] seg_032 (None)
+  - [342] seg_024 (None)
+  - [343] seg_012 (None)
+  - [344] seg_008 (None)
+  - [345] seg_006 (None)
+  - [346] seg_002 (None)
+  - [347] Nome de Quadra (None)
+  - [359] qdr_016 (None)
+  - [171] qdr_004 (None)
+  - [172] qdr_001 (None)
+  - [349] qdr_008 (None)
+  - [350] qdr_002 (None)
+  - [351] qdr_012 (None)
+  - [352] Divisas de Quadra (None)
+  - [353] Divisas de Lote (None)
+  - [354] Divisas de Bairro (None)
+  - [355] Escala 1:16.000 (None)
+  - [356] Rótulos (None)
+  - [357] Nome de Bairro (None)
+  - [48] bai_016 (None)
+  - [49] bai_004 (None)
+  - [358] Nome de Logradouro (None)
+  - [425] seg_256 (None)
+  - [154] seg_064 (None)
+  - [155] seg_016 (None)
+  - [156] seg_004 (None)
+  - [157] seg_048 (None)
+  - [158] seg_024 (None)
+  - [360] seg_096 (None)
+  - [361] seg_048 (None)
+  - [362] seg_032 (None)
+  - [363] seg_024 (None)
+  - [364] seg_012 (None)
+  - [365] seg_008 (None)
+  - [366] seg_006 (None)
+  - [367] seg_002 (None)
+  - [368] Nome de Quadra (None)
+  - [29] qdr_016 (None)
+  - [30] qdr_004 (None)
+  - [31] qdr_001 (None)
+  - [369] qdr_008 (None)
+  - [370] qdr_002 (None)
+  - [371] qdr_012 (None)
+  - [372] Divisas de Quadra (None)
+  - [373] Divisas de Bairro (None)
+  - [374] Escala 1:24.000 (None)
+  - [375] Rótulos (None)
+  - [376] Nome de Bairro (None)
+  - [142] bai_016 (None)
+  - [143] bai_004 (None)
+  - [377] bai_048 (None)
+  - [378] Nome de Logradouro (None)
+  - [145] qdr_016 (None)
+  - [146] qdr_004 (None)
+  - [147] qdr_001 (None)
+  - [379] seg_004 (None)
+  - [380] seg_048 (None)
+  - [381] seg_024 (None)
+  - [382] seg_096 (None)
+  - [383] seg_048 (None)
+  - [384] seg_032 (None)
+  - [385] seg_024 (None)
+  - [386] seg_012 (None)
+  - [387] seg_008 (None)
+  - [388] seg_006 (None)
+  - [389] seg_002 (None)
+  - [390] Divisas de Quadra (None)
+  - [391] Divisas de Bairro (None)
+  - [392] Escala 1:32.000 (None)
+  - [393] Rótulos (None)
+  - [394] SIGGOPROD.SIGGO.BairroAnno32 (None)
+  - [138] bai_016 (None)
+  - [139] bai_004 (None)
+  - [140] bai_048 (None)
+  - [395] SIGGOPROD.SIGGO.LogAnno32 (None)
+  - [132] seg_256 (None)
+  - [133] seg_064 (None)
+  - [134] seg_016 (None)
+  - [135] seg_004 (None)
+  - [136] seg_048 (None)
+  - [396] seg_128 (None)
+  - [397] seg_096 (None)
+  - [398] seg_048 (None)
+  - [399] seg_032 (None)
+  - [400] seg_024 (None)
+  - [401] seg_012 (None)
+  - [402] seg_008 (None)
+  - [403] seg_006 (None)
+  - [404] seg_002 (None)
+  - [405] Divisas de Quadra (None)
+  - [406] Divisas de Bairro (None)
+  - [407] Escala 1:48.000 (None)
+  - [408] Rótulos (None)
+  - [409] SIGGOPROD.SIGGO.BairroAnno48 (None)
+  - [114] bai_016 (None)
+  - [115] bai_004 (None)
+  - [116] bai_048 (None)
+  - [410] SIGGOPROD.SIGGO.LogAnno48 (None)
+  - [108] seg_256 (None)
+  - [109] seg_064 (None)
+  - [110] seg_016 (None)
+  - [111] seg_004 (None)
+  - [112] seg_048 (None)
+  - [411] seg_128 (None)
+  - [412] seg_096 (None)
+  - [413] seg_048 (None)
+  - [414] seg_032 (None)
+  - [415] seg_024 (None)
+  - [416] seg_012 (None)
+  - [417] seg_008 (None)
+  - [418] seg_006 (None)
+  - [419] seg_002 (None)
+  - [420] Divisas de Quadra (None)
+  - [421] Divisas de Bairro (None)
+  - [422] Escala 1:64.000 (None)
+  - [423] Rótulos (None)
+  - [424] SIGGOPROD.SIGGO.LogAnno64 (None)
+  - [103] seg_256 (None)
+  - [458] seg_064 (None)
+  - [105] seg_016 (None)
+  - [106] seg_004 (None)
+  - [426] seg_192 (None)
+  - [427] seg_128 (None)
+  - [428] seg_096 (None)
+  - [429] seg_048 (None)
+  - [430] seg_032 (None)
+  - [431] seg_024 (None)
+  - [432] seg_012 (None)
+  - [433] seg_008 (None)
+  - [434] seg_006 (None)
+  - [435] seg_002 (None)
+  - [436] Nome de Bairro (None)
+  - [43] Padrão (None)
+  - [437] Divisas de Quadra (None)
+  - [438] Divisas de Bairro (None)
+  - [439] Escala 1:96.000 (None)
+  - [440] Rótulos (None)
+  - [441] SIGGOPROD.SIGGO.BairroAnno96 (None)
+  - [94] Padrão (None)
+  - [95] 64000 (None)
+  - [442] SIGGOPROD.SIGGO.LogAnno96 (None)
+  - [89] seg_256 (None)
+  - [90] seg_064 (None)
+  - [91] seg_016 (None)
+  - [92] seg_004 (None)
+  - [443] seg_192 (None)
+  - [444] seg_128 (None)
+  - [445] seg_096 (None)
+  - [446] seg_048 (None)
+  - [447] seg_032 (None)
+  - [448] seg_024 (None)
+  - [449] seg_012 (None)
+  - [450] seg_008 (None)
+  - [451] seg_006 (None)
+  - [452] seg_002 (None)
+  - [453] Divisas de Quadra (None)
+  - [454] Divisas de Bairro (None)
+  - [455] Escala 1:128.000 (None)
+  - [456] Rótulos (None)
+  - [457] SIGGOPROD.SIGGO.BairroAnno128 (None)
+  - [459] Padrão (None)
+  - [461] 64000 (None)
+  - [460] SIGGOPROD.SIGGO.LogAnno128 (None)
+  - [0] seg_256 (None)
+  - [74] seg_064 (None)
+  - [75] seg_016 (None)
+  - [76] seg_004 (None)
+  - [462] seg_192 (None)
+  - [463] seg_128 (None)
+  - [464] seg_096 (None)
+  - [465] seg_048 (None)
+  - [466] seg_032 (None)
+  - [467] seg_024 (None)
+  - [468] seg_012 (None)
+  - [469] seg_008 (None)
+  - [470] seg_006 (None)
+  - [471] seg_002 (None)
+  - [472] Divisas de Bairro (None)
+  - [473] Escala 1:192.000 (None)
+  - [474] Rótulos (None)
+  - [475] SIGGOPROD.SIGGO.BairroAnno192 (None)
+  - [57] bai_256 (None)
+  - [476] SIGGOPROD.SIGGO.LogAnno192 (None)
+  - [52] seg_256 (None)
+  - [53] seg_064 (None)
+  - [54] seg_016 (None)
+  - [55] seg_004 (None)
+  - [479] seg_192 (None)
+  - [480] seg_128 (None)
+  - [481] seg_096 (None)
+  - [482] seg_048 (None)
+  - [483] seg_032 (None)
+  - [484] seg_024 (None)
+  - [485] seg_012 (None)
+  - [486] seg_008 (None)
+  - [487] seg_006 (None)
+  - [488] seg_002 (None)
+  - [489] Divisas de Bairro (None)
+  - [490] Escala 1:256.000 (None)
+  - [491] SIGGOPROD.SIGGO.LogAnno256 (None)
+  - [59] seg_256 (None)
+  - [60] seg_064 (None)
+  - [61] seg_016 (None)
+  - [62] seg_004 (None)
+  - [492] seg_192 (None)
+  - [493] seg_128 (None)
+  - [494] seg_096 (None)
+  - [495] seg_048 (None)
+  - [496] seg_032 (None)
+  - [497] seg_024 (None)
+  - [498] seg_012 (None)
+  - [499] seg_008 (None)
+  - [500] seg_006 (None)
+  - [501] seg_002 (None)
+  - [502] Divisas de Bairro (None)
+  - [503] Divisas de Município (None)
+
+## MapaServer/Mapa_COMURG
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (9):
+  - [0] Pontos de Interesse da COMURG (None)
+  - [1] Divisão da Coleta de Residos Domiciliares Orgânicos  (None)
+  - [2] Aterro Sanitário (None)
+  - [3] Circuitos de Coleta de Resíduos Domiciliares Orgânicos (None)
+  - [4] Circuitos Classificados por Dia (None)
+  - [5] Circuitos Classificados por Período (None)
+  - [6] Circuitos Classificados por Dia e Período (None)
+  - [7] Circuitos Classificados por Divisão (None)
+  - [8] Circuitos de Coleta Orgânica monocromatico (None)
+
+## MapaServer/Mapa_Documentacao
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (3):
+  - [0] Lote Documentos (None)
+  - [1] Lote Vistórias (None)
+  - [2] Bairro Documentos (None)
+
+## MapaServer/Mapa_Edificios
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (8):
+  - [0] Edifício em altura (None)
+  - [1] 0 - 3 (None)
+  - [2] 4 - 10 (None)
+  - [3] 11 - 20 (None)
+  - [4] 21 - 30 (None)
+  - [5] +30 (None)
+  - [6]  Planta de Valores (None)
+  - [7]  Planta de Valores (None)
+
+## MapaServer/Mapa_Energia
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (9):
+  - [0] Iluminação Pública (None)
+  - [1] Barramento Poste (None)
+  - [2] Tipo de Lâmpada (None)
+  - [3] Potência da Lâmpada (None)
+  - [4] Poste (None)
+  - [5] Subestação de Energia (None)
+  - [6] Rede Eletrica Abastecimento (None)
+  - [7] Rede Eletrica Primária (None)
+  - [8] Rede Eletrica Secundária (None)
+
+## MapaServer/Mapa_ExpansaoUrbana
+- capabilities: None
+- maxRecordCount: None
+- spatialReference (wkid): None
+- camadas (0):
+
+## MapaServer/Mapa_Fiscalizacao
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (1):
+  - [0] Divisas de Subzona Fiscal (None)
+
+## MapaServer/Mapa_Legislacao
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (2):
+  - [0] Lei Complemantar 181/2008 (None)
+  - [1] Lei Complementar 228/2012 (None)
+
+## MapaServer/Mapa_Limites
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (11):
+  - [0] Divisas de Município (None)
+  - [1] Escala 64000 (None)
+  - [2] Escala 256000 (None)
+  - [3] Circunscrição Cartorária (None)
+  - [4] Divisas de Macrozona (None)
+  - [5] Divisas de Região Administrativa (7) (None)
+  - [6] Divisas de Região (12) (None)
+  - [7] Divisas de Setor Cadastral (None)
+  - [8] Escala 64000 (None)
+  - [9] Escala 256000 (None)
+  - [10] Zonas Eleitorais (None)
+
+## MapaServer/Mapa_MeioAmbiente1
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (1):
+  - [2] Árvores (None)
+
+## MapaServer/Mapa_MeioAmbiente_202206301502
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (15):
+  - [0] Erosão (None)
+  - [1] Nascente (None)
+  - [2] Árvores (None)
+  - [3] Árvore (None)
+  - [4] Plantio (None)
+  - [5] Remoção de Toco (None)
+  - [6] Declividade Maior que 30% (None)
+  - [7] Curva de Nível (5 m) (None)
+  - [8] Hidrografia (None)
+  - [9] Vegetação (None)
+  - [10] Área de Proteção Permanente (None)
+  - [11] Parque (None)
+  - [12] Unidade de Conservação (None)
+  - [13] Área de Proteção Ambiental (None)
+  - [14] Risco Geológico (None)
+
+## MapaServer/Mapa_MeioAmbiente
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (15):
+  - [0] Erosão (None)
+  - [1] Nascente (None)
+  - [2] Árvores (None)
+  - [3] Árvore (None)
+  - [4] Plantio (None)
+  - [5] Remoção de Toco (None)
+  - [6] Declividade Maior que 30% (None)
+  - [7] Curva de Nível (5 m) (None)
+  - [8] Hidrografia (None)
+  - [9] Vegetação (None)
+  - [10] Área de Proteção Permanente (None)
+  - [11] Parque (None)
+  - [12] Unidade de Conservação (None)
+  - [13] Área de Proteção Ambiental (None)
+  - [14] Risco Geológico (None)
+
+## MapaServer/Mapa_ModeloEspacial_202401291642
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (21):
+  - [0] Est (None)
+  - [1] Cor (None)
+  - [2] Declividade acima de 30% (None)
+  - [3] Vias (None)
+  - [4] Eixo de Desenvolvimento - ED (None)
+  - [5] Área Especial de Desenvolvimento Econômico - AEDE (None)
+  - [6] Área Básica de Desenvolvimento Ecológico-Econômico - ABADEE (None)
+  - [7] Áreas Adensáveis - AA (None)
+  - [8] Áreas de Desaceleração de Densidade - ADD (None)
+  - [9] Áreas de Programas Especiais de Interesse Social - AEIS (None)
+  - [10] Áreas de Ocupação Sustentável - AOS (None)
+  - [11] Áreas de Patrimonio Cultural -Apac (None)
+  - [12] Áreas de Restrição Aeroportuária - Ara (None)
+  - [13] Áreas de Restrição Ambiental Rural - Arar (None)
+  - [14] Áreas de Restrição Ambiental Urbana - Arau (None)
+  - [15] Áreas de Restrição Militar - Arm (None)
+  - [16] Influência das Vias Expressas - Ive (None)
+  - [17] Macrozoneamento (None)
+  - [18] Macrozoneamento (None)
+  - [19] LIMITE DO MUNICÍPIO (None)
+  - [20] MUNICÍPIOS ENTORNO (None)
+
+## MapaServer/Mapa_ModeloEspacial_Desenvolvimento
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (53):
+  - [0] Proposta Modelo Espacial (None)
+  - [1] Corredores - Visão 1 (None)
+  - [2] Corredores Exclusivos (None)
+  - [3] Corredores Preferenciais (None)
+  - [4] Corredores Eestratégicos (None)
+  - [5] Corredores - Visão 2 (None)
+  - [6] Corredores Exclusivos (None)
+  - [7] Corredor Anhanguera (None)
+  - [8] Corredor Campus UFG (None)
+  - [9] Corredor Goiás BRT NS (None)
+  - [10] Corredor Leste Oeste (None)
+  - [11] Corredor Mutirão (None)
+  - [12] Corredor Noroeste (None)
+  - [13] Corredor Pio XII (None)
+  - [14] Corredor Santa Maria (None)
+  - [15] Corredor T-7 (None)
+  - [16] Corredor T-9 (None)
+  - [17] Corredor T-63 (None)
+  - [18] Corredor Av 85 (None)
+  - [19] Corredores Preferenciais (None)
+  - [20] Corredor Parque Atheneu (None)
+  - [21] Corredor Castelo Branco (None)
+  - [22] Corredor Campus Universitário (None)
+  - [23] Corredor Independência (None)
+  - [24] Corredor Segunda Radial (None)
+  - [25] Corredor Rua C-104 (None)
+  - [26] Corredor Av Veneza (None)
+  - [27] Corredor Av 24 de Outubro (None)
+  - [28] Corredor Pedro Ludovico (None)
+  - [29] Corredor Central (None)
+  - [30] Corredor São Francisco (None)
+  - [31] Corredor BR-060 (None)
+  - [32] Corredor GO-060 (None)
+  - [33] Corredor GYN-24 (None)
+  - [34] Corredor GO-070 (None)
+  - [35] Corredor Goiás BRT - Extensão (None)
+  - [36] Corredores Estratégicos (None)
+  - [37] Corredor Marginal Leste (None)
+  - [38] Corredor Perimetral Oeste (None)
+  - [39] Corredor T-8 (None)
+  - [40] Mancha Incluída (None)
+  - [41] Mancha Excluída (None)
+  - [42] Mancha Modificada (None)
+  - [43] Unidades Territoriais (None)
+  - [44] Área de Patrimônio Cultural (APAC) (None)
+  - [45] Área do Bem Tombado (None)
+  - [46] Área de Entorno do Bem Tombado (None)
+  - [47] Área Adensável (AA) (None)
+  - [48] Área de Desaceleração de Densidade (ADD) (None)
+  - [49] Área Especial de Interesse Social III (None)
+  - [50] Área Especial de Interesse Social III, Pós LC 171/2007 (None)
+  - [51] Macrozona Construída (None)
+  - [52] Macrozonas Rurais (None)
+
+## MapaServer/Mapa_ModeloEspacial
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (49):
+  - [0] Plano Diretor 2022 (None)
+  - [1] Corredores (None)
+  - [2] Declividade acima de 30% (None)
+  - [3] Vias (None)
+  - [4] Eixo de Desenvolvimento - ED (None)
+  - [5] Influência das Vias Expressas - Ive (None)
+  - [6] Programas Especiais  (None)
+  - [7] Áreas de Programas Especiais de Interesse Social - AEIS (None)
+  - [8] Áreas de Programas Especiais de Interesse Urbanístico (None)
+  - [9] Áreas de Programas Especiais de Interesse Ambiental (None)
+  - [10] Áreas de Programas Especiais de Interesse Econômico (None)
+  - [11] Áreas de Restrição Ambiental Rural - Arar (None)
+  - [12] Área Especial de Desenvolvimento Econômico - AEDE (None)
+  - [13] Área Básica de Desenvolvimento Ecológico-Econômico - ABADEE (None)
+  - [14] Area de Proteção Permanente - APP (None)
+  - [15] Áreas de Recuperação e Conservação Temporárias (None)
+  - [16] Unidades de Conservação (None)
+  - [17] UPI's (None)
+  - [18] UUS's (None)
+  - [19] Áreas Verdes (None)
+  - [20] Áreas de Restrição Ambiental Urbana - Arau (None)
+  - [21] Area de Proteção Permanente - APP (None)
+  - [22] Áreas de Recuperação e Conservação Temporárias (None)
+  - [23] Unidades de Conservação (None)
+  - [24] UPI's (None)
+  - [25] UUS's (None)
+  - [26] Áreas Verdes (None)
+  - [27] Jardim Botânico (None)
+  - [28] Áreas de Patrimonio Cultural -Apac (None)
+  - [29] Áreas de Ocupação Sustentável - AOS (None)
+  - [30] Áreas de Desaceleração de Densidade - ADD (None)
+  - [31] Áreas Adensáveis - AA (None)
+  - [32] Outorga Onerosa de Alteração de Uso - OOAU (None)
+  - [33] Macrozoneamento (None)
+  - [34] LIMITE DO MUNICÍPIO (None)
+  - [35] MUNICÍPIOS ENTORNO (None)
+  - [36] Plano Diretor 2007 (None)
+  - [37] Restrição Aeroportuária (None)
+  - [38] Área de Aproximação do Aeroporto (None)
+  - [39] Área de Cone de Ruído do Aeródromo (None)
+  - [40] Área de Segurança e Proteção Aeroportuária (None)
+  - [41] Desenvolvimento Econômico (None)
+  - [42] Unidade de Uso Sustentável (None)
+  - [43] Área de Influência das Vias Especiais (None)
+  - [44] Área de Restrição Militar (None)
+  - [45] Área Adensável (None)
+  - [46] Área de Desaceleração de Densidade (None)
+  - [47] Área Especial de Interesse Social III (None)
+  - [48] Área Especial de Interesse Social III, Pós LC 171/2007 (None)
+
+## MapaServer/Mapa_OcupacaoIlegal
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (2):
+  - [0] Regularização Fundiária (Em Processo) (None)
+  - [1] Regularização Fundiária (Regularizada) (None)
+
+## MapaServer/Mapa_Ortofoto2006v2
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (2):
+  - [0] Município de Goiânia (None)
+  - [1] siggodes.siggo.Ortofoto2006 (None)
+
+## MapaServer/Mapa_Ortofoto2011_D
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (2):
+  - [1] Ortofoto 2006 (None)
+  - [2] Ortofoto 2011 (None)
+
+## MapaServer/Mapa_Ortofoto2011v2
+- capabilities: Map
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (2):
+  - [1] Ortofoto 2006 (None)
+  - [2] Ortofoto 2011 (None)
+
+## MapaServer/Mapa_Ortofoto2016_D
+- capabilities: Map
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (1):
+  - [0] Município de Goiânia (None)
+
+## MapaServer/Mapa_Ortofoto2016
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (1):
+  - [0] Município de Goiânia (None)
+
+## MapaServer/Mapa_Ortofoto2016v2
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (1):
+  - [0] Município de Goiânia (None)
+
+## MapaServer/Mapa_Ortofoto2016v8_D
+- capabilities: Map
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (2):
+  - [0] Município de Goiânia (None)
+  - [1] Ortofoto 2016 (None)
+
+## MapaServer/Mapa_PatrimonioHistorico
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (7):
+  - [0] PHS (Classificação da Área) (None)
+  - [1] PHS (Área Interna Pública) (None)
+  - [2] PHS (Imóveis) (None)
+  - [3] PHS (Árvores Históricas) (None)
+  - [4] PHS (Área Pública Municipal) (None)
+  - [5] PHS (Traçado Tombado) (None)
+  - [6] PHS (Áreas de Interesse) (None)
+
+## MapaServer/Mapa_PontosNotaveis
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (35):
+  - [0] Equipamento de Educação Municipal (None)
+  - [1] Equipamento de Saúde (None)
+  - [2] Grande Equipamento (None)
+  - [3] Patrimônio Histórico (None)
+  - [4] Planos de Zona de Proteção de Aeródromos (PZPA) (None)
+  - [5] Plano Básico de Zona e Proteção de Aeródromo (PBZPA) (None)
+  - [6] Pista (None)
+  - [7] Faixa de Pista (None)
+  - [8] Superfície de Aproximação (None)
+  - [9] Superfície de Aproximação Interna (None)
+  - [10] Superfície de Decolagem (None)
+  - [11] Superfície de Pouso Interrompido (None)
+  - [12] Superfície de Transição (None)
+  - [13] Superfície de Transição Interna (None)
+  - [14] Superfície Horizontal Interna (None)
+  - [15] Superfície Horizontal Externa (None)
+  - [16] Superfície Cônica (None)
+  - [17] Superfície Proteção Voo Visual Área 1 (None)
+  - [18] Superfície Proteção Voo Visual Área 2 (None)
+  - [19] Superfície Proteção Voo Visual Área 3 (None)
+  - [20] Plano Básico de Zona e Proteção de Heliponto (PBZPH) (None)
+  - [21] Área de Aproximação (None)
+  - [22] Área de Decolagem (None)
+  - [23] Área Toque Fato (None)
+  - [24] Área de Segurança (None)
+  - [25] Plano Específico de Zoneamento de Ruído (PEZR) (None)
+  - [26] AEA-1 (65 - 70 dB) (None)
+  - [27] AEA-2 (70 - 75 dB) (None)
+  - [28] AEA-3 (75 - 80 dB) (None)
+  - [29] AEA-4 (80 - 85 dB) (None)
+  - [30] AEA-5 (acima de 85 dB) (None)
+  - [31] Plano de Zona de Proteção de Auxílios à Navegação Aérea (PZPANA) (None)
+  - [32] NDB GOI (None)
+  - [33] D-VOR GNV (None)
+  - [34] PAPI (None)
+
+## MapaServer/Mapa_PUAMA
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (8):
+  - [0] PUAMA (None)
+  - [1] Área de Implantação dos Parques do PUAMA (v.2021-08-04) (None)
+  - [2] AID-PUAMA - Área de Influência Direta do PUAMA (v.2021-08-04) (None)
+  - [3] 500m em torno do Parque Linear e Ambientais (v.2021-04-08) (None)
+  - [4] Área de Influência Direta PUAMA (None)
+  - [5] Bairro Beneficiado - Lei 9.123 ou 10.344 (None)
+  - [6] Bairro Beneficiado - Decreto 2.747/2016 (None)
+  - [7] Gleba Beneficiada (None)
+
+## MapaServer/Mapa_QuickBird2002
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (0):
+
+## MapaServer/Mapa_RedeViaria
+- capabilities: Data,Map,Query
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (17):
+  - [0] Rótulos (None)
+  - [1] Nome de Logradouro (None)
+  - [2] Logradouro Principal (None)
+  - [3] Escala 4000 (None)
+  - [4] Escala 16000 (None)
+  - [5] Escala 64000 (None)
+  - [6] Escala 256000 (None)
+  - [7] Corredor do Transporte Coletivo (None)
+  - [8] Escala abaixo de 4000 (None)
+  - [9] Escala acima de 4000 (None)
+  - [10] Pavimentação de Logradouro (None)
+  - [11] Escala 4000 (None)
+  - [12] Escala 16000 (None)
+  - [13] Escala 64000 (None)
+  - [14] Escala 256000 (None)
+  - [15] Logradouro (None)
+  - [16] Vias Propostas (None)
+
+## MapaServer/Mapa_Sanemanento
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (2):
+  - [0] Esgoto (None)
+  - [1] Abastecimento de Água Potável (None)
+
+## MapaServer/Mapa_SaudeFamilia
+- capabilities: None
+- maxRecordCount: None
+- spatialReference (wkid): None
+- camadas (0):
+
+## MapaServer/Mapa_Simplifica_Goiania_UsoDoSolo
+- capabilities: Map,Query
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (4):
+  - [0] Divisas de Lote (None)
+  - [1] Segmento de Logradouro (None)
+  - [2] Logradouros (None)
+  - [3] Unidades Territoriais (None)
+
+## MapaServer/Mapa_Tableau1
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 102100
+- camadas (19):
+  - [0] Logradouro (None)
+  - [1] Logradouro (None)
+  - [2] Restrição Aeroportuária (None)
+  - [3] Área de Aproximação do Aeroporto (None)
+  - [4] Área de Cone de Ruído do Aeródromo (None)
+  - [5] Área de Segurança e Proteção Aeroportuária (None)
+  - [6] Desenvolvimento Econômico (None)
+  - [7] Unidade de Uso Sustentável (None)
+  - [8] Área de Influência das Vias Especiais (None)
+  - [9] Área de Restrição Militar (None)
+  - [10] Área Adensável (None)
+  - [11] Área de Desaceleração de Densidade (None)
+  - [12] Área Especial de Interesse Social III (None)
+  - [13] Área Especial de Interesse Social III, Pós LC 171/2007 (None)
+  - [14] Divisas de Lote (None)
+  - [15] Divisas de Quadra (None)
+  - [16] Divisas de Bairro (None)
+  - [17] Divisas de Região (None)
+  - [18] Divisas de Município (None)
+
+## MapaServer/Mapa_Tableau2
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 102100
+- camadas (19):
+  - [0] Logradouro (None)
+  - [1] Logradouro (None)
+  - [2] Restrição Aeroportuária (None)
+  - [3] Área de Aproximação do Aeroporto (None)
+  - [4] Área de Cone de Ruído do Aeródromo (None)
+  - [5] Área de Segurança e Proteção Aeroportuária (None)
+  - [6] Desenvolvimento Econômico (None)
+  - [7] Unidade de Uso Sustentável (None)
+  - [8] Área de Influência das Vias Especiais (None)
+  - [9] Área de Restrição Militar (None)
+  - [10] Área Adensável (None)
+  - [11] Área de Desaceleração de Densidade (None)
+  - [12] Área Especial de Interesse Social III (None)
+  - [13] Área Especial de Interesse Social III, Pós LC 171/2007 (None)
+  - [14] Divisas de Lote (None)
+  - [15] Divisas de Quadra (None)
+  - [16] Divisas de Bairro (None)
+  - [17] Divisas de Região (None)
+  - [18] Divisas de Município (None)
+
+## MapaServer/Mapa_Telecomunicacao
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (0):
+
+## MapaServer/Mapa_TelecomunicacaoNew
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (3):
+  - [0] Antenas de Rádio/Telefonia Móvel (None)
+  - [1] Pontos de Interesse MetroGyn (None)
+  - [2] Fibra MetroGyn (None)
+
+## MapaServer/Mapa_Tributario_Web
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (1):
+  - [0] Unidade Territorial (None)
+
+## MapaServer/Mapa_UsoDoSoloNew
+- capabilities: Map,Query,Data
+- maxRecordCount: 500000
+- spatialReference (wkid): 31982
+- camadas (18):
+  - [0] Cadastro Imobiliário (Proprietário) (None)
+  - [1] Estatual (None)
+  - [2] Federal (None)
+  - [3] Municipal (None)
+  - [4] Particular (None)
+  - [5] Religioso (None)
+  - [6] Não Identificado (None)
+  - [7] Área Pública Municipal (Proprietário) (None)
+  - [8] Estadual (None)
+  - [9] Federal (None)
+  - [10] Municipal (None)
+  - [11] Particular (None)
+  - [12] Não Identificado (None)
+  - [13] Parcelamento em aprovação (None)
+  - [14] Glebas (None)
+  - [15] Numeração Predial Oficial (None)
+  - [16] Vazios Urbanos (None)
+  - [17] Rótulo Número Oficial (None)
+
+## MapaServer/Mapa_Vetor
+- capabilities: Map,Query,Data
+- maxRecordCount: 30000
+- spatialReference (wkid): 31982
+- camadas (0):
+
+## MapaServer/ModeloEspacial_Des2019
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (10):
+  - [0] Modelo Espacial - Projeto de Lei (None)
+  - [1] Eixo de Desenvolvimento (None)
+  - [2] Macrozona Construída (None)
+  - [3] Área do Bem Tombado (None)
+  - [4] Área de Entorno do Bem Tombado (None)
+  - [5] Área Adensável - AA (None)
+  - [6] Área de Desaceleração de Densidade - ADD (None)
+  - [7] Área de Preservação Permanente - APP (None)
+  - [8] Área de Ocupação Sustentável - AOS (None)
+  - [9] Macrozonas Rurais (None)
+
+## MapaServer/SampleWorldCities
+- capabilities: Map,Query,Data
+- maxRecordCount: 1000
+- spatialReference (wkid): 31982
+- camadas (11):
+  - [0] Divisas de Lote (None)
+  - [1] Divisas de Quadra (None)
+  - [2] Divisas de Bairro (None)
+  - [3] Cadastro Imobiário (None)
+  - [4] Área Pública (None)
+  - [5] Número Predial Oficial (None)
+  - [6] Setor Cadastral (None)
+  - [7] Segmento de Logradouro (None)
+  - [8] Logradouro (None)
+  - [9] Cadastro Atividade Econômica (None)
+  - [10] Logradouro por Bairro (None)
