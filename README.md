@@ -14,7 +14,7 @@ As camadas e as consultas vão direto do navegador ao servidor de mapas da Prefe
 | --- | --- |
 | Globo 3D com relevo, inclinação, giro, bússola e voo até o destino | Os 15 temas do portal, na mesma ordem e com a mesma seleção padrão, mais 6 temas publicados no servidor |
 | Busca com voo até o resultado | Bairros, logradouros por bairro, edifícios, parques, escolas, unidades de saúde, inscrição cadastral e coordenadas |
-| Imagens históricas e comparação lado a lado | Ortofotos oficiais de 2006, 2011 e 2016, além do satélite atual e do Mapa Básico |
+| Satélite ou mapa, e comparação lado a lado | Mapa desenhado sem fotos (quadras, ruas, nomes e relevo), Mapa Básico da Prefeitura e o satélite em 11 datas, de 2012 a 2025 |
 | Edifícios em 3D | 3.393 edifícios do cadastro “Edifício em altura”, com a altura pelo número de pavimentos |
 | Ficha do local ao clicar | Lote, quadra, bairro, cadastro imobiliário do lote e o que estiver ligado nos temas |
 | Régua (distância e área), marcadores, KML | Coordenadas em UTM 22S SIRGAS 2000, o sistema do Mapa Fácil |
@@ -27,7 +27,7 @@ docs/                     site publicado (GitHub Pages)
   index.html              portal de acesso (usuário e senha)
   sistema.html            o mapa
   acesso/usuarios.json    contas (só resumos das senhas)
-  validacao.html          página de validação: 43 testes ao vivo, no navegador
+  validacao.html          página de validação: 44 testes ao vivo, no navegador
   css/app.css
   js/                     módulos ES, sem dependência além do CesiumJS (CDN, versão fixada)
     app.js                inicialização e interface
@@ -45,6 +45,19 @@ tests/                    pytest: dados, extrator e ponta a ponta no Chromium
   bussola-dados.yml    atualização semanal dos dados
 dados_mapafacil/          catálogo anterior do servidor (mantido)
 ```
+
+## Mapa sem fotos e lotes por bairro
+
+- **Fundo "Mapa"** (barra de baixo: Satélite | Mapa): desenhado no navegador com os dados vetoriais da base
+  cadastral (`Feature_Base`): quadras, ruas por hierarquia (`in_hie`: locais, coletoras, arteriais e
+  expressas), nomes de rua seguindo o traçado, nomes de bairro, número da quadra de perto e o relevo
+  sombreado da Esri (World Hillshade), somado ao relevo 3D. Código em `docs/js/mapavetorial.js`.
+- **Ruas e quadras** (painel Camadas): a mesma base, transparente, por cima do satélite. Não traz lotes.
+- **Lotes por bairro** (painel Camadas): escolha até 6 bairros; só os lotes deles são buscados no servidor
+  (primeiro os identificadores, depois as geometrias em partes) e desenhados no navegador. Os bairros
+  escolhidos entram no link da vista (`l=`). Código em `docs/js/lotes.js`.
+- As ortofotos de 2006, 2011 e 2016 saíram dos fundos. O extrator ainda as registra em `camadas.json`.
+- As consultas ao servidor municipal passam por uma fila de no máximo 4 pedidos simultâneos.
 
 ## Acesso com usuário e senha
 
@@ -95,11 +108,14 @@ colocar o site atrás de um serviço de autenticação (por exemplo, Cloudflare 
 Não há segredo nem chave no projeto. A cada envio, o fluxo **Bússola — testes** confere os dados
 e abre o mapa em um Chromium; o resultado aparece na aba **Actions**.
 
-A pasta `docs/data` (2,2 MB) pode ir pronta ou ficar de fora: ao receber `scripts/extrair_dados.py`, o
+A pasta `docs/data` (2,2 MB, 8 arquivos) pode ir pronta ou ficar de fora: ao receber `scripts/extrair_dados.py`, o
 fluxo **Bússola — atualizar dados** roda sozinho, extrai tudo do portal e grava a pasta no
-repositório (cerca de 4 minutos). Ele também pode ser rodado à mão em Actions → Run workflow.
+repositório (de 5 a 12 minutos). Ele também pode ser rodado à mão em Actions → Run workflow.
 
 ## Testar e validar
+
+A suíte tem 21 testes sem rede (dados e extrator) e 10 no navegador, entre eles um de acessibilidade
+com o axe-core (WCAG 2.1 A e AA, sem violação grave ou crítica).
 
 **No navegador:** abra `validacao.html`. Ela confere os arquivos de dados, os cálculos e, ao vivo,
 cada tema, cada fundo, o identificar, a busca, o satélite e o relevo. Dá para baixar o relatório em JSON.
@@ -117,7 +133,7 @@ playwright install chromium && pytest -m navegador   # mapa e validação no Chr
 
 ```bash
 pip install shapely
-python scripts/extrair_dados.py                  # tudo (cerca de 3 minutos)
+python scripts/extrair_dados.py                  # tudo (3 a 10 minutos; a etapa do satélite é a mais lenta)
 python scripts/extrair_dados.py --etapas camadas # só uma etapa
 ```
 
@@ -132,6 +148,7 @@ algo mudou. Se uma etapa falha, os arquivos anteriores são preservados.
 | `edificios.json` | 3.393 edifícios com base aproximada | `Mapa_Edificios` + `Feature_Base/0` |
 | `lugares.json` | 43 parques, 359 escolas e CMEIs, 145 unidades de saúde | `Mapa_MeioAmbiente/11`, `Mapa_PontosNotaveis/0` e `/1` |
 | `camadas.json` | temas, fundos, fontes de busca e catálogo do servidor | `config.json` e mapa web do portal |
+| `satelite.json` | 11 datas anteriores do satélite sobre Goiânia | arquivo Esri World Imagery Wayback |
 
 ## Como foi resolvido
 
@@ -145,6 +162,9 @@ algo mudou. Se uma etapa falha, os arquivos anteriores são preservados.
   traços e textos escuros viram brancos com halo, preenchimentos somem.
 - **Base Cadastral.** O serviço `Feature_Base` é desenhado todo em branco, serve só para consulta.
   Por isso entra como fonte do clique, não como imagem.
+- **Satélite em outras datas.** O arquivo Wayback da Esri guarda 199 versões do mosaico desde 2014. O extrator
+  consulta os metadados no centro de Goiânia e fica com uma versão por data de captura diferente. A data
+  vale para o centro; outras regiões do município podem ter sido fotografadas em outro dia.
 - **Busca.** O servidor diferencia acentos e maiúsculas (“Anhanguera” não acha “Anhangüera”).
   Os índices locais resolvem isso e respondem na hora.
 - **Edifícios 3D.** O cadastro traz o ponto e o número de pavimentos, não a projeção da torre. A base
@@ -157,6 +177,8 @@ algo mudou. Se uma etapa falha, os arquivos anteriores são preservados.
   simultâneos para não sobrecarregá-lo.
 - A ortofoto de 2016 só responde de perto (nível 11 em diante); o extrator detecta isso.
 - O valor venal do cadastro vem sem o exercício de referência.
+- A população por bairro é a do campo da base municipal. A soma (1.306.344) equivale à do Censo de 2010
+  (1.302.001), não à do Censo de 2022 (1.437.366).
 - O fundo de satélite e o relevo são serviços da Esri, usados sem chave. Para uso público em
   produção, confira os termos da Esri ou troque o fundo (a ortofoto de 2016 é municipal).
   `docs/js/config.js` aceita uma chave da Google Map Tiles API em `googleMapsApiKey`; esse caminho

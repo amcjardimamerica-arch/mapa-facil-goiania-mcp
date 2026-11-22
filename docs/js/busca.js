@@ -119,7 +119,8 @@ export class Busca {
     for (const [titulo, itens] of grupos) {
       this.lista.append(el('li', { class: 'grupo', role: 'presentation' }, titulo));
       for (const it of itens) {
-        const no = el('li', { role: 'option', class: `item tipo-${it.tipo}`, onclick: () => this.escolher(it) },
+        const no = el('li', { role: 'option', id: `resultado-${this.itens.length}`, 'aria-selected': 'false',
+          class: `item tipo-${it.tipo}`, onclick: () => this.escolher(it) },
           el('span', { class: 'nome' }, it.n), el('span', { class: 'sub' }, it.sub || ''));
         this.lista.append(no);
         this.itens.push({ it, no });
@@ -135,6 +136,7 @@ export class Busca {
   _fechar() {
     this.lista.hidden = true;
     this.campo.setAttribute('aria-expanded', 'false');
+    this.campo.removeAttribute('aria-activedescendant');
   }
 
   _tecla(e) {
@@ -143,7 +145,11 @@ export class Busca {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
       this.ativo = (this.ativo + (e.key === 'ArrowDown' ? 1 : -1) + this.itens.length) % this.itens.length;
-      this.itens.forEach(({ no }, i) => no.classList.toggle('ativo', i === this.ativo));
+      this.itens.forEach(({ no }, i) => {
+        no.classList.toggle('ativo', i === this.ativo);
+        no.setAttribute('aria-selected', String(i === this.ativo));
+      });
+      this.campo.setAttribute('aria-activedescendant', `resultado-${this.ativo}`);
       this.itens[this.ativo].no.scrollIntoView({ block: 'nearest' });
     } else if (e.key === 'Enter') {
       e.preventDefault();
@@ -181,7 +187,7 @@ export class Busca {
     id.fonte.entities.removeAll();
     id.abrir({ titulo: b.n, subtitulo: 'Bairro · Goiânia', ponto: { lon: b.c[0], lat: b.c[1], alt: NaN } });
     id.corpo.append(id.tabela([
-      ['População', b.pop ? `${fmtNum(b.pop)} habitantes` : 'não informada'],
+      ['População', b.pop ? `${fmtNum(b.pop)} habitantes (base municipal, ordem de grandeza do Censo 2010)` : 'não informada'],
       ['Condomínio horizontal', b.cond ? 'Sim' : 'Não'],
     ]));
     const r = await pedirJSON(`${CFG.baseCadastral}/2/query`, { parametros: {

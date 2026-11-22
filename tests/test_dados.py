@@ -14,7 +14,7 @@ VIZINHOS_COM_DIVISA = {"Abadia de Goiás", "Aparecida de Goiânia", "Goianira", 
 
 def test_arquivos_existem():
     for nome in ("territorio.geojson", "bairros.json", "edificios.json", "lugares.json",
-                 "logradouros.json", "camadas.json", "manifest.json"):
+                 "logradouros.json", "camadas.json", "satelite.json", "manifest.json"):
         assert (DADOS / nome).stat().st_size > 500, nome
 
 
@@ -117,10 +117,22 @@ def test_camadas():
     assert len(c["catalogo_servidor"]) >= 40
 
 
+def test_satelite_historico():
+    d = ler("satelite.json")
+    versoes = d["versoes"]
+    assert len(versoes) >= 3, "poucas datas de captura"
+    datas = [v["captura"] for v in versoes]
+    assert datas == sorted(datas) and len(set(datas)) == len(datas), "datas fora de ordem ou repetidas"
+    for v in versoes:
+        assert v["url"].startswith("https://wayback.maptiles.arcgis.com/") and v["url"].endswith("/{z}/{y}/{x}")
+        assert 17 <= v["nivel_maximo"] <= 19 and v["versao"] > 0
+        assert "2010-01-01" < v["captura"] <= v["publicada"], "a captura não pode ser posterior à publicação"
+
+
 def test_manifesto():
     m = ler("manifest.json")
     assert m["atualizado_em"].endswith("Z") and m["versao_extrator"]
-    assert set(m["etapas"]) >= {"territorio", "bairros", "edificios", "lugares", "logradouros", "camadas"}
+    assert set(m["etapas"]) >= {"territorio", "bairros", "edificios", "lugares", "logradouros", "camadas", "satelite"}
     assert len(m["etapas"]["territorio"]["vizinhos"]) >= 8
 
 

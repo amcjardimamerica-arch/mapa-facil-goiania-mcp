@@ -10,6 +10,7 @@ import { Edificios } from './edificios.js';
 import { Medir } from './medir.js';
 import { Marcadores } from './marcadores.js';
 import { Localizacao } from './localizacao.js';
+import { Lotes } from './lotes.js';
 import { encerrarSessao, sessaoAindaValida } from './acesso.js';
 
 const Cesium = window.Cesium;
@@ -24,19 +25,22 @@ const estadoAbertura = (texto, erro = false) => {
 
 function lerHash() {
   const p = new URLSearchParams(location.hash.slice(1));
-  return { v: p.get('v'), b: p.get('b'), t: p.get('t'), ed: p.get('ed'), n: p.get('n'), r: p.get('r'), ind: p.get('ind') };
+  return { v: p.get('v'), b: p.get('b'), t: p.get('t'), ed: p.get('ed'), n: p.get('n'), r: p.get('r'), ind: p.get('ind'), l: p.get('l') };
 }
 
 async function iniciar() {
   if (!Cesium) throw new Error('A biblioteca do globo (CesiumJS) não carregou. Verifique a conexão e recarregue.');
   estadoAbertura('Carregando o território de Goiânia…');
-  const [geo, catalogo, bairros, lugares, manifesto] = await Promise.all([
+  const [geo, catalogo, bairros, lugares, manifesto, satelite] = await Promise.all([
     pedirJSON(`${CFG.dados}territorio.geojson`),
     pedirJSON(`${CFG.dados}camadas.json`),
     pedirJSON(`${CFG.dados}bairros.json`),
     pedirJSON(`${CFG.dados}lugares.json`),
     pedirJSON(`${CFG.dados}manifest.json`).catch(() => ({})),
+    pedirJSON(`${CFG.dados}satelite.json`).catch(() => ({ versoes: [] })), // opcional: sem ele, só não há datas antigas
   ]);
+  catalogo.satelite = satelite.versoes || [];
+  catalogo.bairros = bairros.bairros; // nomes de bairro no mapa desenhado
   const territorio = new Territorio(geo);
   const hash = lerHash();
 
@@ -50,8 +54,9 @@ async function iniciar() {
   const busca = new Busca({ globo, identificar, territorio, bairros: bairros.bairros, lugares: lugares.lugares, edificios });
   identificar.acoes.marcar = (ponto, nome) => marcadores.adicionar(ponto, nome);
   const sessao = window.bussolaSessao || { login: 'anonimo', nome: '' };
+  const lotes = new Lotes({ globo, bairros: bairros.bairros, raiz: $('#painel-lotes') });
   const localizacao = new Localizacao({ globo, identificar, camadas, territorio, raiz: $('#painel-local'), botaoGps: $('#nav-local'), sessao });
-  Object.assign(app, { globo, camadas, identificar, edificios, medir, marcadores, localizacao, busca, territorio, catalogo, manifesto, sessao });
+  Object.assign(app, { globo, camadas, identificar, edificios, medir, marcadores, localizacao, lotes, busca, territorio, catalogo, manifesto, sessao });
 
   const bases = globo.basesDisponiveis();
   const baseInicial = bases.some((b) => b.chave === hash.b) ? hash.b : 'satelite';
@@ -77,33 +82,49 @@ async function iniciar() {
   $('#painel-fechar').addEventListener('click', () => abrirPainel(painelAberto));
 
   // --------------------------------------------------------- bases e épocas
-  const creditoBase = (chave) => (chave === 'satelite'
-    ? (CFG.googleMapsApiKey ? 'Satélite: Google' : 'Satélite: Esri, Maxar')
-    : `${(bases.find((b) => b.chave === chave)?.titulo || '').replace(' (cartografia municipal)', '')}: Prefeitura de Goiânia`);
+  const creditoBase = (chave) => {
+    const b = bases.find((x) => x.chave === chave);
+    if (chave === 'satelite') return CFG.googleMapsApiKey ? 'Satélite: Google' : 'Satélite: Esri, Maxar';
+    if (b?.tipo === 'historico') return `${b.titulo}: Esri Wayback${b.fonte ? `, ${b.fonte}` : ''}`;
+    if (chave === 'mapa') return 'Mapa: Prefeitura de Goiânia, relevo Esri';
+    return `${(b?.titulo || '').replace(' (cartografia municipal)', '')}: Prefeitura de Goiânia`;
+  };
+  const seletorData = $('#satelite-data');
   const marcarBase = () => {
     for (const b of $$('#lista-bases button, #epocas button')) b.setAttribute('aria-checked', String(b.dataset.base === globo.chaveBase));
+    seletorData.value = globo.chaveBase.startsWith('sat-') ? globo.chaveBase : '';
     $('#st-creditos').textContent = `Dados: Prefeitura de Goiânia (Mapa Fácil) · ${creditoBase(globo.chaveBase)} · CesiumJS`;
     $('#rotulo-esq').textContent = bases.find((b) => b.chave === globo.chaveBase)?.curto || '';
-    // Sobre o próprio Mapa Básico os nomes realçados (brancos) ficariam ilegíveis.
-    if (globo.camadaRealce) { globo.camadaRealce.show = globo.chaveBase !== 'basico'; globo.redesenhar(); }
+    // O mapa desenhado e o Mapa Básico já trazem ruas e nomes: a camada por cima do satélite sai.
+    if (globo.camadaRealce) { globo.camadaRealce.show = !['basico', 'mapa'].includes(globo.chaveBase); globo.redesenhar(); }
   };
   const trocarBase = async (chave) => {
     try { await globo.definirBase(chave); marcarBase(); atualizarLink(); }
     catch (e) { aviso(`Não foi possível carregar essa imagem: ${e.message}`, 'alerta'); }
   };
   app.trocarBase = trocarBase;
-  const descricao = { satelite: 'mosaico mundial recente', orto: 'voo da Prefeitura', mapa: 'ruas, quadras e lotes' };
-  for (const b of bases) {
+  const descricao = { satelite: 'fotografia atual', vetor: 'sem fotos: quadras, ruas e relevo', mapa: 'cartografia oficial com lotes' };
+  const historicas = bases.filter((b) => b.tipo === 'historico');
+  for (const b of bases.filter((x) => x.tipo !== 'historico')) {
     $('#lista-bases').append(el('button', { role: 'radio', dataset: { base: b.chave }, onclick: () => trocarBase(b.chave) },
       el('strong', {}, b.titulo.replace(' (cartografia municipal)', '')), el('small', {}, descricao[b.tipo])));
   }
-  for (const b of [...bases.filter((x) => x.tipo === 'orto'), bases[0]]) {
+  // Datas anteriores do satélite: uma opção por data de captura no centro de Goiânia.
+  seletorData.append(el('option', { value: '' }, historicas.length ? 'Escolher uma data…' : 'Indisponível'),
+    ...historicas.map((b) => el('option', { value: b.chave },
+      `${b.titulo.replace('Satélite de ', '')}${b.fonte ? ` · ${b.fonte}` : ''}${b.resolucao ? ` · ${String(b.resolucao).replace('.', ',')} m` : ''}`)));
+  seletorData.disabled = !historicas.length;
+  seletorData.addEventListener('change', () => trocarBase(seletorData.value || 'satelite'));
+  for (const b of bases.filter((x) => ['satelite', 'mapa'].includes(x.chave))) {
     $('#epocas').append(el('button', { role: 'radio', dataset: { base: b.chave }, title: b.titulo, onclick: () => trocarBase(b.chave) }, b.curto));
   }
   marcarBase();
 
   const seletor = $('#comparar');
-  seletor.append(el('option', { value: '' }, 'Sem comparação'), ...bases.map((b) => el('option', { value: b.chave }, b.titulo)));
+  seletor.append(el('option', { value: '' }, 'Sem comparação'),
+    ...bases.filter((b) => b.tipo !== 'historico').map((b) => el('option', { value: b.chave }, b.titulo)),
+    historicas.length ? el('optgroup', { label: 'Satélite em outras datas' },
+      historicas.map((b) => el('option', { value: b.chave }, b.titulo))) : null);
   const divisor = $('#divisor');
   const moverDivisor = (fracao) => {
     const f = Math.min(0.95, Math.max(0.05, fracao));
@@ -162,6 +183,8 @@ async function iniciar() {
   edificios.aoMudar = () => atualizarLink();
   camadas.aoMudar = () => atualizarLink();
   if (hash.t) camadas.restaurarDe(hash.t);
+  lotes.aoMudar = () => atualizarLink();
+  if (hash.l) lotes.restaurar(hash.l);
 
   // ----------------------------------------------------------- navegação
   const rad = Cesium.Math.toRadians;
@@ -237,6 +260,10 @@ async function iniciar() {
     $('#lista-bairros').append(el('li', {}, el('button', { onclick: () => busca.escolher({ tipo: 'bairro', n: b.n, dado: b }) },
       el('span', {}, b.n), el('small', {}, `${fmtNum(b.pop)} hab.`))));
   }
+  if (bairros.bairros.length) {
+    $('#lista-bairros').after(el('p', { class: 'nota' },
+      'População conforme o campo da base municipal. A soma dos bairros equivale à do Censo de 2010, não à de 2022.'));
+  }
   $('#sortear').addEventListener('click', () => {
     const altos = edificios.lista.slice(0, 40);
     const sorteio = [...parques.map((l) => () => irLugar(l)), ...altos.map((e) => () => edificios.irPara(e))];
@@ -267,6 +294,8 @@ async function iniciar() {
     if (t) p.set('t', t);
     if (!edificios.ativo) p.set('ed', '0');
     if (!realce.checked) p.set('n', '0');
+    const l = lotes.serializar();
+    if (l) p.set('l', l);
     if (!globo.relevoAtivo) p.set('r', '0');
     history.replaceState(null, '', `#${p.toString().replace(/%2C/g, ',').replace(/%3A/g, ':').replace(/%7C/g, '|')}`);
   }

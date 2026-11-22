@@ -10,12 +10,16 @@
 <meta name="robots" content="noindex">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%231f2226'/%3E%3Ccircle cx='32' cy='32' r='21' fill='%235b6067'/%3E%3Cpath d='M22 27l9-8 12 4 3 12-9 9-12-3z' fill='%23ffd54a'/%3E%3C/svg%3E">
 <!-- CesiumJS (Apache-2.0), versão fixada. Para atualizar, troque o número nas duas linhas. -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.132.0/Build/Cesium/Widgets/widgets.css">
+<!-- "integrity" faz o navegador recusar o arquivo se ele for alterado na CDN. Ao trocar de versão, gere de novo:
+     curl -s URL | openssl dgst -sha384 -binary | openssl base64 -A -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.132.0/Build/Cesium/Widgets/widgets.css"
+  integrity="sha384-ghEeMdcWWzRv/BPeUcX835vcKDGrxvROXisl/Btpv3GeekBUXTSPVcFJpI1Tcrgp" crossorigin="anonymous">
 <link rel="stylesheet" href="css/app.css">
-<script src="https://cdn.jsdelivr.net/npm/cesium@1.132.0/Build/Cesium/Cesium.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cesium@1.132.0/Build/Cesium/Cesium.js"
+  integrity="sha384-MtxSMxgh0b7MGLXcS6y6IIGswlJjxnL5AVLwKXJOGuglBgO67kbbcChbAF630juz" crossorigin="anonymous"></script>
 </head>
 <body>
-<div id="globo" aria-label="Globo 3D de Goiânia"></div>
+<main id="globo" aria-label="Globo 3D de Goiânia"></main>
 <div id="divisor" hidden><div class="pega" role="slider" aria-label="Divisor da comparação de imagens" tabindex="0"><span id="rotulo-esq"></span><span id="rotulo-dir"></span></div></div>
 
 <div id="abertura">
@@ -37,7 +41,7 @@
 
 <nav id="trilho" aria-label="Ferramentas">
   <button data-painel="camadas" title="Camadas do Mapa Fácil" aria-label="Camadas do Mapa Fácil"><svg viewBox="0 0 24 24"><path d="M12 3 2.5 8.5 12 14l9.5-5.5z"/><path d="M4.5 12.5 2.5 13.7 12 19.2l9.5-5.5-2-1.2L12 16.8z"/></svg><span>Camadas</span></button>
-  <button data-painel="imagens" title="Imagens, épocas e relevo" aria-label="Imagens, épocas e relevo"><svg viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 1-7.4 5H2.5l3.2-3.6L9 9H6.8A6 6 0 1 0 12 6z"/><path d="M11 8.5h1.6v3.8l3 1.8-.8 1.3-3.8-2.3z"/></svg><span>Imagens</span></button>
+  <button data-painel="imagens" title="Fundo do mapa, satélite e relevo" aria-label="Fundo do mapa, satélite e relevo"><svg viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 1-7.4 5H2.5l3.2-3.6L9 9H6.8A6 6 0 1 0 12 6z"/><path d="M11 8.5h1.6v3.8l3 1.8-.8 1.3-3.8-2.3z"/></svg><span>Fundo</span></button>
   <button data-painel="edificios" title="Edifícios em 3D" aria-label="Edifícios em 3D"><svg viewBox="0 0 24 24"><path d="M4 21V8l6-3v16zM12 21V3l8 4v14z"/></svg><span>Edifícios</span></button>
   <button data-painel="medir" title="Medir distância e área" aria-label="Medir distância e área"><svg viewBox="0 0 24 24"><path d="m2.5 16.5 14-14 5 5-14 14zM6 16l1.5 1.5M8.5 13.5 10.5 15.5M11 11l1.5 1.5M13.5 8.5l2 2M16 6l1.5 1.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg><span>Medir</span></button>
   <button data-painel="marcadores" title="Marcadores e arquivos KML" aria-label="Marcadores e arquivos KML"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.6A2.6 2.6 0 1 1 12 6.4a2.6 2.6 0 0 1 0 5.2z"/></svg><span>Marcar</span></button>
@@ -49,18 +53,22 @@
   <button data-painel="sobre" title="Sobre, fontes e validação" aria-label="Sobre, fontes e validação"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1 8.5h2V17h-2zm1-4.3a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6z"/></svg><span>Sobre</span></button>
 </nav>
 
-<aside id="painel" hidden aria-live="polite">
+<aside id="painel" hidden aria-live="polite" aria-label="Painel de ferramentas">
   <div class="painel-topo"><h2 id="painel-titulo"></h2><button id="painel-fechar" class="botao-icone" aria-label="Fechar painel">×</button></div>
 
   <section data-secao="camadas" data-titulo="Camadas do Mapa Fácil" hidden>
-    <label class="linha-chave destaque-linha"><span><strong>Nomes e divisas</strong><small>ruas, bairros, quadras e lotes sobre o satélite</small></span><span class="interruptor"><input type="checkbox" id="realce-liga"><span></span></span></label>
+    <div id="painel-lotes"></div>
+    <label class="linha-chave destaque-linha"><span><strong>Ruas e quadras</strong><small>nomes de rua e de bairro e divisas de quadra sobre o satélite</small></span><span class="interruptor"><input type="checkbox" id="realce-liga"><span></span></span></label>
     <div id="lista-camadas"></div>
   </section>
 
-  <section data-secao="imagens" data-titulo="Imagens, épocas e relevo" hidden>
+  <section data-secao="imagens" data-titulo="Fundo do mapa, satélite e relevo" hidden>
     <h3 class="subtitulo">Fundo do globo</h3>
     <div id="lista-bases" class="cartoes" role="radiogroup" aria-label="Fundo do globo"></div>
-    <p class="nota">O satélite é o fundo padrão. As ortofotos de 2006, 2011 e 2016 são os voos oficiais da Prefeitura e têm mais nitidez de perto.</p>
+    <p class="nota">O satélite é o fundo padrão. O Mapa é desenhado aqui a partir dos dados da Prefeitura, sem fotos: quadras, ruas por hierarquia, nomes e o relevo sombreado.</p>
+    <h3 class="subtitulo">Satélite em outras datas</h3>
+    <label class="rotulo-faixa bloco"><span>Data da imagem no centro de Goiânia</span><select id="satelite-data" class="campo"></select></label>
+    <p class="nota">Versões anteriores do mesmo satélite (arquivo Wayback da Esri). A data é a da captura no centro; outras regiões podem ter sido fotografadas em outro dia.</p>
     <h3 class="subtitulo">Comparar épocas</h3>
     <label class="rotulo-faixa bloco"><span>Lado direito da tela</span><select id="comparar" class="campo"></select></label>
     <p class="nota">Arraste a barra vertical sobre o mapa para revelar cada lado.</p>
@@ -97,8 +105,8 @@
     <h3 class="subtitulo">Fontes</h3>
     <ul class="fontes">
       <li><strong>Dados e camadas:</strong> servidor de mapas da Prefeitura de Goiânia (Mapa Fácil), consultado ao vivo.</li>
-      <li><strong>Fundo de satélite:</strong> Esri World Imagery (Esri, Maxar, Earthstar Geographics).</li>
-      <li><strong>Relevo:</strong> Esri World Elevation (Terrain 3D).</li>
+      <li><strong>Fundo de satélite:</strong> Esri World Imagery (Esri, Maxar, Earthstar Geographics); datas anteriores pelo arquivo World Imagery Wayback.</li>
+      <li><strong>Relevo:</strong> Esri World Elevation (Terrain 3D) e World Hillshade (sombreado do Mapa).</li>
       <li><strong>Globo:</strong> CesiumJS (código aberto).</li>
     </ul>
     <h3 class="subtitulo">Atalhos</h3>
@@ -118,14 +126,15 @@
   </section>
 </aside>
 
-<aside id="ficha" hidden aria-live="polite">
+<aside id="ficha" hidden aria-live="polite" aria-label="Ficha do local">
   <div class="painel-topo"><div><h2 id="ficha-titulo"></h2><small id="ficha-subtitulo"></small></div><button id="ficha-fechar" class="botao-icone" aria-label="Fechar ficha">×</button></div>
   <div id="ficha-corpo"></div>
 </aside>
 
-<div id="epocas" role="radiogroup" aria-label="Época da imagem"></div>
+<section id="controles" aria-label="Controles do mapa">
+<div id="epocas" role="radiogroup" aria-label="Fundo do mapa"></div>
 
-<div id="navegacao" aria-label="Navegação">
+<div id="navegacao" role="group" aria-label="Navegação">
   <button id="nav-bussola" title="Norte para cima (N)" aria-label="Norte para cima"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><g id="agulha"><path d="M20 5l5 15H15z" fill="#ff6b5e"/><path d="M20 35l5-15H15z" fill="#e3e6ea"/></g></svg></button>
   <button id="nav-3d" title="Vista de cima / inclinada (U)" aria-label="Alternar vista de cima e inclinada">3D</button>
   <div class="grupo">
@@ -140,6 +149,7 @@
   <button id="nav-local" title="Minha localização (GPS)" aria-label="Ligar ou desligar o GPS" aria-pressed="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
   <button id="nav-foto" title="Salvar imagem da vista" aria-label="Salvar imagem da vista"><svg viewBox="0 0 24 24"><path d="M8.5 5 10 3h4l1.5 2H20a1.5 1.5 0 0 1 1.5 1.5v12A1.5 1.5 0 0 1 20 20H4a1.5 1.5 0 0 1-1.5-1.5v-12A1.5 1.5 0 0 1 4 5zM12 8.2a4.3 4.3 0 1 0 0 8.6 4.3 4.3 0 0 0 0-8.6z"/></svg></button>
 </div>
+</section>
 
 <footer id="rodape">
   <span id="st-coord">—</span>

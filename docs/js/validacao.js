@@ -151,12 +151,33 @@ const grupos = [
       `${t.titulo}${t.oficial ? '' : ' (extra)'}`,
       async () => imagem(urlExport(t.url, `&layers=show:${t.camadas.filter((x) => !x.grupo && x.visivel).map((x) => x.id).join(',') || t.camadas.filter((x) => !x.grupo).map((x) => x.id).join(',')}`)),
     ]);
-    itens.push(['Nomes e divisas (Mapa Básico transparente)', async () => imagem(urlExport(c.hibrido.url))]);
-    for (const b of c.bases) itens.push([`Fundo: ${b.titulo}`, async () => imagem(urlExport(b.url).replace('png32', 'jpg').replace('transparent=true', 'transparent=false'))]);
+    for (const b of c.bases.filter((x) => !x.ano)) itens.push([`Fundo: ${b.titulo}`, async () => imagem(urlExport(b.url).replace('png32', 'jpg').replace('transparent=true', 'transparent=false'))]);
+    // O Mapa e a camada "Ruas e quadras" são desenhados aqui com os dados vetoriais da base cadastral.
+    const consulta = (camada, campos) => pedirJSON(`${CFG.baseCadastral}/${camada}/query`, { parametros: { f: 'json',
+      geometry: '-5484730,-1885010,-5483530,-1883810', geometryType: 'esriGeometryEnvelope', inSR: '3857', outSR: '3857',
+      spatialRel: 'esriSpatialRelIntersects', returnGeometry: 'true', outFields: campos, geometryPrecision: '1', maxAllowableOffset: '1' } });
+    itens.push(['Mapa desenhado: quadras (vetor)', async () => {
+      const r = await consulta(1, 'nm_qdr');
+      exigir(r.features?.length > 20 && r.features[0].geometry?.rings, 'poucas quadras no centro');
+      return `${r.features.length} quadras num quadrado de 1,2 km`;
+    }]);
+    itens.push(['Mapa desenhado: ruas com hierarquia (vetor)', async () => {
+      const r = await consulta(7, 'nm,in_hie');
+      exigir(r.features?.length > 50 && r.features.some((f) => f.attributes.in_hie >= 31), 'sem vias arteriais no centro');
+      return `${r.features.length} trechos de rua`;
+    }]);
+    itens.push(['Mapa desenhado: relevo sombreado (Esri)', async () => imagem('https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer/tile/14/8962/5949')]);
     return itens;
   } },
   { titulo: 'Fundo de satélite, relevo e globo', testes: [
     ['Satélite (Esri World Imagery)', async () => imagem(CFG.satelite.url.replace('{z}', 15).replace('{y}', 17924).replace('{x}', 11900))],
+    ['Satélite em outras datas (Esri Wayback)', async () => {
+      const d = await carregar('satelite.json');
+      exigir(d.versoes?.length >= 3, 'menos de 3 datas de captura no arquivo');
+      const v = d.versoes[0];
+      const txt = await imagem(v.url.replace('{z}', 15).replace('{y}', 17924).replace('{x}', 11900));
+      return `${d.versoes.length} datas, de ${v.captura} a ${d.versoes.at(-1).captura}; bloco da mais antiga: ${txt}`;
+    }],
     ['Relevo (Esri Terrain 3D)', async () => {
       const r = await pedirJSON(CFG.relevo.url, { parametros: { f: 'json' } });
       exigir(r.tileInfo || r.name, 'resposta inesperada');

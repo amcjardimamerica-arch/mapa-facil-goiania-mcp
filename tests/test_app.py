@@ -159,6 +159,50 @@ def test_medicao_e_kml(mapa):
     assert "<LineString>" in kml["k"] and "<Polygon>" in kml["k"] and kml["k"].startswith("<?xml")
 
 
+def test_satelite_em_outras_datas(mapa):
+    """As datas antigas do satélite entram como fundo e voltam ao satélite atual."""
+    r = mapa.evaluate("""async () => {
+      const datas = bussola.globo.basesDisponiveis().filter((b) => b.tipo === 'historico');
+      if (!datas.length) return { total: 0 };
+      const alvo = datas[datas.length - 1].chave;            // a mais antiga
+      await bussola.trocarBase(alvo);
+      const durante = { base: bussola.globo.chaveBase, seletor: document.querySelector('#satelite-data').value,
+                        credito: document.querySelector('#st-creditos').textContent };
+      await bussola.trocarBase('satelite');
+      return { total: datas.length, alvo, durante, depois: bussola.globo.chaveBase,
+               opcoes: document.querySelectorAll('#satelite-data option').length };
+    }""")
+    assert r["total"] >= 3
+    assert r["durante"]["base"] == r["alvo"] == r["durante"]["seletor"] and r["alvo"].startswith("sat-20")
+    assert "Wayback" in r["durante"]["credito"]
+    assert r["depois"] == "satelite" and r["opcoes"] == r["total"] + 1
+
+
+AXE = "https://cdn.jsdelivr.net/npm/axe-core@4.10.2/axe.min.js"
+
+
+def _violacoes_graves(pagina):
+    pagina.add_script_tag(url=AXE)
+    return pagina.evaluate("""() => axe.run(document, { runOnly: { type: 'tag',
+        values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'] } })
+      .then((r) => r.violations.filter((v) => ['serious', 'critical'].includes(v.impact))
+        .map((v) => `${v.id}: ${v.help} -> ${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(' | ')}`))""")
+
+
+def test_acessibilidade_sem_violacao_grave(mapa):
+    """axe-core (WCAG 2.1 A/AA): vista inicial, painel, busca e ficha sem violações graves ou críticas."""
+    assert _violacoes_graves(mapa) == []
+    mapa.evaluate("bussola.abrirPainel('imagens')")
+    mapa.fill("#busca", "jardim")
+    mapa.wait_for_selector("#resultados .item")
+    mapa.evaluate("bussola.identificar.emPonto({lon: -49.2469, lat: -16.8198, alt: NaN})")
+    graves = _violacoes_graves(mapa)
+    mapa.fill("#busca", "")
+    mapa.keyboard.press("Escape")
+    mapa.evaluate("bussola.identificar.fechar(); bussola.abrirPainel('imagens')")
+    assert graves == []
+
+
 def test_pagina_de_validacao(navegador, servidor):
     ctx = _contexto(navegador)
     pagina = ctx.new_page()
@@ -168,6 +212,51 @@ def test_pagina_de_validacao(navegador, servidor):
     ctx.close()
     assert resumo["resumo"]["total"] > 30
     assert resumo["falhas"] == [], resumo["falhas"]
+
+
+# ------------------------------------------------ mapa desenhado e lotes
+def test_fundos_sem_ortofotos_e_mapa_desenhado(mapa):
+    r = mapa.evaluate("""async () => {
+      const chaves = bussola.globo.basesDisponiveis().map((b) => b.chave);
+      const barra = [...document.querySelectorAll('#epocas button')].map((b) => b.textContent);
+      await bussola.trocarBase('mapa');
+      const p = bussola.globo.camadaBase.imageryProvider;
+      const bloco = await p.requestImage(5949, 8962, 14, undefined);
+      const durante = { base: bussola.globo.chaveBase, modo: p.modo, realceVisivel: bussola.globo.camadaRealce?.show };
+      await bussola.trocarBase('satelite');
+      return { chaves, barra, durante, bloco: bloco ? [bloco.width, bloco.height] : null,
+               realceModo: bussola.globo.camadaRealce?.imageryProvider.modo };
+    }""")
+    assert not any(c.startswith("orto") for c in r["chaves"]) and "mapa" in r["chaves"]
+    assert r["barra"] == ["Satélite", "Mapa"]
+    assert r["durante"] == {"base": "mapa", "modo": "mapa", "realceVisivel": False}
+    assert r["bloco"] == [512, 512] and r["realceModo"] == "sobre"
+
+
+def test_nome_de_via_legivel(mapa):
+    nomes = mapa.evaluate("""async () => { const m = await import('./js/mapavetorial.js');
+      return [m.nomeVia('R C 212'), m.nomeVia('AV T 63'), m.nomeVia('Pça Cívica'), m.classeVia(11), m.classeVia(40), m.classeVia(60)]; }""")
+    assert nomes == ["R. C-212", "Av. T-63", "Pç. Cívica", "local", "arterial", "expressa"]
+
+
+def test_lotes_so_do_bairro_escolhido(mapa):
+    # Setor Sul: bairro pequeno do centro, carrega rápido.
+    r = mapa.evaluate("""async () => {
+      const b = bussola.lotes.bairros.find((x) => x.k === 's sul') || bussola.lotes.bairros.find((x) => /sul$/i.test(x.n));
+      const ok = await bussola.lotes.adicionar(b.id, { voar: false });
+      const it = bussola.lotes.escolhidos.get(b.id);
+      const m = await import('./js/lotes.js');
+      const foraDoBairro = it.lotes.filter((l) => !m.dentroDe(it.aneis, l.centro[0], l.centro[1])).length;
+      const ids = new Set(it.lotes.map((l) => l.centro.join(',')));
+      const res = { ok, nome: b.n, n: it.lotes.length, total: it.total, foraDoBairro, unicos: ids.size,
+                    camada: !!bussola.lotes.camada, hash: location.hash.includes('l=' + b.id) };
+      bussola.lotes.limpar();
+      return { ...res, depois: !!bussola.lotes.camada };
+    }""")
+    assert r["ok"] and r["camada"] and not r["depois"], r
+    assert 200 < r["n"] <= r["total"] and r["foraDoBairro"] == 0, r
+    assert r["unicos"] >= r["n"] * 0.99, r
+    assert r["hash"], r
 
 
 # ------------------------------------------------------------------ acesso

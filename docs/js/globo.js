@@ -2,6 +2,7 @@
 // navegação estilo Earth e os provedores de imagem do Mapa Fácil.
 import { CFG } from './config.js';
 import { ProvedorMascara, rotularVizinhos } from './territorio.js';
+import { ProvedorVetorial } from './mapavetorial.js';
 
 const Cesium = window.Cesium;
 const rad = (graus) => (graus * Math.PI) / 180; // sem tocar no Cesium na carga do módulo
@@ -26,75 +27,6 @@ export function provedorExport(url, { camadas, formato = 'png32', transparente =
     // (As ortofotos em cache exigem nível maior — ver "nivel_minimo" em camadas.json.)
     minimumLevel: retangulo ? nivelMinimo : 0,
   });
-}
-
-/**
- * Recolore um bloco da cartografia municipal para leitura sobre satélite:
- * traços e textos escuros viram brancos com halo; preenchimentos claros somem.
- */
-export function realcar(img, T) {
-  const a = document.createElement('canvas');
-  a.width = a.height = T;
-  const ga = a.getContext('2d', { willReadFrequently: true });
-  ga.drawImage(img, 0, 0, T, T);
-  if (img.close) img.close();
-  const dados = ga.getImageData(0, 0, T, T);
-  const px = dados.data;
-  for (let i = 0; i < px.length; i += 4) {
-    const alfa = px[i + 3];
-    if (alfa < 8) { px[i + 3] = 0; continue; }
-    const r = px[i], g = px[i + 1], b = px[i + 2];
-    const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    if (Math.max(r, g, b) - Math.min(r, g, b) < 42) {
-      const k = Math.min(1, Math.max(0, (0.93 - lum) / 0.45));
-      px[i] = px[i + 1] = px[i + 2] = 255;
-      px[i + 3] = alfa * k;
-    } else {
-      px[i] = r + (255 - r) * 0.55; px[i + 1] = g + (255 - g) * 0.55; px[i + 2] = b + (255 - b) * 0.55;
-    }
-  }
-  ga.putImageData(dados, 0, 0);
-  const o = document.createElement('canvas');
-  o.width = o.height = T;
-  const go = o.getContext('2d');
-  go.shadowColor = 'rgba(0,0,0,.95)';
-  go.shadowBlur = 2.5;
-  go.drawImage(a, 0, 0);
-  go.drawImage(a, 0, 0);
-  return o;
-}
-
-/** Camada "Nomes e divisas": Mapa Básico exportado transparente e realçado. */
-export class ProvedorRealce {
-  constructor(url, { retangulo, tamanho = 512, credito } = {}) {
-    this._url = url; this._ret = retangulo; this._T = tamanho;
-    this._grade = new Cesium.WebMercatorTilingScheme();
-    this._erro = new Cesium.Event();
-    this._credito = credito ? new Cesium.Credit(credito) : undefined;
-  }
-  get tileWidth() { return this._T; }
-  get tileHeight() { return this._T; }
-  get minimumLevel() { return this._ret ? NIVEL_MINIMO : 0; }
-  get maximumLevel() { return 20; }
-  get tilingScheme() { return this._grade; }
-  get rectangle() { return this._ret || this._grade.rectangle; }
-  get tileDiscardPolicy() { return undefined; }
-  get errorEvent() { return this._erro; }
-  get credit() { return this._credito; }
-  get proxy() { return undefined; }
-  get hasAlphaChannel() { return true; }
-  get ready() { return true; }
-  get readyPromise() { return Promise.resolve(true); }
-  getTileCredits() { return undefined; }
-  pickFeatures() { return undefined; }
-  requestImage(x, y, nivel, request) {
-    const r = this._grade.tileXYToNativeRectangle(x, y, nivel);
-    const url = `${this._url}/export?bbox=${r.west},${r.south},${r.east},${r.north}` +
-      `&bboxSR=3857&imageSR=3857&size=${this._T},${this._T}&format=png32&transparent=true&f=image`;
-    const pedido = new Cesium.Resource({ url, request }).fetchImage({ preferImageBitmap: true });
-    if (!pedido) return undefined; // limitado pelo agendador do Cesium: ele tenta de novo
-    return pedido.then((img) => realcar(img, this._T));
-  }
 }
 
 function provedorSatelite() {
@@ -192,11 +124,19 @@ export class Globo {
 
   // ------------------------------------------------------------------- bases
   basesDisponiveis() {
-    const lista = [{ chave: 'satelite', titulo: 'Satélite (atual)', curto: 'Atual', ano: null, tipo: 'satelite' }];
-    for (const b of this.catalogo.bases) {
-      lista.push(b.ano
-        ? { ...b, curto: String(b.ano), tipo: 'orto' }
-        : { ...b, curto: 'Mapa', tipo: 'mapa' });
+    const lista = [
+      { chave: 'satelite', titulo: 'Satélite', curto: 'Satélite', ano: null, tipo: 'satelite' },
+      { chave: 'mapa', titulo: 'Mapa', curto: 'Mapa', ano: null, tipo: 'vetor' },
+    ];
+    // As ortofotos antigas (2006, 2011, 2016) ficam de fora: o fundo é o satélite ou o mapa.
+    for (const b of this.catalogo.bases) if (!b.ano) lista.push({ ...b, titulo: 'Mapa Básico da Prefeitura', curto: 'Básico', tipo: 'mapa' });
+    // Datas anteriores do satélite (Esri World Imagery Wayback), da mais nova para a mais antiga.
+    for (const v of [...(this.catalogo.satelite || [])].reverse()) {
+      const quando = new Date(`${v.captura}T12:00:00Z`);
+      const mes = quando.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+      lista.push({ chave: `sat-${v.captura}`, titulo: `Satélite de ${mes}`, curto: `Sat. ${v.captura.slice(0, 4)}`,
+        ano: null, tipo: 'historico', url: v.url, fonte: v.fonte, resolucao: v.resolucao_m,
+        nivelMaximo: v.nivel_maximo || 17, captura: v.captura });
     }
     return lista;
   }
@@ -208,14 +148,23 @@ export class Globo {
       }
       return provedorSatelite();
     }
-    const b = this.catalogo.bases.find((x) => x.chave === chave);
+    if (chave === 'mapa') {
+      return new ProvedorVetorial({ modo: 'mapa', bairros: this.catalogo.bairros || [], retangulo: this.ret, territorio: this.territorio });
+    }
+    if (chave.startsWith('sat-')) {
+      const v = this.basesDisponiveis().find((x) => x.chave === chave);
+      if (!v) throw new Error(`data de satélite desconhecida: ${chave}`);
+      return new Cesium.UrlTemplateImageryProvider({
+        url: v.url, maximumLevel: v.nivelMaximo, enablePickFeatures: false,
+        credit: `Satélite de ${v.captura}: Esri World Imagery Wayback${v.fonte ? `, ${v.fonte}` : ''}`,
+      });
+    }
+    const b = this.catalogo.bases.find((x) => x.chave === chave && !x.ano);
     if (!b) throw new Error(`base desconhecida: ${chave}`);
     return provedorExport(b.url, {
       formato: 'jpg', transparente: false, retangulo: this.ret, nivelMaximo: 21,
       nivelMinimo: Math.max(NIVEL_MINIMO, b.nivel_minimo || NIVEL_MINIMO),
       credito: `${b.titulo}: Prefeitura de Goiânia`,
-      // No serviço de 2011 a camada 2 é a ortofoto de 2011 (a 1 é a de 2006).
-      camadas: chave === 'orto2011' ? [2] : undefined,
     });
   }
 
@@ -253,13 +202,15 @@ export class Globo {
 
   definirDivisor(fracao) { this.cena.splitPosition = fracao; this.redesenhar(); }
 
-  /** Liga/desliga "Nomes e divisas" (cartografia municipal realçada sobre o satélite). */
+  /**
+   * Liga/desliga "Ruas e quadras" sobre o satélite: nomes de rua e de bairro, eixos
+   * viários e divisas de quadra, desenhados a partir dos dados vetoriais (sem lotes).
+   */
   definirRealce(ligado, opacidade = 1) {
     const camadas = this.viewer.imageryLayers;
-    const h = this.catalogo.hibrido;
-    if (ligado && !this.camadaRealce && h) {
+    if (ligado && !this.camadaRealce) {
       this.camadaRealce = new Cesium.ImageryLayer(
-        new ProvedorRealce(h.url, { retangulo: this.ret, credito: 'Cartografia: Prefeitura de Goiânia' }),
+        new ProvedorVetorial({ modo: 'sobre', bairros: this.catalogo.bairros || [], retangulo: this.ret, territorio: this.territorio }),
         // Só entra de perto (a ~20 km do chão): na vista da cidade inteira os nomes viram ruído.
         { rectangle: this.ret, minimumTerrainLevel: 11 });
       camadas.add(this.camadaRealce);
