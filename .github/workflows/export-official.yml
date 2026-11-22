@@ -3,6 +3,9 @@ name: Export official Goiânia cadastral lots
 on:
   push:
     branches: [main]
+    paths:
+      - '.github/workflows/export-official.yml'
+      - 'TRIGGER_EXPORT.txt'
   workflow_dispatch:
 
 permissions:

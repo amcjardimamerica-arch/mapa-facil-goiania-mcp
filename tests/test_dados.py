@@ -1,0 +1,124 @@
+"""Confere os arquivos de docs/data (sem rede): é o contrato entre o extrator e o mapa."""
+from __future__ import annotations
+
+import math
+
+from shapely.geometry import Point, Polygon, shape
+
+from conftest import DADOS, ler
+
+KM2_POR_GRAU2 = (111.32 ** 2) * math.cos(math.radians(16.69))
+VIZINHOS_COM_DIVISA = {"Abadia de Goiás", "Aparecida de Goiânia", "Goianira", "Goianápolis", "Nerópolis",
+                       "Santo Antônio de Goiás", "Senador Canedo", "Trindade"}
+
+
+def test_arquivos_existem():
+    for nome in ("territorio.geojson", "bairros.json", "edificios.json", "lugares.json",
+                 "logradouros.json", "camadas.json", "manifest.json"):
+        assert (DADOS / nome).stat().st_size > 500, nome
+
+
+def test_goiania(territorio, goiania):
+    assert goiania.is_valid and goiania.geom_type == "Polygon"
+    area = goiania.area * KM2_POR_GRAU2
+    assert 700 < area < 780, f"área de Goiânia fora do esperado: {area:.1f} km²"
+    props = territorio["features"][0]["properties"]
+    assert abs(props["area_km2"] - area) / area < 0.01
+    o, s, l, n = territorio["bbox"]
+    assert goiania.bounds == (o, s, l, n) or all(
+        abs(a - b) < 1e-4 for a, b in zip(goiania.bounds, (o, s, l, n)))
+    assert goiania.contains(Point(-49.2556, -16.6816)), "Praça Cívica deve estar em Goiânia"
+
+
+def test_limitrofes(territorio, goiania):
+    vizinhos = [f for f in territorio["features"] if f["properties"]["tipo"] == "vizinho"]
+    nomes = {f["properties"]["nome"] for f in vizinhos}
+    assert VIZINHOS_COM_DIVISA <= nomes, f"faltam limítrofes: {VIZINHOS_COM_DIVISA - nomes}"
+    assert "Goiânia" not in nomes and len(nomes) == len(vizinhos)
+    for f in vizinhos:
+        p, g = f["properties"], shape(f["geometry"])
+        assert g.is_valid, p["nome"]
+        # a máscara não pode invadir Goiânia nem deixar fresta visível na divisa
+        assert g.intersection(goiania).area * KM2_POR_GRAU2 < 0.02, f"{p['nome']} sobrepõe Goiânia"
+        assert g.distance(goiania) * 111_320 < 50, f"{p['nome']} não encosta em Goiânia"
+        assert g.contains(Point(p["rotulo"])), f"rótulo de {p['nome']} fora do território"
+        assert p["contato"] in ("divisa", "vertice")
+        assert (p["divisa_km"] > 0.1) == (p["contato"] == "divisa")
+        if p["nome"] in VIZINHOS_COM_DIVISA:
+            assert p["contato"] == "divisa" and p["divisa_km"] > 5
+
+
+def test_bairros(territorio):
+    bairros = ler("bairros.json")["bairros"]
+    assert len(bairros) > 1000
+    o, s, l, n = territorio["bbox"]
+    for b in bairros:
+        assert b["n"] and b["k"] and b["id"]
+        assert o - 0.02 <= b["c"][0] <= l + 0.02 and s - 0.02 <= b["c"][1] <= n + 0.02, b["n"]
+        assert b["e"][0] <= b["c"][0] <= b["e"][2] and b["e"][1] <= b["c"][1] <= b["e"][3], b["n"]
+    assert [b["pop"] for b in bairros[:50]] == sorted((b["pop"] for b in bairros[:50]), reverse=True)
+    assert any(b["k"].endswith("jardim america") for b in bairros)
+    assert 1_000_000 < sum(b["pop"] for b in bairros) < 2_000_000
+
+
+def test_edificios(territorio, goiania):
+    d = ler("edificios.json")
+    eds = d["edificios"]
+    assert len(eds) > 3000 and d["metros_por_pavimento"] > 0
+    assert [e["p"] for e in eds] == sorted((e["p"] for e in eds), reverse=True)
+    assert len({e["id"] for e in eds}) == len(eds), "edifício repetido"
+    fora = 0
+    for e in eds:
+        assert isinstance(e["p"], int) and 0 <= e["p"] <= 80, e["n"]
+        base = Polygon(e["f"])
+        assert base.is_valid and len(e["f"]) >= 3, e["n"]
+        area_m2 = base.area * KM2_POR_GRAU2 * 1e6
+        assert 30 < area_m2 < 6000, f"{e['n']}: base de {area_m2:.0f} m²"
+        fora += not goiania.buffer(0.001).contains(Point(e["c"]))
+    assert fora == 0, f"{fora} edifícios fora de Goiânia"
+
+
+def test_logradouros():
+    d = ler("logradouros.json")
+    assert len(d["ruas"]) > 10_000 and len(d["bairros"]) > 50
+    for ident, nome, idx in d["ruas"]:
+        assert ident and nome and 0 <= idx < len(d["bairros"])
+    assert any("Anhangüera" in r[1] for r in d["ruas"])
+
+
+def test_lugares(goiania):
+    lugares = ler("lugares.json")["lugares"]
+    tipos = {x["tipo"] for x in lugares}
+    assert {"parque", "educacao", "saude"} <= tipos and len(lugares) > 300
+    perto = goiania.buffer(0.01)
+    for x in lugares:
+        assert x["n"] and perto.contains(Point(x["c"])), x["n"]
+
+
+def test_camadas():
+    c = ler("camadas.json")
+    temas = c["temas"]
+    oficiais = [t for t in temas if t["oficial"]]
+    assert len(oficiais) >= 12, "o portal tinha 15 temas na extração de referência"
+    assert len({t["chave"] for t in temas}) == len(temas)
+    consulta = [t for t in temas if t["somente_consulta"]]
+    assert len(consulta) == 1 and consulta[0]["chave"] == "Feature_Base"
+    assert {0, 1, 2} <= {x["id"] for x in consulta[0]["camadas"]}
+    for t in temas:
+        assert t["url"].startswith("https://") and t["url"].endswith("/MapServer"), t["chave"]
+        ids = [x["id"] for x in t["camadas"]]
+        assert ids and len(set(ids)) == len(ids), t["chave"]
+        for x in t["camadas"]:
+            assert x["pai"] == -1 or x["pai"] in ids, f"{t['chave']}: pai inexistente"
+    chaves = {b["chave"] for b in c["bases"]}
+    assert {"orto2006", "orto2011", "orto2016", "basico"} <= chaves
+    assert all(9 <= b["nivel_minimo"] <= 13 for b in c["bases"])
+    assert c["hibrido"]["url"].endswith("Mapa_Basico3/MapServer")
+    assert len(c["catalogo_servidor"]) >= 40
+
+
+def test_manifesto():
+    m = ler("manifest.json")
+    assert m["atualizado_em"].endswith("Z") and m["versao_extrator"]
+    assert set(m["etapas"]) >= {"territorio", "bairros", "edificios", "lugares", "logradouros", "camadas"}
+    assert len(m["etapas"]["territorio"]["vizinhos"]) >= 8

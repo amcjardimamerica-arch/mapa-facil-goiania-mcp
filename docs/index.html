@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bússola — Sistema de Navegação da Associação</title>
+<meta name="description" content="Bússola, o Sistema de Navegação da Associação: globo 3D de Goiânia no estilo Earth, com as camadas e os dados oficiais do portal Mapa Fácil da Prefeitura de Goiânia.">
+<meta name="theme-color" content="#1f2226">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%231f2226'/%3E%3Ccircle cx='32' cy='32' r='21' fill='%235b6067'/%3E%3Cpath d='M22 27l9-8 12 4 3 12-9 9-12-3z' fill='%23ffd54a'/%3E%3C/svg%3E">
+<!-- CesiumJS (Apache-2.0), versão fixada. Para atualizar, troque o número nas duas linhas. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.132.0/Build/Cesium/Widgets/widgets.css">
+<link rel="stylesheet" href="css/app.css">
+<script src="https://cdn.jsdelivr.net/npm/cesium@1.132.0/Build/Cesium/Cesium.js"></script>
+</head>
+<body>
+<div id="globo" aria-label="Globo 3D de Goiânia"></div>
+<div id="divisor" hidden><div class="pega" role="slider" aria-label="Divisor da comparação de imagens" tabindex="0"><span id="rotulo-esq"></span><span id="rotulo-dir"></span></div></div>
+
+<div id="abertura">
+  <div class="abertura-caixa">
+    <div class="marca-grande"><span class="marca-globo"></span><div><strong>Bússola</strong><small>Sistema de Navegação da Associação</small></div></div>
+    <p id="abertura-estado">Carregando o globo…</p>
+    <div class="barra"><i></i></div>
+  </div>
+</div>
+
+<header id="topo">
+  <div id="caixa-busca" role="search">
+    <span class="marca" title="Bússola"><span class="marca-globo"></span></span>
+    <input id="busca" type="search" autocomplete="off" spellcheck="false" placeholder="Buscar bairro, rua, edifício, parque, inscrição…" aria-label="Buscar em Goiânia" role="combobox" aria-expanded="false" aria-controls="resultados">
+    <button id="busca-limpar" class="botao-icone" hidden aria-label="Limpar busca">×</button>
+    <ul id="resultados" role="listbox" hidden></ul>
+  </div>
+</header>
+
+<nav id="trilho" aria-label="Ferramentas">
+  <button data-painel="camadas" title="Camadas do Mapa Fácil" aria-label="Camadas do Mapa Fácil"><svg viewBox="0 0 24 24"><path d="M12 3 2.5 8.5 12 14l9.5-5.5z"/><path d="M4.5 12.5 2.5 13.7 12 19.2l9.5-5.5-2-1.2L12 16.8z"/></svg><span>Camadas</span></button>
+  <button data-painel="imagens" title="Imagens, épocas e relevo" aria-label="Imagens, épocas e relevo"><svg viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 1-7.4 5H2.5l3.2-3.6L9 9H6.8A6 6 0 1 0 12 6z"/><path d="M11 8.5h1.6v3.8l3 1.8-.8 1.3-3.8-2.3z"/></svg><span>Imagens</span></button>
+  <button data-painel="edificios" title="Edifícios em 3D" aria-label="Edifícios em 3D"><svg viewBox="0 0 24 24"><path d="M4 21V8l6-3v16zM12 21V3l8 4v14z"/></svg><span>Edifícios</span></button>
+  <button data-painel="medir" title="Medir distância e área" aria-label="Medir distância e área"><svg viewBox="0 0 24 24"><path d="m2.5 16.5 14-14 5 5-14 14zM6 16l1.5 1.5M8.5 13.5 10.5 15.5M11 11l1.5 1.5M13.5 8.5l2 2M16 6l1.5 1.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg><span>Medir</span></button>
+  <button data-painel="marcadores" title="Marcadores e arquivos KML" aria-label="Marcadores e arquivos KML"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.6A2.6 2.6 0 1 1 12 6.4a2.6 2.6 0 0 1 0 5.2z"/></svg><span>Marcar</span></button>
+  <button data-painel="explorar" title="Explorar Goiânia" aria-label="Explorar Goiânia"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16z"/><path d="m16.5 7.5-2.6 6.4-6.4 2.6 2.6-6.4zM12 10.9a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2z"/></svg><span>Explorar</span></button>
+  <span class="espaco"></span>
+  <button id="btn-compartilhar" title="Copiar link desta vista" aria-label="Copiar link desta vista"><svg viewBox="0 0 24 24"><path d="M17 15.5a3 3 0 0 0-2.3 1.1l-6-3.2a3 3 0 0 0 0-1.8l6-3.2A3 3 0 1 0 14 6.6l-6 3.2a3 3 0 1 0 0 4.4l6 3.2a3 3 0 1 0 3-1.9z"/></svg><span>Link</span></button>
+  <button data-painel="sobre" title="Sobre, fontes e validação" aria-label="Sobre, fontes e validação"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1 8.5h2V17h-2zm1-4.3a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6z"/></svg><span>Sobre</span></button>
+</nav>
+
+<aside id="painel" hidden aria-live="polite">
+  <div class="painel-topo"><h2 id="painel-titulo"></h2><button id="painel-fechar" class="botao-icone" aria-label="Fechar painel">×</button></div>
+
+  <section data-secao="camadas" data-titulo="Camadas do Mapa Fácil" hidden>
+    <label class="linha-chave destaque-linha"><span><strong>Nomes e divisas</strong><small>ruas, bairros, quadras e lotes sobre o satélite</small></span><span class="interruptor"><input type="checkbox" id="realce-liga"><span></span></span></label>
+    <div id="lista-camadas"></div>
+  </section>
+
+  <section data-secao="imagens" data-titulo="Imagens, épocas e relevo" hidden>
+    <h3 class="subtitulo">Fundo do globo</h3>
+    <div id="lista-bases" class="cartoes" role="radiogroup" aria-label="Fundo do globo"></div>
+    <p class="nota">O satélite é o fundo padrão. As ortofotos de 2006, 2011 e 2016 são os voos oficiais da Prefeitura e têm mais nitidez de perto.</p>
+    <h3 class="subtitulo">Comparar épocas</h3>
+    <label class="rotulo-faixa bloco"><span>Lado direito da tela</span><select id="comparar" class="campo"></select></label>
+    <p class="nota">Arraste a barra vertical sobre o mapa para revelar cada lado.</p>
+    <h3 class="subtitulo">Relevo</h3>
+    <label class="linha-chave"><span><strong>Relevo 3D</strong><small>terreno com altitude real</small></span><span class="interruptor"><input type="checkbox" id="relevo-liga"><span></span></span></label>
+    <label class="rotulo-faixa bloco"><span>Exagero vertical <output id="exagero-valor">1×</output></span><input type="range" id="exagero" min="1" max="6" step="0.5" value="1" aria-label="Exagero vertical"></label>
+    <h3 class="subtitulo">Território</h3>
+    <label class="rotulo-faixa bloco"><span>Cinza fora de Goiânia <output id="mascara-valor">100%</output></span><input type="range" id="mascara" min="55" max="100" step="5" value="100" aria-label="Opacidade do cinza fora de Goiânia"></label>
+    <p class="nota">Os municípios limítrofes aparecem só como território, sem dados.</p>
+  </section>
+
+  <section data-secao="edificios" data-titulo="Edifícios em 3D" hidden>
+    <label class="linha-chave destaque-linha"><span><strong>Edifícios em 3D</strong><small>cadastro “Edifício em altura”</small></span><span class="interruptor"><input type="checkbox" id="edi-liga"><span></span></span></label>
+    <div id="edi-detalhes"><p class="nota carregando">Carregando o cadastro de edifícios…</p></div>
+  </section>
+
+  <section data-secao="medir" data-titulo="Medir" hidden><div id="painel-medir"></div></section>
+  <section data-secao="marcadores" data-titulo="Marcadores e arquivos" hidden><div id="painel-marcadores"></div></section>
+
+  <section data-secao="explorar" data-titulo="Explorar Goiânia" hidden>
+    <button class="botao largo" id="sortear">Sortear um lugar</button>
+    <h3 class="subtitulo">Parques e bosques</h3>
+    <ul id="lista-parques" class="lista-links"></ul>
+    <h3 class="subtitulo">Bairros mais populosos</h3>
+    <ul id="lista-bairros" class="lista-links"></ul>
+  </section>
+
+  <section data-secao="sobre" data-titulo="Sobre este mapa" hidden>
+    <p>A <strong>Bússola</strong> junta a navegação de um globo 3D no estilo Earth com as informações oficiais do <a href="https://portalmapa.goiania.go.gov.br/mapafacil/" target="_blank" rel="noopener">portal Mapa Fácil</a> da Prefeitura de Goiânia.</p>
+    <dl class="atributos" id="sobre-dados"></dl>
+    <h3 class="subtitulo">Fontes</h3>
+    <ul class="fontes">
+      <li><strong>Dados e camadas:</strong> servidor de mapas da Prefeitura de Goiânia (Mapa Fácil), consultado ao vivo.</li>
+      <li><strong>Fundo de satélite:</strong> Esri World Imagery (Esri, Maxar, Earthstar Geographics).</li>
+      <li><strong>Relevo:</strong> Esri World Elevation (Terrain 3D).</li>
+      <li><strong>Globo:</strong> CesiumJS (código aberto).</li>
+    </ul>
+    <h3 class="subtitulo">Atalhos</h3>
+    <dl class="atalhos">
+      <dt>Arrastar</dt><dd>mover o mapa</dd>
+      <dt>Ctrl + arrastar</dt><dd>inclinar e girar</dd>
+      <dt>Roda do mouse</dt><dd>aproximar e afastar</dd>
+      <dt>/</dt><dd>buscar</dd>
+      <dt>N</dt><dd>norte para cima</dd>
+      <dt>U</dt><dd>vista de cima / inclinada</dd>
+      <dt>R</dt><dd>voltar à vista inicial</dd>
+      <dt>Esc</dt><dd>cancelar medição / fechar ficha</dd>
+    </dl>
+    <a class="botao largo" href="validacao.html">Abrir a página de validação</a>
+    <p class="nota">Projeto independente, para teste e validação. Não substitui o portal oficial nem certidões da Prefeitura. Os dados aparecem como publicados pelo município.</p>
+  </section>
+</aside>
+
+<aside id="ficha" hidden aria-live="polite">
+  <div class="painel-topo"><div><h2 id="ficha-titulo"></h2><small id="ficha-subtitulo"></small></div><button id="ficha-fechar" class="botao-icone" aria-label="Fechar ficha">×</button></div>
+  <div id="ficha-corpo"></div>
+</aside>
+
+<div id="epocas" role="radiogroup" aria-label="Época da imagem"></div>
+
+<div id="navegacao" aria-label="Navegação">
+  <button id="nav-bussola" title="Norte para cima (N)" aria-label="Norte para cima"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><g id="agulha"><path d="M20 5l5 15H15z" fill="#ff6b5e"/><path d="M20 35l5-15H15z" fill="#e3e6ea"/></g></svg></button>
+  <button id="nav-3d" title="Vista de cima / inclinada (U)" aria-label="Alternar vista de cima e inclinada">3D</button>
+  <div class="grupo">
+    <button id="nav-mais" title="Aproximar" aria-label="Aproximar">+</button>
+    <button id="nav-menos" title="Afastar" aria-label="Afastar">−</button>
+  </div>
+  <div class="grupo">
+    <button id="nav-inclina-mais" title="Inclinar mais" aria-label="Inclinar mais"><svg viewBox="0 0 24 24"><path d="M3 18 12 7l9 11z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+    <button id="nav-inclina-menos" title="Inclinar menos" aria-label="Inclinar menos"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+  </div>
+  <button id="nav-inicio" title="Ver Goiânia inteira (R)" aria-label="Ver Goiânia inteira"><svg viewBox="0 0 24 24"><path d="M12 3 2.5 11.5h2.7V21h5.3v-6h3v6h5.3v-9.5h2.7z"/></svg></button>
+  <button id="nav-local" title="Onde estou" aria-label="Ir para a minha localização"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
+  <button id="nav-foto" title="Salvar imagem da vista" aria-label="Salvar imagem da vista"><svg viewBox="0 0 24 24"><path d="M8.5 5 10 3h4l1.5 2H20a1.5 1.5 0 0 1 1.5 1.5v12A1.5 1.5 0 0 1 20 20H4a1.5 1.5 0 0 1-1.5-1.5v-12A1.5 1.5 0 0 1 4 5zM12 8.2a4.3 4.3 0 1 0 0 8.6 4.3 4.3 0 0 0 0-8.6z"/></svg></button>
+</div>
+
+<footer id="rodape">
+  <span id="st-coord">—</span>
+  <span id="st-utm" class="some-estreito">—</span>
+  <span id="st-alt" class="some-estreito">—</span>
+  <span id="st-olho">—</span>
+  <span id="st-escala" class="some-estreito">—</span>
+  <span class="espaco"></span>
+  <span id="st-creditos" class="some-estreito">Dados: Prefeitura de Goiânia (Mapa Fácil) · Satélite: Esri, Maxar · CesiumJS</span>
+  <span id="creditos-cesium" hidden></span>
+</footer>
+
+<div id="avisos" aria-live="polite"></div>
+<noscript><p style="padding:2rem;color:#fff">Este mapa precisa de JavaScript e WebGL.</p></noscript>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

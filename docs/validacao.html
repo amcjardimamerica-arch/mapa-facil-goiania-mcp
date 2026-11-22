@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Validação — Bússola</title>
+<meta name="theme-color" content="#1f2226">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  html, body { overflow: auto; height: auto; }
+  main { max-width: 920px; margin: 0 auto; padding: 28px 18px 60px; display: flex; flex-direction: column; gap: 18px; }
+  header.v { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+  header.v h1 { margin: 0; font-size: 24px; font-weight: 650; }
+  #resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  #resumo div { padding: 14px 16px; background: var(--fundo); border: 1px solid var(--linha); border-radius: var(--raio); }
+  #resumo strong { display: block; font-size: 26px; font-variant-numeric: tabular-nums; }
+  #resumo small { color: var(--texto-2); }
+  #grupos { display: flex; flex-direction: column; gap: 14px; }
+  .grupo-v { background: var(--fundo); border: 1px solid var(--linha); border-radius: var(--raio); overflow: hidden; }
+  .grupo-v h2 { padding: 12px 16px; font-size: 14px; border-bottom: 1px solid var(--linha); }
+  .teste { display: grid; grid-template-columns: 26px 1fr auto; gap: 4px 10px; align-items: start; padding: 9px 16px; border-top: 1px solid #2d3238; }
+  .teste:first-of-type { border-top: 0; }
+  .teste .nome { font-weight: 550; }
+  .teste .detalhe { grid-column: 2 / 4; color: var(--texto-2); font-size: 12.5px; overflow-wrap: anywhere; }
+  .teste .tempo { color: var(--texto-2); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .sinal { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #1f2226; background: #565c64; }
+  .ok .sinal { background: #7bd88f; } .falha .sinal { background: var(--erro); } .alerta .sinal { background: var(--acento); }
+  .rodando .sinal { background: none; border: 2px solid var(--acento); border-right-color: transparent; animation: gira .8s linear infinite; }
+  .falha .detalhe { color: var(--erro); }
+</style>
+</head>
+<body>
+<main>
+  <header class="v">
+    <div><h1>Validação da Bússola</h1><p class="nota">Testes automáticos dos dados, dos cálculos e dos serviços que o mapa usa. Rodam no seu navegador, ao vivo.</p></div>
+    <div class="linha-botoes"><a class="botao" href="./">Abrir o mapa</a><button class="botao" id="rodar">Rodar de novo</button><button class="botao" id="baixar" disabled>Baixar relatório</button></div>
+  </header>
+  <section id="resumo" aria-live="polite"></section>
+  <div id="grupos"></div>
+</main>
+<div id="avisos"></div>
+<script type="module" src="js/validacao.js"></script>
+</body>
+</html>

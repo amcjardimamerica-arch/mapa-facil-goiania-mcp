@@ -3,6 +3,8 @@ name: Diagnose official Goiânia cadastral codes
 on:
   push:
     branches: [main]
+    paths:
+      - '.github/workflows/diagnose-official.yml'
   workflow_dispatch:
 
 permissions:

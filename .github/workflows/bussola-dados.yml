@@ -1,0 +1,66 @@
+name: Bússola — atualizar dados
+
+# Refaz a extração do Mapa Fácil e grava docs/data quando algo mudou.
+# Roda toda segunda-feira e também sob demanda (aba Actions > Run workflow).
+on:
+  schedule:
+    - cron: '17 9 * * 1'   # segundas, 06:17 em Goiânia (09:17 UTC)
+  push:                    # também quando o extrator (ou este fluxo) muda — inclui a 1ª publicação
+    branches: [main]
+    paths:
+      - 'scripts/extrair_dados.py'
+      - '.github/workflows/bussola-dados.yml'
+  workflow_dispatch:
+    inputs:
+      etapas:
+        description: 'Etapas (vazio = todas): territorio,bairros,edificios,lugares,logradouros,camadas'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bussola-dados
+  cancel-in-progress: false
+
+jobs:
+  extrair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install shapely pytest
+      - name: Extrair do portal Mapa Fácil
+        env:
+          ETAPAS: ${{ github.event.inputs.etapas }}
+        run: |
+          if [ -n "$ETAPAS" ]; then
+            python scripts/extrair_dados.py --etapas "$ETAPAS"
+          else
+            python scripts/extrair_dados.py
+          fi
+      - name: Conferir os dados extraídos
+        run: pytest -m "not navegador" -q
+      - name: Gravar no repositório se houve mudança
+        run: |
+          # O manifesto muda a cada execução (data): só grava se algum dado mudou de fato.
+          git add docs/data
+          if git diff --cached --quiet -- docs/data ':!docs/data/manifest.json'; then
+            echo "Dados sem alteração."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Dados: atualização automática do Mapa Fácil ($(date -u +%Y-%m-%d))"
+          # Outros envios podem ter chegado durante a extração: reaplica por cima e tenta de novo.
+          for tentativa in 1 2 3 4; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep 8
+          done
+          echo "Não foi possível enviar os dados." && exit 1

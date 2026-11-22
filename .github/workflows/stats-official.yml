@@ -3,6 +3,9 @@ name: Inspect official Goiânia cadastral values
 on:
   push:
     branches: [main]
+    paths:
+      - '.github/workflows/stats-official.yml'
+      - 'TRIGGER_STATS.txt'
   workflow_dispatch:
 
 permissions:

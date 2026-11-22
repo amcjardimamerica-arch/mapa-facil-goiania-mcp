@@ -1,0 +1,4 @@
+# Extração de dados e testes da Bússola
+shapely>=2.0
+pytest>=8
+playwright>=1.45
