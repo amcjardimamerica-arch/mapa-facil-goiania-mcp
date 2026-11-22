@@ -1,0 +1,16 @@
+{
+  "versao": 1,
+  "algoritmo": "PBKDF2-SHA256",
+  "usuarios": [
+    {
+      "login": "admin",
+      "nome": "Administrador da Associação",
+      "perfil": "admin",
+      "ativo": true,
+      "sal": "4813171636d069ea99a43f069cb3a5bf",
+      "iteracoes": 310000,
+      "resumo": "91718d0b115bab1459ece24cba305f02851bd4ccebc6e98bd6786df684170bda"
+    }
+  ],
+  "atualizado_em": "2026-11-22T15:49:48+00:00"
+}

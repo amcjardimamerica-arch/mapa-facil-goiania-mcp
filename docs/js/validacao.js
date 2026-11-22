@@ -163,9 +163,9 @@ const grupos = [
       return `serviço ${r.name || 'Terrain3D'} disponível`;
     }],
     ['Biblioteca do globo (CesiumJS)', async () => {
-      const html = await (await fetch('index.html')).text();
+      const html = await (await fetch('sistema.html')).text();
       const m = html.match(/cesium@([\d.]+)\/Build\/Cesium\/Cesium\.js/);
-      exigir(m, 'index.html não referencia o CesiumJS');
+      exigir(m, 'sistema.html não referencia o CesiumJS');
       const r = await fetch(`https://cdn.jsdelivr.net/npm/cesium@${m[1]}/package.json`);
       exigir(r.ok, `CDN respondeu HTTP ${r.status}`);
       return `versão ${m[1]} disponível na CDN`;

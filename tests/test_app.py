@@ -6,9 +6,12 @@
 from __future__ import annotations
 
 import functools
+import hashlib
 import http.server
+import json
 import os
 import threading
+import time
 
 import pytest
 
@@ -40,17 +43,37 @@ def navegador():
         b.close()
 
 
+# Usuário de teste: a lista real de usuários é trocada por esta em todas as páginas.
+SENHA_TESTE = "senha-de-teste-123"
+_SAL = "a1" * 16
+USUARIOS_TESTE = {"usuarios": [{"login": "teste", "nome": "Pessoa de Teste", "perfil": "membro", "ativo": True,
+                                "sal": _SAL, "iteracoes": 1000,
+                                "resumo": hashlib.pbkdf2_hmac("sha256", SENHA_TESTE.encode(), bytes.fromhex(_SAL), 1000).hex()}]}
+SESSAO_TESTE = {"login": "teste", "nome": "Pessoa de Teste", "perfil": "membro", "marca": USUARIOS_TESTE["usuarios"][0]["resumo"][:12],
+                "inicio": 0, "expira": int((time.time() + 3600) * 1000), "lembrar": True}
+GPS_JARDIM_AMERICA = {"latitude": -16.70766, "longitude": -49.28568}
+
+
+def _contexto(navegador, logado=True, **extra):
+    ctx = navegador.new_context(viewport={"width": 1280, "height": 800}, **extra)
+    ctx.route("**/acesso/usuarios.json", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(USUARIOS_TESTE)))
+    if logado:
+        ctx.add_init_script(f"localStorage.setItem('bussola:sessao', JSON.stringify({json.dumps(SESSAO_TESTE)}))")
+    return ctx
+
+
 @pytest.fixture(scope="module")
 def mapa(navegador, servidor):
-    """Abre o mapa uma vez (sem relevo nem edifícios, para ser rápido em CPU)."""
-    pagina = navegador.new_page(viewport={"width": 1280, "height": 800})
+    """Abre o mapa uma vez (sem relevo nem edifícios, para ser rápido em CPU), já logado e com GPS simulado."""
+    ctx = _contexto(navegador, geolocation=GPS_JARDIM_AMERICA, permissions=["geolocation"])
+    pagina = ctx.new_page()
     erros = []
     pagina.on("pageerror", lambda e: erros.append(str(e)))
-    pagina.goto(f"{servidor}/index.html#ed=0&r=0")
+    pagina.goto(f"{servidor}/sistema.html#ed=0&r=0")
     pagina.wait_for_function("window.bussola && (window.bussola.pronto || window.bussola.erros.length)", timeout=180_000)
     pagina.erros_de_pagina = erros
     yield pagina
-    pagina.close()
+    ctx.close()
 
 
 def test_abre_sem_erros(mapa):
@@ -137,10 +160,89 @@ def test_medicao_e_kml(mapa):
 
 
 def test_pagina_de_validacao(navegador, servidor):
-    pagina = navegador.new_page()
+    ctx = _contexto(navegador)
+    pagina = ctx.new_page()
     pagina.goto(f"{servidor}/validacao.html")
     pagina.wait_for_function("window.validacao && window.validacao.fim", timeout=420_000)
     resumo = pagina.evaluate("({resumo: window.validacao.resumo, falhas: window.validacao.testes.filter((t) => t.estado === 'falha')})")
-    pagina.close()
+    ctx.close()
     assert resumo["resumo"]["total"] > 30
     assert resumo["falhas"] == [], resumo["falhas"]
+
+
+# ------------------------------------------------------------------ acesso
+def test_sem_login_volta_ao_portal(navegador, servidor):
+    ctx = _contexto(navegador, logado=False)
+    pagina = ctx.new_page()
+    pagina.goto(f"{servidor}/sistema.html#ed=0")
+    pagina.wait_for_url("**/index.html?volta=*")
+    assert "sistema.html" in pagina.url and pagina.is_visible("#form-acesso")
+    ctx.close()
+
+
+def test_login_errado_e_certo(navegador, servidor):
+    ctx = _contexto(navegador, logado=False)
+    pagina = ctx.new_page()
+    pagina.goto(f"{servidor}/index.html")
+    pagina.fill("#login", "teste")
+    pagina.fill("#senha", "senha-errada-000")
+    pagina.click("#entrar")
+    pagina.wait_for_selector("#mensagem:not([hidden])")
+    assert "incorretos" in pagina.text_content("#mensagem")
+    assert pagina.evaluate("sessionStorage.getItem('bussola:sessao') || localStorage.getItem('bussola:sessao')") is None
+    pagina.fill("#login", "  TESTE ")
+    pagina.fill("#senha", SENHA_TESTE)
+    pagina.check("#lembrar")
+    pagina.click("#entrar")
+    pagina.wait_for_url("**/sistema.html")
+    sessao = json.loads(pagina.evaluate("localStorage.getItem('bussola:sessao')"))
+    assert sessao["login"] == "teste" and "resumo" not in sessao and "sal" not in sessao
+    ctx.close()
+
+
+def test_usuario_removido_perde_o_acesso(navegador, servidor):
+    ctx = navegador.new_context()
+    ctx.route("**/acesso/usuarios.json", lambda r: r.fulfill(status=200, content_type="application/json", body='{"usuarios": []}'))
+    ctx.add_init_script("if (location.pathname.endsWith('sistema.html')) "
+                        f"localStorage.setItem('bussola:sessao', JSON.stringify({json.dumps(SESSAO_TESTE)}))")
+    pagina = ctx.new_page()
+    pagina.goto(f"{servidor}/sistema.html#ed=0&r=0")
+    pagina.wait_for_url("**/index.html", timeout=180_000)
+    assert pagina.evaluate("localStorage.getItem('bussola:sessao')") is None
+    ctx.close()
+
+
+# ------------------------------------------------------- GPS e indicações
+def test_gps_mostra_a_posicao(mapa):
+    mapa.click("#nav-local")
+    mapa.wait_for_function("bussola.localizacao.posicao !== null", timeout=30_000)
+    assert mapa.get_attribute("#nav-local", "aria-pressed") == "true"
+    pos = mapa.evaluate("bussola.localizacao.posicao")
+    assert abs(pos["lat"] - GPS_JARDIM_AMERICA["latitude"]) < 1e-6
+    mapa.evaluate("bussola.abrirPainel('local')")
+    mapa.wait_for_function("!document.querySelector('#gps-endereco').classList.contains('carregando')", timeout=60_000)
+    assert "Jardim Am" in mapa.text_content("#gps-endereco"), mapa.text_content("#gps-endereco")
+    assert "GPS ativo" in mapa.text_content("#gps-estado")
+
+
+def test_indicar_pela_posicao_e_abrir_o_link(mapa):
+    mapa.evaluate("document.querySelector('[data-secao=local]').hidden && bussola.abrirPainel('local')")
+    mapa.click("#ind-gps")
+    mapa.wait_for_selector("#ind-tipo")
+    mapa.select_option("#ind-tipo", "luz")
+    mapa.fill("#ind-descricao", "Poste apagado em frente à praça")
+    mapa.click("#ind-salvar")
+    ind = mapa.evaluate("bussola.localizacao.lista[0]")
+    assert ind["tipo"] == "luz" and ind["origem"] == "gps" and ind["autor"] == "Pessoa de Teste"
+    assert "Poste apagado" in mapa.text_content(".ind-lista")
+    link = mapa.evaluate("bussola.localizacao.linkDe(bussola.localizacao.lista[0])")
+    assert "sistema.html#ind=" in link
+    volta = mapa.evaluate("async (t) => (await import('./js/localizacao.js')).decodificarIndicacao(t)", link.split("#ind=")[1])
+    assert abs(volta["lat"] - ind["lat"]) < 1e-6 and volta["descricao"] == ind["descricao"]
+    # Quem recebe o link abre a Bússola direto no local indicado.
+    mapa.evaluate("bussola.localizacao.caixaRecebida.hidden = true")
+    mapa.goto(link.replace("#ind=", "#ed=0&r=0&ind="))
+    mapa.wait_for_function("window.bussola && bussola.pronto", timeout=180_000)
+    mapa.wait_for_selector(".ind-recebida", state="visible", timeout=30_000)
+    assert "Iluminação pública" in mapa.text_content(".ind-recebida")
+    mapa.evaluate("bussola.localizacao.parar()")

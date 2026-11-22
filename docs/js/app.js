@@ -9,6 +9,8 @@ import { Busca } from './busca.js';
 import { Edificios } from './edificios.js';
 import { Medir } from './medir.js';
 import { Marcadores } from './marcadores.js';
+import { Localizacao } from './localizacao.js';
+import { encerrarSessao, sessaoAindaValida } from './acesso.js';
 
 const Cesium = window.Cesium;
 const app = (window.bussola = { versao: VERSAO, pronto: false, erros: [] });
@@ -22,7 +24,7 @@ const estadoAbertura = (texto, erro = false) => {
 
 function lerHash() {
   const p = new URLSearchParams(location.hash.slice(1));
-  return { v: p.get('v'), b: p.get('b'), t: p.get('t'), ed: p.get('ed'), n: p.get('n'), r: p.get('r') };
+  return { v: p.get('v'), b: p.get('b'), t: p.get('t'), ed: p.get('ed'), n: p.get('n'), r: p.get('r'), ind: p.get('ind') };
 }
 
 async function iniciar() {
@@ -47,7 +49,9 @@ async function iniciar() {
   const marcadores = new Marcadores(globo, identificar, medir, $('#painel-marcadores'));
   const busca = new Busca({ globo, identificar, territorio, bairros: bairros.bairros, lugares: lugares.lugares, edificios });
   identificar.acoes.marcar = (ponto, nome) => marcadores.adicionar(ponto, nome);
-  Object.assign(app, { globo, camadas, identificar, edificios, medir, marcadores, busca, territorio, catalogo, manifesto });
+  const sessao = window.bussolaSessao || { login: 'anonimo', nome: '' };
+  const localizacao = new Localizacao({ globo, identificar, camadas, territorio, raiz: $('#painel-local'), botaoGps: $('#nav-local'), sessao });
+  Object.assign(app, { globo, camadas, identificar, edificios, medir, marcadores, localizacao, busca, territorio, catalogo, manifesto, sessao });
 
   const bases = globo.basesDisponiveis();
   const baseInicial = bases.some((b) => b.chave === hash.b) ? hash.b : 'satelite';
@@ -66,6 +70,7 @@ async function iniciar() {
     if (painelAberto === 'edificios') edificios.carregar().catch((e) => aviso(`Cadastro de edifícios indisponível: ${e.message}`, 'alerta'));
     if (painelAberto !== 'medir') medir.cancelar();
     if (painelAberto !== 'marcadores') marcadores.cancelarPedido();
+    if (painelAberto !== 'local') localizacao.cancelarPedido();
   };
   app.abrirPainel = abrirPainel;
   $$('#trilho [data-painel]').forEach((b) => b.addEventListener('click', () => abrirPainel(b.dataset.painel)));
@@ -171,15 +176,11 @@ async function iniciar() {
     const blob = await globo.capturar();
     if (blob) baixarArquivo(`bussola-${new Date().toISOString().slice(0, 10)}.png`, blob);
   });
-  $('#nav-local').addEventListener('click', () => {
-    if (!navigator.geolocation) { aviso('Este navegador não informa a localização.', 'alerta'); return; }
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const { longitude: lon, latitude: lat } = pos.coords;
-      if (!territorio.contem(lon, lat)) { aviso('Você está fora de Goiânia; o mapa cobre apenas o município.', 'alerta'); return; }
-      globo.voarPara({ lon, lat, distancia: 900 });
-      identificar.fonte.entities.removeAll();
-      identificar.alfinete(lon, lat, Cesium.Color.DODGERBLUE);
-    }, () => aviso('Não foi possível obter a sua localização.', 'alerta'), { enableHighAccuracy: true, timeout: 10000 });
+  $('#nav-local').addEventListener('click', () => localizacao.alternar());
+  $('#btn-sair').addEventListener('click', () => {
+    localizacao.parar();
+    encerrarSessao();
+    location.replace('index.html');
   });
 
   // ---------------------------------------------------- cliques e cursor
@@ -188,9 +189,10 @@ async function iniciar() {
     const ponto = globo.pontoNaTela(ev.position);
     if (medir.ativo) { medir.clique(ponto); return; }
     if (marcadores.aguardando) { if (ponto) marcadores.adicionar(ponto); return; }
+    if (localizacao.aguardando) { if (ponto) localizacao.escolher(ponto); return; }
     const pego = globo.cena.pick(ev.position);
     edificios.limparSelecao();
-    if (edificios.aoClicar(pego) || marcadores.aoClicar(pego)) return;
+    if (edificios.aoClicar(pego) || marcadores.aoClicar(pego) || localizacao.aoClicar(pego)) return;
     if (ponto) identificar.emPonto(ponto);
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
   maos.setInputAction(() => { if (medir.ativo) { medir.desfazer(); medir.concluir(); } }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
@@ -242,6 +244,7 @@ async function iniciar() {
   });
 
   // ---------------------------------------------------------------- sobre
+  $('#sobre-usuario').textContent = sessao.nome ? `Conectado como ${sessao.nome} (${sessao.login}).` : '';
   const etapas = manifesto.etapas || {};
   const data = manifesto.atualizado_em ? new Date(manifesto.atualizado_em).toLocaleDateString('pt-BR') : '—';
   $('#sobre-dados').append(...[
@@ -274,11 +277,18 @@ async function iniciar() {
       () => aviso('Copie o endereço da barra do navegador para compartilhar esta vista.'));
   });
 
+  // Link de indicação colado numa aba já aberta.
+  window.addEventListener('hashchange', () => {
+    const ind = lerHash().ind;
+    if (ind && localizacao.abrirRecebida(ind)) { if (painelAberto !== 'local') abrirPainel('local'); }
+  });
+
   // -------------------------------------------------------------- teclado
   document.addEventListener('keydown', (e) => {
     const digitando = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '');
     if (e.key === 'Escape') {
-      if (medir.ativo) medir.cancelar(); else if (marcadores.aguardando) marcadores.cancelarPedido(); else identificar.fechar();
+      if (medir.ativo) medir.cancelar(); else if (marcadores.aguardando) marcadores.cancelarPedido();
+      else if (localizacao.aguardando) localizacao.cancelarPedido(); else identificar.fechar();
       return;
     }
     if (digitando || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -286,6 +296,7 @@ async function iniciar() {
     else if (e.key === 'n' || e.key === 'N') globo.orbitar({ rumo: 0 });
     else if (e.key === 'u' || e.key === 'U') $('#nav-3d').click();
     else if (e.key === 'r' || e.key === 'R') globo.irParaInicio(1.6);
+    else if (e.key === 'g' || e.key === 'G') localizacao.alternar();
     else if (e.key === '+' || e.key === '=') globo.orbitar({ fator: 0.55 });
     else if (e.key === '-') globo.orbitar({ fator: 1.8 });
     else if (e.key === 'Enter' && medir.ativo) medir.concluir();
@@ -295,7 +306,8 @@ async function iniciar() {
   estadoAbertura('Pronto. Voando até Goiânia…');
   $('#abertura').classList.add('sai');
   setTimeout(() => $('#abertura').remove(), 900);
-  if (hash.v && globo.aplicarVisao(hash.v)) globo.liberarLimites();
+  if (hash.ind) { globo.liberarLimites(); if (localizacao.abrirRecebida(hash.ind)) abrirPainel('local'); }
+  else if (hash.v && globo.aplicarVisao(hash.v)) globo.liberarLimites();
   else { await globo.irParaInicio(3.4); globo.liberarLimites(); }
   app.pronto = true;
   aoParar();
@@ -303,6 +315,8 @@ async function iniciar() {
   // Relevo e edifícios entram depois do primeiro quadro, para o globo abrir rápido.
   if (hash.r !== '0') await ligarRelevo(true);
   if (hash.ed !== '0') await edificios.ligar(true);
+  // Usuário removido ou com senha trocada perde o acesso também nos aparelhos já conectados.
+  sessaoAindaValida(sessao).then((ok) => { if (!ok) { encerrarSessao(); location.replace('index.html'); } });
   if (!memoria.ler('bussola:visto', false)) {
     aviso('Clique em qualquer ponto de Goiânia para ver lote, quadra, bairro e cadastro.', 'info', 7000);
     memoria.gravar('bussola:visto', true);

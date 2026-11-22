@@ -24,7 +24,9 @@ As camadas e as consultas vão direto do navegador ao servidor de mapas da Prefe
 
 ```
 docs/                     site publicado (GitHub Pages)
-  index.html              o mapa
+  index.html              portal de acesso (usuário e senha)
+  sistema.html            o mapa
+  acesso/usuarios.json    contas (só resumos das senhas)
   validacao.html          página de validação: 43 testes ao vivo, no navegador
   css/app.css
   js/                     módulos ES, sem dependência além do CesiumJS (CDN, versão fixada)
@@ -36,12 +38,51 @@ docs/                     site publicado (GitHub Pages)
     busca.js  edificios.js  medir.js  marcadores.js  util.js  config.js
   data/                   dados extraídos do Mapa Fácil (gerados pelo script)
 scripts/extrair_dados.py  extrator (Python + shapely)
+scripts/usuarios.py       cadastro de usuários
 tests/                    pytest: dados, extrator e ponta a ponta no Chromium
 .github/workflows/
   bussola-testes.yml   testes a cada alteração
   bussola-dados.yml    atualização semanal dos dados
 dados_mapafacil/          catálogo anterior do servidor (mantido)
 ```
+
+## Acesso com usuário e senha
+
+A página inicial (`docs/index.html`) é o portal de acesso. O mapa fica em `docs/sistema.html` e só abre
+com sessão válida; sem ela, a pessoa volta ao portal e, depois de entrar, segue para onde ia (inclusive um
+link de indicação).
+
+- As contas ficam em `docs/acesso/usuarios.json`, que guarda só o resumo PBKDF2-SHA256 de cada senha
+  (sal próprio e 310 mil iterações), nunca a senha.
+- A sessão dura 12 horas, ou 30 dias com "Manter conectado neste aparelho".
+- Usuário removido, desativado ou com senha trocada perde o acesso também nos aparelhos já conectados.
+- Depois de 5 erros seguidos, o portal impõe uma pausa crescente entre as tentativas.
+
+Gerenciar contas:
+
+```
+python scripts/usuarios.py listar
+python scripts/usuarios.py adicionar maria "Maria Souza"            # gera e mostra a senha
+python scripts/usuarios.py adicionar joao "João Lima" --perfil admin
+python scripts/usuarios.py senha maria                              # redefine a senha
+python scripts/usuarios.py desativar maria | ativar maria | remover maria
+```
+
+Limite conhecido: o GitHub Pages é uma hospedagem pública e sem servidor. O login controla o uso do sistema,
+mas os dados do mapa são públicos na origem (Mapa Fácil). Para controle de acesso no servidor, o caminho é
+colocar o site atrás de um serviço de autenticação (por exemplo, Cloudflare Access com domínio próprio).
+
+## GPS e indicação de locais
+
+- **Minha localização** (botão de mira à direita ou tecla G): acompanha a posição do aparelho com o ponto
+  azul e o círculo de precisão; o mapa pode seguir quem está andando.
+- O painel **Indicar** mostra onde a pessoa está: bairro, quadra e lote do Mapa Fácil, coordenadas e UTM.
+- **Indicar um local**: pela posição do GPS ou clicando no mapa, com tipo (iluminação, buraco, lixo, poda,
+  calçada, água e esgoto, segurança, referência, outro) e descrição.
+- Cada indicação gera um link (`sistema.html#ind=…`) que abre a Bússola exatamente no ponto, com botão
+  **Como chegar**. O envio usa o compartilhamento do celular ou o WhatsApp.
+- As indicações ficam no aparelho, por conta, e podem ser baixadas em planilha (CSV) ou GeoJSON.
+- O GPS exige endereço seguro (https), o que o GitHub Pages já oferece.
 
 ## Publicar no GitHub Pages
 

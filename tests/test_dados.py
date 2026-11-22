@@ -122,3 +122,28 @@ def test_manifesto():
     assert m["atualizado_em"].endswith("Z") and m["versao_extrator"]
     assert set(m["etapas"]) >= {"territorio", "bairros", "edificios", "lugares", "logradouros", "camadas"}
     assert len(m["etapas"]["territorio"]["vizinhos"]) >= 8
+
+
+def test_usuarios_sem_senha_em_texto():
+    """O arquivo de acesso guarda só resumos PBKDF2; nunca a senha."""
+    import json
+    from conftest import DOCS
+    dados = json.loads((DOCS / "acesso" / "usuarios.json").read_text(encoding="utf-8"))
+    assert dados["usuarios"], "precisa haver ao menos um usuário"
+    for u in dados["usuarios"]:
+        assert set(u) <= {"login", "nome", "perfil", "ativo", "sal", "iteracoes", "resumo"}, u.keys()
+        assert u["login"] == u["login"].strip().lower()
+        assert len(u["sal"]) == 32 and len(u["resumo"]) == 64 and u["iteracoes"] >= 310_000
+    assert any(u.get("perfil") == "admin" for u in dados["usuarios"])
+
+
+def test_script_de_usuarios(tmp_path, monkeypatch):
+    import usuarios
+    monkeypatch.setattr(usuarios, "ARQUIVO", tmp_path / "u.json")
+    usuarios.main(["adicionar", "Maria.S", "Maria Souza", "--senha", "uma-senha-boa"])
+    import json
+    u = json.loads((tmp_path / "u.json").read_text())["usuarios"][0]
+    assert u["login"] == "maria.s" and u["resumo"] == usuarios.resumo("uma-senha-boa", u["sal"])
+    usuarios.main(["desativar", "maria.s"])
+    assert json.loads((tmp_path / "u.json").read_text())["usuarios"][0]["ativo"] is False
+    assert "-" in usuarios.gerar_senha() and len(usuarios.gerar_senha()) == 14
