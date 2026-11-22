@@ -56,6 +56,25 @@ export class Levantamento {
     this.estado.textContent = 'Carregando o levantamento…';
     this.estado.classList.add('carregando');
     this._carregando = pedirJSON(`${CFG.dados}levantamento.json`, { tempo: 90000 }).then((d) => {
+      const ix = Object.fromEntries(d.colunas_lote.map((c, i) => [c, i]));
+      this.ix = ix;
+      const porLote = (tabela) => {
+        const m = new Map();
+        for (const r of tabela.linhas) if (Number.isInteger(r.lote)) { if (!m.has(r.lote)) m.set(r.lote, []); m.get(r.lote).push(r.v); }
+        return m;
+      };
+      this.empresasDoLote = porLote(d.empresas);
+      this.googleDoLote = porLote(d.google);
+      this.condominioDoLote = porLote(d.condominios);
+      const ixe = Object.fromEntries(d.empresas.colunas.map((c, i) => [c, i]));
+      d.lotes.forEach((l, i) => {
+        const v = (c) => l.v[ix[c]];
+        l.end = v('Endereço (cadastro)'); l.edif = v('Edifício / condomínio'); l.ar = v('Área do comércio (principal)');
+        l.emp = String(v('Empresas (nome)') || '').split(';').map((x) => x.trim()).filter(Boolean);
+        l.i = i;
+        const emp = (this.empresasDoLote.get(i) || []).map((e) => [e[ixe['CNPJ']], e[ixe['Razão social']], e[ixe['Nome fantasia']], e[ixe['Telefone']], e[ixe['E-mail']]].join(' '));
+        l.extraBusca = emp.join(' ');
+      });
       for (const l of d.lotes) {
         l.aneis = l.g.map(decodificarAnel);
         l.m = l.aneis.map((a) => a.map(([lo, la]) => [mx(lo), my(la)]));
@@ -63,10 +82,13 @@ export class Levantamento {
         for (const [x, y] of l.m[0]) { o = Math.min(o, x); e = Math.max(e, x); s = Math.min(s, y); n = Math.max(n, y); cx += x; cy += y; }
         l.ext = [o, s, e, n];
         l.centro = [cx / l.m[0].length, cy / l.m[0].length];
-        l.busca = semAcento([`qd ${l.q} lt ${l.l}`, `quadra ${l.q} lote ${l.l}`, l.end, l.edif, l.ci, l.f, l.st, l.ar, l.cat, l.gm, ...(l.emp || [])].filter(Boolean).join(' | '));
+        l.busca = semAcento([`qd ${l.q} lt ${l.l}`, `quadra ${l.q} lote ${l.l}`, ...l.v.filter((x) => x !== null && x !== ''), l.extraBusca].join(' | '));
       }
       for (const a of d.areas) a.aneis = a.g.map(decodificarAnel);
       for (const lim of d.limites) lim.aneisLL = lim.aneis.map(decodificarAnel);
+      const ixs = d.empresas_sem_lote.colunas;
+      this.semLote = d.empresas_sem_lote.linhas.map((r) => ({ v: r, busca: semAcento(r.filter((x) => x !== null).join(' | ')),
+        nome: r[ixs.indexOf('Nome fantasia')] || r[ixs.indexOf('Razão social')], bairro: r[ixs.indexOf('Bairro')] }));
       this.cor = Object.fromEntries(d.finalidades.map((f) => [f.nome, f.cor]));
       this.dados = d;
       this._montarFiltros();
@@ -107,10 +129,11 @@ export class Levantamento {
       this.legenda,
       chave('areas', 'Áreas públicas', 'praças, áreas verdes, canteiros e equipamentos'),
       chave('predios', 'Prédios em 3D', 'altura pelos pavimentos (3 ou mais)'),
-      chave('locais', 'Locais de votação', 'eleição de 2026 e Conselho Tutelar'),
+      el('h3', { class: 'subtitulo' }, 'Eleitoral'),
+      this.caixaEleitoral = el('div', { class: 'lv-eleitoral' }),
       el('h3', { class: 'subtitulo' }, 'Buscar no levantamento'),
       this.campo, this.resultados,
-      el('p', { class: 'nota' }, 'Fontes: Mapa Fácil, Receita Federal (CNPJ), Google Maps, TSE e edital do Conselho Tutelar 2023, compiladas pela Associação. Contatos e telefones não são publicados.'));
+      el('p', { class: 'nota' }, 'Fontes: Mapa Fácil, Receita Federal (CNPJ), Google Maps, TSE e edital do Conselho Tutelar 2023, compiladas pela Associação.'));
   }
 
   _montarFiltros() {
@@ -133,7 +156,45 @@ export class Levantamento {
         el('span', { class: 'lv-cor', style: `background:${f.cor}` }),
         el('span', {}, f.nome), el('small', {}, fmtNum(f.n)))));
     }
-    this.estado.textContent = `${fmtNum(d.lotes.length)} lotes, ${fmtNum(d.areas.length)} áreas públicas e ${fmtNum(d.locais.length)} locais de votação.`;
+    this.estado.textContent = `${fmtNum(d.lotes.length)} lotes, ${fmtNum(d.empresas.linhas.length + d.empresas_sem_lote.linhas.length)} empresas, ` +
+      `${fmtNum(d.areas.length)} áreas públicas e ${fmtNum(d.eleitoral.pontos.length)} locais de votação.`;
+    this._montarEleitoral();
+  }
+
+  _montarEleitoral() {
+    const d = this.dados.eleitoral, c = this.caixaEleitoral;
+    c.textContent = '';
+    this.opcoes.eleicao ??= '';
+    this.opcoes.grupos ??= {};
+    const zonas = [...new Set(d.pontos.filter((p) => p.tipo === 'geral').map((p) => p.grupo))].sort((a, b) => parseInt(a) - parseInt(b));
+    const regioes = [...new Set(d.pontos.filter((p) => p.tipo === 'ct' || p.tipo === 'transferido').map((p) => p.grupo))].sort();
+    const seletor = el('select', { class: 'campo', id: 'lv-eleicao', 'aria-label': 'Eleição' },
+      el('option', { value: '' }, 'Desligado'), el('option', { value: 'geral' }, 'Eleição geral 2026 — locais por zona'),
+      el('option', { value: 'ct' }, 'Conselho Tutelar 2023 — locais por região'));
+    seletor.value = this.opcoes.eleicao;
+    const lista = el('div', { class: 'lv-grupos' });
+    const montarGrupos = () => {
+      lista.textContent = '';
+      const m = this.opcoes.eleicao;
+      if (!m) return;
+      const grupos = m === 'geral' ? zonas : [...regioes, 'Sem informação no edital'];
+      for (const g of grupos) {
+        const chaveG = `${m}:${g}`;
+        const n = m === 'geral' ? d.pontos.filter((p) => p.tipo === 'geral' && p.grupo === g).length
+          : g === 'Sem informação no edital' ? d.pontos.filter((p) => p.tipo === 'sem').length
+          : d.pontos.filter((p) => p.grupo === g && p.tipo === 'ct').length;
+        lista.append(el('label', { class: 'lv-grupo' },
+          el('input', { type: 'checkbox', checked: this.opcoes.grupos[chaveG] !== false,
+            onchange: (e) => { this.opcoes.grupos[chaveG] = e.target.checked; this._gravar(); this.redesenhar(); } }),
+          el('span', {}, g), el('small', {}, `${fmtNum(n)} locais`)));
+      }
+      if (m === 'ct') {
+        lista.append(el('p', { class: 'nota' }, 'Estrela laranja: local de votação do Conselho Tutelar. Cinza: local transferido, com seta para a escola que reuniu as urnas.'));
+      }
+    };
+    seletor.addEventListener('change', () => { this.opcoes.eleicao = seletor.value; this._gravar(); montarGrupos(); this.redesenhar(); });
+    c.append(seletor, lista);
+    montarGrupos();
   }
 
   irParaBairro(i) {
@@ -212,18 +273,31 @@ export class Levantamento {
       }
     }
 
-    if (this.opcoes.locais) {
-      for (const v of d.locais) {
-        const ct = /Local de votação do Conselho/i.test(v.ct);
-        const ent = this.fonte.entities.add({ position: Cesium.Cartesian3.fromDegrees(v.lon, v.lat),
-          point: { pixelSize: ct ? 11 : 8, color: Cesium.Color.fromCssColorString(ct ? '#ff8a3d' : '#ffffff'),
-            outlineColor: Cesium.Color.BLACK.withAlpha(0.8), outlineWidth: 2,
-            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, disableDepthTestDistance: Number.POSITIVE_INFINITY },
-          label: { text: v.nome, font: '600 12px system-ui, "Segoe UI", Roboto, sans-serif', fillColor: Cesium.Color.WHITE,
-            outlineColor: Cesium.Color.BLACK, outlineWidth: 3, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-            pixelOffset: new Cesium.Cartesian2(0, -16), heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-            disableDepthTestDistance: Number.POSITIVE_INFINITY, distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 2500) } });
-        ent.levantamento = { tipo: 'local', dado: v };
+    const m = this.opcoes.eleicao;
+    if (m) {
+      const ve = (g) => this.opcoes.grupos[`${m}:${g}`] !== false;
+      const E = d.eleitoral;
+      const rotulo = (texto) => ({ text: texto, font: '600 12px system-ui, "Segoe UI", Roboto, sans-serif', fillColor: Cesium.Color.WHITE,
+        outlineColor: Cesium.Color.BLACK, outlineWidth: 3, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        pixelOffset: new Cesium.Cartesian2(0, -18), heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY, distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 3000) });
+      const pontos = E.pontos.filter((p) => (m === 'geral' ? p.tipo === 'geral' && ve(p.grupo)
+        : (p.tipo === 'ct' || p.tipo === 'transferido') ? ve(p.grupo) : p.tipo === 'sem' && ve('Sem informação no edital')));
+      for (const p of pontos) {
+        const estilo = { geral: ['#ff8c00', 9], ct: ['#ffd700', 13], transferido: ['#9e9e9e', 8], sem: ['#e0e0e0', 7] }[p.tipo];
+        const ent = this.fonte.entities.add({ position: Cesium.Cartesian3.fromDegrees(p.lon, p.lat),
+          point: { pixelSize: estilo[1], color: Cesium.Color.fromCssColorString(estilo[0]), outlineColor: Cesium.Color.BLACK.withAlpha(0.85),
+            outlineWidth: 2, heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, disableDepthTestDistance: Number.POSITIVE_INFINITY },
+          label: rotulo(p.nome) });
+        ent.levantamento = { tipo: 'ponto', dado: p };
+      }
+      if (m === 'ct') {
+        for (const s of E.setas) {
+          if (!ve(s.regiao)) continue;
+          const ent = this.fonte.entities.add({ polyline: { positions: Cesium.Cartesian3.fromDegreesArray([...s.de, ...s.para]),
+            clampToGround: true, width: 9, material: new Cesium.PolylineArrowMaterialProperty(Cesium.Color.fromCssColorString('#bdbdbd').withAlpha(0.95)) } });
+          ent.levantamento = { tipo: 'seta', dado: s };
+        }
       }
     }
     this.globo.redesenhar();
@@ -237,7 +311,13 @@ export class Levantamento {
     if (!this.dados || q.length < 2) return;
     const termos = q.split(/\s+/);
     const achados = this._lotesVisiveis().filter((l) => termos.every((t) => l.busca.includes(t))).slice(0, 40);
-    if (!achados.length) { this.resultados.append(el('li', { class: 'nota' }, 'Nada encontrado nos lotes visíveis.')); return; }
+    const semLote = this.semLote.filter((e) => termos.every((t) => e.busca.includes(t))).slice(0, 20);
+    if (!achados.length && !semLote.length) { this.resultados.append(el('li', { class: 'nota' }, 'Nada encontrado nos lotes visíveis nem nas empresas sem lote.')); return; }
+    for (const e of semLote) {
+      this.resultados.append(el('li', {}, el('button', { class: 'lv-resultado', onclick: () => this.abrirEmpresaSemLote(e) },
+        el('span', { class: 'lv-cor', style: 'background:transparent;border-style:dashed' }),
+        el('span', {}, el('strong', {}, e.nome || 'Empresa'), el('small', {}, `${e.bairro || ''} · empresa sem lote identificado`)))));
+    }
     for (const l of achados) {
       this.resultados.append(el('li', {}, el('button', { class: 'lv-resultado', onclick: () => this.abrirLote(l, true) },
         el('span', { class: 'lv-cor', style: `background:${this.cor[l.f]}` }),
@@ -254,7 +334,8 @@ export class Levantamento {
     if (lv) {
       if (lv.tipo === 'lote') this.abrirLote(lv.dado);
       else if (lv.tipo === 'area') this.abrirArea(lv.dado);
-      else this.abrirLocal(lv.dado);
+      else if (lv.tipo === 'seta') this.abrirSeta(lv.dado);
+      else this.abrirPonto(lv.dado);
       return true;
     }
     if (!ponto || !this.opcoes.lotes) return false;
@@ -265,7 +346,12 @@ export class Levantamento {
     return true;
   }
 
-  _local(i) { return Number.isInteger(i) ? this.dados.locais[i] : null; }
+  /** Tabela com todas as colunas preenchidas de uma linha. */
+  _tudo(colunas, valores, pular = []) {
+    return this.identificar.tabela(colunas.map((c, k) => [c, valores[k]])
+      .filter(([c, v]) => v !== null && v !== undefined && v !== '' && !pular.includes(c))
+      .map(([c, v]) => [c, typeof v === 'number' ? fmtNum(v, Number.isInteger(v) ? 0 : 2) : String(v)]));
+  }
 
   abrirLote(l, voar = false) {
     const d = this.dados, id = this.identificar;
@@ -273,32 +359,37 @@ export class Levantamento {
     id.fonte.entities.removeAll();
     id.destacarLonLat(l.aneis, { fechado: true });
     id.abrir({ titulo: `Quadra ${l.q} · Lote ${l.l}`, subtitulo: `${d.bairros[l.b]} · ${l.f}`, ponto: { lon: c[0], lat: c[1], alt: NaN } });
-    const vot = this._local(l.vot), ctv = typeof l.ctv === 'number' ? this._local(l.ctv)?.nome : l.ctv;
-    const linhas = [
-      ['Finalidade', [l.f, l.st].filter(Boolean).join(' — ')],
-      ['Endereço', l.end], ['Prédio / condomínio', l.edif], ['Inscrição (CI)', l.ci],
-      ['Área do comércio', l.ar], ['Outras áreas', l.aa && l.aa !== l.ar ? l.aa : ''],
-      ['CNPJs ativos', l.cnpj ? fmtNum(l.cnpj) : ''], ['Alvarás municipais', l.alv ? fmtNum(l.alv) : ''],
-      ['Unidades', l.un ? `${fmtNum(l.un)} (${fmtNum(l.ur || 0)} residenciais, ${fmtNum(l.unr || 0)} não residenciais)` : ''],
-      ['Pavimentos', l.pav ? `${fmtNum(l.pav)}${l.alt ? ` (≈ ${fmtNum(l.alt)} m)` : ''}` : ''],
-      ['Área do terreno', l.at ? `${fmtNum(l.at, l.at % 1 ? 1 : 0)} m²` : ''], ['Área edificada', l.ae ? `${fmtNum(l.ae)} m²` : ''],
-      ['No levantamento', l.cat], ['Google Maps', l.gm && l.gm !== '0' ? l.gm : ''], ['Área pública', l.ap],
-    ].filter(([, v]) => v);
-    id.corpo.append(id.tabela(linhas));
-    if (l.emp?.length) {
-      const s = id.secao(`Empresas no lote (${l.emp.length})`, { aberto: l.emp.length <= 4 });
-      s.append(el('ul', { class: 'lv-empresas' }, l.emp.map((n) => el('li', {}, n))));
+    id.corpo.append(this._tudo(d.colunas_lote, l.v, ['Bairro', 'Quadra', 'Lote']));
+    const empresas = this.empresasDoLote.get(l.i) || [];
+    if (empresas.length) {
+      const s = id.secao(`Empresas no lote (${empresas.length})`, { aberto: empresas.length <= 3 });
+      const ce = d.empresas.colunas;
+      for (const e of empresas) {
+        const nome = e[ce.indexOf('Nome fantasia')] || e[ce.indexOf('Razão social')] || e[ce.indexOf('CNPJ')];
+        s.append(el('details', { class: 'lv-empresa' }, el('summary', {}, nome), this._tudo(ce, e, ['Bairro', 'Quadra', 'Lote'])));
+      }
     }
-    if (vot || l.ctr) {
-      id.secao('Eleitoral', { aberto: false }).append(id.tabela([
-        ['Local de votação mais próximo', vot ? `${vot.nome} (${vot.z}ª zona, local ${vot.n})` : ''],
-        ['Distância', l.dist ? `${fmtNum(l.dist)} m` : ''],
-        ['Conselho Tutelar 2023', [l.ctr && `região ${l.ctr}`, l.cts].filter(Boolean).join(' · ')],
-        ['Onde votou no CT', ctv || ''],
-      ].filter(([, v]) => v)));
+    const google = this.googleDoLote.get(l.i) || [];
+    if (google.length) {
+      const s = id.secao(`Google Maps (${google.length})`, { aberto: true });
+      const cg = d.google.colunas;
+      for (const g of google) {
+        const link = g[cg.indexOf('Link')];
+        s.append(el('div', { class: 'lv-google' }, this._tudo(cg, g, ['Bairro', 'Quadra', 'Lote', 'Link']),
+          link ? el('a', { class: 'botao-texto', href: link, target: '_blank', rel: 'noopener' }, 'Abrir no Google Maps') : null));
+      }
     }
+    const cond = this.condominioDoLote.get(l.i) || [];
+    for (const r of cond) id.secao('Prédio / condomínio', { aberto: false }).append(this._tudo(d.condominios.colunas, r, ['Bairro', 'Quadra', 'Lote']));
     id.corpo.append(el('button', { class: 'botao', onclick: () => id.emPonto({ lon: c[0], lat: c[1], alt: NaN }) }, 'Consultar este ponto no Mapa Fácil'));
     if (voar) this.globo.voarPara({ lon: c[0], lat: c[1], distancia: 350, inclinacao: -60 });
+  }
+
+  abrirEmpresaSemLote(e) {
+    const id = this.identificar, ce = this.dados.empresas_sem_lote.colunas;
+    id.fonte.entities.removeAll();
+    id.abrir({ titulo: e.nome || 'Empresa', subtitulo: `${e.bairro || ''} · sem lote identificado` });
+    id.corpo.append(this._tudo(ce, e.v));
   }
 
   abrirArea(a) {
@@ -307,17 +398,38 @@ export class Levantamento {
     const c = anel.reduce((s, p) => [s[0] + p[0] / anel.length, s[1] + p[1] / anel.length], [0, 0]);
     id.fonte.entities.removeAll();
     id.destacarLonLat(a.aneis, { fechado: true });
-    id.abrir({ titulo: a.nome, subtitulo: [a.cat, a.bai].filter(Boolean).join(' · '), ponto: { lon: c[0], lat: c[1], alt: NaN } });
-    id.corpo.append(id.tabela([['Destinação', a.dest], ['Uso', a.uso], ['Proprietário', a.prop],
-      ['Área', a.area ? `${fmtNum(a.area, 0)} m²` : ''], ['Fontes', a.fontes]].filter(([, v]) => v)));
+    id.abrir({ titulo: a.nome, subtitulo: a.cat, ponto: { lon: c[0], lat: c[1], alt: NaN } });
+    if (a.v) id.corpo.append(this._tudo(this.dados.colunas_area, a.v));
+    else if (a.desc?.length) id.corpo.append(el('div', { class: 'lv-desc' }, a.desc.map((t) => el('p', {}, t))));
   }
 
-  abrirLocal(v) {
+  /** Linha da aba "Locais de votação" pelo nome do local. */
+  _linhaLocal(nome) {
+    const t = this.dados.eleitoral.locais, k = t.colunas.indexOf('Local de votação');
+    const n = semAcento(nome);
+    return t.linhas.find((r) => semAcento(r[k] || '') === n);
+  }
+
+  abrirPonto(p) {
+    const id = this.identificar, E = this.dados.eleitoral;
+    id.fonte.entities.removeAll();
+    const tipos = { geral: `${p.grupo} eleitoral`, ct: `Conselho Tutelar 2023 · região ${p.grupo}`,
+      transferido: `Local transferido no Conselho Tutelar · região ${p.grupo}`, sem: 'Sem informação no edital do Conselho Tutelar' };
+    id.abrir({ titulo: p.nome, subtitulo: tipos[p.tipo], ponto: { lon: p.lon, lat: p.lat, alt: NaN } });
+    if (p.desc?.length) id.corpo.append(el('div', { class: 'lv-desc' }, p.desc.slice(1).map((t) => el('p', {}, t))));
+    const linha = this._linhaLocal(p.nome);
+    if (linha) id.secao('Planilha: locais de votação', { aberto: false }).append(this._tudo(E.locais.colunas, linha));
+    if (p.tipo === 'ct') {
+      const ct = E.conselho, k = ct.colunas.indexOf('Local de votação do CT');
+      const r = ct.linhas.find((x) => semAcento(x[k] || '').slice(0, 25) === semAcento(p.nome).slice(0, 25));
+      if (r) id.secao('Planilha: Conselho Tutelar', { aberto: true }).append(this._tudo(ct.colunas, r));
+    }
+  }
+
+  abrirSeta(s) {
     const id = this.identificar;
     id.fonte.entities.removeAll();
-    id.abrir({ titulo: v.nome, subtitulo: `${v.z}ª zona eleitoral · local ${v.n}`, ponto: { lon: v.lon, lat: v.lat, alt: NaN } });
-    id.corpo.append(id.tabela([['Endereço', [v.end, v.bai].filter(Boolean).join(' — ')],
-      ['Seções', v.sec ? fmtNum(v.sec) : ''], ['Eleitores', v.ele ? fmtNum(v.ele) : ''], ['Em uso em 2026', v.uso ? 'Sim' : 'Não'],
-      ['Conselho Tutelar 2023', [v.ct, v.ctr && `região ${v.ctr}`].filter(Boolean).join(' · ')]].filter(([, x]) => x)));
+    id.abrir({ titulo: 'Seções transferidas', subtitulo: `Conselho Tutelar 2023 · região ${s.regiao}`, ponto: { lon: s.de[0], lat: s.de[1], alt: NaN } });
+    id.corpo.append(el('div', { class: 'lv-desc' }, s.desc.map((t) => el('p', {}, t))));
   }
 }

@@ -273,13 +273,20 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
       const soJA = lv._lotesVisiveis().every((l) => l.b === 0);
       lv.opcoes.bairros[1] = true; lv.campo.value = 'qd 262b lt 24'; lv._buscar();
       const achou = lv.resultados.textContent;
-      lv.campo.value = ''; lv._buscar(); bussola.identificar.fechar(); lv.redesenhar();
-      return { ...antes, tratou, titulo, semResid, soJA, achou, hash: location.hash.includes('lv=1') };
+      lv.campo.value = ''; lv._buscar(); bussola.identificar.fechar();
+      const ficha = (() => { lv.abrirLote(lv.dados.lotes.find((x) => (lv.empresasDoLote.get(x.i) || []).length)); return document.querySelector('#ficha-corpo').textContent; })();
+      lv.opcoes.eleicao = 'ct'; lv.redesenhar();
+      const ct = { setas: lv.fonte.entities.values.filter((e) => e.levantamento?.tipo === 'seta').length,
+                   transf: lv.fonte.entities.values.filter((e) => e.levantamento?.dado?.tipo === 'transferido').length };
+      lv.opcoes.eleicao = ''; bussola.identificar.fechar(); lv.redesenhar();
+      return { ...antes, tratou, titulo, semResid, soJA, achou, ficha, ct, hash: location.hash.includes('lv=1') };
     }""")
     assert r["lotes"] > 8000 and r["limites"] == 2 and r["camada"] and r["bordas"] >= 2, r
     assert r["tratou"] and r["titulo"].startswith("Quadra "), r
     assert not r["semResid"] and r["soJA"], r
     assert "262B" in r["achou"], r
+    assert "Empresas no lote" in r["ficha"] and "Inscrição do lote (CI)" in r["ficha"], r["ficha"][:300]
+    assert r["ct"]["setas"] > 150 and r["ct"]["transf"] > 150, r["ct"]
     assert r["hash"], r
 
 

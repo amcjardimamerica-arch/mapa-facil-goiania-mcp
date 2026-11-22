@@ -69,14 +69,15 @@ python scripts/importar_levantamento.py compilado.kml compilado.xlsx
 ```
 
 - **Limites dos bairros**: a divisa de cada um, em destaque, com o nome.
-- **Lotes por finalidade** (8.861): residencial, condominial, comercial, misto, religioso, institucional,
-  lote vago e não identificado, com filtro por finalidade e por bairro. O clique no lote abre a ficha:
-  finalidade, endereço, prédio, área do comércio, empresas, unidades, pavimentos, áreas e dados eleitorais.
-- **Áreas públicas** (130), **prédios em 3D** pela altura dos pavimentos e **locais de votação** (2026 e
-  Conselho Tutelar 2023).
-- **Busca** por rua, empresa, prédio ou "qd 12 lt 5".
-- O site é público: o importador deixa de fora contatos, telefones, e-mails e números de CPF, e um teste
-  confere isso a cada envio.
+- **Lotes por finalidade** (8.861), com filtro por finalidade e por bairro. A ficha do lote traz todas as
+  colunas da aba Lotes, cada empresa da aba Empresas com todos os campos, os estabelecimentos do Google Maps
+  e a linha da aba Condomínios e prédios.
+- **Áreas públicas** (130) e **prédios em 3D** pela altura dos pavimentos.
+- **Eleitoral**: eleição geral 2026 com filtro por zona; Conselho Tutelar 2023 com filtro por região, local
+  do CT em estrela, local transferido em cinza e seta até a escola que reuniu as urnas.
+- **Busca** em todos os campos dos lotes e das empresas, inclusive as empresas sem lote identificado.
+- Todos os dados da planilha e do KML vão para o arquivo, inclusive contatos, telefones e e-mails. O arquivo
+  de dados fica acessível a quem tiver o endereço direto, como tudo no GitHub Pages.
 - No Mapa e na camada "Ruas e quadras", a divisa de todos os bairros de Goiânia aparece tracejada.
 
 ## Acesso com usuário e senha

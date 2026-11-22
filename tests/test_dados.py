@@ -163,16 +163,20 @@ def test_script_de_usuarios(tmp_path, monkeypatch):
 
 
 def test_levantamento_da_associacao():
-    """Levantamento do Jardim América e do Setor Nova Suíça: completo e sem dados de contato."""
-    import re
+    """Levantamento do Jardim América e do Setor Nova Suíça: todas as abas e camadas do KML."""
     d = ler("levantamento.json")
     assert d["bairros"] == ["Jardim América", "Setor Nova Suíça"]
     assert len(d["limites"]) == 2 and all(lim["aneis"] and len(lim["aneis"][0]) > 50 for lim in d["limites"])
     assert len(d["lotes"]) > 8000 and all(l["g"] and len(l["g"][0]) >= 6 for l in d["lotes"])
+    assert all(len(l["v"]) == len(d["colunas_lote"]) for l in d["lotes"])
+    assert {"Contatos do levantamento", "Telefones do levantamento", "ID do lote (Mapa Fácil)"} <= set(d["colunas_lote"])
     assert sum(f["n"] for f in d["finalidades"]) == len(d["lotes"])
-    assert len(d["areas"]) > 100 and len(d["locais"]) > 300
-    texto = json.dumps({k: v for k, v in d.items() if k != "lotes"}, ensure_ascii=False) + \
-        json.dumps([{k: v for k, v in l.items() if k != "g"} for l in d["lotes"]], ensure_ascii=False)
-    assert not re.search(r"[\w.+-]+@[\w-]+\.[\w.]+", texto), "e-mail no arquivo publicado"
-    assert not re.search(r"\b\d{2} 9[.\s]?\d{4}-\d{4}\b|\(\d{2}\)\s?\d{4,5}-?\d{4}", texto), "telefone no arquivo publicado"
-    assert not re.search(r"\b\d{11}\b", texto.replace('"ci":', "")), "possível CPF no arquivo publicado"
+    assert len(d["empresas"]["linhas"]) > 13000 and {"Telefone", "E-mail", "CNPJ"} <= set(d["empresas"]["colunas"])
+    assert sum(1 for e in d["empresas"]["linhas"] if e["lote"] is not None) > 13000
+    assert len(d["empresas_sem_lote"]["linhas"]) > 3000 and len(d["google"]["linhas"]) > 200
+    assert len(d["condominios"]["linhas"]) > 2000 and len(d["areas"]) > 100
+    e = d["eleitoral"]
+    tipos = {p["tipo"] for p in e["pontos"]}
+    assert tipos == {"geral", "ct", "transferido", "sem"} and len(e["setas"]) > 150
+    assert len({p["grupo"] for p in e["pontos"] if p["tipo"] == "geral"}) >= 9
+    assert len(e["locais"]["linhas"]) > 300 and len(e["conselho"]["linhas"]) > 100

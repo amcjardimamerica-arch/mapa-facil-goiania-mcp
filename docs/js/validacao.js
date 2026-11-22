@@ -169,7 +169,7 @@ const grupos = [
     itens.push(['Levantamento da Associação (Jardim América e Nova Suíça)', async () => {
       const d = await carregar('levantamento.json');
       exigir(d.lotes?.length > 8000 && d.limites?.length === 2, 'levantamento incompleto');
-      return `${d.lotes.length} lotes, ${d.areas.length} áreas públicas, ${d.locais.length} locais de votação`;
+      return `${d.lotes.length} lotes, ${d.empresas.linhas.length + d.empresas_sem_lote.linhas.length} empresas, ${d.areas.length} áreas públicas, ${d.eleitoral.pontos.length} locais de votação`;
     }]);
     itens.push(['Mapa desenhado: relevo sombreado (Esri)', async () => imagem('https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer/tile/14/8962/5949')]);
     return itens;
