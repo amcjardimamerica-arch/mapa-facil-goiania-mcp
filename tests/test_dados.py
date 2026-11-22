@@ -180,3 +180,16 @@ def test_levantamento_da_associacao():
     assert tipos == {"geral", "ct", "transferido", "sem"} and len(e["setas"]) > 150
     assert len({p["grupo"] for p in e["pontos"] if p["tipo"] == "geral"}) >= 9
     assert len(e["locais"]["linhas"]) > 300 and len(e["conselho"]["linhas"]) > 100
+
+
+def test_infraestrutura_e_manutencao():
+    d = ler("levantamento.json")
+    assert d["manutencao"].startswith("https://claude.ai/artifact/")
+    assert [l["lotes"] for l in d["limites"]] == [8029, 984] and len(d["limites_oficiais"]) == 2
+    bl, ip = d["bocas"], d["iluminacao"]
+    kb = bl["colunas"].index("Unidades em sequência")
+    assert len(bl["linhas"]) == 830 and sum(b["v"][kb] for b in bl["linhas"]) == 1580
+    assert all((DADOS.parent / "img" / "icones" / b["icone"]).exists() for b in bl["linhas"])
+    assert len(ip["linhas"]) == 4147 and (DADOS.parent / "img" / "icones" / "lampada.png").exists()
+    k = d["colunas_lote"].index("Código para manutenção")
+    assert all(str(l["v"][k]).startswith("LT-") for l in d["lotes"])

@@ -1,6 +1,6 @@
 """Importa o levantamento da Associação (KML + planilha) para docs/data/levantamento.json.
 
-    python scripts/importar_levantamento.py caminho/compilado.kml caminho/compilado.xlsx
+    python scripts/importar_levantamento.py caminho/compilado.kmz caminho/compilado.xlsx   (aceita .kml ou .kmz)
 
 Leva tudo: todas as colunas de todas as abas da planilha e, do KML, a geometria dos lotes,
 dos limites e das áreas públicas, os locais de votação por zona e por região do Conselho
@@ -12,6 +12,7 @@ import html
 import json
 import re
 import sys
+import zipfile
 from datetime import date, datetime, timezone
 from pathlib import Path
 
@@ -110,17 +111,29 @@ def tabela(wb, aba):
 
 
 def main(kml_path: str, xlsx_path: str) -> int:
-    kml = Path(kml_path).read_text(encoding="utf-8")
+    if kml_path.lower().endswith(".kmz"):
+        with zipfile.ZipFile(kml_path) as z:
+            kml = z.read(next(n for n in z.namelist() if n.lower().endswith(".kml"))).decode("utf-8")
+    else:
+        kml = Path(kml_path).read_text(encoding="utf-8")
+    icones = {m.group(1): m.group(2).split("/")[-1] for m in re.finditer(
+        r'<Style id="([^"]+)">\s*<IconStyle>.*?<href>([^<]+)</href>', kml, re.S)}
     estilos = {m.group(1): kml_cor(m.group(2)) for m in re.finditer(
         r'<Style id="([^"]+)">.*?<PolyStyle><color>([0-9a-fA-F]{8})</color>', kml, re.S)}
 
-    limites, geo_lotes, areas_kml, pontos, setas = [], {}, [], [], []
+    limites, limites_oficiais, geo_lotes, areas_kml, pontos, setas = [], [], {}, [], [], []
+    bocas_kml, postes_kml = {}, {}
     for trilha, pm in pastas(kml):
         nome = html.unescape(RE_NOME.search(pm).group(1)) if RE_NOME.search(pm) else ""
         topo = trilha[0] if trilha else ""
         estilo = (RE_ESTILO.search(pm) or [None, ""])[1] if RE_ESTILO.search(pm) else ""
         if topo == "Limites dos bairros":
-            limites.append({"nome": nome, "aneis": geometria(pm), "desc": texto_desc(pm)})
+            item = {"nome": re.sub(r"\s*\(oficial\)$", "", nome), "aneis": geometria(pm), "desc": texto_desc(pm)}
+            (limites_oficiais if len(trilha) > 1 and trilha[1].startswith("Limite oficial") else limites).append(item)
+        elif topo.startswith("Bocas de lobo"):
+            bocas_kml[nome] = {"icone": icones.get(estilo, "boca_1.png"), "desc": texto_desc(pm)}
+        elif topo.startswith("Iluminação pública"):
+            postes_kml[nome] = {"desc": texto_desc(pm), "logradouro": trilha[2].split(" (")[0] if len(trilha) > 2 else ""}
         elif topo.startswith("Lotes por finalidade"):
             desc = RE_DESC.search(pm).group(1)
             ci = RE_CI.search(desc)
@@ -212,13 +225,28 @@ def main(kml_path: str, xlsx_path: str) -> int:
     for lim in limites:
         lim["lotes"] = sum(1 for x in lotes if BAIRROS[x["b"]] == lim["nome"])
 
+    def tabela_codigo(aba):
+        cab, linhas = abas[aba]
+        k = cab.index("Código para manutenção")
+        return cab, linhas, k
+
+    cab_bl, linhas_bl, k_bl = tabela_codigo("Bocas de lobo")
+    bocas = {"colunas": cab_bl, "linhas": [{"v": r, **bocas_kml.get(r[k_bl], {"icone": "boca_1.png", "desc": []})} for r in linhas_bl]}
+    cab_ip, linhas_ip, k_ip = tabela_codigo("Iluminação pública")
+    # (A descrição de cada poste no KML repete as colunas da aba; fica só a linha da planilha.)
+    iluminacao = {"colunas": cab_ip, "linhas": [{"v": r} for r in linhas_ip]}
+    conferencia_cab, conferencia = abas["Conferência de lotes"] if "Conferência de lotes" in abas else ([], [])
+
     resumo_cab, resumo = abas["Resumo"]
     dados = {
         "fonte": "Levantamento da Associação (A.M.C.): Mapa Fácil, Receita Federal (CNPJ), Google Maps, TSE e edital do Conselho Tutelar 2023",
         "gerado_em": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
         "bairros": BAIRROS,
         "finalidades": sorted(finalidades.values(), key=lambda f: -f["n"]),
-        "limites": limites,
+        "limites": limites, "limites_oficiais": limites_oficiais,
+        "manutencao": "https://claude.ai/artifact/VYMNhqCwekJAvjVua9Pdbj",
+        "bocas": bocas, "iluminacao": iluminacao,
+        "conferencia": {"colunas": conferencia_cab, "linhas": conferencia},
         "colunas_lote": cab, "lotes": lotes,
         "empresas": empresas, "empresas_sem_lote": {"colunas": cab_sem, "linhas": sem_lote},
         "google": google, "condominios": condominios,
@@ -232,7 +260,8 @@ def main(kml_path: str, xlsx_path: str) -> int:
     ligadas = sum(1 for e in empresas["linhas"] if e["lote"] is not None)
     print(f"{len(lotes)} lotes ({sem_geo} sem geometria), {len(empresas['linhas'])} empresas ({ligadas} ligadas a lote), "
           f"{len(sem_lote)} empresas sem lote, {len(google['linhas'])} Google Maps, {len(condominios['linhas'])} condomínios, "
-          f"{len(areas)} áreas públicas, {len(pontos)} pontos eleitorais, {len(setas)} setas, {len(limites)} limites "
+          f"{len(areas)} áreas públicas, {len(pontos)} pontos eleitorais, {len(setas)} setas, {len(limites)} limites, "
+          f"{len(bocas['linhas'])} bocas de lobo, {len(iluminacao['linhas'])} pontos de iluminação "
           f"-> {SAIDA} ({SAIDA.stat().st_size / 1e6:.1f} MB)")
     return 0
 

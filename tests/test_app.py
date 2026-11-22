@@ -278,8 +278,13 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
       lv.opcoes.eleicao = 'ct'; lv.redesenhar();
       const ct = { setas: lv.fonte.entities.values.filter((e) => e.levantamento?.tipo === 'seta').length,
                    transf: lv.fonte.entities.values.filter((e) => e.levantamento?.dado?.tipo === 'transferido').length };
-      lv.opcoes.eleicao = ''; bussola.identificar.fechar(); lv.redesenhar();
-      return { ...antes, tratou, titulo, semResid, soJA, achou, ficha, ct, hash: location.hash.includes('lv=1') };
+      lv.opcoes.eleicao = ''; lv.opcoes.bocas = true; lv.opcoes.iluminacao = true; lv.redesenhar();
+      const infra = { bocas: lv.fonte.entities.values.filter((e) => e.levantamento?.tipo === 'boca').length,
+                      postes: lv.fonte.entities.values.filter((e) => e.levantamento?.tipo === 'poste' && e.billboard).length };
+      lv.abrirBoca(lv.dados.bocas.linhas[0]);
+      infra.link = document.querySelector('#ficha-corpo a.botao.destaque')?.href || '';
+      lv.opcoes.bocas = false; lv.opcoes.iluminacao = false; bussola.identificar.fechar(); lv.redesenhar();
+      return { ...antes, tratou, titulo, semResid, soJA, achou, ficha, ct, infra, hash: location.hash.includes('lv=1') };
     }""")
     assert r["lotes"] > 8000 and r["limites"] == 2 and r["camada"] and r["bordas"] >= 2, r
     assert r["tratou"] and r["titulo"].startswith("Quadra "), r
@@ -287,6 +292,9 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
     assert "262B" in r["achou"], r
     assert "Empresas no lote" in r["ficha"] and "Inscrição do lote (CI)" in r["ficha"], r["ficha"][:300]
     assert r["ct"]["setas"] > 150 and r["ct"]["transf"] > 150, r["ct"]
+    assert r["infra"]["bocas"] == 830 and r["infra"]["postes"] == 4147, r["infra"]
+    assert r["infra"]["link"].startswith("https://claude.ai/artifact/") and "#BL-" in r["infra"]["link"], r["infra"]
+    assert "Pedir manutenção (LT-" in r["ficha"], r["ficha"][:200]
     assert r["hash"], r
 
 

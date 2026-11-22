@@ -41,7 +41,7 @@ export class Levantamento {
     this.fonte = new Cesium.CustomDataSource('levantamento');
     globo.viewer.dataSources.add(this.fonte);
     const salvo = memoria.ler('bussola:levantamento', {});
-    this.opcoes = { limites: true, lotes: true, areas: false, predios: false, locais: false, bairros: [true, true], ...salvo.opcoes };
+    this.opcoes = { limites: true, oficiais: false, lotes: true, areas: false, predios: false, bocas: false, iluminacao: false, bairros: [true, true], ...salvo.opcoes };
     this.ocultas = new Set(salvo.ocultas || []);
     this.aoMudar = () => {};
     this._montar();
@@ -127,12 +127,16 @@ export class Levantamento {
       chave('limites', 'Limites dos bairros', 'divisa de cada bairro no mapa'),
       chave('lotes', 'Lotes por finalidade', 'residencial, comercial, condominial…'),
       this.legenda,
+      chave('oficiais', 'Limite oficial do Mapa Fácil', 'para comparar com o limite pelos lotes'),
       chave('areas', 'Áreas públicas', 'praças, áreas verdes, canteiros e equipamentos'),
+      chave('bocas', 'Bocas de lobo', 'ícone com o número de unidades em sequência'),
+      chave('iluminacao', 'Iluminação pública', 'lâmpada e poste em 3D (cadastro anterior ao LED)'),
       chave('predios', 'Prédios em 3D', 'altura pelos pavimentos (3 ou mais)'),
       el('h3', { class: 'subtitulo' }, 'Eleitoral'),
       this.caixaEleitoral = el('div', { class: 'lv-eleitoral' }),
       el('h3', { class: 'subtitulo' }, 'Buscar no levantamento'),
       this.campo, this.resultados,
+      this.caixaConferencia = el('div', {}),
       el('p', { class: 'nota' }, 'Fontes: Mapa Fácil, Receita Federal (CNPJ), Google Maps, TSE e edital do Conselho Tutelar 2023, compiladas pela Associação.'));
   }
 
@@ -159,6 +163,13 @@ export class Levantamento {
     this.estado.textContent = `${fmtNum(d.lotes.length)} lotes, ${fmtNum(d.empresas.linhas.length + d.empresas_sem_lote.linhas.length)} empresas, ` +
       `${fmtNum(d.areas.length)} áreas públicas e ${fmtNum(d.eleitoral.pontos.length)} locais de votação.`;
     this._montarEleitoral();
+    const cf = d.conferencia;
+    this.caixaConferencia.textContent = '';
+    if (cf?.linhas?.length) {
+      this.caixaConferencia.append(el('details', { class: 'lv-empresa' }, el('summary', {}, 'Conferência de lotes'),
+        el('table', { class: 'unidades' }, el('thead', {}, el('tr', {}, cf.colunas.map((c) => el('th', {}, c)))),
+          el('tbody', {}, cf.linhas.map((r) => el('tr', {}, r.map((v) => el('td', {}, v ?? '—'))))))));
+    }
   }
 
   _montarEleitoral() {
@@ -250,6 +261,45 @@ export class Levantamento {
       });
     }
 
+    if (this.opcoes.oficiais) {
+      (d.limites_oficiais || []).forEach((lim, i) => {
+        if (this.opcoes.bairros[i] === false) return;
+        for (const anel of lim.aneis.map(decodificarAnel)) {
+          this.fonte.entities.add({ polyline: { positions: Cesium.Cartesian3.fromDegreesArray([...anel, anel[0]].flat()), clampToGround: true,
+            width: 3, material: new Cesium.PolylineDashMaterialProperty({ color: Cesium.Color.WHITE.withAlpha(0.9), dashLength: 14 }) } });
+        }
+      });
+    }
+
+    const nomeBairro = (b) => d.bairros.indexOf(b);
+    const bairroVisivel = (b) => { const i = nomeBairro(b); return i < 0 || this.opcoes.bairros[i] !== false; };
+    if (this.opcoes.bocas) {
+      const cb = d.bocas.colunas, kla = cb.indexOf('Latitude'), klo = cb.indexOf('Longitude'), kb = cb.indexOf('Bairro');
+      for (const b of d.bocas.linhas) {
+        if (!bairroVisivel(b.v[kb])) continue;
+        const ent = this.fonte.entities.add({ position: Cesium.Cartesian3.fromDegrees(b.v[klo], b.v[kla]),
+          billboard: { image: `img/icones/${b.icone}`, width: 30, height: 30, heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY, distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 6000) } });
+        ent.levantamento = { tipo: 'boca', dado: b };
+      }
+    }
+    if (this.opcoes.iluminacao) {
+      const ci = d.iluminacao.colunas, kla = ci.indexOf('Latitude'), klo = ci.indexOf('Longitude'), kb = ci.indexOf('Bairro'), ka = ci.indexOf('Altura 3D estimada (m)');
+      const cinza = Cesium.Color.fromCssColorString('#b0bec5');
+      for (const p of d.iluminacao.linhas) {
+        if (!bairroVisivel(p.v[kb])) continue;
+        const alt = Number(p.v[ka]) || 8;
+        const ent = this.fonte.entities.add({ position: Cesium.Cartesian3.fromDegrees(p.v[klo], p.v[kla], alt),
+          billboard: { image: 'img/icones/lampada.png', width: 22, height: 22, heightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,
+            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 4000) } });
+        ent.levantamento = { tipo: 'poste', dado: p };
+        const poste = this.fonte.entities.add({ position: Cesium.Cartesian3.fromDegrees(p.v[klo], p.v[kla], alt / 2),
+          cylinder: { length: alt, topRadius: 0.12, bottomRadius: 0.2, material: cinza, heightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,
+            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 1500) } });
+        poste.levantamento = { tipo: 'poste', dado: p };
+      }
+    }
+
     if (this.opcoes.areas) {
       for (const a of d.areas) {
         if (a.bai && d.bairros.indexOf(a.bai) >= 0 && this.opcoes.bairros[d.bairros.indexOf(a.bai)] === false) continue;
@@ -311,8 +361,19 @@ export class Levantamento {
     if (!this.dados || q.length < 2) return;
     const termos = q.split(/\s+/);
     const achados = this._lotesVisiveis().filter((l) => termos.every((t) => l.busca.includes(t))).slice(0, 40);
+    const cod = this.campo.value.trim().toUpperCase();
+    if (/^(BL|IP)-(JA|NS|EN)-\d+$/.test(cod)) {
+      const t = cod.startsWith('BL') ? this.dados.bocas : this.dados.iluminacao, k = t.colunas.indexOf('Código para manutenção');
+      const item = t.linhas.find((x) => x.v[k] === cod);
+      if (item) {
+        const lat = item.v[t.colunas.indexOf('Latitude')], lon = item.v[t.colunas.indexOf('Longitude')];
+        this.resultados.append(el('li', {}, el('button', { class: 'lv-resultado', onclick: () => {
+          (cod.startsWith('BL') ? this.abrirBoca(item) : this.abrirPoste(item)); this.globo.voarPara({ lon, lat, distancia: 250, inclinacao: -55 }); } },
+          el('span', { class: 'lv-cor', style: 'background:#4fc3f7' }), el('span', {}, el('strong', {}, cod), el('small', {}, cod.startsWith('BL') ? 'Boca de lobo' : 'Iluminação pública')))));
+      }
+    }
     const semLote = this.semLote.filter((e) => termos.every((t) => e.busca.includes(t))).slice(0, 20);
-    if (!achados.length && !semLote.length) { this.resultados.append(el('li', { class: 'nota' }, 'Nada encontrado nos lotes visíveis nem nas empresas sem lote.')); return; }
+    if (!achados.length && !semLote.length && !this.resultados.children.length) { this.resultados.append(el('li', { class: 'nota' }, 'Nada encontrado nos lotes visíveis nem nas empresas sem lote.')); return; }
     for (const e of semLote) {
       this.resultados.append(el('li', {}, el('button', { class: 'lv-resultado', onclick: () => this.abrirEmpresaSemLote(e) },
         el('span', { class: 'lv-cor', style: 'background:transparent;border-style:dashed' }),
@@ -335,6 +396,8 @@ export class Levantamento {
       if (lv.tipo === 'lote') this.abrirLote(lv.dado);
       else if (lv.tipo === 'area') this.abrirArea(lv.dado);
       else if (lv.tipo === 'seta') this.abrirSeta(lv.dado);
+      else if (lv.tipo === 'boca') this.abrirBoca(lv.dado);
+      else if (lv.tipo === 'poste') this.abrirPoste(lv.dado);
       else this.abrirPonto(lv.dado);
       return true;
     }
@@ -350,7 +413,7 @@ export class Levantamento {
   _tudo(colunas, valores, pular = []) {
     return this.identificar.tabela(colunas.map((c, k) => [c, valores[k]])
       .filter(([c, v]) => v !== null && v !== undefined && v !== '' && !pular.includes(c))
-      .map(([c, v]) => [c, typeof v === 'number' ? fmtNum(v, Number.isInteger(v) ? 0 : 2) : String(v)]));
+      .map(([c, v]) => [c, typeof v === 'number' ? (Number.isInteger(v) ? fmtNum(v) : String(v).replace('.', ',')) : String(v)]));
   }
 
   abrirLote(l, voar = false) {
@@ -381,8 +444,35 @@ export class Levantamento {
     }
     const cond = this.condominioDoLote.get(l.i) || [];
     for (const r of cond) id.secao('Prédio / condomínio', { aberto: false }).append(this._tudo(d.condominios.colunas, r, ['Bairro', 'Quadra', 'Lote']));
+    const codigo = l.v[d.colunas_lote.indexOf('Código para manutenção')];
+    const m = this._manutencao(codigo);
+    if (m) id.corpo.insertBefore(el('div', { class: 'linha-botoes' }, m), id.corpo.children[1] || null);
     id.corpo.append(el('button', { class: 'botao', onclick: () => id.emPonto({ lon: c[0], lat: c[1], alt: NaN }) }, 'Consultar este ponto no Mapa Fácil'));
     if (voar) this.globo.voarPara({ lon: c[0], lat: c[1], distancia: 350, inclinacao: -60 });
+  }
+
+  /** Botão que abre a página de Pedidos de Manutenção já no item (URL#CÓDIGO). */
+  _manutencao(codigo) {
+    if (!codigo || !this.dados.manutencao) return null;
+    return el('a', { class: 'botao destaque', href: `${this.dados.manutencao}#${encodeURIComponent(codigo)}`, target: '_blank', rel: 'noopener' },
+      `Pedir manutenção (${codigo})`);
+  }
+
+  abrirBoca(b) {
+    const id = this.identificar, c = this.dados.bocas.colunas;
+    const lat = b.v[c.indexOf('Latitude')], lon = b.v[c.indexOf('Longitude')], codigo = b.v[c.indexOf('Código para manutenção')];
+    const n = b.v[c.indexOf('Unidades em sequência')];
+    id.fonte.entities.removeAll();
+    id.abrir({ titulo: `Boca de lobo ${codigo}`, subtitulo: `${n} ${n === 1 ? 'unidade' : 'unidades'} em sequência · ${b.v[c.indexOf('Bairro')]}`, ponto: { lon, lat, alt: NaN } });
+    id.corpo.append(this._tudo(c, b.v), this._manutencao(codigo) || '');
+  }
+
+  abrirPoste(p) {
+    const id = this.identificar, c = this.dados.iluminacao.colunas;
+    const lat = p.v[c.indexOf('Latitude')], lon = p.v[c.indexOf('Longitude')], codigo = p.v[c.indexOf('Código para manutenção')];
+    id.fonte.entities.removeAll();
+    id.abrir({ titulo: `Iluminação ${codigo}`, subtitulo: `${p.v[c.indexOf('Logradouro (cadastro)')] || ''} · ${p.v[c.indexOf('Bairro')]}`, ponto: { lon, lat, alt: NaN } });
+    id.corpo.append(this._tudo(c, p.v), this._manutencao(codigo) || '');
   }
 
   abrirEmpresaSemLote(e) {
@@ -399,7 +489,11 @@ export class Levantamento {
     id.fonte.entities.removeAll();
     id.destacarLonLat(a.aneis, { fechado: true });
     id.abrir({ titulo: a.nome, subtitulo: a.cat, ponto: { lon: c[0], lat: c[1], alt: NaN } });
-    if (a.v) id.corpo.append(this._tudo(this.dados.colunas_area, a.v));
+    if (a.v) {
+      const m = this._manutencao(a.v[this.dados.colunas_area.indexOf('Código para manutenção')]);
+      if (m) id.corpo.append(el('div', { class: 'linha-botoes' }, m));
+      id.corpo.append(this._tudo(this.dados.colunas_area, a.v));
+    }
     else if (a.desc?.length) id.corpo.append(el('div', { class: 'lv-desc' }, a.desc.map((t) => el('p', {}, t))));
   }
 

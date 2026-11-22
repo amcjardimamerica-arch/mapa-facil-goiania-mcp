@@ -65,14 +65,21 @@ Painel **Bairros** (menu lateral). Dados em `docs/data/levantamento.json`, gerad
 planilha compilados pela Associação:
 
 ```
-python scripts/importar_levantamento.py compilado.kml compilado.xlsx
+python scripts/importar_levantamento.py compilado.kmz compilado.xlsx   # aceita .kml ou .kmz
 ```
 
 - **Limites dos bairros**: a divisa de cada um, em destaque, com o nome.
 - **Lotes por finalidade** (8.861), com filtro por finalidade e por bairro. A ficha do lote traz todas as
   colunas da aba Lotes, cada empresa da aba Empresas com todos os campos, os estabelecimentos do Google Maps
   e a linha da aba Condomínios e prédios.
-- **Áreas públicas** (130) e **prédios em 3D** pela altura dos pavimentos.
+- **Limites**: pelo conjunto dos lotes de cada bairro (Jardim América 8.029, Setor Nova Suíça 984) e, para
+  comparar, o limite oficial do Mapa Fácil (tracejado).
+- **Áreas públicas** (128) e **prédios em 3D** pela altura dos pavimentos.
+- **Bocas de lobo**: 1.580 unidades em 830 pontos, com ícone do número de unidades em sequência.
+- **Iluminação pública**: 4.147 pontos com lâmpada e poste em 3D (cadastro do Mapa Fácil anterior ao LED).
+- **Pedidos de manutenção**: lote (`LT-JA-<CI>`), área pública (`AP-JA-001`), boca de lobo (`BL-JA-0001`) e
+  iluminação (`IP-NS-0001`) têm botão que abre a página de Pedidos de Manutenção no item (`URL#CÓDIGO`).
+  Os códigos também funcionam na busca do painel.
 - **Eleitoral**: eleição geral 2026 com filtro por zona; Conselho Tutelar 2023 com filtro por região, local
   do CT em estrela, local transferido em cinza e seta até a escola que reuniu as urnas.
 - **Busca** em todos os campos dos lotes e das empresas, inclusive as empresas sem lote identificado.
