@@ -15,8 +15,8 @@
       ],
       "area_goiania_km2": 742.3,
       "bytes": 436922,
-      "extraido_em": "2026-11-22T20:53:49Z",
-      "segundos": 5.9
+      "extraido_em": "2026-11-22T21:55:48Z",
+      "segundos": 6.4
     },
     "lugares": {
       "total": 547,
@@ -24,8 +24,8 @@
       "educacao": 359,
       "saude": 145,
       "bytes": 92685,
-      "extraido_em": "2026-11-22T20:54:08Z",
-      "segundos": 2.4
+      "extraido_em": "2026-11-22T21:56:06Z",
+      "segundos": 2.1
     },
     "camadas": {
       "temas_portal": 15,
@@ -34,43 +34,43 @@
       "bases": 4,
       "servicos_no_servidor": 51,
       "bytes": 43085,
-      "extraido_em": "2026-11-22T20:55:47Z",
-      "segundos": 97.8
+      "extraido_em": "2026-11-22T21:57:48Z",
+      "segundos": 100.3
     },
     "bairros": {
       "total": 1209,
       "populacao_somada": 1306344,
       "bytes": 240079,
-      "extraido_em": "2026-11-22T20:53:52Z",
-      "segundos": 2.8
+      "extraido_em": "2026-11-22T21:55:50Z",
+      "segundos": 2.1
     },
     "edificios": {
       "total": 3393,
       "sem_lote": 18,
       "max_pavimentos": 51,
       "bytes": 833695,
-      "extraido_em": "2026-11-22T20:54:05Z",
-      "segundos": 13.5
+      "extraido_em": "2026-11-22T21:56:04Z",
+      "segundos": 14.4
     },
     "logradouros": {
       "total": 15736,
       "bytes": 553205,
-      "extraido_em": "2026-11-22T20:54:09Z",
-      "segundos": 1.3
+      "extraido_em": "2026-11-22T21:56:08Z",
+      "segundos": 1.2
     },
     "satelite": {
       "versoes_publicadas": 199,
       "datas_distintas": 11,
-      "sem_resposta": 27,
+      "sem_resposta": 12,
       "primeira": "2012-04-04",
       "ultima": "2025-09-06",
-      "bytes": 3157,
-      "extraido_em": "2026-11-22T21:05:01Z",
-      "segundos": 554.6
+      "bytes": 3153,
+      "extraido_em": "2026-11-22T22:03:30Z",
+      "segundos": 341.9
     }
   },
   "versao_extrator": "1.1.0",
   "portal": "https://portalmapa.goiania.go.gov.br/mapafacil/",
   "servidor": "https://portalmapa.goiania.go.gov.br/servicogyn/rest/services",
-  "atualizado_em": "2026-11-22T21:05:01Z"
+  "atualizado_em": "2026-11-22T22:03:30Z"
 }
