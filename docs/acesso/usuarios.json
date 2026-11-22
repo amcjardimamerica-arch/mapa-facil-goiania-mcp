@@ -19,7 +19,16 @@
       "sal": "4cc62d270f59cc9f91e72b135895bdd3",
       "iteracoes": 310000,
       "resumo": "66883b930c15053bd812efb17258a0d814f54de5858957e0ee5323d4ad607f3a"
+    },
+    {
+      "login": "visitante",
+      "nome": "Visitante",
+      "perfil": "membro",
+      "ativo": true,
+      "sal": "750c6ad23e3ca5fca85c898d20321584",
+      "iteracoes": 310000,
+      "resumo": "a51c78be40f42e50ac241ef955b1dd891be1c73952696c2aeff71b53f0fb1291"
     }
   ],
-  "atualizado_em": "2026-11-22T21:40:41+00:00"
+  "atualizado_em": "2026-11-22T21:43:44+00:00"
 }
