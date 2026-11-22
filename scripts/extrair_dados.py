@@ -54,7 +54,7 @@ PORTAL = "https://portalmapa.goiania.go.gov.br"
 APP = f"{PORTAL}/mapafacil"
 REST = f"{PORTAL}/servicogyn/rest/services"
 MS = f"{REST}/MapaServer"
-UA = {"User-Agent": f"Bussola-Extrator/{VERSAO} (+github.com/amcjardimamerica-arch/mapa-facil-goiania-mcp)"}
+UA = {"User-Agent": f"Bussola-Extrator/{VERSAO} (+github.com/amcjardimamerica-arch/Bussola)"}
 
 # Município limítrofe = encosta em Goiânia (distância até CONTATO_MAXIMO_M).
 # Com menos de DIVISA_MINIMA_M de linha comum o contato é só um vértice

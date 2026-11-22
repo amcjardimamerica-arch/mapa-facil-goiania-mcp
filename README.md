@@ -136,7 +136,7 @@ colocar o site atrás de um serviço de autenticação (por exemplo, Cloudflare 
 1. Envie estes arquivos para a branch `main`.
 2. No repositório: **Settings → Pages → Build and deployment → Source: Deploy from a branch**,
    branch `main`, pasta `/docs`.
-3. O mapa abre em `https://amcjardimamerica-arch.github.io/mapa-facil-goiania-mcp/` e a validação em
+3. O mapa abre em `https://amcjardimamerica-arch.github.io/Bussola/` e a validação em
    `…/validacao.html`.
 
 Não há segredo nem chave no projeto. A cada envio, o fluxo **Bússola — testes** confere os dados
