@@ -1,44 +1,51 @@
-/* Portal de acesso da Bússola: a rosa dos ventos com o contorno real de Goiânia. */
+/* Portal de acesso da Bússola: identidade da A.M.C. Jardim América.
+   A rosa dos ventos com o contorno real de Goiânia, nas cores e nas facetas da logomarca. */
 :root {
-  --grafite: #1f2226;
-  --grafite-2: #282c31;
-  --grafite-3: #33383e;
-  --linha: #444a52;
-  --texto: #eceef1;
-  --texto-2: #aab0b7;
-  --ipe: #ffd54a;
-  --ipe-escuro: #e0b52a;
-  --ceu: #8ab4f8;
-  --erro: #ff8a80;
-  --titulo: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
-  --corpo: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --marinho: #001D7E;
+  --azul: #4C75B4;
+  --ceu: #85C1EA;
+  --amarelo: #F6EA07;
+  --ouro: #E3AB00;
+  --laranja: #D17600;
+  --tinta: #211915;
+  --papel: #ffffff;
+  --nevoa: #EEF3FA;
+  --linha: #D5DEEC;
+  --texto-2: #4d5568;
+  --erro: #B3261E;
+  --titulo: "Bodoni Moda", "Bodoni 72", Didot, Georgia, serif;
+  --corpo: "Nunito Sans", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  color-scheme: light;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; }
-body { background: radial-gradient(ellipse 90% 70% at 30% 45%, #2b3036 0%, #17191c 72%); color: var(--texto);
-  font: 15px/1.5 var(--corpo); padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+body { background:
+    linear-gradient(118deg, transparent 0 62%, rgba(133, 193, 234, .16) 62% 74%, rgba(76, 117, 180, .10) 74% 86%, rgba(0, 29, 126, .07) 86%),
+    radial-gradient(ellipse 80% 70% at 28% 46%, #ffffff 0%, var(--nevoa) 78%);
+  background-attachment: fixed; color: var(--tinta);
+  font: 16px/1.5 var(--corpo); padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
 [hidden] { display: none !important; }
-a { color: var(--ceu); }
-:focus-visible { outline: 2px solid var(--ipe); outline-offset: 3px; }
+a { color: var(--marinho); }
+:focus-visible { outline: 3px solid var(--ouro); outline-offset: 3px; }
 
-.portal { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(340px, .9fr); align-items: center;
+.portal { position: relative; z-index: 1; min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(340px, .9fr); align-items: center;
   gap: clamp(16px, 4vw, 64px); padding: clamp(20px, 4vw, 56px); max-width: 1240px; margin: 0 auto; }
 
 /* ------------------------------------------------------------- rosa dos ventos */
-.rosa { display: grid; place-items: center; }
-.rosa-svg { width: min(100%, 560px); height: auto; color: var(--texto-2); overflow: visible; }
-.anel { fill: none; stroke: var(--linha); stroke-width: 1.4; }
-.anel.fino { stroke-width: .8; stroke-dasharray: 2 5; }
-.marcas line { stroke: var(--texto-2); }
-.pontos text { fill: var(--texto); font: 700 20px var(--titulo); text-anchor: middle; }
-.pontos text:first-child { fill: var(--ipe); }
-.cidade-fundo { fill: #2a2f35; }
-.cidade-contorno { fill: none; stroke: var(--ipe); stroke-width: 1.6; stroke-linejoin: round; }
-.cidade { color: var(--texto-2); }
-.agulha { transform-origin: 0 0; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .55)); }
-.agulha-norte { fill: var(--ipe); }
-.agulha-sul { fill: #d9dde2; }
-.agulha-eixo { fill: var(--grafite); stroke: var(--ipe); stroke-width: 2; }
+.rosa { display: flex; flex-direction: column; align-items: center; gap: clamp(18px, 3vh, 34px); }
+.rosa-svg { width: min(78%, 430px); height: auto; color: var(--azul); overflow: visible; }
+.anel { fill: none; stroke: var(--marinho); stroke-width: 2.2; }
+.anel.fino { stroke: var(--ouro); stroke-width: 1.2; stroke-dasharray: 2 5; }
+.marcas line { stroke: var(--marinho); }
+.pontos text { fill: var(--marinho); font: 700 22px var(--titulo); text-anchor: middle; }
+.pontos text:first-child { fill: var(--laranja); }
+.cidade-fundo { fill: #DCEBF8; }
+.cidade-contorno { fill: none; stroke: var(--marinho); stroke-width: 1.8; stroke-linejoin: round; }
+.cidade { color: var(--azul); }
+.agulha { transform-origin: 0 0; filter: drop-shadow(0 6px 8px rgba(0, 29, 126, .28)); }
+.agulha-norte { fill: var(--ouro); stroke: var(--laranja); stroke-width: 1; }
+.agulha-sul { fill: var(--marinho); }
+.agulha-eixo { fill: #fff; stroke: var(--marinho); stroke-width: 2.5; }
 
 /* A agulha procura o norte uma única vez, ao abrir a página. */
 @media (prefers-reduced-motion: no-preference) {
@@ -54,41 +61,45 @@ a { color: var(--ceu); }
 }
 
 /* -------------------------------------------------------------------- entrada */
-.entrada { display: flex; flex-direction: column; gap: 22px; max-width: 420px; width: 100%; }
-.marca h1 { margin: 0; font: 700 clamp(54px, 7vw, 84px)/.92 var(--titulo); letter-spacing: -.03em; }
-.marca p { margin: 12px 0 0; color: var(--texto-2); font-size: 16px; max-width: 34ch; }
+.entrada { display: flex; flex-direction: column; gap: 16px; max-width: 430px; width: 100%; }
+.marcas { display: grid; grid-template-columns: 2.1fr 1fr; align-items: center; gap: 26px; width: min(100%, 600px); }
+.marcas img { display: block; width: 100%; height: auto; }
+.logo-nucleo { padding-left: 26px; border-left: 2px solid var(--ouro); }
+.marca h1 { margin: 0; font: 700 clamp(52px, 7vw, 80px)/.95 var(--titulo); letter-spacing: -.01em; color: var(--marinho); }
+.marca p { margin: 8px 0 0; color: var(--texto-2); font-size: 17px; font-weight: 700; }
 
-.cartao { display: flex; flex-direction: column; background: var(--grafite); border: 1px solid var(--linha);
-  border-radius: 18px; padding: 26px 24px 22px; box-shadow: 0 18px 50px rgba(0, 0, 0, .45); }
-.cartao h2 { margin: 0 0 16px; font: 700 24px var(--titulo); }
-.campo-rotulo { margin: 0 0 6px; color: var(--texto-2); font-size: 13.5px; }
-.campo { width: 100%; height: 46px; padding: 0 14px; margin-bottom: 14px; background: var(--grafite-2); color: var(--texto);
-  border: 1px solid var(--linha); border-radius: 10px; font: 16px var(--corpo); }
-.campo:focus { border-color: var(--ipe); outline: none; box-shadow: 0 0 0 3px rgba(255, 213, 74, .18); }
+.cartao { display: flex; flex-direction: column; background: var(--papel); border: 1px solid var(--linha); border-top: 5px solid var(--marinho);
+  border-radius: 16px; padding: 24px 24px 22px; box-shadow: 0 18px 44px rgba(0, 29, 126, .16); }
+.cartao h2 { margin: 0 0 14px; font: 800 22px var(--corpo); color: var(--marinho); }
+.campo-rotulo { margin: 0 0 6px; color: var(--texto-2); font-size: 14px; font-weight: 700; }
+.campo { width: 100%; height: 46px; padding: 0 14px; margin-bottom: 14px; background: #fff; color: var(--tinta);
+  border: 1.5px solid #B9C5DA; border-radius: 10px; font: 16px var(--corpo); }
+.campo:focus { border-color: var(--marinho); outline: none; box-shadow: 0 0 0 3px rgba(227, 171, 0, .45); }
 .campo-senha { position: relative; }
 .campo-senha .campo { padding-right: 86px; }
 .olho { position: absolute; right: 6px; top: 6px; height: 34px; padding: 0 10px; border: 0; border-radius: 7px;
-  background: none; color: var(--ceu); font: 13.5px var(--corpo); cursor: pointer; }
-.olho:hover { background: var(--grafite-3); }
-.lembrar { display: flex; align-items: center; gap: 9px; margin: 2px 0 16px; color: var(--texto-2); font-size: 14px; cursor: pointer; }
-.lembrar input { width: 18px; height: 18px; accent-color: var(--ipe); }
-.mensagem { margin: 0 0 14px; padding: 10px 12px; border-radius: 9px; background: rgba(255, 138, 128, .12);
-  border: 1px solid rgba(255, 138, 128, .35); color: var(--erro); font-size: 14px; }
-.botao-entrar { display: grid; place-items: center; height: 48px; border: 0; border-radius: 24px; background: var(--ipe);
-  color: #1d1a10; font: 700 16px var(--corpo); text-decoration: none; cursor: pointer; transition: background .15s; }
-.botao-entrar:hover { background: var(--ipe-escuro); }
+  background: none; color: var(--marinho); font: 700 13.5px var(--corpo); cursor: pointer; }
+.olho:hover { background: var(--nevoa); }
+.lembrar { display: flex; align-items: center; gap: 9px; margin: 2px 0 16px; color: var(--texto-2); font-size: 14.5px; cursor: pointer; }
+.lembrar input { width: 18px; height: 18px; accent-color: var(--marinho); }
+.mensagem { margin: 0 0 14px; padding: 10px 12px; border-radius: 9px; background: #FDECEA;
+  border: 1px solid #F1B5AF; color: var(--erro); font-size: 14.5px; }
+.botao-entrar { display: grid; place-items: center; height: 48px; border: 0; border-radius: 24px; background: var(--marinho);
+  color: #fff; font: 800 16px var(--corpo); text-decoration: none; cursor: pointer; transition: background .15s;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .22), 0 6px 14px rgba(0, 29, 126, .28); }
+.botao-entrar:hover { background: #0A2FA6; }
 .botao-entrar[disabled] { opacity: .65; cursor: progress; }
-.botao-sair { margin-top: 10px; height: 40px; border: 1px solid var(--linha); border-radius: 20px; background: none;
-  color: var(--texto); font: 14px var(--corpo); cursor: pointer; }
-.botao-sair:hover { border-color: var(--texto-2); }
-.ajuda { margin: 14px 0 0; color: var(--texto-2); font-size: 13.5px; }
-.rodape { color: var(--texto-2); font-size: 12.5px; }
-.sem-js { position: fixed; inset: auto 0 0; margin: 0; padding: 14px; background: #3a1f1f; text-align: center; }
+.botao-sair { margin-top: 10px; height: 40px; border: 1.5px solid #B9C5DA; border-radius: 20px; background: none;
+  color: var(--marinho); font: 700 14px var(--corpo); cursor: pointer; }
+.botao-sair:hover { border-color: var(--marinho); }
+.ajuda { margin: 14px 0 0; color: var(--texto-2); font-size: 14px; }
+.sem-js { position: fixed; inset: auto 0 0; margin: 0; padding: 14px; background: #FDECEA; color: var(--erro); text-align: center; z-index: 3; }
 
 @media (max-width: 860px) {
-  .portal { grid-template-columns: 1fr; align-content: start; justify-items: center; padding-top: 18px; gap: 6px; }
+  .portal { grid-template-columns: 1fr; align-content: start; justify-items: center; padding-top: 18px; gap: 14px; }
   .rosa-svg { width: min(56vw, 220px); }
-  .entrada { gap: 18px; }
+  .entrada { gap: 16px; }
   .marca { text-align: center; }
-  .marca p { margin-inline: auto; }
+  .marcas { width: min(92vw, 420px); gap: 16px; }
+  .logo-nucleo { padding-left: 16px; }
 }

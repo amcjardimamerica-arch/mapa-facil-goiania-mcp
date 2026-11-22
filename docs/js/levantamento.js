@@ -1,4 +1,4 @@
-// Levantamento da Associação: Jardim América e Setor Nova Suíça.
+// Levantamento da Associação: Jardim América e Nova Suíça.
 // Lotes classificados por finalidade, limites dos bairros, áreas públicas,
 // prédios em 3D e locais de votação, a partir de data/levantamento.json.
 import { CFG } from './config.js';
@@ -66,6 +66,7 @@ export class Levantamento {
       this.empresasDoLote = porLote(d.empresas);
       this.googleDoLote = porLote(d.google);
       this.condominioDoLote = porLote(d.condominios);
+      this.unidadesDoLote = d.unidades?.por_lote || {};
       const ixe = Object.fromEntries(d.empresas.colunas.map((c, i) => [c, i]));
       d.lotes.forEach((l, i) => {
         const v = (c) => l.v[ix[c]];
@@ -82,7 +83,8 @@ export class Levantamento {
         for (const [x, y] of l.m[0]) { o = Math.min(o, x); e = Math.max(e, x); s = Math.min(s, y); n = Math.max(n, y); cx += x; cy += y; }
         l.ext = [o, s, e, n];
         l.centro = [cx / l.m[0].length, cy / l.m[0].length];
-        l.busca = semAcento([`qd ${l.q} lt ${l.l}`, `quadra ${l.q} lote ${l.l}`, ...l.v.filter((x) => x !== null && x !== ''), l.extraBusca].join(' | '));
+        const un = (this.unidadesDoLote[l.i] || []).map((u) => `${u[0]} ${u[2] || ''}`).join(' ');
+        l.busca = semAcento([`qd ${l.q} lt ${l.l}`, `quadra ${l.q} lote ${l.l}`, ...l.v.filter((x) => x !== null && x !== ''), l.extraBusca, un].join(' | '));
       }
       for (const a of d.areas) a.aneis = a.g.map(decodificarAnel);
       for (const lim of d.limites) lim.aneisLL = lim.aneis.map(decodificarAnel);
@@ -131,7 +133,7 @@ export class Levantamento {
       chave('areas', 'Áreas públicas', 'praças, áreas verdes, canteiros e equipamentos'),
       chave('bocas', 'Bocas de lobo', 'ícone com o número de unidades em sequência'),
       chave('iluminacao', 'Iluminação pública', 'lâmpada e poste em 3D (cadastro anterior ao LED)'),
-      chave('predios', 'Prédios em 3D', 'altura pelos pavimentos (3 ou mais)'),
+      chave('predios', 'Condomínios e prédios em 3D', 'cor pelo tipo de condomínio, altura pelos pavimentos'),
       el('h3', { class: 'subtitulo' }, 'Eleitoral'),
       this.caixaEleitoral = el('div', { class: 'lv-eleitoral' }),
       el('h3', { class: 'subtitulo' }, 'Buscar no levantamento'),
@@ -313,7 +315,7 @@ export class Levantamento {
 
     if (this.opcoes.predios) {
       for (const l of this._lotesVisiveis()) {
-        if (!(l.pav >= 3) || !l.alt) continue;
+        if (!l.alt || !(l.pav >= 3 || /^Condomínio/.test(l.f))) continue;
         const ent = this.fonte.entities.add({ polygon: {
           hierarchy: Cesium.Cartesian3.fromDegreesArray(l.aneis[0].flat()),
           height: 0, heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
@@ -419,19 +421,69 @@ export class Levantamento {
   abrirLote(l, voar = false) {
     const d = this.dados, id = this.identificar;
     const c = l.aneis[0].reduce((a, p) => [a[0] + p[0] / l.aneis[0].length, a[1] + p[1] / l.aneis[0].length], [0, 0]);
+    const ponto = { lon: c[0], lat: c[1], alt: NaN };
+    const unidades = this.unidadesDoLote[l.i] || [];
+    const cu = d.unidades?.colunas || [];
     id.fonte.entities.removeAll();
     id.destacarLonLat(l.aneis, { fechado: true });
-    id.abrir({ titulo: `Quadra ${l.q} · Lote ${l.l}`, subtitulo: `${d.bairros[l.b]} · ${l.f}`, ponto: { lon: c[0], lat: c[1], alt: NaN } });
+    // Condomínio: a pessoa escolhe a base geral (" -- ") ou a de uma unidade (apartamento, sala, casa…).
+    const desenhar = (k) => {
+      id.abrir({ titulo: `Quadra ${l.q} · Lote ${l.l}`, subtitulo: `${d.bairros[l.b]} · ${l.f}`, ponto });
+      if (unidades.length) {
+        const kTipo = cu.indexOf('Tipo da unidade');
+        const principais = unidades.filter((u, i) => i > 0 && !['Box', 'Escaninho'].includes(u[kTipo])).length;
+        const seletor = el('select', { class: 'campo', id: 'lv-unidade', 'aria-label': 'Unidade do condomínio' },
+          unidades.map((u, i) => el('option', { value: String(i) }, i === 0 ? ' -- (condomínio, base geral)' : String(u[0]))));
+        seletor.value = String(k);
+        seletor.addEventListener('change', () => desenhar(Number(seletor.value)));
+        id.corpo.append(el('label', { class: 'rotulo-faixa bloco lv-unidade' },
+          el('span', {}, /horizontal/i.test(l.f) ? 'Casa do condomínio' : 'Apartamento ou sala',
+            el('small', {}, ` ${fmtNum(principais)} unidades principais, ${fmtNum(unidades.length - 1)} inscrições de IPTU`)), seletor));
+      }
+      if (k > 0) this._corpoUnidade(l, unidades[k], cu); else this._corpoGeral(l, unidades[0], cu);
+      id.corpo.append(el('button', { class: 'botao', onclick: () => id.emPonto(ponto) }, 'Consultar este ponto no Mapa Fácil'));
+    };
+    desenhar(0);
+    if (voar) this.globo.voarPara({ lon: c[0], lat: c[1], distancia: 350, inclinacao: -60 });
+  }
+
+  /** Empresas do lote cujos CNPJs estão na lista (texto "a; b; c" da base). */
+  _empresasDaBase(l, texto) {
+    const d = this.dados, ce = d.empresas.colunas, kc = ce.indexOf('CNPJ');
+    const lista = new Set(String(texto || '').split(';').map((x) => x.trim()).filter(Boolean));
+    return (this.empresasDoLote.get(l.i) || []).filter((e) => lista.has(e[kc]));
+  }
+
+  _listarEmpresas(titulo, empresas, aberto) {
+    if (!empresas.length) return;
+    const d = this.dados, ce = d.empresas.colunas;
+    const s = this.identificar.secao(`${titulo} (${empresas.length})`, { aberto });
+    for (const e of empresas) {
+      const nome = e[ce.indexOf('Nome fantasia')] || e[ce.indexOf('Razão social')] || e[ce.indexOf('CNPJ')];
+      s.append(el('details', { class: 'lv-empresa' }, el('summary', {}, nome), this._tudo(ce, e, ['Bairro', 'Quadra', 'Lote'])));
+    }
+  }
+
+  /** Base independente de uma unidade do condomínio (uma inscrição de IPTU). */
+  _corpoUnidade(l, u, cu) {
+    const id = this.identificar;
+    id.titulo(`${u[0]}`, `Quadra ${l.q} · Lote ${l.l} · ${this.dados.bairros[l.b]} · ${l.edif || l.f}`);
+    id.corpo.append(this._tudo(cu, u, ['Unidade']));
+    this._listarEmpresas('Empresas nesta unidade', this._empresasDaBase(l, u[cu.indexOf('CNPJs ativos')]), true);
+    const m = this._manutencao(l.v[this.dados.colunas_lote.indexOf('Código para manutenção')]);
+    if (m) id.corpo.append(el('div', { class: 'linha-botoes' }, m));
+    id.corpo.append(el('p', { class: 'nota' }, 'Dados só desta unidade. Para ver o condomínio inteiro, escolha “ -- ” na lista.'));
+  }
+
+  /** Base geral do lote (ou do condomínio, quando há unidades). */
+  _corpoGeral(l, geral, cu) {
+    const d = this.dados, id = this.identificar;
     id.corpo.append(this._tudo(d.colunas_lote, l.v, ['Bairro', 'Quadra', 'Lote']));
     const empresas = this.empresasDoLote.get(l.i) || [];
-    if (empresas.length) {
-      const s = id.secao(`Empresas no lote (${empresas.length})`, { aberto: empresas.length <= 3 });
-      const ce = d.empresas.colunas;
-      for (const e of empresas) {
-        const nome = e[ce.indexOf('Nome fantasia')] || e[ce.indexOf('Razão social')] || e[ce.indexOf('CNPJ')];
-        s.append(el('details', { class: 'lv-empresa' }, el('summary', {}, nome), this._tudo(ce, e, ['Bairro', 'Quadra', 'Lote'])));
-      }
-    }
+    if (geral) {
+      this._listarEmpresas('Empresas do condomínio, sem unidade identificada', this._empresasDaBase(l, geral[cu.indexOf('CNPJs ativos')]), false);
+      this._listarEmpresas('Todas as empresas no lote', empresas, false);
+    } else this._listarEmpresas('Empresas no lote', empresas, empresas.length <= 3);
     const google = this.googleDoLote.get(l.i) || [];
     if (google.length) {
       const s = id.secao(`Google Maps (${google.length})`, { aberto: true });
@@ -444,11 +496,8 @@ export class Levantamento {
     }
     const cond = this.condominioDoLote.get(l.i) || [];
     for (const r of cond) id.secao('Prédio / condomínio', { aberto: false }).append(this._tudo(d.condominios.colunas, r, ['Bairro', 'Quadra', 'Lote']));
-    const codigo = l.v[d.colunas_lote.indexOf('Código para manutenção')];
-    const m = this._manutencao(codigo);
-    if (m) id.corpo.insertBefore(el('div', { class: 'linha-botoes' }, m), id.corpo.children[1] || null);
-    id.corpo.append(el('button', { class: 'botao', onclick: () => id.emPonto({ lon: c[0], lat: c[1], alt: NaN }) }, 'Consultar este ponto no Mapa Fácil'));
-    if (voar) this.globo.voarPara({ lon: c[0], lat: c[1], distancia: 350, inclinacao: -60 });
+    const m = this._manutencao(l.v[d.colunas_lote.indexOf('Código para manutenção')]);
+    if (m) id.corpo.insertBefore(el('div', { class: 'linha-botoes' }, m), id.corpo.querySelector('dl.atributos'));
   }
 
   /** Botão que abre a página de Pedidos de Manutenção já no item (URL#CÓDIGO). */

@@ -200,6 +200,13 @@ async function iniciar() {
   $('#nav-inclina-mais').addEventListener('click', () => globo.orbitar({ dInclinacao: rad(12) }));
   $('#nav-inclina-menos').addEventListener('click', () => globo.orbitar({ dInclinacao: rad(-12) }));
   $('#nav-inicio').addEventListener('click', () => globo.irParaInicio(1.6));
+  // O pássaro da busca centraliza o mapa em Goiânia e bate a asa.
+  $('#marca-passaro').addEventListener('click', (e) => {
+    const b = e.currentTarget;
+    b.classList.remove('voa'); void b.offsetWidth; b.classList.add('voa');
+    setTimeout(() => b.classList.remove('voa'), 900);
+    globo.irParaInicio(1.6);
+  });
   $('#nav-foto').addEventListener('click', async () => {
     const blob = await globo.capturar();
     if (blob) baixarArquivo(`bussola-${new Date().toISOString().slice(0, 10)}.png`, blob);

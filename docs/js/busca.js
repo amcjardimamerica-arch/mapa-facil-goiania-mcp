@@ -3,7 +3,7 @@
 // Fácil), por isso a busca ignora acentos e maiúsculas e responde na hora; a
 // geometria do item escolhido é pedida ao servidor municipal.
 import { CFG } from './config.js';
-import { $, el, pedirJSON, semAcento, debounce, deUTM, extensaoDe, fmtNum, aviso } from './util.js';
+import { $, el, pedirJSON, semAcento, debounce, deUTM, extensaoDe, fmtNum, aviso, nomeBairro } from './util.js';
 
 const chave = (s) => semAcento(s).replace(/[-–.]/g, ' ').replace(/\s+/g, ' ').trim();
 const TROCAS = [[/^(rua)\s+/, 'r '], [/^(avenida|av)\s+/, 'av '], [/^(alameda)\s+/, 'al '],
@@ -43,7 +43,7 @@ export class Busca {
     Object.assign(this, { globo, identificar, territorio });
     // "S Bueno" também é achado por "setor bueno" e por "bueno".
     this.bairros = bairros.map((b) => ({ ...b, k: chave(b.n), tipo: TIPOS_BAIRRO[b.t] || 'Bairro',
-      ks: [chave(`${TIPOS_BAIRRO[b.t] || ''} ${b.b}`), chave(b.b)] }));
+      ks: [chave(`${TIPOS_BAIRRO[b.t] || ''} ${b.b}`), chave(b.b), chave(b.o || '')] }));
     this.lugares = lugares.map((l) => ({ ...l, k: chave(l.n) }));
     this.edificios = edificios; // módulo Edificios (lista pode chegar depois)
     this.ruas = null;
@@ -100,7 +100,7 @@ export class Busca {
     for (const [re, por] of TROCAS) qRua = qRua.replace(re, por);
     if (this.ruas) {
       const r = melhores(this.ruas, qRua, 6);
-      if (r.length) grupos.push(['Logradouros', r.map((x) => ({ tipo: 'rua', n: x.n, sub: x.b, dado: x }))]);
+      if (r.length) grupos.push(['Logradouros', r.map((x) => ({ tipo: 'rua', n: x.n, sub: nomeBairro(x.b), dado: x }))]);
     }
     const eds = this.edificios?.lista || [];
     if (eds.length) {
@@ -207,7 +207,7 @@ export class Busca {
     const id = this.identificar;
     id.destacarLonLat(linhas);
     const ext = extensaoDe(linhas.flat());
-    id.abrir({ titulo: r.n, subtitulo: `${r.b} · Goiânia`, ponto: { lon: (ext[0] + ext[2]) / 2, lat: (ext[1] + ext[3]) / 2, alt: NaN } });
+    id.abrir({ titulo: r.n, subtitulo: `${nomeBairro(r.b)} · Goiânia`, ponto: { lon: (ext[0] + ext[2]) / 2, lat: (ext[1] + ext[3]) / 2, alt: NaN } });
     id.corpo.append(el('p', { class: 'nota' }, 'Trecho do logradouro neste bairro, conforme a base “Logradouro por Bairro”. Clique em um lote para ver o cadastro.'));
     await this.globo.voarPara({ extensao: ext, inclinacao: -60 });
   }

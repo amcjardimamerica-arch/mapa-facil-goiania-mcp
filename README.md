@@ -59,7 +59,7 @@ dados_mapafacil/          catálogo anterior do servidor (mantido)
 - As ortofotos de 2006, 2011 e 2016 saíram dos fundos. O extrator ainda as registra em `camadas.json`.
 - As consultas ao servidor municipal passam por uma fila de no máximo 4 pedidos simultâneos.
 
-## Levantamento do Jardim América e do Setor Nova Suíça
+## Levantamento do Jardim América e do Nova Suíça
 
 Painel **Bairros** (menu lateral). Dados em `docs/data/levantamento.json`, gerados a partir do KML e da
 planilha compilados pela Associação:
@@ -69,12 +69,18 @@ python scripts/importar_levantamento.py compilado.kmz compilado.xlsx   # aceita 
 ```
 
 - **Limites dos bairros**: a divisa de cada um, em destaque, com o nome.
-- **Lotes por finalidade** (8.861), com filtro por finalidade e por bairro. A ficha do lote traz todas as
+- **Lotes por finalidade** (9.013), com filtro por finalidade e por bairro. A ficha do lote traz todas as
   colunas da aba Lotes, cada empresa da aba Empresas com todos os campos, os estabelecimentos do Google Maps
   e a linha da aba Condomínios e prédios.
-- **Limites**: pelo conjunto dos lotes de cada bairro (Jardim América 8.029, Setor Nova Suíça 984) e, para
+- **Limites**: pelo conjunto dos lotes de cada bairro (Jardim América 8.029, Nova Suíça 984) e, para
   comparar, o limite oficial do Mapa Fácil (tracejado).
-- **Áreas públicas** (128) e **prédios em 3D** pela altura dos pavimentos.
+- **Áreas públicas** (128) e **condomínios e prédios em 3D** pela altura dos pavimentos.
+- **Condomínios** (571): lote com mais de 5 inscrições de IPTU, ou marcado como condomínio no Mapa Fácil, com
+  edifício em altura, listado no levantamento ou com CNPJ de condomínio. Quatro finalidades, cada uma com a
+  sua cor: horizontal (casas), residencial, comercial e misto. Todos têm polígono e aparecem em 3D.
+- **Unidades de condomínio**: na ficha do lote, a lista "Apartamento ou sala" (ou "Casa do condomínio")
+  começa em ` -- `, a base geral do condomínio, e traz uma base própria por inscrição de IPTU
+  (código `UN-<inscrição>`), com as empresas daquela unidade. Dados em `unidades.por_lote` do arquivo.
 - **Bocas de lobo**: 1.580 unidades em 830 pontos, com ícone do número de unidades em sequência.
 - **Iluminação pública**: 4.147 pontos com lâmpada e poste em 3D (cadastro do Mapa Fácil anterior ao LED).
 - **Pedidos de manutenção**: lote (`LT-JA-<CI>`), área pública (`AP-JA-001`), boca de lobo (`BL-JA-0001`) e
@@ -217,3 +223,16 @@ algo mudou. Se uma etapa falha, os arquivos anteriores são preservados.
 
 Dados e camadas: Prefeitura de Goiânia (Mapa Fácil). Satélite e relevo: Esri, Maxar, Earthstar
 Geographics. Globo: [CesiumJS](https://cesium.com/platform/cesiumjs/) (Apache 2.0).
+
+## Identidade visual e nomes de bairro (1.5)
+
+- Portal (`docs/index.html`, `docs/css/portal.css`) nas cores e nas facetas da A.M.C. Jardim América, com a
+  rosa dos ventos e o contorno de Goiânia. As logomarcas da Associação e do Núcleo de Fiscalização ficam
+  separadas, abaixo da rosa dos ventos. Imagens em `docs/img/marca/`.
+- A tela de carregamento do mapa segue a mesma identidade, com as duas marcas juntas no canto inferior direito.
+- Na busca, o pássaro da logomarca (vetorial, com asa e bico articulados) substitui o círculo; clicar nele
+  centraliza o mapa em Goiânia. A busca fica centralizada sobre o mapa.
+- Nomes de bairro sem "Bairro", "Setor" ou "Conjunto" na frente e sem abreviações (`nomeBairro` em
+  `docs/js/util.js`, `nome_bairro` em `scripts/extrair_dados.py`): "Bro Jardim América" vira
+  "Jardim América", "S Bueno" vira "Bueno", "Jd Goiás" vira "Jardim Goiás". Quando o nome começa por
+  "da", "de" ou "dos", o tipo fica por extenso ("Bairro da Vitória"). O nome oficial segue no campo `o`.

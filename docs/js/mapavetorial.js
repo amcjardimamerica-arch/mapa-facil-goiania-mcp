@@ -203,7 +203,7 @@ export class ProvedorVetorial extends ProvedorCanvas {
     // Glebas e fazendas são parcelas rurais, não bairros de rótulo.
     this.bairros = [...bairros].filter((b) => b.c && !['Gleba', 'Faz'].includes(b.t) && !/^(gleba|faz)/i.test(b.b || b.n))
       .sort((a, b) => (b.pop || 0) - (a.pop || 0))
-      .map((b) => ({ n: b.b || b.n, x: b.c[0] * (Math.PI / 180) * 6378137, y: Math.log(Math.tan(Math.PI / 4 + (b.c[1] * Math.PI) / 360)) * 6378137 }));
+      .map((b) => ({ n: b.n || b.b, x: b.c[0] * (Math.PI / 180) * 6378137, y: Math.log(Math.tan(Math.PI / 4 + (b.c[1] * Math.PI) / 360)) * 6378137 }));
     this._rotulosBairro = new Map();
   }
 

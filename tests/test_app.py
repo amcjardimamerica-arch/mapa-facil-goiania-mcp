@@ -127,7 +127,7 @@ def test_identificar_lote(mapa):
     mapa.wait_for_function("!document.querySelector('#ficha-corpo .carregando')", timeout=60_000)
     titulo, corpo = mapa.text_content("#ficha-titulo"), mapa.text_content("#ficha-corpo")
     assert "Consultando" not in titulo
-    assert "Bairro" in corpo and "S Oeste" in corpo, corpo[:300]
+    assert "Bairro" in corpo and "Oeste" in corpo and "S Oeste" not in corpo, corpo[:300]
     mapa.evaluate("bussola.identificar.fechar()")
 
 
@@ -275,6 +275,18 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
       const achou = lv.resultados.textContent;
       lv.campo.value = ''; lv._buscar(); bussola.identificar.fechar();
       const ficha = (() => { lv.abrirLote(lv.dados.lotes.find((x) => (lv.empresasDoLote.get(x.i) || []).length)); return document.querySelector('#ficha-corpo').textContent; })();
+      // Condomínio: a lista começa em " -- " (base geral) e cada unidade abre a sua própria base.
+      const condo = lv.dados.lotes.find((x) => (lv.unidadesDoLote[x.i] || []).length > 6 && x.f === 'Condomínio residencial');
+      lv.abrirLote(condo);
+      const sel = document.querySelector('#lv-unidade');
+      const unid = { opcoes: sel.options.length, primeira: sel.options[0].textContent, geral: document.querySelector('#ficha-corpo').textContent.includes('Inscrição do lote (CI)') };
+      sel.value = '1'; sel.dispatchEvent(new Event('change'));
+      unid.titulo = document.querySelector('#ficha-titulo').textContent;
+      unid.corpo = document.querySelector('#ficha-corpo').textContent;
+      unid.aindaTemLista = !!document.querySelector('#lv-unidade');
+      lv.opcoes.predios = true; lv.redesenhar();
+      unid.horizontais3d = lv.fonte.entities.values.filter((e) => e.polygon && e.levantamento?.dado?.f === 'Condomínio horizontal (casas)').length;
+      lv.opcoes.predios = false; bussola.identificar.fechar();
       lv.opcoes.eleicao = 'ct'; lv.redesenhar();
       const ct = { setas: lv.fonte.entities.values.filter((e) => e.levantamento?.tipo === 'seta').length,
                    transf: lv.fonte.entities.values.filter((e) => e.levantamento?.dado?.tipo === 'transferido').length };
@@ -284,13 +296,17 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
       lv.abrirBoca(lv.dados.bocas.linhas[0]);
       infra.link = document.querySelector('#ficha-corpo a.botao.destaque')?.href || '';
       lv.opcoes.bocas = false; lv.opcoes.iluminacao = false; bussola.identificar.fechar(); lv.redesenhar();
-      return { ...antes, tratou, titulo, semResid, soJA, achou, ficha, ct, infra, hash: location.hash.includes('lv=1') };
+      return { ...antes, tratou, titulo, semResid, soJA, achou, ficha, ct, infra, unid, hash: location.hash.includes('lv=1') };
     }""")
     assert r["lotes"] > 8000 and r["limites"] == 2 and r["camada"] and r["bordas"] >= 2, r
     assert r["tratou"] and r["titulo"].startswith("Quadra "), r
     assert not r["semResid"] and r["soJA"], r
     assert "262B" in r["achou"], r
-    assert "Empresas no lote" in r["ficha"] and "Inscrição do lote (CI)" in r["ficha"], r["ficha"][:300]
+    assert "mpresas no lote" in r["ficha"] and "Inscrição do lote (CI)" in r["ficha"], r["ficha"][:300]
+    u = r["unid"]
+    assert u["opcoes"] > 6 and u["primeira"].startswith(" -- ") and u["geral"], u
+    assert u["titulo"].startswith(("Apartamento", "Sala", "Loja", "Casa", "Box")) and "UN-" in u["corpo"] and u["aindaTemLista"], u
+    assert u["horizontais3d"] > 100, u
     assert r["ct"]["setas"] > 150 and r["ct"]["transf"] > 150, r["ct"]
     assert r["infra"]["bocas"] == 830 and r["infra"]["postes"] == 4147, r["infra"]
     assert r["infra"]["link"].startswith("https://claude.ai/artifact/") and "#BL-" in r["infra"]["link"], r["infra"]

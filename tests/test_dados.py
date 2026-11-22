@@ -163,9 +163,9 @@ def test_script_de_usuarios(tmp_path, monkeypatch):
 
 
 def test_levantamento_da_associacao():
-    """Levantamento do Jardim América e do Setor Nova Suíça: todas as abas e camadas do KML."""
+    """Levantamento do Jardim América e do Nova Suíça: todas as abas e camadas do KML."""
     d = ler("levantamento.json")
-    assert d["bairros"] == ["Jardim América", "Setor Nova Suíça"]
+    assert d["bairros"] == ["Jardim América", "Nova Suíça"]
     assert len(d["limites"]) == 2 and all(lim["aneis"] and len(lim["aneis"][0]) > 50 for lim in d["limites"])
     assert len(d["lotes"]) > 8000 and all(l["g"] and len(l["g"][0]) >= 6 for l in d["lotes"])
     assert all(len(l["v"]) == len(d["colunas_lote"]) for l in d["lotes"])
@@ -174,12 +174,45 @@ def test_levantamento_da_associacao():
     assert len(d["empresas"]["linhas"]) > 13000 and {"Telefone", "E-mail", "CNPJ"} <= set(d["empresas"]["colunas"])
     assert sum(1 for e in d["empresas"]["linhas"] if e["lote"] is not None) > 13000
     assert len(d["empresas_sem_lote"]["linhas"]) > 3000 and len(d["google"]["linhas"]) > 200
-    assert len(d["condominios"]["linhas"]) > 2000 and len(d["areas"]) > 100
+    assert len(d["condominios"]["linhas"]) > 500 and len(d["areas"]) > 100
     e = d["eleitoral"]
     tipos = {p["tipo"] for p in e["pontos"]}
     assert tipos == {"geral", "ct", "transferido", "sem"} and len(e["setas"]) > 150
     assert len({p["grupo"] for p in e["pontos"] if p["tipo"] == "geral"}) >= 9
     assert len(e["locais"]["linhas"]) > 300 and len(e["conselho"]["linhas"]) > 100
+
+
+def test_condominios_e_unidades():
+    """Condomínio = mais de 5 inscrições de IPTU (ou outro indício); cada unidade tem a sua base e " -- " é a geral."""
+    d = ler("levantamento.json")
+    tipos = {"Condomínio horizontal (casas)", "Condomínio residencial", "Condomínio comercial", "Condomínio misto"}
+    cores = {f["nome"]: f["cor"] for f in d["finalidades"]}
+    assert tipos <= set(cores) and len({cores[t] for t in tipos}) == 4, "cada tipo de condomínio tem a sua cor"
+    assert "Condominial" not in cores
+    u = d["unidades"]
+    assert u["colunas"][:3] == ["Unidade", "Tipo da unidade", "Inscrição de IPTU da unidade"]
+    condominios = [i for i, l in enumerate(d["lotes"]) if l["f"] in tipos]
+    assert len(condominios) > 500 and set(u["por_lote"]) == {str(i) for i in condominios}
+    for i in condominios:
+        linhas = u["por_lote"][str(i)]
+        assert linhas[0][0] == " -- " and linhas[0][1] == "Condomínio (geral)", d["lotes"][i]["v"][:4]
+        assert all(str(x[-1]).startswith("UN-") for x in linhas[1:]) and str(linhas[0][-1]).startswith("LT-")
+        assert d["lotes"][i]["g"], "todo condomínio tem polígono"
+    horizontais = [i for i in condominios if d["lotes"][i]["f"] == "Condomínio horizontal (casas)"]
+    casas = sum(1 for i in horizontais for x in u["por_lote"][str(i)][1:] if x[1] == "Casa")
+    assert casas > 300
+    k = d["colunas_lote"].index("Unidades no cadastro")
+    assert all(l["f"] in tipos for l in d["lotes"] if (l["v"][k] or 0) > 5), "mais de 5 inscrições é sempre condomínio"
+
+
+def test_nomes_de_bairro_sem_tipo():
+    b = {x["id"]: x for x in ler("bairros.json")["bairros"]}
+    assert b["000400000015"]["n"] == "Jardim América" and b["000400000017"]["n"].startswith("Nova Sui")
+    nomes = [x["n"] for x in b.values()]
+    assert not any(n.split()[0] in ("Bro", "S", "Cj", "Cjr", "Jd", "Vl", "Res", "Prq") for n in nomes if n)
+    import extrair_dados as ex
+    assert ex.nome_bairro("S", "Bueno", "S Bueno") == "Bueno" and ex.nome_bairro("Jd", "Goiás", "Jd Goiás") == "Jardim Goiás"
+    assert ex.nome_bairro("Bro", "da Vitória", "Bro da Vitória") == "Bairro da Vitória"
 
 
 def test_infraestrutura_e_manutencao():

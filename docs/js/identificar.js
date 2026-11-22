@@ -2,7 +2,7 @@
 // estiver ligado nos temas do Mapa Fácil. Fora de Goiânia a ficha só indica o
 // território (limítrofe), sem dados.
 import { CFG, ROTULOS_CAMPOS, CAMPOS_OCULTOS, CAMPOS_SIM_NAO } from './config.js';
-import { $, el, pedirJSON, mercX, mercY, deMercator, paraUTM, fmtNum, fmtGraus, aviso, extensaoDe } from './util.js';
+import { $, el, pedirJSON, mercX, mercY, deMercator, paraUTM, fmtNum, fmtGraus, aviso, extensaoDe, nomeBairro } from './util.js';
 
 const Cesium = window.Cesium;
 const AMARELO = () => Cesium.Color.fromCssColorString(CFG.cores.destaque);
@@ -10,6 +10,7 @@ const AMARELO = () => Cesium.Color.fromCssColorString(CFG.cores.destaque);
 const vazio = (v) => v === null || v === undefined || ['', 'null', 'nan', '<null>'].includes(String(v).trim().toLowerCase());
 
 /** Atributos de uma feição -> pares [rótulo, valor] limpos e legíveis. */
+const CAMPOS_BAIRRO = new Set(['nm_bai', 'nmbairro', 'nm_bairro', 'bairro', 'nm1']);
 export function atributosLegiveis(atributos) {
   const pares = [];
   for (const [campo, valor] of Object.entries(atributos || {})) {
@@ -18,6 +19,7 @@ export function atributosLegiveis(atributos) {
     let v = String(valor).trim();
     if (CAMPOS_SIM_NAO.has(chave) && (v === '0' || v === '1')) v = v === '1' ? 'Sim' : 'Não';
     else if (/^-?\d+,\d+$/.test(v)) v = fmtNum(parseFloat(v.replace(',', '.')), 2);
+    if (CAMPOS_BAIRRO.has(chave) || (chave === 'nm' && 'tp_bai' in atributos)) v = nomeBairro(v);
     const rotulo = ROTULOS_CAMPOS[campo] || campo;
     if (!pares.some(([r, x]) => r === rotulo && x === v)) pares.push([rotulo, v]); // nm e nm1 costumam repetir
   }
@@ -194,12 +196,12 @@ export class Identificar {
   _mostrarBase(resultados, ponto) {
     const por = (id) => resultados.find((r) => r.layerId === id);
     const lote = por(0), quadra = por(1), bairro = por(2);
-    const nomeBairro = bairro?.attributes.nm || bairro?.attributes.nm1;
+    const nomeDoBairro = nomeBairro(bairro?.attributes.nm || bairro?.attributes.nm1 || '') || undefined;
     const partes = [];
     if (lote && !vazio(lote.attributes.nm_lot)) partes.push(`Lote ${lote.attributes.nm_lot.trim()}`);
     if (quadra && !vazio(quadra.attributes.nm_qdr)) partes.push(`Quadra ${quadra.attributes.nm_qdr.trim()}`);
-    this.titulo(partes.join(' · ') || nomeBairro || 'Local em Goiânia',
-      partes.length ? [nomeBairro, 'Goiânia'].filter(Boolean).join(' · ') : (nomeBairro ? 'Bairro · Goiânia' : 'Goiânia'));
+    this.titulo(partes.join(' · ') || nomeDoBairro || 'Local em Goiânia',
+      partes.length ? [nomeDoBairro, 'Goiânia'].filter(Boolean).join(' · ') : (nomeDoBairro ? 'Bairro · Goiânia' : 'Goiânia'));
     const alvo = lote || quadra;
     if (alvo?.geometry) { this.destacar(alvo.geometry); this.alfinete(ponto.lon, ponto.lat); }
 
@@ -254,7 +256,7 @@ export class Identificar {
         ['Edifício', t(u0.nmedificio)],
         ['Endereço', [t(u0.nmlogradou), t(u0.nrimovel)].filter(Boolean).join(', ')],
         ['Quadra / lote', `${t(u0.nrquadra)} / ${t(u0.nrlote)}`],
-        ['Bairro', t(u0.nmbairro)],
+        ['Bairro', nomeBairro(t(u0.nmbairro))],
         ['Área do terreno', u0.areaterr ? `${fmtNum(u0.areaterr, 2)} m²` : ''],
         ['Área total edificada', u0.areattedif ? `${fmtNum(u0.areattedif, 2)} m²` : ''],
         ['Pavimentos', u0.nrpaviment || ''],

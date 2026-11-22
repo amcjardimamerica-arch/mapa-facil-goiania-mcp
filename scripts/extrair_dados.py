@@ -32,6 +32,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 import sys
 import time
 import unicodedata
@@ -305,6 +306,25 @@ def carregar_goiania(saida: Path):
 
 
 # -------------------------------------------------------------------------- 2 bairros
+# Nome de exibição do bairro: sem "Bairro", "Setor" ou "Conjunto" na frente (Bro Jardim América -> Jardim América,
+# S Bueno -> Bueno) e com as demais abreviações por extenso (Jd Goiás -> Jardim Goiás).
+TIPOS_BAIRRO = {"S": "Setor", "Bro": "Bairro", "Cj": "Conjunto", "Cjr": "Conjunto Residencial", "Jd": "Jardim", "Vl": "Vila",
+                "Res": "Residencial", "Prq": "Parque", "Ch": "Chácara", "Lot": "Loteamento", "Con": "Condomínio", "Sit": "Sítio",
+                "Sir": "Sítios de Recreio", "Faz": "Fazenda", "Vlg": "Village", "Dis": "Distrito", "Glb": "Gleba", "Grj": "Granja",
+                "Esp": "Esplanada", "Zon": "Zona", "Col": "Colônia"}
+TIPOS_OMITIDOS = {"S", "Bro", "Cj", "Cjr"}
+
+
+def nome_bairro(tipo: str, sem_tipo: str, completo: str) -> str:
+    tipo, sem_tipo = (tipo or "").strip(), (sem_tipo or "").strip()
+    if not sem_tipo:
+        return (completo or "").strip()
+    # "da Vitória", "dos Funcionários": sem o tipo o nome fica sem sentido, então o tipo fica por extenso.
+    if tipo in TIPOS_OMITIDOS and not re.match(r"(?i)^d[aeo]s?\s", sem_tipo):
+        return sem_tipo
+    return f"{TIPOS_BAIRRO.get(tipo, tipo)} {sem_tipo}".strip()
+
+
 def etapa_bairros(saida: Path) -> dict:
     log("[bairros] baixando Divisas de Bairro…")
     feicoes = consultar(
@@ -323,8 +343,9 @@ def etapa_bairros(saida: Path) -> dict:
         rp = g.representative_point()
         o, s, l, n = g.bounds
         lista.append({
-            "id": p.get("id"), "n": p["nm"].strip(), "t": (p.get("tp_bai") or "").strip(),
-            "b": (p.get("nm_bai") or "").strip(), "k": sem_acento(p["nm"]),
+            "id": p.get("id"), "n": nome_bairro(p.get("tp_bai"), p.get("nm_bai"), p["nm"]), "t": (p.get("tp_bai") or "").strip(),
+            "b": (p.get("nm_bai") or "").strip(), "o": p["nm"].strip(),
+            "k": sem_acento(nome_bairro(p.get("tp_bai"), p.get("nm_bai"), p["nm"])),
             "c": [round(rp.x, 5), round(rp.y, 5)],
             "e": [round(o, 5), round(s, 5), round(l, 5), round(n, 5)],
             "pop": p.get("pop_total") or 0, "cond": 1 if p.get("in_cond") else 0,
@@ -332,7 +353,7 @@ def etapa_bairros(saida: Path) -> dict:
     lista.sort(key=lambda b: (-b["pop"], b["k"]))
     tam = gravar(saida / "bairros.json", {
         "fonte": f"{MS}/Feature_Base/MapServer/2",
-        "campos": {"n": "nome", "t": "tipo", "b": "nome sem tipo", "k": "chave de busca",
+        "campos": {"n": "nome de exibição (sem Bairro, Setor ou Conjunto)", "t": "tipo", "b": "nome sem tipo", "o": "nome oficial com o tipo abreviado", "k": "chave de busca",
                    "c": "centro [lon,lat]", "e": "extensão [O,S,L,N]",
                    "pop": "população total (campo pop_total)", "cond": "condomínio horizontal"},
         "bairros": lista})

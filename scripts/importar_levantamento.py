@@ -19,7 +19,7 @@ from pathlib import Path
 import openpyxl
 
 SAIDA = Path(__file__).resolve().parent.parent / "docs" / "data" / "levantamento.json"
-BAIRROS = ["Jardim América", "Setor Nova Suíça"]
+BAIRROS = ["Jardim América", "Nova Suíça"]
 
 RE_NOME = re.compile(r"<name>(.*?)</name>", re.S)
 RE_ESTILO = re.compile(r"<styleUrl>#(.*?)</styleUrl>")
@@ -85,6 +85,8 @@ def pastas(kml: str):
 def valor(v):
     if v is None:
         return None
+    if isinstance(v, str) and v.strip() == "--":
+        return " -- "
     if isinstance(v, (datetime, date)):
         return v.strftime("%d/%m/%Y")
     if isinstance(v, float):
@@ -211,6 +213,22 @@ def main(kml_path: str, xlsx_path: str) -> int:
     empresas = ligar("Empresas")
     google = ligar("Google Maps")
     condominios = ligar("Condomínios e prédios")
+    # Unidades de condomínio: uma base por inscrição de IPTU e a geral do condomínio (" -- "), agrupadas pelo lote.
+    unidades = {"colunas": [], "por_lote": {}}
+    if "Unidades de condomínio" in abas:
+        cab_u, linhas_u = abas["Unidades de condomínio"]
+        iu = {c: i for i, c in enumerate(cab_u)}
+        k0 = iu["Unidade"]
+        unidades["colunas"] = cab_u[k0:]
+        for r in linhas_u:
+            k = lote_de(r[iu["Bairro"]], r[iu["Quadra"]], r[iu["Lote"]])
+            if k is None:
+                continue
+            linha = list(r[k0:])
+            if linha[0] is None or not str(linha[0]).strip("- "):
+                linha[0] = " -- "      # a planilha lida perde os espaços: a base geral é sempre " -- "
+            unidades["por_lote"].setdefault(str(k), []).append(linha)
+    conf_cond = dict(zip(("colunas", "linhas"), abas["Conferência de condomínios"])) if "Conferência de condomínios" in abas else {"colunas": [], "linhas": []}
     cab_sem, sem_lote = abas["Empresas sem lote"]
 
     # ------------------------------------------------------- áreas públicas
@@ -249,7 +267,7 @@ def main(kml_path: str, xlsx_path: str) -> int:
         "conferencia": {"colunas": conferencia_cab, "linhas": conferencia},
         "colunas_lote": cab, "lotes": lotes,
         "empresas": empresas, "empresas_sem_lote": {"colunas": cab_sem, "linhas": sem_lote},
-        "google": google, "condominios": condominios,
+        "google": google, "condominios": condominios, "unidades": unidades, "conferencia_condominios": conf_cond,
         "colunas_area": cab_ap, "areas": areas,
         "eleitoral": {"pontos": pontos, "setas": setas,
                       "locais": {"colunas": cab_loc, "linhas": linhas_loc},
@@ -261,7 +279,7 @@ def main(kml_path: str, xlsx_path: str) -> int:
     print(f"{len(lotes)} lotes ({sem_geo} sem geometria), {len(empresas['linhas'])} empresas ({ligadas} ligadas a lote), "
           f"{len(sem_lote)} empresas sem lote, {len(google['linhas'])} Google Maps, {len(condominios['linhas'])} condomínios, "
           f"{len(areas)} áreas públicas, {len(pontos)} pontos eleitorais, {len(setas)} setas, {len(limites)} limites, "
-          f"{len(bocas['linhas'])} bocas de lobo, {len(iluminacao['linhas'])} pontos de iluminação "
+          f"{len(unidades['por_lote'])} condomínios com {sum(len(v) for v in unidades['por_lote'].values())} bases de unidade, {len(bocas['linhas'])} bocas de lobo, {len(iluminacao['linhas'])} pontos de iluminação "
           f"-> {SAIDA} ({SAIDA.stat().st_size / 1e6:.1f} MB)")
     return 0
 

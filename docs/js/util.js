@@ -24,6 +24,23 @@ export function el(tag, atributos = {}, ...filhos) {
 export const semAcento = (s) =>
   String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
+// Nome de bairro sem "Bairro", "Setor" ou "Conjunto" na frente e sem abreviações:
+// "Bro Jardim América" -> "Jardim América", "S Bueno" -> "Bueno", "JD GOIAS" -> "JARDIM GOIAS".
+const TIPOS_BAIRRO_EXT = { jd: 'Jardim', vl: 'Vila', res: 'Residencial', prq: 'Parque', ch: 'Chácara', lot: 'Loteamento', con: 'Condomínio',
+  sit: 'Sítio', sir: 'Sítios de Recreio', faz: 'Fazenda', vlg: 'Village', dis: 'Distrito', glb: 'Gleba', grj: 'Granja', esp: 'Esplanada', zon: 'Zona', col: 'Colônia' };
+const TIPOS_BAIRRO_FORA = { bro: 'Bairro', bairro: 'Bairro', s: 'Setor', st: 'Setor', set: 'Setor', setor: 'Setor', cj: 'Conjunto', conj: 'Conjunto',
+  conjunto: 'Conjunto', cjr: 'Conjunto Residencial' };
+export function nomeBairro(texto) {
+  const t = String(texto ?? '').trim();
+  const m = t.match(/^([A-Za-zÀ-ÿ]+)\.?\s+(.+)$/);
+  if (!m) return t;
+  const chave = m[1].toLowerCase(), resto = m[2].trim();
+  const caixa = (x) => (resto === resto.toUpperCase() ? x.toUpperCase() : x);
+  if (TIPOS_BAIRRO_FORA[chave]) return /^d[aeo]s?\s/i.test(resto) ? `${caixa(TIPOS_BAIRRO_FORA[chave])} ${resto}` : resto;
+  if (TIPOS_BAIRRO_EXT[chave]) return `${caixa(TIPOS_BAIRRO_EXT[chave])} ${resto}`;
+  return t;
+}
+
 export function debounce(fn, ms = 250) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };

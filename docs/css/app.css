@@ -32,13 +32,33 @@ ul, ol { padding: 0; list-style: none; }
 .cesium-viewer-bottom, .cesium-viewer-toolbar { display: none !important; }
 
 /* ------------------------------------------------------------------ abertura */
-#abertura { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center;
-  background: radial-gradient(ellipse at 50% 40%, #2a2f36 0%, #121416 70%); transition: opacity .7s ease; }
+#abertura { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; color: #211915;
+  background: linear-gradient(118deg, transparent 0 62%, rgba(133, 193, 234, .16) 62% 74%, rgba(76, 117, 180, .10) 74% 86%, rgba(0, 29, 126, .07) 86%),
+    radial-gradient(ellipse at 50% 40%, #ffffff 0%, #EEF3FA 75%); transition: opacity .7s ease; }
 #abertura.sai { opacity: 0; pointer-events: none; }
 .abertura-caixa { width: min(360px, 86vw); text-align: center; }
 .marca-grande { display: flex; align-items: center; justify-content: center; gap: 14px; text-align: left; margin-bottom: 22px; }
-.marca-grande strong { display: block; font-size: 26px; font-weight: 650; letter-spacing: -.01em; }
-.marca-grande small { color: var(--texto-2); font-size: 13px; }
+.marca-grande strong { display: block; font-size: 30px; font-weight: 750; letter-spacing: -.01em; color: #001D7E; }
+.marca-grande small { color: #4d5568; font-size: 13.5px; }
+.marca-grande .passaro { width: 96px; height: auto; flex: none; }
+#abertura #abertura-estado { color: #4d5568; }
+#abertura .barra { background: #D5DEEC; }
+#abertura .barra i { background: #001D7E; }
+/* Marca d'água da tela de apresentação: as duas logomarcas juntas, no canto inferior direito. */
+.marca-dagua { position: absolute; right: clamp(12px, 2.4vw, 32px); bottom: clamp(10px, 2.4vh, 26px); width: clamp(210px, 24vw, 340px);
+  height: auto; opacity: .42; pointer-events: none; user-select: none; }
+/* Pássaro da logomarca viva: bate a asa ao passar o mouse e ao centralizar o mapa. */
+.passaro { display: block; overflow: visible; }
+.passaro .passaro-asa { transform-box: view-box; transform-origin: 558px 355px; }
+.passaro .passaro-bico { transform-box: view-box; transform-origin: 940px 330px; }
+@media (prefers-reduced-motion: no-preference) {
+  #abertura .passaro .passaro-asa, .marca:hover .passaro-asa, .marca.voa .passaro-asa { animation: bate-asa .26s ease-in-out infinite alternate; }
+  .marca.voa .passaro-bico { animation: pia .5s ease-in-out 1; }
+  .marca.voa .passaro { animation: salto .55s cubic-bezier(.3, .7, .4, 1.4) 1; }
+}
+@keyframes bate-asa { 0% { transform: rotate(-16deg) scale(1, .92); } 100% { transform: rotate(7deg) scale(1, 1.01); } }
+@keyframes pia { 0%, 100% { transform: none; } 25%, 60% { transform: rotate(16deg); } 42% { transform: rotate(4deg); } }
+@keyframes salto { 0%, 100% { transform: none; } 35% { transform: translateY(-5px) scale(.97, 1.05); } 70% { transform: scale(1.05, .95); } }
 .marca-globo { width: 30px; height: 30px; border-radius: 50%; flex: none; display: inline-block;
   background: radial-gradient(circle at 46% 44%, var(--acento) 0 26%, transparent 27%), radial-gradient(circle at 35% 30%, #7d848d, #4b5057 70%);
   box-shadow: inset -3px -4px 8px rgba(0, 0, 0, .45); }
@@ -60,8 +80,13 @@ ul, ol { padding: 0; list-style: none; }
 #trilho .espaco { flex: 1; }
 
 /* --------------------------------------------------------------------- busca */
-#topo { position: fixed; top: 12px; left: 12px; z-index: 30; width: min(420px, calc(100vw - 24px)); }
-#caixa-busca { position: relative; display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 8px 0 10px;
+/* A busca fica centralizada sobre o mapa (a área à direita do trilho de ferramentas). */
+#topo { position: fixed; top: 12px; left: calc(var(--trilho) + (100vw - var(--trilho)) / 2); transform: translateX(-50%); z-index: 30;
+  width: min(460px, calc(100vw - var(--trilho) - 24px)); }
+body:has(#ficha:not([hidden])) #topo { left: calc(var(--trilho) + (100vw - var(--trilho) - 372px) / 2); width: min(460px, calc(100vw - var(--trilho) - 396px)); }
+#caixa-busca .marca { flex: none; display: grid; place-items: center; width: 44px; height: 38px; padding: 3px 4px; border: 0; border-radius: 19px; background: #fff; cursor: pointer; }
+#caixa-busca .marca .passaro { width: 34px; height: auto; }
+#caixa-busca { position: relative; display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 8px 0 4px;
   background: var(--fundo); border: 1px solid var(--linha); border-radius: 24px; box-shadow: var(--sombra); }
 #caixa-busca:focus-within { border-color: var(--acento); }
 #busca { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: none; font-size: 15px; }
@@ -245,6 +270,7 @@ input[type="checkbox"] { accent-color: var(--acento); }
   #trilho { inset: auto 0 var(--rodape) 0; width: auto; height: 58px; flex-direction: row; padding: 4px 6px; overflow-x: auto; border-right: 0; border-top: 1px solid #15171a; }
   #trilho button { min-width: 58px; }
   #trilho .espaco { display: none; }
+  #topo, body:has(#ficha:not([hidden])) #topo { left: 50%; width: calc(100vw - 16px); }
   #painel, #ficha { left: 8px; right: 8px; top: auto; bottom: calc(var(--rodape) + 66px); width: auto; max-width: none; max-height: 52vh; }
   #epocas { left: 50%; bottom: calc(var(--rodape) + 70px); }
   #navegacao, body:has(#ficha:not([hidden])) #navegacao { bottom: calc(var(--rodape) + 120px); right: 8px; }
