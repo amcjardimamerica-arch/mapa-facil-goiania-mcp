@@ -11,6 +11,7 @@ import { Medir } from './medir.js';
 import { Marcadores } from './marcadores.js';
 import { Localizacao } from './localizacao.js';
 import { Lotes } from './lotes.js';
+import { Levantamento } from './levantamento.js';
 import { encerrarSessao, sessaoAindaValida } from './acesso.js';
 
 const Cesium = window.Cesium;
@@ -25,7 +26,7 @@ const estadoAbertura = (texto, erro = false) => {
 
 function lerHash() {
   const p = new URLSearchParams(location.hash.slice(1));
-  return { v: p.get('v'), b: p.get('b'), t: p.get('t'), ed: p.get('ed'), n: p.get('n'), r: p.get('r'), ind: p.get('ind'), l: p.get('l') };
+  return { v: p.get('v'), b: p.get('b'), t: p.get('t'), ed: p.get('ed'), n: p.get('n'), r: p.get('r'), ind: p.get('ind'), l: p.get('l'), lv: p.get('lv') };
 }
 
 async function iniciar() {
@@ -55,8 +56,9 @@ async function iniciar() {
   identificar.acoes.marcar = (ponto, nome) => marcadores.adicionar(ponto, nome);
   const sessao = window.bussolaSessao || { login: 'anonimo', nome: '' };
   const lotes = new Lotes({ globo, bairros: bairros.bairros, raiz: $('#painel-lotes') });
+  const levantamento = new Levantamento({ globo, identificar, raiz: $('#painel-levantamento') });
   const localizacao = new Localizacao({ globo, identificar, camadas, territorio, raiz: $('#painel-local'), botaoGps: $('#nav-local'), sessao });
-  Object.assign(app, { globo, camadas, identificar, edificios, medir, marcadores, localizacao, lotes, busca, territorio, catalogo, manifesto, sessao });
+  Object.assign(app, { globo, camadas, identificar, edificios, medir, marcadores, localizacao, lotes, levantamento, busca, territorio, catalogo, manifesto, sessao });
 
   const bases = globo.basesDisponiveis();
   const baseInicial = bases.some((b) => b.chave === hash.b) ? hash.b : 'satelite';
@@ -72,6 +74,7 @@ async function iniciar() {
     for (const b of $$('#trilho [data-painel]')) b.setAttribute('aria-pressed', String(b.dataset.painel === painelAberto));
     if (painelAberto) $('#painel-titulo').textContent = $(`#painel > [data-secao="${painelAberto}"]`).dataset.titulo;
     if (painelAberto === 'camadas') camadas.atualizarEscala();
+    if (painelAberto === 'levantamento') levantamento.carregar().catch((e) => aviso(`Levantamento indisponível: ${e.message}`, 'alerta'));
     if (painelAberto === 'edificios') edificios.carregar().catch((e) => aviso(`Cadastro de edifícios indisponível: ${e.message}`, 'alerta'));
     if (painelAberto !== 'medir') medir.cancelar();
     if (painelAberto !== 'marcadores') marcadores.cancelarPedido();
@@ -185,6 +188,8 @@ async function iniciar() {
   if (hash.t) camadas.restaurarDe(hash.t);
   lotes.aoMudar = () => atualizarLink();
   if (hash.l) lotes.restaurar(hash.l);
+  levantamento.aoMudar = () => atualizarLink();
+  if (hash.lv === '1') levantamento.carregar().catch(() => {});
 
   // ----------------------------------------------------------- navegação
   const rad = Cesium.Math.toRadians;
@@ -215,7 +220,7 @@ async function iniciar() {
     if (localizacao.aguardando) { if (ponto) localizacao.escolher(ponto); return; }
     const pego = globo.cena.pick(ev.position);
     edificios.limparSelecao();
-    if (edificios.aoClicar(pego) || marcadores.aoClicar(pego) || localizacao.aoClicar(pego)) return;
+    if (edificios.aoClicar(pego) || marcadores.aoClicar(pego) || localizacao.aoClicar(pego) || levantamento.aoClicar(pego, ponto)) return;
     if (ponto) identificar.emPonto(ponto);
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
   maos.setInputAction(() => { if (medir.ativo) { medir.desfazer(); medir.concluir(); } }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
@@ -296,6 +301,7 @@ async function iniciar() {
     if (!realce.checked) p.set('n', '0');
     const l = lotes.serializar();
     if (l) p.set('l', l);
+    if (levantamento.ativo) p.set('lv', '1');
     if (!globo.relevoAtivo) p.set('r', '0');
     history.replaceState(null, '', `#${p.toString().replace(/%2C/g, ',').replace(/%3A/g, ':').replace(/%7C/g, '|')}`);
   }

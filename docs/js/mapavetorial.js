@@ -58,12 +58,12 @@ const ESTILO = {
   mapa: {
     fundo: '#e9e4da', urbano: '#efebe3', quadra: '#f7f4ee', quadraBorda: '#dcd5c8',
     via: { local: ['#d3ccbf', '#ffffff'], coletora: ['#cdc3b1', '#ffffff'], arterial: ['#e0bd62', '#ffe7a0'], expressa: ['#d49a3a', '#fbcf74'] },
-    texto: '#4f545b', halo: 'rgba(255,255,255,.95)', bairro: '#857a69', quadraTexto: '#aaa08f',
+    texto: '#4f545b', halo: 'rgba(255,255,255,.95)', bairro: '#857a69', quadraTexto: '#aaa08f', divisa: '#9c8f7a',
   },
   sobre: {
     quadraBorda: 'rgba(255,255,255,.42)',
     via: { local: [null, 'rgba(255,255,255,.30)'], coletora: [null, 'rgba(255,255,255,.45)'], arterial: ['rgba(0,0,0,.25)', 'rgba(255,214,90,.6)'], expressa: ['rgba(0,0,0,.25)', 'rgba(255,185,70,.7)'] },
-    texto: '#ffffff', halo: 'rgba(0,0,0,.85)', bairro: '#ffe9a8', quadraTexto: 'rgba(255,255,255,.8)',
+    texto: '#ffffff', halo: 'rgba(0,0,0,.85)', bairro: '#ffe9a8', quadraTexto: 'rgba(255,255,255,.8)', divisa: 'rgba(255,233,168,.85)',
   },
 };
 
@@ -250,14 +250,15 @@ export class ProvedorVetorial extends ProvedorCanvas {
     const sobre = this.modo === 'sobre';
     const nivelQuadras = sobre ? 15 : 14;
     const filtroVias = nivel >= (sobre ? 15 : 14) ? '1=1' : nivel >= 12 ? 'in_hie >= 21' : 'in_hie >= 40';
-    const [quadras, vias] = await Promise.all([
+    const [limites, quadras, vias] = await Promise.all([
+      nivel >= 12 ? consultar(2, { ...comum, outFields: 'OBJECTID', where: '1=1', maxAllowableOffset: String(Math.max(1, q.mpp)) }, cancelada).catch(() => []) : [],
       nivel >= nivelQuadras ? consultar(1, { ...comum, outFields: nivel >= 17 ? 'nm_qdr' : 'OBJECTID', where: '1=1' }, cancelada).catch(() => []) : [],
       consultar(7, { ...comum, outFields: 'nm,in_hie', where: filtroVias }, cancelada).catch(() => []),
     ]);
-    return { quadras, vias };
+    return { limites, quadras, vias };
   }
 
-  _desenhar(ret, nivel, relevo, { quadras, vias }) {
+  _desenhar(ret, nivel, relevo, { limites = [], quadras, vias }) {
     const T = this._T, e = this.estilo, q = new Quadro(ret, T);
     const tela = this._tela(), g = tela.getContext('2d');
     const mapa = this.modo === 'mapa';
@@ -301,7 +302,18 @@ export class ProvedorVetorial extends ProvedorCanvas {
       g.restore();
     }
 
-    // Recorte: fora de Goiânia o fundo não é desenhado (a máscara cinza cobre).
+    // Divisa de cada bairro (tracejada), por cima das ruas e abaixo dos nomes.
+    if (limites.length) {
+      g.save();
+      g.beginPath();
+      for (const f of limites) if (f.geometry?.rings) q.caminho(g, f.geometry.rings);
+      g.setLineDash(nivel >= 15 ? [10, 5] : [6, 4]);
+      g.lineJoin = 'round';
+      if (!mapa) { g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = 3; g.stroke(); }
+      g.strokeStyle = e.divisa; g.lineWidth = nivel >= 15 ? 2 : 1.4; g.stroke();
+      g.restore();
+    }
+
     const r = new Rotulos(g, T);
     // Nomes de bairro (vista de bairros)
     if (nivel >= 12 && nivel <= 15) {
@@ -341,9 +353,10 @@ export class ProvedorVetorial extends ProvedorCanvas {
 
 // ------------------------------------------------------------------- lotes
 export class ProvedorLotes extends ProvedorCanvas {
-  constructor({ lotes, retangulo }) {
-    super({ retangulo, credito: 'Lotes: Prefeitura de Goiânia', nivelMinimo: 12 });
+  constructor({ lotes, retangulo, borda = '#ffd54a', credito = 'Lotes: Prefeitura de Goiânia', nivelMinimo = 12 }) {
+    super({ retangulo, credito, nivelMinimo });
     this.lotes = lotes; // [{ aneis: [[[x,y]…]], ext: [o,s,l,n], nm, cor }]
+    this.borda = borda; // cor da divisa, ou null para usar a cor de cada lote
   }
   requestImage(x, y, nivel) {
     const ret = this._grade.tileXYToNativeRectangle(x, y, nivel);
@@ -359,7 +372,7 @@ export class ProvedorLotes extends ProvedorCanvas {
     for (const l of dentro) q.caminho(g, l.aneis);
     g.lineJoin = 'round';
     g.strokeStyle = 'rgba(20,24,28,.55)'; g.lineWidth = nivel >= 17 ? 2.6 : 1.8; g.stroke();
-    g.strokeStyle = '#ffd54a'; g.lineWidth = nivel >= 17 ? 1.3 : 0.8; g.stroke();
+    if (this.borda) { g.strokeStyle = this.borda; g.lineWidth = nivel >= 17 ? 1.3 : 0.8; g.stroke(); }
     if (nivel >= 17) {
       const r = new Rotulos(g, T);
       const fonte = `600 ${nivel >= 18 ? 12 : 10.5}px system-ui, "Segoe UI", Roboto, sans-serif`;

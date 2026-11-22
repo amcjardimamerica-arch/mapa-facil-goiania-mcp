@@ -59,6 +59,26 @@ dados_mapafacil/          catálogo anterior do servidor (mantido)
 - As ortofotos de 2006, 2011 e 2016 saíram dos fundos. O extrator ainda as registra em `camadas.json`.
 - As consultas ao servidor municipal passam por uma fila de no máximo 4 pedidos simultâneos.
 
+## Levantamento do Jardim América e do Setor Nova Suíça
+
+Painel **Bairros** (menu lateral). Dados em `docs/data/levantamento.json`, gerados a partir do KML e da
+planilha compilados pela Associação:
+
+```
+python scripts/importar_levantamento.py compilado.kml compilado.xlsx
+```
+
+- **Limites dos bairros**: a divisa de cada um, em destaque, com o nome.
+- **Lotes por finalidade** (8.861): residencial, condominial, comercial, misto, religioso, institucional,
+  lote vago e não identificado, com filtro por finalidade e por bairro. O clique no lote abre a ficha:
+  finalidade, endereço, prédio, área do comércio, empresas, unidades, pavimentos, áreas e dados eleitorais.
+- **Áreas públicas** (130), **prédios em 3D** pela altura dos pavimentos e **locais de votação** (2026 e
+  Conselho Tutelar 2023).
+- **Busca** por rua, empresa, prédio ou "qd 12 lt 5".
+- O site é público: o importador deixa de fora contatos, telefones, e-mails e números de CPF, e um teste
+  confere isso a cada envio.
+- No Mapa e na camada "Ruas e quadras", a divisa de todos os bairros de Goiânia aparece tracejada.
+
 ## Acesso com usuário e senha
 
 A página inicial (`docs/index.html`) é o portal de acesso. O mapa fica em `docs/sistema.html` e só abre

@@ -1,6 +1,7 @@
 """Confere os arquivos de docs/data (sem rede): é o contrato entre o extrator e o mapa."""
 from __future__ import annotations
 
+import json
 import math
 
 from shapely.geometry import Point, Polygon, shape
@@ -159,3 +160,19 @@ def test_script_de_usuarios(tmp_path, monkeypatch):
     usuarios.main(["desativar", "maria.s"])
     assert json.loads((tmp_path / "u.json").read_text())["usuarios"][0]["ativo"] is False
     assert "-" in usuarios.gerar_senha() and len(usuarios.gerar_senha()) == 14
+
+
+def test_levantamento_da_associacao():
+    """Levantamento do Jardim América e do Setor Nova Suíça: completo e sem dados de contato."""
+    import re
+    d = ler("levantamento.json")
+    assert d["bairros"] == ["Jardim América", "Setor Nova Suíça"]
+    assert len(d["limites"]) == 2 and all(lim["aneis"] and len(lim["aneis"][0]) > 50 for lim in d["limites"])
+    assert len(d["lotes"]) > 8000 and all(l["g"] and len(l["g"][0]) >= 6 for l in d["lotes"])
+    assert sum(f["n"] for f in d["finalidades"]) == len(d["lotes"])
+    assert len(d["areas"]) > 100 and len(d["locais"]) > 300
+    texto = json.dumps({k: v for k, v in d.items() if k != "lotes"}, ensure_ascii=False) + \
+        json.dumps([{k: v for k, v in l.items() if k != "g"} for l in d["lotes"]], ensure_ascii=False)
+    assert not re.search(r"[\w.+-]+@[\w-]+\.[\w.]+", texto), "e-mail no arquivo publicado"
+    assert not re.search(r"\b\d{2} 9[.\s]?\d{4}-\d{4}\b|\(\d{2}\)\s?\d{4,5}-?\d{4}", texto), "telefone no arquivo publicado"
+    assert not re.search(r"\b\d{11}\b", texto.replace('"ci":', "")), "possível CPF no arquivo publicado"

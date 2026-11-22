@@ -259,6 +259,30 @@ def test_lotes_so_do_bairro_escolhido(mapa):
     assert r["hash"], r
 
 
+def test_levantamento_lotes_limites_e_ficha(mapa):
+    r = mapa.evaluate("""async () => {
+      const lv = bussola.levantamento;
+      await lv.carregar();
+      const antes = { lotes: lv.dados.lotes.length, limites: lv.dados.limites.length, camada: !!lv.camadaLotes,
+                      bordas: lv.fonte.entities.values.filter((e) => e.polyline).length };
+      const tratou = lv.aoClicar(null, { lon: -49.2857, lat: -16.7077 });
+      const titulo = document.querySelector('#ficha-titulo').textContent;
+      lv.ocultas.add('Residencial'); lv.redesenhar();
+      const semResid = lv._lotesVisiveis().some((l) => l.f === 'Residencial');
+      lv.ocultas.delete('Residencial'); lv.opcoes.bairros[1] = false; lv.redesenhar();
+      const soJA = lv._lotesVisiveis().every((l) => l.b === 0);
+      lv.opcoes.bairros[1] = true; lv.campo.value = 'qd 262b lt 24'; lv._buscar();
+      const achou = lv.resultados.textContent;
+      lv.campo.value = ''; lv._buscar(); bussola.identificar.fechar(); lv.redesenhar();
+      return { ...antes, tratou, titulo, semResid, soJA, achou, hash: location.hash.includes('lv=1') };
+    }""")
+    assert r["lotes"] > 8000 and r["limites"] == 2 and r["camada"] and r["bordas"] >= 2, r
+    assert r["tratou"] and r["titulo"].startswith("Quadra "), r
+    assert not r["semResid"] and r["soJA"], r
+    assert "262B" in r["achou"], r
+    assert r["hash"], r
+
+
 # ------------------------------------------------------------------ acesso
 def test_sem_login_volta_ao_portal(navegador, servidor):
     ctx = _contexto(navegador, logado=False)
