@@ -151,9 +151,9 @@ export class Levantamento {
       chave('oficiais', 'Limite oficial do Mapa Fácil', 'para comparar com o limite pelos lotes'),
       chave('areas', 'Áreas públicas', 'praças, áreas verdes, canteiros e equipamentos'),
       chave('bocas', 'Bocas de lobo', 'ícone com o número de unidades em sequência'),
-      chave('postes', 'Postes', 'todos os postes do bairro, com e sem lâmpada; o braço aponta para a rua'),
+      chave('postes', 'Postes', 'todos os postes do bairro: cinza concreto (redondo ou quadrado), marrom madeira; o braço aponta para a rua'),
       el('ul', { class: 'lv-legenda lv-legenda-postes' },
-        [['#ffee58', 'Bola do topo: rede de baixa tensão'], ['#f57c00', 'Bola do topo: rede de alta tensão'], ['#d32f2f', 'Bola do topo: com transformador (caixa no meio do poste)'],
+        [['#ffee58', 'Bola do topo: rede de baixa tensão'], ['#f57c00', 'Bola do topo: rede de alta tensão'], ['#d32f2f', 'Bola do topo: com transformador (caixa vermelha no meio do poste)'],
           ['#9e9e9e', 'Bola do topo: tensão não informada'], ['#2196f3', 'Esfera do braço: iluminação sem pedido'], ['#f44336', 'Esfera do braço: manutenção pedida']]
           .map(([c, t]) => el('li', {}, el('span', { class: 'lv-cor', style: `background:${c}` }), el('span', {}, t)))),
       this._chaveEdificacoes = chave('edificacoes', 'Edificações em 3D nestes bairros', 'prédios e condomínios; a cidade inteira fica em Camadas → Edificações'),

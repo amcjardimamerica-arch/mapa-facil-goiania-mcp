@@ -18,9 +18,17 @@ export const corDaRede = (p) => (p.transformador ? COR_REDE.transformador : COR_
 export const temLampada = (p) => !!(p.iluminacao || p.lampada);
 /** Esfera do braço: azul = iluminação sem pedido; vermelho = manutenção pedida (mau funcionamento). */
 export const corLampada = (p) => (manutencao.tem(p.codigo) ? '#f44336' : '#2196f3');
-const COR_HASTE = { M: '#8d6e63' }; // madeira; concreto fica cinza-claro
-const corHaste = (p) => COR_HASTE[p.material] || '#cfd8dc';
-const COR_BRACO = '#90a4ae', COR_TRAFO = '#455a64';
+// Medidas padronizadas: todos os postes com a mesma altura; haste e braço 50% maiores que na 1.9.1 e a
+// esfera da luminária com o dobro do tamanho.
+export const ALTURA_POSTE = 13.5;                 // m (antes 9 m, +50%)
+const RAIO_TOPO = 0.36, RAIO_BASE = 0.51;           // haste redonda (+50%)
+const LADO_TOPO = 0.6, LADO_BASE = 0.78;            // haste quadrada de concreto
+const BRACO_COMPRIMENTO = 3.3, BRACO_RAIO = 0.135;  // braço (+50%)
+const RAIO_LAMPADA = 1.1;                           // esfera da luminária (+100%)
+const TRAFO = [2.2, 2.2, 2.8];                      // caixa do transformador, maior
+// Cor da haste pelo material: madeira marrom; concreto (redondo ou quadrado) cinza.
+const corHaste = (p) => (p.material === 'M' ? '#8d6e63' : '#9e9e9e');
+const COR_BRACO = '#90a4ae', COR_TRAFO = '#d32f2f';
 
 /** Ponto a `d` metros de (lon, lat) no rumo `rumo` (radianos, a partir do norte, sentido horário). */
 function deslocar(lon, lat, d, rumo) {
@@ -65,34 +73,42 @@ export class Postes {
     if (!this._rumos) this._rumos = await this._rumosDaRua();
     if (vez !== this._vez) return;
     const exagero = this.globo.cena.verticalExaggeration || 1;
-    const perto = new Cesium.DistanceDisplayConditionGeometryInstanceAttribute(0, 2500);
+    const perto = new Cesium.DistanceDisplayConditionGeometryInstanceAttribute(0, 3000);
     const instancias = [];
     const cor = (css) => ({ color: Cesium.ColorGeometryInstanceAttribute.fromColor(Cesium.Color.fromCssColorString(css)), distanceDisplayCondition: perto });
     const enu = (lon, lat, alt) => Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(lon, lat, alt));
     const esfera = (r) => new Cesium.EllipsoidGeometry({ radii: new Cesium.Cartesian3(r, r, r), stackPartitions: 12, slicePartitions: 12 });
     for (const p of lista) {
       const chao = (this._alt[p.i] || 0) * exagero;
-      const h = p.altura * exagero;
+      const h = ALTURA_POSTE * exagero;
+      const rumo = this._rumos[p.i] ?? 0;
       const add = (parte, geometry, modelMatrix, css) => instancias.push(new Cesium.GeometryInstance({ id: { poste: p, parte }, geometry, modelMatrix, attributes: cor(css) }));
-      // Haste mais grossa (concreto cinza-claro; madeira marrom).
-      add('haste', new Cesium.CylinderGeometry({ length: h, topRadius: 0.24, bottomRadius: 0.34, slices: 14 }), enu(p.lon, p.lat, chao + h / 2), corHaste(p));
+      // Haste: concreto quadrado (Q) é um prisma de base quadrada, alinhado com a rua; redondo (R), madeira (M)
+      // e não informado são cilindros.
+      const centroHaste = Cesium.Cartesian3.fromDegrees(p.lon, p.lat, chao + h / 2);
+      if (p.material === 'Q') {
+        add('haste', new Cesium.CylinderGeometry({ length: h, topRadius: LADO_TOPO / Math.SQRT2, bottomRadius: LADO_BASE / Math.SQRT2, slices: 4 }),
+          Cesium.Transforms.headingPitchRollToFixedFrame(centroHaste, new Cesium.HeadingPitchRoll(rumo + Math.PI / 4, 0, 0)), corHaste(p));
+      } else {
+        add('haste', new Cesium.CylinderGeometry({ length: h, topRadius: RAIO_TOPO, bottomRadius: RAIO_BASE, slices: 16 }), enu(p.lon, p.lat, chao + h / 2), corHaste(p));
+      }
       // Bola do topo: cor da tensão (amarelo baixa, laranja alta, vermelho com transformador).
-      add('topo', esfera(0.42 * exagero), enu(p.lon, p.lat, chao + h + 0.3 * exagero), corDaRede(p));
-      // Transformador: caixa no meio do poste.
+      add('topo', esfera(0.63 * exagero), enu(p.lon, p.lat, chao + h + 0.45 * exagero), corDaRede(p));
+      // Transformador: caixa vermelha no meio do poste, alinhada com a rua.
       if (p.transformador) {
-        add('trafo', Cesium.BoxGeometry.fromDimensions({ dimensions: new Cesium.Cartesian3(1.1, 1.1, 1.5 * exagero) }),
-          enu(p.lon, p.lat, chao + h * 0.55), COR_TRAFO);
+        add('trafo', Cesium.BoxGeometry.fromDimensions({ dimensions: new Cesium.Cartesian3(TRAFO[0], TRAFO[1], TRAFO[2] * exagero) }),
+          Cesium.Transforms.headingPitchRollToFixedFrame(Cesium.Cartesian3.fromDegrees(p.lon, p.lat, chao + h * 0.55), new Cesium.HeadingPitchRoll(rumo, 0, 0)), COR_TRAFO);
       }
       // Braço no sentido da rua com a esfera da iluminação na ponta (só nos postes com lâmpada).
       if (temLampada(p)) {
-        const rumo = this._rumos[p.i] ?? 0, L = 2.2;
-        const zBraco = chao + h - 0.7 * exagero;
+        const L = BRACO_COMPRIMENTO;
+        const zBraco = chao + h - 1.05 * exagero;
         const [cx, cy] = deslocar(p.lon, p.lat, L / 2, rumo);
         const hpr = new Cesium.HeadingPitchRoll(rumo, 0, Math.PI / 2);
-        add('braco', new Cesium.CylinderGeometry({ length: L, topRadius: 0.09, bottomRadius: 0.09, slices: 8 }),
+        add('braco', new Cesium.CylinderGeometry({ length: L, topRadius: BRACO_RAIO, bottomRadius: BRACO_RAIO, slices: 10 }),
           Cesium.Transforms.headingPitchRollToFixedFrame(Cesium.Cartesian3.fromDegrees(cx, cy, zBraco), hpr), COR_BRACO);
         const [lx, ly] = deslocar(p.lon, p.lat, L, rumo);
-        add('lampada', esfera(0.55 * exagero), enu(lx, ly, zBraco), corLampada(p));
+        add('lampada', esfera(RAIO_LAMPADA * exagero), enu(lx, ly, zBraco), corLampada(p));
       }
     }
     this.primitiva = this.globo.cena.primitives.add(new Cesium.Primitive({ geometryInstances: instancias, asynchronous: true,
@@ -193,7 +209,7 @@ export class Postes {
       ['Transformador', p.transformador ? 'Sim' : 'Não'],
       ['Iluminação', p.iluminacao || p.lampada ? [p.lampada || ilum['Tipo de lâmpada'], p.potencia || ilum['Potência (W)'] ? `${p.potencia || ilum['Potência (W)']} W` : ''].filter(Boolean).join(' · ') || 'Sim' : 'Sem lâmpada'],
       ['Código da iluminação', ilum['Código para manutenção'] || ''],
-      ['Altura no 3D', `${fmtNum(p.altura, 1)} m`],
+      ['Altura no 3D', `${fmtNum(ALTURA_POSTE, 1)} m (padrão para todos os postes)`],
       ['Nome no levantamento', p.nome], ['Pasta no levantamento', p.pasta],
       ['Observações', p.obs.join(' · ')],
       ['Origem', p.origem === 'KML' ? (p.casamento ? `KML do levantamento + cadastro de iluminação (${p.casamento})` : 'KML do levantamento (sem lâmpada no cadastro)') : 'Cadastro de iluminação (não está no KML)'],

@@ -375,6 +375,11 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
       lv.postes.abrir(comLampada);
       const corLamp = () => { const a = lv.postes.primitiva.getGeometryInstanceAttributes(lv.postes._ids.get(`${comLampada.i}:lampada`)); return a ? [...a.color].slice(0, 3) : null; };
       infra.partes = ['haste', 'topo', 'trafo', 'braco', 'lampada'].filter((x) => lv.postes._ids.has(`${comLampada.i}:${x}`));
+      const m = await import('./js/postes.js');
+      infra.altura = m.ALTURA_POSTE;
+      const quad = lv.postes.dados.postes.find((q) => q.material === 'Q' && q !== comLampada), mad = lv.postes.dados.postes.find((q) => q.material === 'M' && q !== comLampada);
+      const corDe = (q, parte) => { const a = lv.postes.primitiva.getGeometryInstanceAttributes(lv.postes._ids.get(`${q.i}:${parte}`)); return a ? Cesium.Color.fromBytes(...a.color).toCssHexString() : null; };
+      infra.cores = { quadrado: corDe(quad, 'haste'), madeira: corDe(mad, 'haste'), trafo: corDe(lv.postes.dados.postes.find((q) => q.transformador && q !== comLampada), 'trafo') };
       const antesCor = corLamp();
       btn().click(); infra.pedido = btn().getAttribute('aria-pressed'); infra.data = !!document.querySelector('#ficha-corpo .manut input[type=text]');
       const depoisCor = corLamp(); infra.lampadaMudou = !!antesCor && antesCor[0] < depoisCor[0] && antesCor[2] > depoisCor[2];
@@ -405,6 +410,7 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
     assert r["infra"]["marcadores"] == 0 and r["infra"]["pedido"] == "true" and r["infra"]["data"] and r["infra"]["retirado"] == "false", r["infra"]
     assert r["infra"]["historico"], r["infra"]
     assert r["infra"]["partes"] == ["haste", "topo", "trafo", "braco", "lampada"] and r["infra"]["lampadaMudou"], r["infra"]
+    assert r["infra"]["altura"] == 13.5 and r["infra"]["cores"] == {"quadrado": "#9e9e9e", "madeira": "#8d6e63", "trafo": "#d32f2f"}, r["infra"]
     assert r["infra"]["grupos"] == ["Residencial", "Comercial", "Misto", "Lote vago", "Público", "Religioso", "Não identificado"], r["infra"]["grupos"]
     assert "Pedir manutenção (LT-" in r["ficha"], r["ficha"][:200]
     assert r["hash"], r
