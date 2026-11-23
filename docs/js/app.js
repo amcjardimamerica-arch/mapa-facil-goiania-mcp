@@ -33,10 +33,29 @@ function lerHash() {
   return { v: p.get('v'), b: p.get('b'), t: p.get('t'), ed: p.get('ed'), n: p.get('n'), r: p.get('r'), ind: p.get('ind'), l: p.get('l'), lv: p.get('lv'), eb: p.get('eb') };
 }
 
+/**
+ * Garante que a versão publicada é a que está aberta: lê a versão no servidor (sem cache) e, se for mais nova
+ * que a carregada, atualiza o service worker, limpa o que estiver guardado de páginas e código e recarrega uma vez.
+ */
+async function conferirVersaoNova() {
+  try {
+    const texto = await (await fetch(`js/config.js?nc=${Date.now()}`, { cache: 'no-store' })).text();
+    const publicada = (texto.match(/VERSAO = '([^']+)'/) || [])[1];
+    if (!publicada || publicada === VERSAO) { sessionStorage.removeItem('bussola:recarregou'); return; }
+    if (sessionStorage.getItem('bussola:recarregou') === publicada) return; // já tentou: não entra em ciclo
+    sessionStorage.setItem('bussola:recarregou', publicada);
+    const reg = await navigator.serviceWorker?.getRegistration();
+    await reg?.update().catch(() => {});
+    for (const k of (await caches?.keys?.()) || []) if (!k.startsWith('bussola-dados')) await caches.delete(k);
+    location.reload();
+  } catch { /* sem rede: segue com a versão aberta */ }
+}
+
 async function iniciar() {
   if (!Cesium) throw new Error('A biblioteca do globo (CesiumJS) não carregou. Verifique a conexão e recarregue.');
   // Guarda no aparelho o banco local e os dados (abre de imediato nas próximas vezes).
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  conferirVersaoNova();
   estadoAbertura('Abrindo o banco de dados local…');
   // Dados do Mapa Fácil guardados no próprio site: o sistema deixa de depender do servidor da Prefeitura.
   const banco = await iniciarBanco();
