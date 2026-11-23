@@ -386,8 +386,9 @@ export class ProvedorVetorial extends ProvedorCanvas {
 
 // ------------------------------------------------------------------- lotes
 export class ProvedorLotes extends ProvedorCanvas {
-  constructor({ lotes, retangulo, borda = '#ffd54a', credito = 'Lotes: Prefeitura de Goiânia', nivelMinimo = 12 }) {
+  constructor({ lotes, retangulo, borda = '#ffd54a', credito = 'Lotes: Prefeitura de Goiânia', nivelMinimo = 12, rotulos = () => true }) {
     super({ retangulo, credito, nivelMinimo });
+    this.rotulos = rotulos; // false quando o mapa de baixo já escreve o número do lote (evita número duplicado)
     this.lotes = lotes; // [{ aneis: [[[x,y]…]], ext: [o,s,l,n], nm, cor }]
     this.borda = borda; // cor da divisa, ou null para usar a cor de cada lote
   }
@@ -407,7 +408,7 @@ export class ProvedorLotes extends ProvedorCanvas {
     g.lineJoin = 'round';
     g.strokeStyle = 'rgba(20,24,28,.55)'; g.lineWidth = nivel >= 17 ? 2.6 : 1.8; g.stroke();
     if (this.borda) { g.strokeStyle = this.borda; g.lineWidth = nivel >= 17 ? 1.3 : 0.8; g.stroke(); }
-    if (nivel >= NIVEIS.numeroLote) {
+    if (nivel >= NIVEIS.numeroLote && this.rotulos()) {
       const r = new Rotulos(g, T);
       const fonte = `600 ${nivel >= 20 ? 14 : nivel >= 19 ? 12.5 : nivel >= 18 ? 11 : 9.5}px system-ui, "Segoe UI", Roboto, sans-serif`;
       for (const l of dentro) {

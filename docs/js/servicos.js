@@ -173,13 +173,18 @@ export class Servicos {
   aoClicar(pego) {
     const s = pego?.id?.servico;
     if (!s) return false;
+    const ent = pego.id;
     const id = this.identificar;
-    id.fonte.entities.removeAll();
+    id.limparDestaque();
     id.abrir({ titulo: s.nome || s.camada.nome, subtitulo: s.camada.nome, ponto: { lon: s.lon, lat: s.lat, alt: NaN } });
     const linhas = Object.entries(s.atributos).filter(([k]) => !/^(FID|OBJECTID|Shape)/i.test(k.split('.').pop()))
       .filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== '' && !/^null$/i.test(String(v).trim()))
       .map(([k, v]) => [k.split('.').pop(), String(v)]);
     id.corpo.append(id.tabela(linhas));
+    // Seleção: o marcador cresce e clareia (sem marcador extra).
+    ent.billboard.scale = 1.45;
+    id.selecionar(() => { ent.billboard.scale = 1; this.globo.redesenhar(); });
+    this.globo.redesenhar();
     return true;
   }
 

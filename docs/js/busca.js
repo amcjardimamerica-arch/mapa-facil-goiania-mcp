@@ -184,7 +184,7 @@ export class Busca {
   async _ir_bairro({ dado: b }) {
     const voo = this.globo.voarPara({ extensao: b.e, inclinacao: -60 });
     const id = this.identificar;
-    id.fonte.entities.removeAll();
+    id.limparDestaque();
     id.abrir({ titulo: b.n, subtitulo: 'Bairro · Goiânia', ponto: { lon: b.c[0], lat: b.c[1], alt: NaN } });
     id.corpo.append(id.tabela([
       ['População', b.pop ? `${fmtNum(b.pop)} habitantes (base municipal, ordem de grandeza do Censo 2010)` : 'não informada'],
@@ -218,7 +218,7 @@ export class Busca {
 
   async _ir_lugar({ dado: l }) {
     const id = this.identificar;
-    id.fonte.entities.removeAll();
+    id.limparDestaque();
     id.abrir({ titulo: l.n, subtitulo: `${l.r} · Goiânia`, ponto: { lon: l.c[0], lat: l.c[1], alt: NaN } });
     if (l.d) id.corpo.append(el('p', { class: 'nota' }, l.d));
     id.alfinete(l.c[0], l.c[1]);

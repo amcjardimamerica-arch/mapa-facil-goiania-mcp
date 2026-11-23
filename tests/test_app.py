@@ -361,12 +361,22 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
       const alvo = lv._locaisVisiveis.find((x) => x.p.tipo === 'ct');
       const c = alvo.l.centro, ll = [Cesium.Math.toDegrees(c[0] / 6378137), Cesium.Math.toDegrees(2 * Math.atan(Math.exp(c[1] / 6378137)) - Math.PI / 2)];
       ct.clique = lv.aoClicar(null, { lon: ll[0], lat: ll[1] }) && document.querySelector('#ficha-titulo').textContent === alvo.p.nome;
-      lv.opcoes.eleicao = ''; lv.opcoes.bocas = true; lv.opcoes.iluminacao = true; lv.redesenhar();
+      lv.opcoes.eleicao = ''; lv.opcoes.bocas = true; lv.opcoes.postes = true; lv.redesenhar();
+      await lv.postes.mostrar(true, () => true);
+      await new Promise((ok) => { const t = setInterval(() => { if (lv.postes.primitiva?.ready) { clearInterval(t); ok(); } }, 200); setTimeout(ok, 60000); });
       const infra = { bocas: lv.fonte.entities.values.filter((e) => e.levantamento?.tipo === 'boca').length,
-                      postes: lv.fonte.entities.values.filter((e) => e.levantamento?.tipo === 'poste' && e.billboard).length };
-      lv.abrirBoca(lv.dados.bocas.linhas[0]);
-      infra.link = document.querySelector('#ficha-corpo a.botao.destaque')?.href || '';
-      lv.opcoes.bocas = false; lv.opcoes.iluminacao = false; bussola.identificar.fechar(); lv.redesenhar();
+                      postes: lv.postes._ids ? lv.postes._ids.size / 2 : 0 };
+      // Seleção do poste: sem marcador, haste mais clara; manutenção: o botão liga e desliga o pedido.
+      const p0 = lv.postes.dados.postes.find((p) => p.transformador);
+      lv.postes.abrir(p0);
+      infra.marcadores = bussola.identificar.fonte.entities.values.filter((e) => e.point || e.billboard).length;
+      const btn = () => document.querySelector('#ficha-corpo .manut-botao');
+      btn().click(); infra.pedido = btn().getAttribute('aria-pressed'); infra.data = !!document.querySelector('#ficha-corpo .manut input[type=text]');
+      btn().click(); infra.retirado = btn().getAttribute('aria-pressed');
+      infra.historico = document.querySelectorAll('#ficha-corpo .poste-historico input[type=text]').length === lv.postes.historicoDe(p0).length;
+      lv.opcoes.bocas = false; lv.opcoes.postes = false; bussola.identificar.fechar(); lv.redesenhar();
+      // Grupos de finalidade
+      infra.grupos = [...document.querySelectorAll('.lv-grupo-fin > label strong')].map((x) => x.textContent);
       return { ...antes, tratou, titulo, semResid, soJA, achou, ficha, ct, infra, unid, hash: location.hash.includes('lv=1') };
     }""")
     assert r["lotes"] > 8000 and r["limites"] == 2 and r["camada"] and r["bordas"] >= 2, r
@@ -385,8 +395,10 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
     # Sem pontos presos ao chão (o que travava). O tempo de quadro do ambiente de teste (sem placa de vídeo)
     # varia demais para servir de critério; fica só um teto contra regressão grave.
     assert r["ct"]["quadroMs"] < 30000, r["ct"]
-    assert r["infra"]["bocas"] == 830 and r["infra"]["postes"] == 4147, r["infra"]
-    assert r["infra"]["link"].startswith("https://claude.ai/artifact/") and "#BL-" in r["infra"]["link"], r["infra"]
+    assert r["infra"]["bocas"] == 830 and r["infra"]["postes"] > 4600, r["infra"]
+    assert r["infra"]["marcadores"] == 0 and r["infra"]["pedido"] == "true" and r["infra"]["data"] and r["infra"]["retirado"] == "false", r["infra"]
+    assert r["infra"]["historico"], r["infra"]
+    assert r["infra"]["grupos"] == ["Residencial", "Comercial", "Misto", "Lote vago", "Público", "Religioso", "Não identificado"], r["infra"]["grupos"]
     assert "Pedir manutenção (LT-" in r["ficha"], r["ficha"][:200]
     assert r["hash"], r
 

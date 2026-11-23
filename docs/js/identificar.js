@@ -51,20 +51,36 @@ export class Identificar {
   fechar() {
     this.pedido++;
     this.caixa.hidden = true;
+    this.limparDestaque();
+  }
+
+  /**
+   * Seleção padrão do mapa inteiro: o objeto escolhido fica mais claro (cor e linha), sem ponto nem marcador.
+   * Cada módulo aplica o próprio clareamento e entrega aqui a função que desfaz; a seleção anterior é
+   * desfeita sempre que outra começa ou a ficha fecha.
+   */
+  selecionar(restaurar) {
+    this._restaurar?.();
+    this._restaurar = restaurar;
+  }
+
+  limparDestaque() {
+    this._restaurar?.();
+    this._restaurar = null;
     this.fonte.entities.removeAll();
     this.globo.redesenhar();
   }
 
   // ------------------------------------------------------------------ destaque
   destacar(geometria, { limpar = true, cor = AMARELO(), preencher = true } = {}) {
-    if (limpar) this.fonte.entities.removeAll();
+    if (limpar) this.limparDestaque();
     const { linhas, ponto, fechado } = linhasDaGeometria(geometria);
     this._desenhar(linhas, ponto, fechado, cor, preencher);
     return linhas.length ? extensaoDe(linhas.flat()) : null;
   }
 
-  destacarLonLat(linhas, { fechado = false, limpar = true, cor = AMARELO(), preencher = false } = {}) {
-    if (limpar) this.fonte.entities.removeAll();
+  destacarLonLat(linhas, { fechado = false, limpar = true, cor = AMARELO(), preencher = true } = {}) {
+    if (limpar) this.limparDestaque();
     this._desenhar(linhas, null, fechado, cor, preencher);
   }
 
@@ -72,10 +88,12 @@ export class Identificar {
     for (const linha of linhas) {
       if (linha.length < 2) continue;
       const pos = Cesium.Cartesian3.fromDegreesArray(linha.flat());
-      this.fonte.entities.add({ polyline: { positions: pos, clampToGround: true, width: 3.5, material: cor } });
+      // Selecionado = mais claro: linha clara e larga e preenchimento na cor do objeto, mais luminoso.
+      const claro = cor.brighten(0.55, new Cesium.Color());
+      this.fonte.entities.add({ polyline: { positions: pos, clampToGround: true, width: 5, material: claro.withAlpha(1) } });
       if (fechado && preencher && linha.length >= 4) {
         this.fonte.entities.add({ polygon: {
-          hierarchy: new Cesium.PolygonHierarchy(pos), material: cor.withAlpha(0.2),
+          hierarchy: new Cesium.PolygonHierarchy(pos), material: claro.withAlpha(0.55),
           classificationType: Cesium.ClassificationType.TERRAIN,
         } });
       }
@@ -84,7 +102,10 @@ export class Identificar {
     this.globo.redesenhar();
   }
 
-  alfinete(lon, lat, cor = AMARELO()) {
+  /** Antigo marcador de ponto: a seleção não usa mais ponto nem marcador (mantido para compatibilidade). */
+  alfinete() {}
+
+  _alfineteAntigo(lon, lat, cor = AMARELO()) {
     this.fonte.entities.add({
       position: Cesium.Cartesian3.fromDegrees(lon, lat),
       point: { pixelSize: 11, color: cor, outlineColor: Cesium.Color.BLACK.withAlpha(0.8), outlineWidth: 2,

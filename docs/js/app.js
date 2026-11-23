@@ -79,6 +79,8 @@ async function iniciar() {
   const lotes = new Lotes({ globo, bairros: bairros.bairros, raiz: $('#painel-lotes') });
   const levantamento = new Levantamento({ globo, identificar, raiz: $('#painel-levantamento') });
   lotes.edificios = edificios;
+  // O número do lote sai uma vez só: se o mapa de baixo (fundo Mapa ou "Ruas e quadras") já o escreve, o levantamento não repete.
+  levantamento.numerosNoMapa = () => globo.chaveBase === 'mapa' || !!globo.camadaRealce?.show;
   levantamento.aoEdificacoes = (id, nome, ligado, aneis) => edificios.definirBairro(id, nome, ligado, aneis).then(() => lotes._desenharChips());
   // Os locais de votação só aparecem com o projeto Zonas Eleitorais ligado.
   levantamento.opcoes.eleicao = '';
@@ -123,6 +125,7 @@ async function iniciar() {
     // O mapa desenhado e o Mapa Básico já trazem ruas e nomes: a camada por cima do satélite sai.
     if (globo.camadaRealce) { globo.camadaRealce.show = !['basico', 'mapa'].includes(globo.chaveBase); globo.redesenhar(); }
     servicos.definirFundo(globo.chaveBase); // nomes dos marcadores: brancos no satélite, pretos no mapa sem fotos
+    if (levantamento.dados) levantamento.redesenhar(); // número do lote: uma vez só, conforme o fundo
   };
   const trocarBase = async (chave) => {
     try { await globo.definirBase(chave); marcarBase(); atualizarLink(); }

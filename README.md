@@ -142,6 +142,19 @@ python scripts/montar_banco.py extracao/saida           # monta docs/banco/
 O servidor municipal cai com frequência (502). O extrator faz no máximo 3 pedidos simultâneos, espera e tenta de novo,
 e retoma de onde parou.
 
+## Postes, seleção e pedidos de manutenção (1.9)
+
+- **Postes (painel Bairros)**: `docs/data/postes.json`, gerado por `scripts/importar_postes.py` a partir do KML
+  "08 - Postes" do levantamento, juntado ao cadastro de iluminação (pela plaqueta e, sem ela, pela distância até 6 m).
+  São 4.489 postes do KML (3.968 com lâmpada no cadastro e 521 sem) mais 179 pontos de iluminação que não estão no KML.
+  Cada poste é um cilindro 3D na cor da rede (amarelo baixa tensão, laranja alta, vermelho com transformador) com um
+  prisma no topo de cor livre. A ficha traz material (concreto redondo R, quadrado Q ou madeira M), tensão,
+  transformador, lâmpada e o histórico de pedidos com as datas, editáveis. Os postes do resto de Goiânia (Camadas) não mudam.
+- **Seleção**: em todo o mapa, o objeto escolhido fica mais claro na cor e na linha, sem ponto nem marcador.
+- **Pedidos de manutenção** (`docs/js/manutencao.js`): o botão fica marcado enquanto houver pedido e, clicado de novo,
+  retira o pedido; a data e a descrição são editáveis. Relatório para imprimir e planilha CSV no painel Bairros.
+  Os pedidos ficam guardados no aparelho.
+
 ## Acesso com usuário e senha
 
 A página inicial (`docs/index.html`) é o portal de acesso. O mapa fica em `docs/sistema.html` e só abre

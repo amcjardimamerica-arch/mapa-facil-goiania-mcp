@@ -349,7 +349,7 @@ export class Poligonos {
   abrirFicha(p) {
     const id = this.identificar;
     this._fichaDe = p.id;
-    id.fonte.entities.removeAll();
+    id.limparDestaque();
     const [lon, lat] = centro(p.pontos);
     id.abrir({ titulo: p.nome, subtitulo: p.origem?.tipo === 'lote' ? 'Polígono do lote · editável' : 'Polígono', ponto: { lon, lat, alt: NaN } });
     const mudar = (f) => (ev) => { f(ev.target); this._desenhar(p); this._gravarDepois(); this._listar(); };

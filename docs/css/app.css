@@ -398,3 +398,13 @@ body:has(#ficha:not([hidden])) #gps-cartao { right: 432px; }
   #gps-cartao { right: 56px; left: 8px; width: auto; bottom: calc(var(--rodape) + 120px); }
   body:has(#ficha:not([hidden])) #gps-cartao { display: none; }
 }
+
+/* ---------------------------------------------- Bairros: grupos, postes e manutenção (1.9) */
+.lv-grupo-fin > label { font-weight: 600; }
+.lv-sub { display: grid; gap: 1px; margin: 2px 0 4px 26px; }
+.lv-sub label { display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 8px; padding: 3px 6px; border-radius: 6px; cursor: pointer; font-size: 12.5px; }
+.lv-legenda-postes li { display: flex; align-items: center; gap: 8px; padding: 2px 6px; font-size: 12.5px; }
+.manut { display: flex; flex-direction: column; gap: 8px; }
+.manut-botao.ligado { background: var(--acento); border-color: var(--acento); color: #1d1a10; font-weight: 650; }
+.poste-historico { display: flex; flex-direction: column; gap: 6px; }
+.poste-historico .campo { max-width: 160px; }

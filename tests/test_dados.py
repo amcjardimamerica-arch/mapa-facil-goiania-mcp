@@ -266,3 +266,13 @@ def test_lotes_dos_locais_de_votacao():
         assert l["aneis"] and len(l["aneis"][0]) >= 4, k
         lon, lat = map(float, k.split(","))
         assert -49.6 < lon < -48.9 and -17.0 < lat < -16.3
+
+
+def test_postes_dos_bairros():
+    d = ler("postes.json")
+    p = d["postes"]
+    assert d["resumo"]["kml"] == 4489 and len(p) >= 4489
+    assert len({x["codigo"] for x in p}) == len(p)
+    assert sum(x["transformador"] for x in p) > 400 and {x["material"] for x in p} >= {"R", "Q", "M"}
+    assert all(-49.4 < x["lon"] < -49.2 and -16.8 < x["lat"] < -16.6 for x in p)
+    assert any(x["datas"] for x in p)

@@ -113,7 +113,7 @@ export class Marcadores {
   aoClicar(pego) {
     const m = pego?.id?.marcador;
     if (!m) return false;
-    this.identificar.fonte.entities.removeAll();
+    this.identificar.limparDestaque();
     this.identificar.abrir({ titulo: m.nome, subtitulo: 'Marcador', ponto: { lon: m.lon, lat: m.lat, alt: NaN } });
     this.identificar.corpo.append(el('button', { class: 'botao',
       onclick: () => this.identificar.emPonto({ lon: m.lon, lat: m.lat, alt: NaN }) }, 'Consultar este ponto no Mapa Fácil'));
