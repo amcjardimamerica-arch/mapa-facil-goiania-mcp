@@ -319,15 +319,17 @@ export class ProvedorVetorial extends ProvedorCanvas {
       g.restore();
     }
 
-    // Divisa de cada bairro (tracejada), por cima das ruas e abaixo dos nomes.
+    // Divisa de cada bairro: três linhas da mesma largura, preta, amarela e preta (#000000, #FFFF00, #000000),
+    // por cima das ruas e abaixo dos nomes. A preta larga por baixo deixa uma faixa preta de cada lado da amarela.
     if (limites.length) {
+      const w = nivel >= 15 ? 2 : 1.4;
       g.save();
       g.beginPath();
       for (const f of limites) if (f.geometry?.rings) q.caminho(g, f.geometry.rings);
-      g.setLineDash(nivel >= 15 ? [10, 5] : [6, 4]);
+      g.setLineDash([]);
       g.lineJoin = 'round';
-      if (!mapa) { g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = 3; g.stroke(); }
-      g.strokeStyle = e.divisa; g.lineWidth = nivel >= 15 ? 2 : 1.4; g.stroke();
+      g.strokeStyle = '#000000'; g.lineWidth = w * 3; g.stroke();
+      g.strokeStyle = '#FFFF00'; g.lineWidth = w; g.stroke();
       g.restore();
     }
 
