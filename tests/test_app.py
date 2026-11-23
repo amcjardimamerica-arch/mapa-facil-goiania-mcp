@@ -382,9 +382,11 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
       const quad = lv.postes.dados.postes.find((q) => q.material === 'Q' && q !== comLampada), mad = lv.postes.dados.postes.find((q) => q.material === 'M' && q !== comLampada);
       const corDe = (q, parte) => { const a = lv.postes.primitiva.getGeometryInstanceAttributes(lv.postes._ids.get(`${q.i}:${parte}`)); return a ? Cesium.Color.fromBytes(...a.color).toCssHexString() : null; };
       infra.cores = { quadrado: corDe(quad, 'haste'), madeira: corDe(mad, 'haste'), trafo: corDe(lv.postes.dados.postes.find((q) => q.transformador && q !== comLampada), 'trafo') };
+      const m0 = await import('./js/postes.js');
       const antesCor = corLamp();
       btn().click(); infra.pedido = btn().getAttribute('aria-pressed'); infra.data = !!document.querySelector('#ficha-corpo .manut input[type=text]');
-      const depoisCor = corLamp(); infra.lampadaMudou = !!antesCor && antesCor[0] < depoisCor[0] && antesCor[2] > depoisCor[2];
+      const depoisCor = corLamp(); infra.lampadaMudou = !!antesCor && antesCor[0] < depoisCor[0] && antesCor[1] > depoisCor[1];
+      infra.corPedido = m0.corLampada(comLampada);
       btn().click(); infra.retirado = btn().getAttribute('aria-pressed');
       infra.historico = document.querySelectorAll('#ficha-corpo .poste-historico input[type=text]').length === lv.postes.historicoDe(p0).length;
       lv.opcoes.bocas = false; lv.opcoes.postes = false; bussola.identificar.fechar(); lv.redesenhar();
@@ -413,6 +415,7 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
     assert r["infra"]["historico"], r["infra"]
     assert r["infra"]["partes"] == ["haste", "topo", "trafo", "braco", "lampada"] and r["infra"]["lampadaMudou"], r["infra"]
     assert r["infra"]["escalas"] == [1, 1, 3, 6], r["infra"]["escalas"]
+    assert r["infra"]["corPedido"] == "#ff00ff", r["infra"]
     assert r["infra"]["altura"] == 13.5 and r["infra"]["cores"] == {"quadrado": "#9e9e9e", "madeira": "#8d6e63", "trafo": "#ff0000"}, r["infra"]
     assert r["infra"]["grupos"] == ["Residencial", "Comercial", "Misto", "Lote vago", "Público", "Religioso", "Não identificado"], r["infra"]["grupos"]
     assert "Pedir manutenção (LT-" in r["ficha"], r["ficha"][:200]

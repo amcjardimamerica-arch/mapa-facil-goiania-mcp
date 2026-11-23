@@ -2,7 +2,7 @@
 // com ou sem iluminação, juntos com o cadastro de iluminação do Mapa Fácil.
 // Cada poste é um cilindro 3D com uma bola no topo na cor da rede (amarelo = baixa tensão, laranja = alta,
 // vermelho = com transformador), caixa do transformador no meio quando há, e — nos que têm lâmpada — um
-// braço voltado para a rua com a esfera da iluminação (ciano #00FFFF = sem pedido, vermelho = manutenção pedida).
+// braço voltado para a rua com a esfera da iluminação (ciano #00FFFF = sem pedido, rosa #FF00FF = manutenção pedida).
 // Os postes do resto de Goiânia
 // (painel Camadas) não mudam.
 import { CFG } from './config.js';
@@ -16,8 +16,8 @@ const CHAVE_HIST = 'bussola:postes:historico';
 
 export const corDaRede = (p) => (p.transformador ? COR_REDE.transformador : COR_REDE[p.tensao] || COR_REDE['']);
 export const temLampada = (p) => !!(p.iluminacao || p.lampada);
-/** Esfera do braço: ciano (#00FFFF) = iluminação sem pedido; vermelho = manutenção pedida (mau funcionamento). */
-export const corLampada = (p) => (manutencao.tem(p.codigo) ? '#f44336' : '#00ffff');
+/** Esfera do braço: ciano (#00FFFF) = iluminação sem pedido; rosa (#FF00FF) = manutenção pedida (mau funcionamento). */
+export const corLampada = (p) => (manutencao.tem(p.codigo) ? '#ff00ff' : '#00ffff');
 // Medidas padronizadas: todos os postes com a mesma altura; haste e braço 50% maiores que na 1.9.1 e a
 // esfera da luminária com o dobro do tamanho.
 export const ALTURA_POSTE = 13.5;                 // m (antes 9 m, +50%)
@@ -288,7 +288,7 @@ export class Postes {
     montarHist();
     id.secao('Histórico de pedidos de manutenção', { aberto: true }).append(hist);
 
-    // Pedir manutenção acende de vermelho a esfera da luminária (mau funcionamento); retirar o pedido volta ao azul.
+    // Pedir manutenção deixa rosa (#FF00FF) a esfera da luminária (mau funcionamento); retirar o pedido volta ao ciano.
     c.append(botaoManutencao({ codigo: p.codigo, tipo: 'Poste', titulo: `Poste ${p.plaqueta || p.codigo}`, bairro: p.bairro,
       local: p.local, lon: p.lon, lat: p.lat }, { aoMudar: () => this._aplicarCores(p, true) }));
     if (ilum && Object.keys(ilum).length) id.secao('Cadastro de iluminação (Mapa Fácil)', { aberto: false }).append(id.tabela(Object.entries(ilum).map(([k, v]) => [k, String(v)])));
