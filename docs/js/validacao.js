@@ -8,7 +8,17 @@ const dados = {};
 const carregar = async (nome) => (dados[nome] ??= await pedirJSON(`${CFG.dados}${nome}`, { tempo: 60000 }));
 const exigir = (cond, msg) => { if (!cond) throw new Error(msg); };
 
+/** Imagem do servidor municipal: uma nova tentativa quando a rede falha (o servidor oscila sob carga). */
 async function imagem(url, tempo = 40000) {
+  try { return await imagemUmaVez(url, tempo); }
+  catch (e) {
+    if (!/fetch|abort|network/i.test(String(e.message || e))) throw e;
+    await new Promise((ok) => setTimeout(ok, 1500));
+    return `${await imagemUmaVez(url, tempo)} (na 2ª tentativa)`;
+  }
+}
+
+async function imagemUmaVez(url, tempo) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), tempo);
   try {
