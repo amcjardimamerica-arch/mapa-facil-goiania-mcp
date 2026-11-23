@@ -373,10 +373,12 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
       const btn = () => document.querySelector('#ficha-corpo .manut-botao');
       const comLampada = lv.postes.dados.postes.find((p) => p.iluminacao && p.transformador) || p0;
       lv.postes.abrir(comLampada);
-      const corLamp = () => { const a = lv.postes.primitiva.getGeometryInstanceAttributes(lv.postes._ids.get(`${comLampada.i}:lampada`)); return a ? [...a.color].slice(0, 3) : null; };
-      infra.partes = ['haste', 'topo', 'trafo', 'braco', 'lampada'].filter((x) => lv.postes._ids.has(`${comLampada.i}:${x}`));
+      await new Promise((ok) => { const t = setInterval(() => { if (lv.postes.primLampadas?.ready) { clearInterval(t); ok(); } }, 200); setTimeout(ok, 60000); });
+      const corLamp = () => { const a = lv.postes.primLampadas.getGeometryInstanceAttributes(lv.postes._lampIds.get(comLampada.i)); return a ? [...a.color].slice(0, 3) : null; };
+      infra.partes = ['haste', 'topo', 'trafo', 'braco'].filter((x) => lv.postes._ids.has(`${comLampada.i}:${x}`)).concat(lv.postes._lampIds.has(comLampada.i) ? ['lampada'] : []);
       const m = await import('./js/postes.js');
       infra.altura = m.ALTURA_POSTE;
+      infra.escalas = [m.escalaLampada(100), m.escalaLampada(300), m.escalaLampada(900), m.escalaLampada(50000)];
       const quad = lv.postes.dados.postes.find((q) => q.material === 'Q' && q !== comLampada), mad = lv.postes.dados.postes.find((q) => q.material === 'M' && q !== comLampada);
       const corDe = (q, parte) => { const a = lv.postes.primitiva.getGeometryInstanceAttributes(lv.postes._ids.get(`${q.i}:${parte}`)); return a ? Cesium.Color.fromBytes(...a.color).toCssHexString() : null; };
       infra.cores = { quadrado: corDe(quad, 'haste'), madeira: corDe(mad, 'haste'), trafo: corDe(lv.postes.dados.postes.find((q) => q.transformador && q !== comLampada), 'trafo') };
@@ -410,6 +412,7 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
     assert r["infra"]["marcadores"] == 0 and r["infra"]["pedido"] == "true" and r["infra"]["data"] and r["infra"]["retirado"] == "false", r["infra"]
     assert r["infra"]["historico"], r["infra"]
     assert r["infra"]["partes"] == ["haste", "topo", "trafo", "braco", "lampada"] and r["infra"]["lampadaMudou"], r["infra"]
+    assert r["infra"]["escalas"] == [1, 1, 3, 6], r["infra"]["escalas"]
     assert r["infra"]["altura"] == 13.5 and r["infra"]["cores"] == {"quadrado": "#9e9e9e", "madeira": "#8d6e63", "trafo": "#ff0000"}, r["infra"]
     assert r["infra"]["grupos"] == ["Residencial", "Comercial", "Misto", "Lote vago", "Público", "Religioso", "Não identificado"], r["infra"]["grupos"]
     assert "Pedir manutenção (LT-" in r["ficha"], r["ficha"][:200]

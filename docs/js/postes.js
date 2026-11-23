@@ -24,7 +24,16 @@ export const ALTURA_POSTE = 13.5;                 // m (antes 9 m, +50%)
 const RAIO_TOPO = 0.36, RAIO_BASE = 0.51;           // haste redonda (+50%)
 const LADO_TOPO = 0.6, LADO_BASE = 0.78;            // haste quadrada de concreto
 const BRACO_COMPRIMENTO = 3.3, BRACO_RAIO = 0.135;  // braço (+50%)
-const RAIO_LAMPADA = 1.1;                           // esfera da luminária (+100%)
+const RAIO_LAMPADA = 1.1;                           // esfera da luminária (+100%): tamanho mínimo, de perto
+// De longe a esfera cresce com a distância da câmera, até 6 vezes (+500%), para ver bairros inteiros.
+export const LAMPADA_ESCALA_MAX = 6;
+const LAMPADA_ALTURA_REF = 300;                     // m de câmera em que começa a crescer
+const LAMPADA_PASSO = 0.25;                         // degraus de escala (refaz as esferas só ao mudar de degrau)
+/** Escala da esfera da luminária para a altura da câmera (1 de perto; até 6 de longe). */
+export function escalaLampada(alturaCamera) {
+  const f = Math.min(LAMPADA_ESCALA_MAX, Math.max(1, alturaCamera / LAMPADA_ALTURA_REF));
+  return Math.round(f / LAMPADA_PASSO) * LAMPADA_PASSO;
+}
 const TRAFO = [2.2, 2.2, 2.8];                      // caixa do transformador, maior
 // Cor da haste pelo material: madeira marrom; concreto (redondo ou quadrado) cinza.
 const corHaste = (p) => (p.material === 'M' ? '#8d6e63' : '#9e9e9e');
@@ -75,6 +84,7 @@ export class Postes {
     const exagero = this.globo.cena.verticalExaggeration || 1;
     const perto = new Cesium.DistanceDisplayConditionGeometryInstanceAttribute(0, 3000);
     const instancias = [];
+    const lampadas = [];
     const cor = (css) => ({ color: Cesium.ColorGeometryInstanceAttribute.fromColor(Cesium.Color.fromCssColorString(css)), distanceDisplayCondition: perto });
     const enu = (lon, lat, alt) => Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(lon, lat, alt));
     const esfera = (r) => new Cesium.EllipsoidGeometry({ radii: new Cesium.Cartesian3(r, r, r), stackPartitions: 12, slicePartitions: 12 });
@@ -108,12 +118,21 @@ export class Postes {
         add('braco', new Cesium.CylinderGeometry({ length: L, topRadius: BRACO_RAIO, bottomRadius: BRACO_RAIO, slices: 10 }),
           Cesium.Transforms.headingPitchRollToFixedFrame(Cesium.Cartesian3.fromDegrees(cx, cy, zBraco), hpr), COR_BRACO);
         const [lx, ly] = deslocar(p.lon, p.lat, L, rumo);
-        add('lampada', esfera(RAIO_LAMPADA * exagero), enu(lx, ly, zBraco), corLampada(p));
+        lampadas.push({ p, lx, ly, z: zBraco });
       }
     }
     this.primitiva = this.globo.cena.primitives.add(new Cesium.Primitive({ geometryInstances: instancias, asynchronous: true,
       appearance: new Cesium.PerInstanceColorAppearance({ translucent: false, closed: true }) }));
     this._ids = new Map(instancias.map((g) => [`${g.id.poste.i}:${g.id.parte}`, g.id]));
+    this._lampadas = lampadas;
+    this._escala = null;
+    this._montarLampadas(escalaLampada(this.globo.camera.positionCartographic.height));
+    if (!this._ouvinte) {
+      this.globo.camera.percentageChanged = Math.min(this.globo.camera.percentageChanged, 0.05);
+      this._ouvinte = this.globo.camera.changed.addEventListener(() => {
+        if (this._lampadas?.length) this._montarLampadas(escalaLampada(this.globo.camera.positionCartographic.height));
+      });
+    }
     // A cena só redesenha quando pedida: insiste até a montagem assíncrona dos postes terminar.
     const prim = this.primitiva;
     const t = setInterval(() => { this.globo.redesenhar(); if (prim.ready || this.primitiva !== prim) clearInterval(t); }, 250);
@@ -157,15 +176,52 @@ export class Postes {
     });
   }
 
+  /**
+   * Esferas das luminárias numa primitiva à parte, refeita quando a escala muda de degrau: de perto ficam no
+   * tamanho mínimo; ao afastar crescem até 6×. A nova só substitui a antiga quando fica pronta (sem piscar).
+   */
+  _montarLampadas(escala) {
+    if (escala === this._escala || !this._lampadas) return;
+    this._escala = escala;
+    const exagero = this.globo.cena.verticalExaggeration || 1;
+    const r = RAIO_LAMPADA * escala * exagero;
+    const geometria = new Cesium.EllipsoidGeometry({ radii: new Cesium.Cartesian3(r, r, r), stackPartitions: 12, slicePartitions: 12 });
+    const longe = new Cesium.DistanceDisplayConditionGeometryInstanceAttribute(0, 20000);
+    const instancias = this._lampadas.map(({ p, lx, ly, z }) => new Cesium.GeometryInstance({ id: { poste: p, parte: 'lampada' }, geometry: geometria,
+      modelMatrix: Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(lx, ly, z + (r - RAIO_LAMPADA * exagero))),
+      attributes: { color: Cesium.ColorGeometryInstanceAttribute.fromColor(Cesium.Color.fromCssColorString(this._corAtual(p, 'lampada'))), distanceDisplayCondition: longe } }));
+    const nova = this.globo.cena.primitives.add(new Cesium.Primitive({ geometryInstances: instancias, asynchronous: true,
+      appearance: new Cesium.PerInstanceColorAppearance({ translucent: false, closed: true }) }));
+    this._lampIds = new Map(instancias.map((g) => [g.id.poste.i, g.id]));
+    const antiga = this.primLampadas;
+    this.primLampadas = nova;
+    const t = setInterval(() => {
+      this.globo.redesenhar();
+      if (nova.ready || this.primLampadas !== nova) {
+        clearInterval(t);
+        if (antiga && !antiga.isDestroyed()) this.globo.cena.primitives.remove(antiga);
+      }
+    }, 150);
+  }
+
+  /** Cor da parte agora (considera a seleção, que clareia o poste escolhido). */
+  _corAtual(p, parte) {
+    const css = this._cores(p)[parte];
+    return this._selecionado === p ? Cesium.Color.fromCssColorString(css).brighten(0.6, new Cesium.Color()).toCssColorString() : css;
+  }
+
   _remover() {
+    if (this.primLampadas) { this.globo.cena.primitives.remove(this.primLampadas); this.primLampadas = null; }
+    this._lampadas = null; this._escala = null;
     if (this.primitiva) { this.globo.cena.primitives.remove(this.primitiva); this.primitiva = null; }
     this.globo.redesenhar();
   }
 
   _pintar(p, parte, css) {
-    const id = this._ids?.get(`${p.i}:${parte}`);
-    if (!id || !this.primitiva?.ready) return;
-    const a = this.primitiva.getGeometryInstanceAttributes(id);
+    const prim = parte === 'lampada' ? this.primLampadas : this.primitiva;
+    const id = parte === 'lampada' ? this._lampIds?.get(p.i) : this._ids?.get(`${p.i}:${parte}`);
+    if (!id || !prim?.ready) return;
+    const a = prim.getGeometryInstanceAttributes(id);
     if (a) a.color = Cesium.ColorGeometryInstanceAttribute.toValue(Cesium.Color.fromCssColorString(css));
     this.globo.redesenhar();
   }
@@ -175,6 +231,7 @@ export class Postes {
   }
 
   _aplicarCores(p, claro) {
+    this._selecionado = claro ? p : (this._selecionado === p ? null : this._selecionado);
     const c = (css) => (claro ? Cesium.Color.fromCssColorString(css).brighten(0.6, new Cesium.Color()).toCssColorString() : css);
     for (const [parte, css] of Object.entries(this._cores(p))) this._pintar(p, parte, c(css));
   }
