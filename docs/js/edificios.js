@@ -7,14 +7,17 @@ import { el, pedirJSON, semAcento, debounce, fmtNum, aviso } from './util.js';
 const Cesium = window.Cesium;
 
 export class Edificios {
-  constructor(globo, identificar, raiz) {
+  constructor(globo, identificar) {
     this.globo = globo;
     this.identificar = identificar;
-    this.raiz = raiz;
+    this.raiz = null; // caixa no projeto Edificações (painel Camadas)
     this.lista = [];
     this.mpp = 3;
     this.primitiva = null;
-    this.ativo = false;
+    // Uma só chave liga os volumes: a cidade inteira (projeto Edificações) ou só bairros escolhidos
+    // (busca "Lotes por bairro" e painel Bairros). Nada aparece sem ser pedido.
+    this.cidade = false;
+    this.bairros = new Map(); // id -> { nome, aneis: [[[lon, lat]…]] }
     this.minimo = 0;
     this.selecionado = -1;
     this.aoMudar = () => {};
@@ -55,15 +58,53 @@ export class Edificios {
     this._montarPainel();
   }
 
+  get ativo() { return this.cidade || this.bairros.size > 0; }
+
+  /** Liga ou desliga os volumes na cidade inteira. */
   async ligar(ligado) {
-    this.ativo = ligado;
-    if (ligado) {
+    this.cidade = !!ligado;
+    await this._atualizar();
+  }
+
+  /** Liga ou desliga os volumes só dentro de um bairro (aneis em graus; sem eles, pede o limite ao Mapa Fácil). */
+  async definirBairro(id, nome, ligado, aneis = null) {
+    if (!ligado) this.bairros.delete(id);
+    else {
+      if (!aneis) {
+        const d = await pedirJSON(`${CFG.baseCadastral}/2/query`, { parametros: { f: 'json', where: `id = '${String(id).replace(/'/g, '')}'`,
+          outFields: 'id', returnGeometry: 'true', outSR: '4326', geometryPrecision: '6' } });
+        aneis = d.features?.[0]?.geometry?.rings;
+        if (!aneis) { aviso(`Limite de ${nome} não encontrado no Mapa Fácil.`, 'alerta'); return; }
+      }
+      this.bairros.set(id, { nome, aneis });
+    }
+    await this._atualizar();
+  }
+
+  bairroLigado(id) { return this.bairros.has(id); }
+
+  async _atualizar() {
+    if (this.ativo) {
       try { await this.carregar(); await this._construir(); }
-      catch (e) { this.ativo = false; aviso(`Edifícios 3D indisponíveis: ${e.message}`, 'alerta'); }
-    } else this._remover();
-    const caixa = this.raiz.querySelector('#edi-liga');
-    if (caixa) caixa.checked = this.ativo;
+      catch (e) { this.cidade = false; this.bairros.clear(); this._remover(); aviso(`Edifícios 3D indisponíveis: ${e.message}`, 'alerta'); }
+    } else { this._vez = (this._vez || 0) + 1; this._remover(); }
+    this._sincronizar();
     this.aoMudar();
+  }
+
+  /** Edifícios a desenhar: todos (cidade) ou os que ficam dentro dos bairros escolhidos. */
+  _visiveis() {
+    if (this.cidade) return this.lista;
+    const dentro = (aneis, x, y) => {
+      let d = false;
+      for (const a of aneis) for (let i = 0, j = a.length - 1; i < a.length; j = i++) {
+        const [xi, yi] = a[i], [xj, yj] = a[j];
+        if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) d = !d;
+      }
+      return d;
+    };
+    const bairros = [...this.bairros.values()];
+    return this.lista.filter((e) => bairros.some((b) => dentro(b.aneis, e.c[0], e.c[1])));
   }
 
   _remover() {
@@ -73,15 +114,17 @@ export class Edificios {
 
   async _construir() {
     const vez = (this._vez = (this._vez || 0) + 1);
-    const altitudes = await this.globo.altitudes(this.lista.map((e) => e.c));
+    const lista = this._visiveis();
+    const altitudes = await this.globo.altitudes(lista.map((e) => e.c));
     if (vez !== this._vez || !this.ativo) return;
     const exagero = this.globo.cena.verticalExaggeration || 1;
-    const instancias = this.lista.flatMap((e, i) => this._partes(e).map((anel, k) => new Cesium.GeometryInstance({
-      id: this._id(i, k),
+    if (!lista.length) { this._remover(); return; }
+    const instancias = lista.flatMap((e, j) => this._partes(e).map((anel, k) => new Cesium.GeometryInstance({
+      id: this._id(e.i, k),
       geometry: new Cesium.PolygonGeometry({
         polygonHierarchy: new Cesium.PolygonHierarchy(Cesium.Cartesian3.fromDegreesArray(anel.flat())),
-        height: (altitudes[i] - 15) * exagero,
-        extrudedHeight: (altitudes[i] + Math.max(e.p, 1) * this.mpp) * exagero,
+        height: (altitudes[j] - 15) * exagero,
+        extrudedHeight: (altitudes[j] + Math.max(e.p, 1) * this.mpp) * exagero,
         vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT,
       }),
       attributes: {
@@ -111,6 +154,7 @@ export class Edificios {
 
   _atributos(i) {
     if (!this.primitiva || !this.primitiva.ready || !this.lista[i]) return [];
+    try { this.primitiva.getGeometryInstanceAttributes(this._id(i, 0)); } catch { return []; }
     return this._partes(this.lista[i]).map((_, k) => this.primitiva.getGeometryInstanceAttributes(this._id(i, k))).filter(Boolean);
   }
 
@@ -124,7 +168,7 @@ export class Edificios {
   }
 
   _pintar(i, cor) {
-    for (const a of this._atributos(i)) a.color = Cesium.ColorGeometryInstanceAttribute.toValue(cor, a.color);
+    for (const a of this._atributos(i).filter(Boolean)) a.color = Cesium.ColorGeometryInstanceAttribute.toValue(cor, a.color);
   }
 
   limparSelecao() {
@@ -144,7 +188,7 @@ export class Edificios {
   }
 
   async irPara(e) {
-    if (!this.ativo) await this.ligar(true);
+    if (!this.cidade) await this.ligar(true);
     const altura = Math.max(e.p, 1) * this.mpp;
     await this.globo.voarPara({ lon: e.c[0], lat: e.c[1], distancia: Math.max(420, altura * 4.5), inclinacao: -28 });
     this.selecionar(e.i);
@@ -157,11 +201,39 @@ export class Edificios {
     return true;
   }
 
+  /** Monta os controles no projeto Edificações do painel Camadas. */
+  montarEm(caixa) {
+    this.raiz = caixa;
+    this.chave = el('input', { type: 'checkbox', id: 'edi-liga', checked: this.cidade, onchange: (ev) => this.ligar(ev.target.checked) });
+    this.caixaBairros = el('div', { class: 'edi-bairros' });
+    this.detalhes = el('div', { id: 'edi-detalhes' }, el('p', { class: 'nota' }, 'O cadastro de edifícios é carregado ao ligar.'));
+    caixa.append(
+      el('label', { class: 'linha-chave destaque-linha' },
+        el('span', {}, el('strong', {}, 'Edificações em 3D'), el('small', {}, 'volumes na cidade inteira; por bairro, use a busca no topo')),
+        el('span', { class: 'interruptor' }, this.chave, el('span', {}))),
+      this.caixaBairros, this.detalhes);
+    this._sincronizar();
+    if (this.lista.length) this._montarPainel();
+  }
+
+  _sincronizar() {
+    if (this.chave) this.chave.checked = this.cidade;
+    if (!this.caixaBairros) return;
+    this.caixaBairros.textContent = '';
+    if (this.bairros.size) {
+      this.caixaBairros.append(el('p', { class: 'nota' }, 'Também ligado só nos bairros:'),
+        el('ul', { class: 'edi-lista-bairros' }, [...this.bairros].map(([id, b]) => el('li', {}, el('span', {}, b.nome),
+          el('button', { class: 'botao-texto', onclick: () => this.definirBairro(id, b.nome, false) }, 'Tirar')))));
+    }
+  }
+
   _montarPainel() {
+    const alvo = this.detalhes;
+    if (!alvo) return;
     const total = this.lista.length;
     const maximo = this.lista[0]?.p || 50;
     const saida = el('output', {}, 'todos');
-    const faixa = el('input', { type: 'range', min: 0, max: Math.min(40, maximo), step: 1, value: 0,
+    const faixa = el('input', { type: 'range', min: 0, max: Math.min(40, maximo), step: 1, value: this.minimo,
       'aria-label': 'Pavimentos mínimos', oninput: (ev) => {
         const v = +ev.target.value;
         const n = this.lista.filter((e) => e.p >= v).length;
@@ -174,7 +246,6 @@ export class Edificios {
     const altos = el('ol', { class: 'lista-links' }, this.lista.slice(0, 12).map((e) =>
       el('li', {}, el('button', { onclick: () => this.irPara(e) },
         el('span', {}, e.n), el('small', {}, `${e.p} pav. · ~${fmtNum(e.p * this.mpp)} m`)))));
-    const alvo = this.raiz.querySelector('#edi-detalhes');
     alvo.textContent = '';
     alvo.append(
       el('label', { class: 'rotulo-faixa bloco' }, el('span', {}, 'Mostrar a partir de ', saida), faixa),
@@ -184,4 +255,6 @@ export class Edificios {
         'Prédios que o Mapa Fácil já tinha mantêm o desenho anterior; os novos têm a base estimada pela construção vista na imagem de satélite, ' +
         'só a torre sobe (estacionamento e lote agregado ficam no chão). É um modelo aproximado, não um levantamento das construções.'));
   }
+
+  serializarBairros() { return [...this.bairros.keys()].join('.'); }
 }

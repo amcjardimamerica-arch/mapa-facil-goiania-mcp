@@ -244,6 +244,20 @@ Geographics. Globo: [CesiumJS](https://cesium.com/platform/cesiumjs/) (Apache 2.
   "Jardim América", "S Bueno" vira "Bueno", "Jd Goiás" vira "Jardim Goiás". Quando o nome começa por
   "da", "de" ou "dos", o tipo fica por extenso ("Bairro da Vitória"). O nome oficial segue no campo `o`.
 
+## Organização das camadas (1.7)
+
+- **Busca no topo**: o botão de opções ao lado do campo traz "Ruas e quadras" e "Lotes por bairro"; em cada bairro
+  escolhido, o botão **3D** mostra as edificações só nesse bairro.
+- **Camadas → Projetos** (`ORGANIZACAO` em `docs/js/camadas.js`): cada projeto reúne camadas de um ou mais serviços do
+  Mapa Fácil. Ordem: Base Cadastral, Zonas Eleitorais, Energia, Saneamento, Sistema Viário, Edificações, Meio Ambiente
+  e os demais.
+  - **Zonas Eleitorais**: limite das zonas e os locais de votação por zona e do Conselho Tutelar.
+  - **Edificações**: chave única "Edificações em 3D" (desligada por padrão; por bairro, pela busca), mais Edificações,
+    equipamentos públicos, Patrimônio Histórico, Regularização Fundiária e Documentação de Bairros.
+  - **Meio Ambiente** com o PUAMA; **Uso do Solo** com o Simplifica Goiânia; **Zonas Municipais** (antigo Pontos Notáveis).
+  - **Acessibilidade e Serviços** (`docs/js/servicos.js`): marcadores fixos com ícone por tipo, nome branco no satélite e
+    preto no mapa sem fotos, e ficha ao clicar.
+
 ## Lotes no mapa e polígonos editáveis (1.6)
 
 - **Aproximação progressiva**, como no Mapa Fácil (`NIVEIS` em `docs/js/mapavetorial.js`): de longe, só as divisas dos

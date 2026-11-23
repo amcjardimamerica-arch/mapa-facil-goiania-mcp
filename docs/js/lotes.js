@@ -171,7 +171,18 @@ export class Lotes {
     }));
   }
 
+  /** Edificações em 3D só dentro do bairro (mesmo motor do projeto Edificações). */
+  async alternarEdificacoes(id) {
+    const it = this.escolhidos.get(id);
+    if (!it || !this.edificios) return;
+    const ligar = !this.edificios.bairroLigado(id);
+    const aneis = it.aneis ? it.aneis.map((a) => a.map(([x, y]) => grausDe(x, y))) : null;
+    await this.edificios.definirBairro(id, it.bairro.n, ligar, aneis);
+    this._desenharChips();
+  }
+
   remover(id) {
+    if (this.edificios?.bairroLigado(id)) this.edificios.definirBairro(id, '', false);
     if (!this.escolhidos.delete(id)) return;
     this._atualizarCamada();
     this._desenharChips();
@@ -218,6 +229,9 @@ export class Lotes {
         el('button', { class: 'lotes-nome', title: 'Ir ao bairro', onclick: () => (it.estado === 'erro'
           ? (this.escolhidos.delete(id), this.adicionar(id)) : this.irPara(id)) },
           el('strong', {}, it.bairro.n), el('small', {}, progresso)),
+        this.edificios ? el('button', { class: `botao-texto lotes-3d${this.edificios.bairroLigado(id) ? ' ligado' : ''}`,
+          'aria-pressed': String(this.edificios.bairroLigado(id)), title: 'Edificações em 3D só neste bairro',
+          onclick: () => this.alternarEdificacoes(id) }, '3D') : null,
         el('button', { class: 'botao-icone', 'aria-label': `Tirar os lotes de ${it.bairro.n}`, title: 'Tirar do mapa', onclick: () => this.remover(id) }, '×')));
     }
     const total = [...this.escolhidos.values()].reduce((s, x) => s + x.lotes.length, 0);

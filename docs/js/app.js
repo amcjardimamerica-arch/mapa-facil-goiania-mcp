@@ -7,6 +7,7 @@ import { Camadas } from './camadas.js';
 import { Identificar } from './identificar.js';
 import { Busca } from './busca.js';
 import { Edificios } from './edificios.js';
+import { Servicos } from './servicos.js';
 import { Medir } from './medir.js';
 import { Marcadores } from './marcadores.js';
 import { Localizacao } from './localizacao.js';
@@ -27,7 +28,7 @@ const estadoAbertura = (texto, erro = false) => {
 
 function lerHash() {
   const p = new URLSearchParams(location.hash.slice(1));
-  return { v: p.get('v'), b: p.get('b'), t: p.get('t'), ed: p.get('ed'), n: p.get('n'), r: p.get('r'), ind: p.get('ind'), l: p.get('l'), lv: p.get('lv') };
+  return { v: p.get('v'), b: p.get('b'), t: p.get('t'), ed: p.get('ed'), n: p.get('n'), r: p.get('r'), ind: p.get('ind'), l: p.get('l'), lv: p.get('lv'), eb: p.get('eb') };
 }
 
 async function iniciar() {
@@ -48,9 +49,17 @@ async function iniciar() {
 
   estadoAbertura('Montando o globo…');
   const globo = new Globo(territorio, catalogo);
-  const camadas = new Camadas(globo, catalogo, $('#lista-camadas'));
+  // Conteúdos próprios de alguns projetos do painel Camadas (os módulos são criados logo abaixo).
+  const especiais = {
+    eleitoral: (caixa) => levantamento.montarEleitoralEm(caixa).catch((e) => { caixa.textContent = `Locais de votação indisponíveis: ${e.message}`; }),
+    eleitoralLigar: (ligado) => levantamento.definirEleicao(ligado ? (levantamento.opcoes.eleicao || 'geral') : '').catch(() => {}),
+    edificacoes: (caixa) => edificios.montarEm(caixa),
+  };
+  const camadas = new Camadas(globo, catalogo, $('#lista-camadas'), { especiais });
   const identificar = new Identificar(globo, camadas, territorio);
-  const edificios = new Edificios(globo, identificar, $('[data-secao="edificios"]'));
+  const servicos = new Servicos({ globo, identificar });
+  camadas.servicos = servicos;
+  const edificios = new Edificios(globo, identificar);
   const medir = new Medir(globo, $('#painel-medir'));
   const marcadores = new Marcadores(globo, identificar, medir, $('#painel-marcadores'));
   const busca = new Busca({ globo, identificar, territorio, bairros: bairros.bairros, lugares: lugares.lugares, edificios });
@@ -61,8 +70,12 @@ async function iniciar() {
   const sessao = window.bussolaSessao || { login: 'anonimo', nome: '' };
   const lotes = new Lotes({ globo, bairros: bairros.bairros, raiz: $('#painel-lotes') });
   const levantamento = new Levantamento({ globo, identificar, raiz: $('#painel-levantamento') });
+  lotes.edificios = edificios;
+  levantamento.aoEdificacoes = (id, nome, ligado, aneis) => edificios.definirBairro(id, nome, ligado, aneis).then(() => lotes._desenharChips());
+  // Os locais de votação só aparecem com o projeto Zonas Eleitorais ligado.
+  levantamento.opcoes.eleicao = '';
   const localizacao = new Localizacao({ globo, identificar, camadas, territorio, raiz: $('#painel-local'), botaoGps: $('#nav-local'), sessao });
-  Object.assign(app, { globo, camadas, identificar, edificios, medir, marcadores, poligonos, localizacao, lotes, levantamento, busca, territorio, catalogo, manifesto, sessao });
+  Object.assign(app, { globo, camadas, identificar, servicos, edificios, medir, marcadores, poligonos, localizacao, lotes, levantamento, busca, territorio, catalogo, manifesto, sessao });
 
   const bases = globo.basesDisponiveis();
   const baseInicial = bases.some((b) => b.chave === hash.b) ? hash.b : 'satelite';
@@ -78,8 +91,7 @@ async function iniciar() {
     for (const b of $$('#trilho [data-painel]')) b.setAttribute('aria-pressed', String(b.dataset.painel === painelAberto));
     if (painelAberto) $('#painel-titulo').textContent = $(`#painel > [data-secao="${painelAberto}"]`).dataset.titulo;
     if (painelAberto === 'camadas') camadas.atualizarEscala();
-    if (painelAberto === 'levantamento') levantamento.carregar().catch((e) => aviso(`Levantamento indisponível: ${e.message}`, 'alerta'));
-    if (painelAberto === 'edificios') edificios.carregar().catch((e) => aviso(`Cadastro de edifícios indisponível: ${e.message}`, 'alerta'));
+    if (painelAberto === 'levantamento') levantamento.mostrarBairros().catch((e) => aviso(`Levantamento indisponível: ${e.message}`, 'alerta'));
     if (painelAberto !== 'medir') medir.cancelar();
     if (painelAberto !== 'marcadores') marcadores.cancelarPedido();
     if (painelAberto !== 'local') localizacao.cancelarPedido();
@@ -104,6 +116,7 @@ async function iniciar() {
     $('#rotulo-esq').textContent = bases.find((b) => b.chave === globo.chaveBase)?.curto || '';
     // O mapa desenhado e o Mapa Básico já trazem ruas e nomes: a camada por cima do satélite sai.
     if (globo.camadaRealce) { globo.camadaRealce.show = !['basico', 'mapa'].includes(globo.chaveBase); globo.redesenhar(); }
+    servicos.definirFundo(globo.chaveBase); // nomes dos marcadores: brancos no satélite, pretos no mapa sem fotos
   };
   const trocarBase = async (chave) => {
     try { await globo.definirBase(chave); marcarBase(); atualizarLink(); }
@@ -185,15 +198,21 @@ async function iniciar() {
     globo.redesenhar();
   });
 
-  const ediLiga = $('#edi-liga');
-  ediLiga.addEventListener('change', () => edificios.ligar(ediLiga.checked));
+  // Opções da busca: Ruas e quadras e Lotes por bairro (com Edificações 3D por bairro).
+  const opcoesBusca = $('#busca-opcoes'), botaoOpcoes = $('#busca-opcoes-botao');
+  const abrirOpcoes = (abre) => { opcoesBusca.hidden = !abre; botaoOpcoes.setAttribute('aria-expanded', String(abre)); };
+  botaoOpcoes.addEventListener('click', () => abrirOpcoes(opcoesBusca.hidden));
+  document.addEventListener('pointerdown', (e) => { if (!opcoesBusca.hidden && !e.target.closest('#caixa-busca')) abrirOpcoes(false); });
+  app.abrirOpcoesBusca = abrirOpcoes;
+  $('#busca').addEventListener('input', () => abrirOpcoes(false));
+
   edificios.aoMudar = () => atualizarLink();
   camadas.aoMudar = () => atualizarLink();
   if (hash.t) camadas.restaurarDe(hash.t);
   lotes.aoMudar = () => atualizarLink();
   if (hash.l) lotes.restaurar(hash.l);
   levantamento.aoMudar = () => atualizarLink();
-  if (hash.lv === '1') levantamento.carregar().catch(() => {});
+  if (hash.lv === '1') levantamento.mostrarBairros().catch(() => {});
 
   // ----------------------------------------------------------- navegação
   const rad = Cesium.Math.toRadians;
@@ -233,7 +252,7 @@ async function iniciar() {
     const pego = globo.cena.pick(ev.position);
     edificios.limparSelecao();
     if (pego?.id?.alca) return; // alças de edição: tratadas no arrastar
-    if (poligonos.aoClicar(pego) || edificios.aoClicar(pego) || marcadores.aoClicar(pego) || localizacao.aoClicar(pego) || levantamento.aoClicar(pego, ponto)) return;
+    if (poligonos.aoClicar(pego) || edificios.aoClicar(pego) || servicos.aoClicar(pego) || marcadores.aoClicar(pego) || localizacao.aoClicar(pego) || levantamento.aoClicar(pego, ponto)) return;
     if (ponto) identificar.emPonto(ponto);
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
   maos.setInputAction(() => {
@@ -320,7 +339,9 @@ async function iniciar() {
     if (globo.chaveBase !== 'satelite') p.set('b', globo.chaveBase);
     const t = camadas.serializar();
     if (t) p.set('t', t);
-    if (!edificios.ativo) p.set('ed', '0');
+    if (edificios.cidade) p.set('ed', '1');
+    const eb = edificios.serializarBairros();
+    if (eb) p.set('eb', eb);
     if (!realce.checked) p.set('n', '0');
     const l = lotes.serializar();
     if (l) p.set('l', l);
@@ -377,7 +398,11 @@ async function iniciar() {
 
   // Relevo e edifícios entram depois do primeiro quadro, para o globo abrir rápido.
   if (hash.r !== '0') await ligarRelevo(true);
-  if (hash.ed !== '0') await edificios.ligar(true);
+  if (hash.ed === '1') await edificios.ligar(true);
+  for (const id of String(hash.eb || '').split('.').filter(Boolean)) {
+    const b = bairros.bairros.find((x) => x.id === id);
+    if (b) edificios.definirBairro(id, b.n, true).catch(() => {});
+  }
   // Usuário removido ou com senha trocada perde o acesso também nos aparelhos já conectados.
   sessaoAindaValida(sessao).then((ok) => { if (!ok) { encerrarSessao(); location.replace('index.html'); } });
   if (!memoria.ler('bussola:visto', false)) {

@@ -41,13 +41,20 @@ export class Levantamento {
     this.fonte = new Cesium.CustomDataSource('levantamento');
     globo.viewer.dataSources.add(this.fonte);
     const salvo = memoria.ler('bussola:levantamento', {});
-    this.opcoes = { limites: true, oficiais: false, lotes: true, areas: false, predios: false, bocas: false, iluminacao: false, bairros: [true, true], ...salvo.opcoes };
+    this.opcoes = { limites: true, oficiais: false, lotes: true, areas: false, edificacoes: false, eleicao: '', grupos: {}, bocas: false, iluminacao: false, bairros: [true, true], ...salvo.opcoes };
     this.ocultas = new Set(salvo.ocultas || []);
     this.aoMudar = () => {};
     this._montar();
   }
 
-  get ativo() { return !!this.dados; }
+  get ativo() { return !!this.dados && !!this.mostrar; }
+
+  /** Mostra as camadas do levantamento (lotes, limites…) — ao abrir o painel Bairros ou por link. */
+  async mostrarBairros() {
+    this.mostrar = true;
+    await this.carregar();
+    this.redesenhar();
+  }
 
   // ------------------------------------------------------------------ dados
   async carregar() {
@@ -120,7 +127,7 @@ export class Levantamento {
   _montar() {
     const chave = (id, titulo, sub) => {
       const caixa = el('input', { type: 'checkbox', id: `lv-${id}`, checked: !!this.opcoes[id],
-        onchange: (e) => { this.opcoes[id] = e.target.checked; this._gravar(); this.redesenhar(); } });
+        onchange: (e) => { this.opcoes[id] = e.target.checked; this._gravar(); if (id === 'edificacoes') this._edificacoes(); else this.redesenhar(); } });
       return el('label', { class: 'linha-chave' }, el('span', {}, el('strong', {}, titulo), el('small', {}, sub)),
         el('span', { class: 'interruptor' }, caixa, el('span', {})));
     };
@@ -141,9 +148,8 @@ export class Levantamento {
       chave('areas', 'Áreas públicas', 'praças, áreas verdes, canteiros e equipamentos'),
       chave('bocas', 'Bocas de lobo', 'ícone com o número de unidades em sequência'),
       chave('iluminacao', 'Iluminação pública', 'lâmpada e poste em 3D (cadastro anterior ao LED)'),
-      chave('predios', 'Condomínios e prédios em 3D', 'cor pelo tipo de condomínio, altura pelos pavimentos'),
-      el('h3', { class: 'subtitulo' }, 'Eleitoral'),
-      this.caixaEleitoral = el('div', { class: 'lv-eleitoral' }),
+      this._chaveEdificacoes = chave('edificacoes', 'Edificações em 3D nestes bairros', 'prédios e condomínios; a cidade inteira fica em Camadas → Edificações'),
+      el('p', { class: 'nota' }, 'Locais de votação por zona e do Conselho Tutelar: Camadas → Zonas Eleitorais.'),
       el('h3', { class: 'subtitulo' }, 'Buscar no levantamento'),
       this.campo, this.resultados,
       this.caixaConferencia = el('div', {}),
@@ -172,7 +178,8 @@ export class Levantamento {
     }
     this.estado.textContent = `${fmtNum(d.lotes.length)} lotes, ${fmtNum(d.empresas.linhas.length + d.empresas_sem_lote.linhas.length)} empresas, ` +
       `${fmtNum(d.areas.length)} áreas públicas e ${fmtNum(d.eleitoral.pontos.length)} locais de votação.`;
-    this._montarEleitoral();
+    if (this.caixaEleitoral) this._montarEleitoral();
+    if (this.opcoes.edificacoes) this._edificacoes();
     const cf = d.conferencia;
     this.caixaConferencia.textContent = '';
     if (cf?.linhas?.length) {
@@ -180,6 +187,32 @@ export class Levantamento {
         el('table', { class: 'unidades' }, el('thead', {}, el('tr', {}, cf.colunas.map((c) => el('th', {}, c)))),
           el('tbody', {}, cf.linhas.map((r) => el('tr', {}, r.map((v) => el('td', {}, v ?? '—'))))))));
     }
+  }
+
+  /** Liga/desliga as edificações em 3D só nos dois bairros (mesmo motor das Edificações da cidade). */
+  _edificacoes() {
+    if (!this.dados || !this.aoEdificacoes) return Promise.resolve();
+    return Promise.all(this.dados.limites.map((lim, i) => {
+      const id = ['000400000015', '000400000017'][i] || `lv-${i}`;
+      return this.aoEdificacoes(id, this.dados.bairros[i] || lim.nome, !!this.opcoes.edificacoes && this.opcoes.bairros[i] !== false, lim.aneisLL);
+    }));
+  }
+
+  /** Controles eleitorais montados em outra caixa (Camadas → Zonas Eleitorais). */
+  async montarEleitoralEm(caixa) {
+    this.caixaEleitoral = caixa;
+    caixa.textContent = 'Carregando os locais de votação…';
+    await this.carregar();
+    this._montarEleitoral();
+  }
+
+  /** Modo eleitoral: '' (desligado), 'geral' (eleição 2026 por zona) ou 'ct' (Conselho Tutelar 2023). */
+  async definirEleicao(m) {
+    this.opcoes.eleicao = m;
+    this._gravar();
+    if (m) await this.carregar();
+    if (this.caixaEleitoral && this.dados) this._montarEleitoral();
+    this.redesenhar();
   }
 
   _montarEleitoral() {
@@ -190,7 +223,7 @@ export class Levantamento {
     const zonas = [...new Set(d.pontos.filter((p) => p.tipo === 'geral').map((p) => p.grupo))].sort((a, b) => parseInt(a) - parseInt(b));
     const regioes = [...new Set(d.pontos.filter((p) => p.tipo === 'ct' || p.tipo === 'transferido').map((p) => p.grupo))].sort();
     const seletor = el('select', { class: 'campo', id: 'lv-eleicao', 'aria-label': 'Eleição' },
-      el('option', { value: '' }, 'Desligado'), el('option', { value: 'geral' }, 'Eleição geral 2026 — locais por zona'),
+      el('option', { value: '' }, 'Locais de votação desligados'), el('option', { value: 'geral' }, 'Eleição geral 2026 — locais por zona'),
       el('option', { value: 'ct' }, 'Conselho Tutelar 2023 — locais por região'));
     seletor.value = this.opcoes.eleicao;
     const lista = el('div', { class: 'lv-grupos' });
@@ -237,7 +270,7 @@ export class Levantamento {
     this.fonte.entities.removeAll();
     if (this.camadaLotes) { camadas.remove(this.camadaLotes, true); this.camadaLotes = null; }
 
-    if (this.opcoes.lotes) {
+    if (this.mostrar && this.opcoes.lotes) {
       const lotes = this._lotesVisiveis().map((l) => ({ aneis: l.m, ext: l.ext, centro: l.centro, nm: l.l, cor: comAlfa(this.cor[l.f] || '#9aa3ad', 0.5) }));
       if (lotes.length) {
         let o = Infinity, s = Infinity, e = -Infinity, n = -Infinity;
@@ -252,7 +285,7 @@ export class Levantamento {
       }
     }
 
-    if (this.opcoes.limites) {
+    if (this.mostrar && this.opcoes.limites) {
       d.limites.forEach((lim, i) => {
         if (this.opcoes.bairros[i] === false) return;
         const cor = Cesium.Color.fromCssColorString(CORES_LIMITE[i % 2]);
@@ -271,7 +304,7 @@ export class Levantamento {
       });
     }
 
-    if (this.opcoes.oficiais) {
+    if (this.mostrar && this.opcoes.oficiais) {
       (d.limites_oficiais || []).forEach((lim, i) => {
         if (this.opcoes.bairros[i] === false) return;
         for (const anel of lim.aneis.map(decodificarAnel)) {
@@ -283,7 +316,7 @@ export class Levantamento {
 
     const nomeBairro = (b) => d.bairros.indexOf(b);
     const bairroVisivel = (b) => { const i = nomeBairro(b); return i < 0 || this.opcoes.bairros[i] !== false; };
-    if (this.opcoes.bocas) {
+    if (this.mostrar && this.opcoes.bocas) {
       const cb = d.bocas.colunas, kla = cb.indexOf('Latitude'), klo = cb.indexOf('Longitude'), kb = cb.indexOf('Bairro');
       for (const b of d.bocas.linhas) {
         if (!bairroVisivel(b.v[kb])) continue;
@@ -293,7 +326,7 @@ export class Levantamento {
         ent.levantamento = { tipo: 'boca', dado: b };
       }
     }
-    if (this.opcoes.iluminacao) {
+    if (this.mostrar && this.opcoes.iluminacao) {
       const ci = d.iluminacao.colunas, kla = ci.indexOf('Latitude'), klo = ci.indexOf('Longitude'), kb = ci.indexOf('Bairro'), ka = ci.indexOf('Altura 3D estimada (m)');
       const cinza = Cesium.Color.fromCssColorString('#b0bec5');
       for (const p of d.iluminacao.linhas) {
@@ -310,7 +343,7 @@ export class Levantamento {
       }
     }
 
-    if (this.opcoes.areas) {
+    if (this.mostrar && this.opcoes.areas) {
       for (const a of d.areas) {
         if (a.bai && d.bairros.indexOf(a.bai) >= 0 && this.opcoes.bairros[d.bairros.indexOf(a.bai)] === false) continue;
         for (const anel of a.aneis) {
@@ -321,25 +354,9 @@ export class Levantamento {
       }
     }
 
-    if (this.opcoes.predios) {
-      // Só a projeção de cada torre ou casa (predios.json) sobe; o lote, o estacionamento e o lote agregado ficam no chão.
-      for (const l of this._lotesVisiveis()) {
-        if (!(l.pav >= 3 || /^Condomínio/.test(l.f))) continue;
-        const bases = this.basesDoLote?.get(`${d.bairros[l.b]}|${l.q}|${l.l}`) || [];
-        for (const b of bases) {
-          const ent = this.fonte.entities.add({ polygon: {
-            hierarchy: Cesium.Cartesian3.fromDegreesArray(b.anel.flat()),
-            height: 0, heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-            extrudedHeight: b.alt, extrudedHeightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,
-            material: Cesium.Color.fromCssColorString(/^Condomínio/.test(l.f) ? this.cor[l.f] : l.f === 'Residencial' ? '#2196f3' : l.f === 'Comercial' ? '#e91e63' : '#9e9e9e').withAlpha(0.85), outline: false } });
-          ent.levantamento = { tipo: 'lote', dado: l };
-        }
-      }
-    }
-
     const m = this.opcoes.eleicao;
     if (m) {
-      const ve = (g) => this.opcoes.grupos[`${m}:${g}`] !== false;
+      const ve = (g) => (this.opcoes.grupos || {})[`${m}:${g}`] !== false;
       const E = d.eleitoral;
       const rotulo = (texto) => ({ text: texto, font: '600 12px system-ui, "Segoe UI", Roboto, sans-serif', fillColor: Cesium.Color.WHITE,
         outlineColor: Cesium.Color.BLACK, outlineWidth: 3, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
@@ -415,7 +432,7 @@ export class Levantamento {
       else this.abrirPonto(lv.dado);
       return true;
     }
-    if (!ponto || !this.opcoes.lotes) return false;
+    if (!ponto || !this.mostrar || !this.opcoes.lotes) return false;
     const x = mx(ponto.lon), y = my(ponto.lat);
     const l = this._lotesVisiveis().find((t) => x >= t.ext[0] && x <= t.ext[2] && y >= t.ext[1] && y <= t.ext[3] && dentro(t.m, x, y));
     if (!l) return false;

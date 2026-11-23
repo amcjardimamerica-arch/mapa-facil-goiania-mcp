@@ -1,146 +1,208 @@
-// Painel "Camadas": os temas do Mapa Fácil, na ordem e com os padrões do portal.
+// Painel "Camadas": os serviços do Mapa Fácil reorganizados em projetos temáticos.
+//
+// Cada projeto (grupo) reúne camadas de um ou mais serviços do servidor municipal;
+// um serviço pode aparecer em mais de um projeto (ex.: Limites → Zonas Eleitorais e
+// Limites Administrativos). O desenho continua sendo um por serviço: as camadas de
+// todos os projetos ligados que usam o serviço são pedidas juntas.
 import { CFG } from './config.js';
 import { $$, el, pedirJSON, debounce, semAcento, aviso, fmtNum } from './util.js';
 import { provedorExport } from './globo.js';
 
+/** Organização dos projetos. `ids` lista camadas (folhas ou grupos) do serviço; sem `ids`, entra o serviço todo. */
+export const ORGANIZACAO = [
+  { chave: 'base', titulo: 'Base Cadastral', fontes: [{ tema: 'Feature_Base' }] },
+  { chave: 'eleitoral', titulo: 'Zonas Eleitorais', especial: 'eleitoral', fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
+  { chave: 'energia', titulo: 'Energia', fontes: [{ tema: 'Mapa_Energia' }] },
+  { chave: 'saneamento', titulo: 'Saneamento', fontes: [{ tema: 'Mapa_Sanemanento' }] },
+  { chave: 'viario', titulo: 'Sistema Viário', fontes: [{ tema: 'Mapa_RedeViaria' }] },
+  { chave: 'edificacoes', titulo: 'Edificações', especial: 'edificacoes', fontes: [
+    { tema: 'Mapa_Edificios' },
+    { tema: 'Mapa_PontosNotaveis', ids: [0, 1, 2, 3], sub: 'Equipamentos públicos e patrimônio' },
+    { tema: 'Mapa_PatrimonioHistorico', sub: 'Patrimônio Histórico' },
+    { tema: 'Mapa_OcupacaoIlegal', sub: 'Regularização Fundiária' },
+    { tema: 'Mapa_Documentacao', sub: 'Documentação de Bairros' },
+  ] },
+  { chave: 'meio', titulo: 'Meio Ambiente', fontes: [{ tema: 'Mapa_MeioAmbiente' }, { tema: 'Mapa_PUAMA', sub: 'PUAMA' }] },
+  { chave: 'telecom', titulo: 'Telecomunicação', fontes: [{ tema: 'Mapa_TelecomunicacaoNew' }] },
+  { chave: 'comurg', titulo: 'COMURG', fontes: [{ tema: 'Mapa_COMURG' }] },
+  { chave: 'zonas', titulo: 'Zonas Municipais', fontes: [{ tema: 'Mapa_PontosNotaveis', ids: [4] }] },
+  { chave: 'legislacao', titulo: 'Legislação Municipal', fontes: [{ tema: 'Mapa_Legislacao' }] },
+  { chave: 'modelo', titulo: 'Modelo Espacial (LC 171/2007)', fontes: [{ tema: 'Mapa_ModeloEspacial' }] },
+  { chave: 'limites', titulo: 'Limites Administrativos', fontes: [{ tema: 'Mapa_Limites', ids: [0, 3, 4, 5, 6, 7] }] },
+  { chave: 'servicos', titulo: 'Acessibilidade e Serviços', marcadores: true, fontes: [{ tema: 'Mapa_Acessibilidade' }] },
+  { chave: 'fiscalizacao', titulo: 'Fiscalização', fontes: [{ tema: 'Mapa_Fiscalizacao' }] },
+  { chave: 'tributario', titulo: 'Tributário', fontes: [{ tema: 'Mapa_Tributario_Web' }] },
+  { chave: 'uso', titulo: 'Uso do Solo', fontes: [{ tema: 'Mapa_UsoDoSoloNew' }, { tema: 'Mapa_Simplifica_Goiania_UsoDoSolo', sub: 'Simplifica Goiânia' }] },
+];
+
 export class Camadas {
-  constructor(globo, catalogo, raiz) {
+  /**
+   * especiais: { eleitoral(caixa, grupo), edificacoes(caixa, grupo) } montam conteúdo próprio no topo do projeto;
+   * servicos: módulo de marcadores (Acessibilidade e Serviços).
+   */
+  constructor(globo, catalogo, raiz, { especiais = {}, servicos = null } = {}) {
     this.globo = globo;
     this.temas = catalogo.temas;
     this.raiz = raiz;
-    this.estado = new Map();
+    this.especiais = especiais;
+    this.servicos = servicos;
     this.aoMudar = () => {};
+    this.porTema = new Map(); // chave do serviço -> { tema, camada (Cesium), opacidade, legenda, avisou }
     for (const t of this.temas) {
-      const folhas = t.camadas.filter((c) => !c.grupo);
-      const padrao = t.somente_consulta
-        ? CFG.consultaPadrao.filter((id) => folhas.some((f) => f.id === id))
-        : folhas.filter((c) => c.visivel && this._paisVisiveis(t, c)).map((c) => c.id);
-      this.estado.set(t.chave, {
-        ativo: !!t.somente_consulta, folhas: new Set(padrao), padrao, opacidade: 1,
-        camada: null, legenda: null,
-      });
       t._porId = new Map(t.camadas.map((c) => [c.id, c]));
+      this.porTema.set(t.chave, { tema: t, camada: null, opacidade: 1, legenda: null });
     }
+    this.grupos = this._organizar();
     this._redesenhar = debounce((chave) => this._aplicar(chave), 350);
     this._montar();
   }
 
-  _paisVisiveis(tema, camada) {
-    // Uma camada só é desenhada por padrão se todos os grupos acima dela também forem.
-    const porId = new Map(tema.camadas.map((c) => [c.id, c]));
-    let pai = porId.get(camada.pai);
-    while (pai) { if (!pai.visivel) return false; pai = porId.get(pai.pai); }
+  // ------------------------------------------------------------ organização
+  _folhasSob(t, id) {
+    const c = t._porId.get(id);
+    if (!c) return [];
+    if (!c.grupo) return [id];
+    return t.camadas.filter((x) => x.pai === id).flatMap((x) => this._folhasSob(t, x.id));
+  }
+
+  _paisVisiveis(t, c) {
+    let pai = t._porId.get(c.pai);
+    while (pai) { if (!pai.visivel) return false; pai = t._porId.get(pai.pai); }
     return true;
   }
 
-  _faixaEscala(tema, camada) {
-    // Faixa efetiva (herda dos grupos): visível quando max <= escala <= min (0 = sem limite).
-    let min = 0, max = 0, c = camada;
-    while (c) {
-      if (c.escala_min) min = min ? Math.min(min, c.escala_min) : c.escala_min;
-      if (c.escala_max) max = Math.max(max, c.escala_max);
-      c = tema._porId.get(c.pai);
-    }
-    return { min, max };
+  _organizar() {
+    const usados = new Set();
+    const grupos = [];
+    const montar = (def) => {
+      const fontes = [];
+      for (const f of def.fontes) {
+        const t = this.temas.find((x) => x.chave === f.tema);
+        if (!t) continue;
+        usados.add(t.chave);
+        const folhas = new Set(f.ids ? f.ids.flatMap((id) => this._folhasSob(t, id)) : t.camadas.filter((c) => !c.grupo).map((c) => c.id));
+        // Camadas exibidas: as folhas permitidas e os grupos acima delas.
+        const nos = new Set(folhas);
+        for (const id of folhas) { let c = t._porId.get(t._porId.get(id).pai); while (c) { nos.add(c.id); c = t._porId.get(c.pai); } }
+        const padrao = t.somente_consulta
+          ? CFG.consultaPadrao.filter((id) => folhas.has(id))
+          : [...folhas].filter((id) => { const c = t._porId.get(id); return c.visivel && this._paisVisiveis(t, c); });
+        fontes.push({ tema: t, sub: f.sub || '', folhas, nos, padrao, sel: new Set(padrao) });
+      }
+      if (!fontes.length) return;
+      const consulta = fontes.every((f) => f.tema.somente_consulta);
+      grupos.push({ ...def, fontes, consulta, ligado: consulta, opacidade: 1 });
+    };
+    ORGANIZACAO.forEach(montar);
+    // Serviços que a organização não cita (o catálogo pode crescer): cada um vira um projeto próprio.
+    for (const t of this.temas) if (!usados.has(t.chave)) montar({ chave: t.chave, titulo: t.titulo, fontes: [{ tema: t.chave }] });
+    return grupos;
   }
 
-  // ----------------------------------------------------------------- interface
+  grupo(chave) { return this.grupos.find((g) => g.chave === chave); }
+
+  // ------------------------------------------------------------- interface
   _montar() {
     const busca = el('input', { type: 'search', class: 'campo', placeholder: 'Filtrar camadas…',
       'aria-label': 'Filtrar camadas', oninput: (e) => this._filtrar(e.target.value) });
-    const oficiais = el('div', { class: 'grupo-temas' });
-    const extras = el('div', { class: 'grupo-temas' });
-    for (const t of this.temas) (t.oficial ? oficiais : extras).append(this._montarTema(t));
-    this.raiz.append(
-      busca,
-      el('h3', { class: 'subtitulo' }, 'Temas do portal Mapa Fácil'),
-      oficiais,
-      el('h3', { class: 'subtitulo' }, 'Outros temas do servidor municipal'),
-      el('p', { class: 'nota' }, 'Serviços publicados no mesmo servidor, fora da lista do portal.'),
-      extras,
-    );
+    const lista = el('div', { class: 'grupo-temas' });
+    for (const g of this.grupos) lista.append(this._montarGrupo(g));
+    this.raiz.append(busca, el('h3', { class: 'subtitulo' }, 'Projetos'), lista);
   }
 
-  _montarTema(t) {
-    const e = this.estado.get(t.chave);
-    const total = t.camadas.filter((c) => !c.grupo).length;
-    const liga = el('input', { type: 'checkbox', class: 'tema-liga', 'aria-label': `Ligar ${t.titulo}`,
-      onchange: (ev) => this.ligar(t.chave, ev.target.checked) });
-    liga.checked = e.ativo;
-    liga.disabled = !!t.somente_consulta;
+  _total(g) { return g.fontes.reduce((s, f) => s + f.folhas.size, 0); }
+
+  _montarGrupo(g) {
+    const liga = el('input', { type: 'checkbox', class: 'tema-liga', 'aria-label': `Ligar ${g.titulo}`,
+      onchange: (ev) => this.ligar(g.chave, ev.target.checked) });
+    liga.checked = g.ligado;
+    liga.disabled = g.consulta;
     const conta = el('small', { class: 'tema-conta' });
     const corpo = el('div', { class: 'tema-corpo', hidden: true });
     const titulo = el('button', { class: 'tema-titulo', 'aria-expanded': 'false', onclick: () => {
       const abre = corpo.hidden;
-      if (abre && !corpo.dataset.pronto) { this._montarCorpo(t, corpo); corpo.dataset.pronto = '1'; }
+      if (abre && !corpo.dataset.pronto) { this._montarCorpo(g, corpo); corpo.dataset.pronto = '1'; }
       corpo.hidden = !abre;
       titulo.setAttribute('aria-expanded', String(abre));
       if (abre) this.atualizarEscala();
-    } }, el('span', {}, t.titulo), conta);
-    const no = el('section', { class: 'tema', dataset: { chave: t.chave, texto: semAcento(`${t.titulo} ${t.camadas.map((c) => c.nome).join(' ')}`) } },
+    } }, el('span', {}, g.titulo), conta);
+    const texto = semAcento(`${g.titulo} ${g.fontes.map((f) => `${f.sub} ${f.tema.titulo} ${f.tema.camadas.filter((c) => f.nos.has(c.id)).map((c) => c.nome).join(' ')}`).join(' ')}`);
+    const no = el('section', { class: 'tema', dataset: { chave: g.chave, texto } },
       el('div', { class: 'tema-topo' }, el('label', { class: 'interruptor' }, liga, el('span', {})), titulo), corpo);
-    e.no = no; e.liga = liga; e.conta = conta; e.total = total;
-    this._atualizarConta(t.chave);
+    Object.assign(g, { no, liga, conta, corpo });
+    this._atualizarConta(g);
     return no;
   }
 
-  _montarCorpo(t, corpo) {
-    const e = this.estado.get(t.chave);
-    if (t.somente_consulta) {
+  _montarCorpo(g, corpo) {
+    if (g.especial && this.especiais[g.especial]) {
+      const caixa = el('div', { class: 'tema-especial' });
+      corpo.append(caixa);
+      this.especiais[g.especial](caixa, g);
+    }
+    if (g.consulta) {
       corpo.append(el('p', { class: 'nota' },
         'Este serviço não tem desenho próprio: ele responde ao clique no mapa. Marque o que deve aparecer na ficha do local.'));
     } else {
-      const faixa = el('input', { type: 'range', min: 10, max: 100, value: Math.round(e.opacidade * 100),
-        'aria-label': 'Opacidade', oninput: (ev) => this.opacidade(t.chave, ev.target.value / 100) });
+      const faixa = el('input', { type: 'range', min: 10, max: 100, value: Math.round(g.opacidade * 100),
+        'aria-label': 'Opacidade', oninput: (ev) => this.opacidade(g.chave, ev.target.value / 100) });
       const legenda = el('div', { class: 'legenda', hidden: true });
       corpo.append(el('div', { class: 'tema-ferramentas' },
         el('label', { class: 'rotulo-faixa' }, 'Opacidade', faixa),
-        el('button', { class: 'botao-texto', onclick: () => this._alternarLegenda(t, legenda) }, 'Legenda'),
-        el('button', { class: 'botao-texto', title: 'Voltar à seleção padrão do portal',
-          onclick: () => this.restaurar(t.chave) }, 'Padrão')), legenda);
+        el('button', { class: 'botao-texto', onclick: () => this._alternarLegenda(g, legenda) }, 'Legenda'),
+        el('button', { class: 'botao-texto', title: 'Voltar à seleção padrão do portal', onclick: () => this.restaurar(g.chave) }, 'Padrão')), legenda);
+      if (g.marcadores) corpo.append(el('p', { class: 'nota' }, 'Os pontos aparecem como marcadores com ícone por tipo; clique em um marcador para ver os dados.'));
     }
-    const filhosDe = (pai) => t.camadas.filter((c) => c.pai === pai);
-    const montar = (pai) => {
-      const itens = filhosDe(pai);
-      if (!itens.length) return null;
-      return el('ul', { class: 'arvore' }, itens.map((c) => {
-        const caixa = el('input', { type: 'checkbox', dataset: { id: c.id, grupo: c.grupo ? '1' : '' },
-          onchange: (ev) => this._marcar(t, c, ev.target.checked) });
-        const f = this._faixaEscala(t, c);
-        const dica = !c.grupo && (f.min || f.max)
-          ? el('small', { class: 'dica-escala', title: 'Faixa de escala em que a camada é desenhada' },
-            f.min ? `a partir de 1:${fmtNum(f.min)}` : `até 1:${fmtNum(f.max)}`) : null;
-        return el('li', { class: c.grupo ? 'no-grupo' : 'no-folha', dataset: { min: f.min, max: f.max } },
-          el('label', {}, caixa, el('span', {}, c.nome || `Camada ${c.id}`), dica), montar(c.id));
-      }));
-    };
-    const arvore = montar(-1);
-    if (arvore) corpo.append(arvore);
-    this._sincronizarCaixas(t);
+    for (const f of g.fontes) {
+      const filhosDe = (pai) => f.tema.camadas.filter((c) => c.pai === pai && f.nos.has(c.id));
+      const montar = (pai) => {
+        const itens = filhosDe(pai);
+        if (!itens.length) return null;
+        return el('ul', { class: 'arvore' }, itens.map((c) => {
+          const caixa = el('input', { type: 'checkbox', dataset: { tema: f.tema.chave, id: c.id },
+            onchange: (ev) => this._marcar(g, f, c, ev.target.checked) });
+          const faixa = this._faixaEscala(f.tema, c);
+          const dica = !c.grupo && (faixa.min || faixa.max)
+            ? el('small', { class: 'dica-escala', title: 'Faixa de escala em que a camada é desenhada' },
+              faixa.min ? `a partir de 1:${fmtNum(faixa.min)}` : `até 1:${fmtNum(faixa.max)}`) : null;
+          return el('li', { class: c.grupo ? 'no-grupo' : 'no-folha', dataset: { min: faixa.min, max: faixa.max } },
+            el('label', {}, caixa, el('span', {}, c.nome || `Camada ${c.id}`), dica), montar(c.id));
+        }));
+      };
+      const arvore = montar(-1);
+      if (!arvore) continue;
+      if (f.sub) corpo.append(el('details', { class: 'compartimento', open: g.fontes.length <= 2 }, el('summary', {}, f.sub), arvore));
+      else corpo.append(arvore);
+    }
+    this._sincronizarCaixas(g);
   }
 
-  _folhasDe(t, camada) {
-    if (!camada.grupo) return [camada.id];
-    return t.camadas.filter((c) => c.pai === camada.id).flatMap((c) => this._folhasDe(t, c));
+  _faixaEscala(t, camada) {
+    let min = 0, max = 0, c = camada;
+    while (c) {
+      if (c.escala_min) min = min ? Math.min(min, c.escala_min) : c.escala_min;
+      if (c.escala_max) max = Math.max(max, c.escala_max);
+      c = t._porId.get(c.pai);
+    }
+    return { min, max };
   }
 
-  _sincronizarCaixas(t) {
-    const e = this.estado.get(t.chave);
-    for (const caixa of $$('.arvore input', e.no)) {
-      const c = t._porId.get(+caixa.dataset.id);
-      const folhas = this._folhasDe(t, c);
-      const marcadas = folhas.filter((id) => e.folhas.has(id)).length;
+  _sincronizarCaixas(g) {
+    for (const caixa of $$('.arvore input', g.corpo)) {
+      const f = g.fontes.find((x) => x.tema.chave === caixa.dataset.tema);
+      const folhas = this._folhasSob(f.tema, +caixa.dataset.id).filter((id) => f.folhas.has(id));
+      const marcadas = folhas.filter((id) => f.sel.has(id)).length;
       caixa.checked = marcadas > 0 && marcadas === folhas.length;
       caixa.indeterminate = marcadas > 0 && marcadas < folhas.length;
     }
-    this._atualizarConta(t.chave);
+    this._atualizarConta(g);
   }
 
-  _atualizarConta(chave) {
-    const e = this.estado.get(chave);
-    if (!e.conta) return;
-    e.conta.textContent = e.ativo ? `${e.folhas.size}/${e.total}` : `${e.total}`;
-    e.no.classList.toggle('ligado', e.ativo);
+  _atualizarConta(g) {
+    if (!g.conta) return;
+    const sel = g.fontes.reduce((s, f) => s + f.sel.size, 0);
+    g.conta.textContent = g.ligado && !g.consulta ? `${sel}/${this._total(g)}` : `${this._total(g)}`;
+    g.no.classList.toggle('ligado', g.ligado && !g.consulta);
   }
 
   _filtrar(texto) {
@@ -148,71 +210,109 @@ export class Camadas {
     for (const no of $$('.tema', this.raiz)) no.hidden = q && !no.dataset.texto.includes(q);
   }
 
-  async _alternarLegenda(t, caixa) {
+  async _alternarLegenda(g, caixa) {
     caixa.hidden = !caixa.hidden;
     if (caixa.hidden) return;
-    const e = this.estado.get(t.chave);
-    if (!e.legenda) {
-      caixa.textContent = 'Carregando legenda…';
-      try { e.legenda = await pedirJSON(`${t.url}/legend`, { parametros: { f: 'json' } }); }
-      catch (erro) { caixa.textContent = `Legenda indisponível (${erro.message}).`; return; }
+    caixa.textContent = 'Carregando legenda…';
+    const partes = [];
+    for (const f of g.fontes) {
+      const e = this.porTema.get(f.tema.chave);
+      if (!e.legenda) {
+        try { e.legenda = await pedirJSON(`${f.tema.url}/legend`, { parametros: { f: 'json' } }); }
+        catch (erro) { partes.push(el('p', { class: 'nota' }, `${f.sub || f.tema.titulo}: legenda indisponível (${erro.message}).`)); continue; }
+      }
+      for (const l of (e.legenda.layers || []).filter((x) => f.sel.has(x.layerId))) {
+        partes.push(el('div', { class: 'legenda-camada' }, el('strong', {}, l.layerName),
+          (l.legend || []).map((s) => el('div', { class: 'legenda-item' },
+            el('img', { src: `data:${s.contentType};base64,${s.imageData}`, alt: '', width: s.width, height: s.height }),
+            el('span', {}, s.label || l.layerName)))));
+      }
     }
     caixa.textContent = '';
-    const ativas = (e.legenda.layers || []).filter((l) => e.folhas.has(l.layerId));
-    if (!ativas.length) { caixa.textContent = 'Marque ao menos uma camada para ver a legenda.'; return; }
-    for (const l of ativas) {
-      caixa.append(el('div', { class: 'legenda-camada' }, el('strong', {}, l.layerName),
-        (l.legend || []).map((s) => el('div', { class: 'legenda-item' },
-          el('img', { src: `data:${s.contentType};base64,${s.imageData}`, alt: '', width: s.width, height: s.height }),
-          el('span', {}, s.label || l.layerName)))));
-    }
+    if (!partes.length) caixa.textContent = 'Marque ao menos uma camada para ver a legenda.';
+    else caixa.append(...partes);
   }
 
-  // --------------------------------------------------------------------- ações
-  _marcar(t, camada, marcado) {
-    const e = this.estado.get(t.chave);
-    for (const id of this._folhasDe(t, camada)) marcado ? e.folhas.add(id) : e.folhas.delete(id);
-    if (!t.somente_consulta && marcado && !e.ativo) { e.ativo = true; e.liga.checked = true; }
-    this._sincronizarCaixas(t);
-    this._redesenhar(t.chave);
+  // ----------------------------------------------------------------- ações
+  _marcar(g, f, camada, marcado) {
+    for (const id of this._folhasSob(f.tema, camada.id)) if (f.folhas.has(id)) marcado ? f.sel.add(id) : f.sel.delete(id);
+    if (!g.consulta && marcado && !g.ligado) { g.ligado = true; g.liga.checked = true; this._aoLigar(g, true); }
+    this._sincronizarCaixas(g);
+    this._aplicarGrupo(g, true);
     this.aoMudar();
   }
 
   ligar(chave, ligado) {
-    const e = this.estado.get(chave), t = this.temas.find((x) => x.chave === chave);
-    if (!e || t.somente_consulta) return;
-    e.ativo = ligado;
-    if (ligado && !e.folhas.size) e.padrao.forEach((id) => e.folhas.add(id));
-    if (ligado && !e.folhas.size) t.camadas.filter((c) => !c.grupo).forEach((c) => e.folhas.add(c.id));
-    e.liga.checked = ligado;
-    if (e.no.querySelector('.arvore')) this._sincronizarCaixas(t); else this._atualizarConta(chave);
-    this._aplicar(chave);
+    const g = this.grupo(chave);
+    if (!g || g.consulta) return;
+    g.ligado = ligado;
+    if (ligado && g.fontes.every((f) => !f.sel.size)) {
+      for (const f of g.fontes) { f.padrao.forEach((id) => f.sel.add(id)); if (!f.sel.size) f.folhas.forEach((id) => f.sel.add(id)); }
+    }
+    g.liga.checked = ligado;
+    if (g.corpo.dataset.pronto) this._sincronizarCaixas(g); else this._atualizarConta(g);
+    this._aoLigar(g, ligado);
+    this._aplicarGrupo(g, false);
     this.aoMudar();
   }
 
+  /** Avisa os conteúdos especiais (Zonas Eleitorais, Edificações) que o projeto foi ligado ou desligado. */
+  _aoLigar(g, ligado) { this.especiais[`${g.especial}Ligar`]?.(ligado, g); }
+
   restaurar(chave) {
-    const e = this.estado.get(chave), t = this.temas.find((x) => x.chave === chave);
-    e.folhas = new Set(e.padrao);
-    this._sincronizarCaixas(t);
-    this._redesenhar(chave);
+    const g = this.grupo(chave);
+    for (const f of g.fontes) f.sel = new Set(f.padrao);
+    this._sincronizarCaixas(g);
+    this._aplicarGrupo(g, true);
     this.aoMudar();
   }
 
   opacidade(chave, valor) {
-    const e = this.estado.get(chave);
-    e.opacidade = valor;
-    if (e.camada) { e.camada.alpha = valor; this.globo.redesenhar(); }
+    const g = this.grupo(chave);
+    g.opacidade = valor;
+    for (const f of g.fontes) {
+      const e = this.porTema.get(f.tema.chave);
+      e.opacidade = valor;
+      if (e.camada) e.camada.alpha = valor;
+    }
+    this.globo.redesenhar();
+  }
+
+  _aplicarGrupo(g, adiar) {
+    for (const f of g.fontes) (adiar ? this._redesenhar : this._aplicar.bind(this))(f.tema.chave);
+    if (g.marcadores) this._aplicarMarcadores(g);
+  }
+
+  /** Camadas de um serviço que vão no desenho: as marcadas em todos os projetos ligados (menos as de marcador). */
+  _desenhadas(chave) {
+    const ids = new Set();
+    for (const g of this.grupos) {
+      if (!g.ligado || g.consulta) continue;
+      for (const f of g.fontes) {
+        if (f.tema.chave !== chave) continue;
+        for (const id of f.sel) if (!(g.marcadores && this.servicos?.ehMarcador(chave, id))) ids.add(id);
+      }
+    }
+    return ids;
+  }
+
+  async _aplicarMarcadores(g) {
+    if (!this.servicos) return;
+    for (const f of g.fontes) {
+      const ids = g.ligado ? [...f.sel] : [];
+      await this.servicos.definir(f.tema, ids);
+      this._redesenhar(f.tema.chave); // as que não são pontos (ex.: linhas de ônibus) seguem como imagem
+    }
   }
 
   _aplicar(chave) {
-    const e = this.estado.get(chave), t = this.temas.find((x) => x.chave === chave);
+    const e = this.porTema.get(chave), t = e.tema;
     if (t.somente_consulta) return;
     if (e.camada) { this.globo.removerTema(e.camada); e.camada = null; }
-    if (e.ativo && e.folhas.size) {
-      const provedor = provedorExport(t.url, {
-        camadas: [...e.folhas].sort((a, b) => a - b), retangulo: this.globo.ret,
-        credito: `${t.titulo}: Prefeitura de Goiânia (Mapa Fácil)`,
-      });
+    const ids = this._desenhadas(chave);
+    if (ids.size) {
+      const provedor = provedorExport(t.url, { camadas: [...ids].sort((a, b) => a - b), retangulo: this.globo.ret,
+        credito: `${t.titulo}: Prefeitura de Goiânia (Mapa Fácil)` });
       provedor.errorEvent.addEventListener((erro) => {
         if (erro.timesRetried === 0 && !e.avisou) {
           e.avisou = true;
@@ -221,7 +321,6 @@ export class Camadas {
       });
       e.camada = this.globo.adicionarTema(provedor, e.opacidade);
     }
-    this._atualizarConta(chave);
   }
 
   /** Esmaece as camadas que não são desenhadas na escala atual. */
@@ -234,34 +333,49 @@ export class Camadas {
     }
   }
 
-  // ------------------------------------------------------------------- consulta
-  /** Temas com desenho ligado: [{tema, ids}] — usados pelo "identificar". */
+  // -------------------------------------------------------------- consulta
+  /** Serviços com desenho ligado: [{tema, ids}] — usados pelo "identificar". */
   ativos() {
-    return this.temas.filter((t) => !t.somente_consulta && this.estado.get(t.chave).ativo
-      && this.estado.get(t.chave).folhas.size)
-      .map((t) => ({ tema: t, ids: [...this.estado.get(t.chave).folhas] }));
+    return this.temas.filter((t) => !t.somente_consulta).map((t) => ({ tema: t, ids: [...this._desenhadas(t.chave)] }))
+      .filter((a) => a.ids.length);
   }
 
   /** Camadas da Base Cadastral a consultar em cada clique. */
   consultaBase() {
-    const t = this.temas.find((x) => x.somente_consulta);
-    return t ? { tema: t, ids: [...this.estado.get(t.chave).folhas] } : null;
+    for (const g of this.grupos) for (const f of g.fontes) if (f.tema.somente_consulta) return { tema: f.tema, ids: [...f.sel] };
+    return null;
   }
 
-  // ---------------------------------------------------------------------- link
+  // ------------------------------------------------------------------ link
   serializar() {
-    return this.temas.filter((t) => !t.somente_consulta && this.estado.get(t.chave).ativo)
-      .map((t) => `${t.chave}:${[...this.estado.get(t.chave).folhas].join('.')}`).join('|');
+    return this.grupos.filter((g) => g.ligado && !g.consulta)
+      .map((g) => `${g.chave}:${g.fontes.map((f) => `${f.tema.chave}=${[...f.sel].join('.')}`).join(';')}`).join('|');
   }
 
   restaurarDe(texto) {
-    for (const parte of String(texto || '').split('|')) {
-      const [chave, ids] = parte.split(':');
-      const e = this.estado.get(chave), t = this.temas.find((x) => x.chave === chave);
-      if (!e || !t || t.somente_consulta) continue;
-      const validos = (ids || '').split('.').map(Number).filter((id) => t._porId.has(id) && !t._porId.get(id).grupo);
-      if (validos.length) e.folhas = new Set(validos);
-      this.ligar(chave, true);
+    for (const parte of String(texto || '').split('|').filter(Boolean)) {
+      const [chave, resto = ''] = parte.split(':');
+      if (resto.includes('=')) {
+        const g = this.grupo(chave);
+        if (!g || g.consulta) continue;
+        for (const pedaco of resto.split(';')) {
+          const [tema, ids = ''] = pedaco.split('=');
+          const f = g.fontes.find((x) => x.tema.chave === tema);
+          if (f) f.sel = new Set(ids.split('.').map(Number).filter((id) => f.folhas.has(id)));
+        }
+        this.ligar(chave, true);
+      } else {
+        // Link antigo (serviço:camadas): liga os projetos que contêm essas camadas.
+        const ids = resto.split('.').map(Number);
+        for (const g of this.grupos) {
+          const f = g.fontes.find((x) => x.tema.chave === chave);
+          if (!f || g.consulta) continue;
+          const validos = ids.filter((id) => f.folhas.has(id));
+          if (!validos.length) continue;
+          f.sel = new Set(validos);
+          this.ligar(g.chave, true);
+        }
+      }
     }
   }
 }

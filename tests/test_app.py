@@ -133,14 +133,70 @@ def test_identificar_lote(mapa):
 
 def test_temas_e_link(mapa):
     estado = mapa.evaluate("""() => {
-      bussola.camadas.ligar('Mapa_MeioAmbiente', true);
-      const ativos = bussola.camadas.ativos().map((a) => a.tema.chave);
+      bussola.camadas.ligar('meio', true);
+      const ativos = bussola.camadas.ativos().map((a) => a.tema.chave).sort();
       const serie = bussola.camadas.serializar();
-      bussola.camadas.ligar('Mapa_MeioAmbiente', false);
+      bussola.camadas.ligar('meio', false);
       return { ativos, serie, depois: bussola.camadas.ativos().length };
     }""")
-    assert estado["ativos"] == ["Mapa_MeioAmbiente"] and estado["serie"].startswith("Mapa_MeioAmbiente:")
+    assert "Mapa_MeioAmbiente" in estado["ativos"] and estado["serie"].startswith("meio:Mapa_MeioAmbiente="), estado
     assert estado["depois"] == 0
+
+
+def test_camadas_organizadas_em_projetos(mapa):
+    r = mapa.evaluate("""() => {
+      const C = bussola.camadas, g = (k) => C.grupo(k);
+      const fontes = (k) => g(k).fontes.map((f) => [f.tema.chave, [...f.folhas].sort((a, b) => a - b), f.sub]);
+      return {
+        ordem: C.grupos.map((x) => x.titulo).slice(0, 7),
+        titulos: C.grupos.map((x) => x.titulo),
+        eleitoral: fontes('eleitoral'), limites: fontes('limites'), edificacoes: fontes('edificacoes'),
+        meio: fontes('meio'), uso: fontes('uso'), zonas: fontes('zonas'),
+        texto: document.querySelector('#lista-camadas').textContent,
+        lotesNaBusca: !!document.querySelector('#busca-opcoes #painel-lotes') && !!document.querySelector('#busca-opcoes #realce-liga'),
+        semEdificiosNoTrilho: !document.querySelector('#trilho [data-painel=edificios]'),
+        edificiosDesligados: !bussola.edificios.ativo && !bussola.edificios.primitiva,
+      };
+    }""")
+    assert r["ordem"] == ["Base Cadastral", "Zonas Eleitorais", "Energia", "Saneamento", "Sistema Viário", "Edificações", "Meio Ambiente"], r["ordem"]
+    assert "Zonas Municipais" in r["titulos"] and "Pontos Notáveis" not in r["titulos"] and "PUAMA" not in r["titulos"]
+    assert "Simplifica Goiânia – Uso do Solo" not in r["titulos"] and "Documentação de Bairros" not in r["titulos"]
+    assert r["eleitoral"] == [["Mapa_Limites", [10], ""]] and all(10 not in f[1] for f in r["limites"]), r["limites"]
+    temas_edif = [f[0] for f in r["edificacoes"]]
+    assert temas_edif == ["Mapa_Edificios", "Mapa_PontosNotaveis", "Mapa_PatrimonioHistorico", "Mapa_OcupacaoIlegal", "Mapa_Documentacao"]
+    assert r["edificacoes"][1][1] == [0, 1, 2, 3] and all(i >= 6 for i in r["zonas"][0][1])
+    assert [f[0] for f in r["meio"]] == ["Mapa_MeioAmbiente", "Mapa_PUAMA"] and r["meio"][1][2] == "PUAMA"
+    assert [f[0] for f in r["uso"]] == ["Mapa_UsoDoSoloNew", "Mapa_Simplifica_Goiania_UsoDoSolo"] and r["uso"][1][2] == "Simplifica Goiânia"
+    assert "Projetos" in r["texto"] and "Temas do portal" not in r["texto"] and "Outros temas do servidor" not in r["texto"]
+    assert "CELG" not in r["texto"] and "SANEAGO" not in r["texto"]
+    assert r["lotesNaBusca"] and r["semEdificiosNoTrilho"] and r["edificiosDesligados"], r
+
+
+def test_servicos_viram_marcadores(mapa):
+    r = mapa.evaluate("""async () => {
+      const C = bussola.camadas, g = C.grupo('servicos'), f = g.fontes[0];
+      f.sel = new Set([33, 42]);            // Vapt Vupt (pontos) e Linhas de Ônibus (linhas)
+      C.ligar('servicos', true);
+      await C._aplicarMarcadores(g);
+      const S = bussola.servicos;
+      const vapt = S.fonte.entities.values.filter((e) => e.show && e.servico?.camada.id === 33);
+      const raster = C._desenhadas('Mapa_Acessibilidade');
+      const cor = vapt[0].label.fillColor.getValue().toCssHexString();
+      await bussola.trocarBase('mapa');
+      const corMapa = vapt[0].label.fillColor.getValue().toCssHexString();
+      await bussola.trocarBase('satelite');
+      S.aoClicar({ id: vapt[0] });
+      const ficha = document.querySelector('#ficha-titulo').textContent;
+      bussola.identificar.fechar();
+      C.ligar('servicos', false);
+      await C._aplicarMarcadores(g);
+      return { n: vapt.length, comNome: vapt.filter((e) => e.label).length, raster: [...raster], cor, corMapa, ficha,
+               depois: S.fonte.entities.values.filter((e) => e.show).length, icone: !!vapt[0].billboard.image.getValue() };
+    }""")
+    assert r["n"] > 20 and r["comNome"] == r["n"] and r["icone"], r
+    assert r["raster"] == [42], r
+    assert r["cor"] == "#ffffff" and r["corMapa"] == "#111418", r
+    assert r["ficha"] and r["depois"] == 0, r
 
 
 def test_medicao_e_kml(mapa):
@@ -262,7 +318,7 @@ def test_lotes_so_do_bairro_escolhido(mapa):
 def test_levantamento_lotes_limites_e_ficha(mapa):
     r = mapa.evaluate("""async () => {
       const lv = bussola.levantamento;
-      await lv.carregar();
+      await lv.mostrarBairros();
       const antes = { lotes: lv.dados.lotes.length, limites: lv.dados.limites.length, camada: !!lv.camadaLotes,
                       bordas: lv.fonte.entities.values.filter((e) => e.polyline).length };
       const tratou = lv.aoClicar(null, { lon: -49.2857, lat: -16.7077 });
@@ -284,9 +340,14 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
       unid.titulo = document.querySelector('#ficha-titulo').textContent;
       unid.corpo = document.querySelector('#ficha-corpo').textContent;
       unid.aindaTemLista = !!document.querySelector('#lv-unidade');
-      lv.opcoes.predios = true; lv.redesenhar();
-      unid.horizontais3d = lv.fonte.entities.values.filter((e) => e.polygon && e.levantamento?.dado?.f === 'Condomínio horizontal (casas)').length;
-      lv.opcoes.predios = false; bussola.identificar.fechar();
+      // Edificações 3D dos dois bairros: o mesmo motor das Edificações da cidade, só dentro dos limites.
+      lv.opcoes.edificacoes = true; await lv._edificacoes();
+      const ed = bussola.edificios;
+      unid.edificacoesBairros = { bairros: ed.bairros.size, cidade: ed.cidade, visiveis: ed._visiveis().length, total: ed.lista.length,
+        horizontais: ed._visiveis().filter((e) => e.uso === 'horizontal').length };
+      lv.opcoes.edificacoes = false; await lv._edificacoes();
+      unid.edificacoesDepois = { bairros: ed.bairros.size, primitiva: !!ed.primitiva };
+      bussola.identificar.fechar();
       lv.opcoes.eleicao = 'ct'; lv.redesenhar();
       const ct = { setas: lv.fonte.entities.values.filter((e) => e.levantamento?.tipo === 'seta').length,
                    transf: lv.fonte.entities.values.filter((e) => e.levantamento?.dado?.tipo === 'transferido').length };
@@ -306,7 +367,9 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
     u = r["unid"]
     assert u["opcoes"] > 6 and u["primeira"].startswith(" -- ") and u["geral"], u
     assert u["titulo"].startswith(("Apartamento", "Sala", "Loja", "Casa", "Box")) and "UN-" in u["corpo"] and u["aindaTemLista"], u
-    assert u["horizontais3d"] > 100, u
+    eb = u["edificacoesBairros"]
+    assert eb["bairros"] == 2 and not eb["cidade"] and 500 < eb["visiveis"] < eb["total"] and eb["horizontais"] > 100, eb
+    assert u["edificacoesDepois"] == {"bairros": 0, "primitiva": False}, u
     assert r["ct"]["setas"] > 150 and r["ct"]["transf"] > 150, r["ct"]
     assert r["infra"]["bocas"] == 830 and r["infra"]["postes"] == 4147, r["infra"]
     assert r["infra"]["link"].startswith("https://claude.ai/artifact/") and "#BL-" in r["infra"]["link"], r["infra"]
@@ -319,6 +382,7 @@ def test_edificios_trazem_os_predios_do_iptu(mapa):
     r = mapa.evaluate("""async () => {
       const ed = bussola.edificios;
       await ed.ligar(true);
+      const ligada = !!ed.primitiva && ed.cidade;
       const k = ed.lista.find((e) => e.n === 'RES KINGDOM PARK'), j = ed.lista.find((e) => e.n === 'JARDA BY PALME');
       ed.selecionar(k.i);
       const ficha = document.querySelector('#ficha-corpo').textContent;
@@ -326,9 +390,11 @@ def test_edificios_trazem_os_predios_do_iptu(mapa):
       const h = ed.lista.find((e) => e.uso === 'horizontal'), c = ed.lista.find((e) => e.uso === 'comercial'), o = { a: 0 };
       const cores = { residencial: cor(k), oficialComAptos: cor({ a: 12 }), horizontal: cor(h), comercial: cor(c), indefinido: cor(o), andarH: h.p, semRotulos: !ed.rotulos };
       bussola.identificar.fechar(); await ed.ligar(false);
-      return { total: ed.lista.length, conferidos: ed.conferidos, kingdom: k.p, jarda: j.p, ficha, cores,
+      const desligada = !ed.primitiva && !ed.ativo;
+      return { ligada, desligada, total: ed.lista.length, conferidos: ed.conferidos, kingdom: k.p, jarda: j.p, ficha, cores,
                repetidos: ed.lista.filter((e) => !e.lv && e.ci && ed.lista.some((x) => x.lv && x.ci === e.ci)).length };
     }""")
+    assert r["ligada"] and r["desligada"], r
     assert r["conferidos"] > 600 and r["kingdom"] >= 50 and r["jarda"] >= 23, r
     assert "Inscrições de IPTU no lote" in r["ficha"] and "Base no 3D" in r["ficha"], r["ficha"][:300]
     c = r["cores"]

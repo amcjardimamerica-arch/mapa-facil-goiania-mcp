@@ -374,3 +374,18 @@ input[type="checkbox"] { accent-color: var(--acento); }
 .lembrar-linha { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .botao.perigo { color: var(--erro); border-color: rgba(255, 138, 128, .45); }
 .campo.area { font: inherit; }
+
+/* -------------------------------------------- opções da busca e projetos (1.7) */
+.busca-opcoes-botao { flex: none; }
+.busca-opcoes-botao[aria-expanded="true"] { background: var(--fundo-3); color: var(--acento); }
+.busca-opcoes { position: absolute; top: 52px; left: 0; right: 0; z-index: 6; display: flex; flex-direction: column; gap: 10px;
+  max-height: min(70vh, 560px); overflow: auto; padding: 12px; background: var(--fundo); border: 1px solid var(--linha);
+  border-radius: 14px; box-shadow: var(--sombra); }
+.busca-opcoes .lotes-caixa { background: var(--fundo-2); }
+.lotes-3d { flex: none; min-width: 34px; padding: 4px 8px; border: 1px solid var(--linha); border-radius: 8px; font-weight: 650; }
+.lotes-3d.ligado { background: var(--acento); border-color: var(--acento); color: #1d1a10; }
+.tema-especial { display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; margin-bottom: 8px; border-bottom: 1px solid var(--linha); }
+.compartimento { margin: 6px 0 2px; border: 1px solid var(--linha); border-radius: 8px; padding: 4px 8px; }
+.compartimento > summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+.edi-lista-bairros { display: flex; flex-direction: column; gap: 2px; }
+.edi-lista-bairros li { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
