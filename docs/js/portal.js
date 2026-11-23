@@ -76,3 +76,6 @@ form.addEventListener('submit', async (e) => {
 });
 
 if (!sessao && !matchMedia('(pointer: coarse)').matches) $('#login').focus();
+
+// Mesmo service worker do sistema: confere sempre se há versão nova do site.
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});

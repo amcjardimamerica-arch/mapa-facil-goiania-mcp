@@ -2,8 +2,9 @@
 // abrir de imediato nas próximas vezes e continuar funcionando com a internet fraca.
 //
 // - banco/ e data/: mostra o que já está guardado e atualiza por trás (o banco muda só a cada nova extração).
-// - O resto (páginas, código, login) segue direto para a rede, sem passar por aqui.
-const CACHE = 'bussola-dados-v1';
+// - Páginas, código e estilos: sempre conferidos com o servidor (versão nova aparece na hora).
+// - O login (acesso/) segue direto para a rede.
+const CACHE = 'bussola-dados-v2';
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil((async () => {
@@ -15,7 +16,14 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== self.location.origin) return;
   const caminho = url.pathname.slice(new URL(self.registration.scope).pathname.length);
-  if (!/^(banco|data)\//.test(caminho) || caminho.endsWith('manifesto.json')) return;
+  // Páginas, código e estilos: sempre confere com o servidor se há versão nova (sem esperar o cache de 10 min
+  // do GitHub Pages expirar). O login (acesso/) segue direto.
+  if (!/^(banco|data)\//.test(caminho)) {
+    if (/^acesso\//.test(caminho)) return;
+    e.respondWith(fetch(e.request, { cache: 'no-cache' }).catch(() => caches.match(e.request).then((r) => r || Response.error())));
+    return;
+  }
+  if (caminho.endsWith('manifesto.json')) return;
   e.respondWith((async () => {
     const cache = await caches.open(CACHE);
     const guardado = await cache.match(e.request);
