@@ -346,12 +346,6 @@ async function iniciar() {
     if (!globo.relevoAtivo) p.set('r', '0');
     history.replaceState(null, '', `#${p.toString().replace(/%2C/g, ',').replace(/%3A/g, ':').replace(/%7C/g, '|')}`);
   }
-  $('#btn-compartilhar').addEventListener('click', () => {
-    atualizarLink();
-    (navigator.clipboard?.writeText(location.href) || Promise.reject()).then(
-      () => aviso('Link desta vista copiado.'),
-      () => aviso('Copie o endereço da barra do navegador para compartilhar esta vista.'));
-  });
 
   // -------------------------------------------------------------- teclado
   document.addEventListener('keydown', (e) => {

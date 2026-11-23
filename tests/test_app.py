@@ -514,6 +514,13 @@ def test_gps_mostra_a_posicao(mapa):
     assert mapa.get_attribute("#nav-local", "aria-pressed") == "false" and not mapa.is_visible("#gps-cartao")
 
 
+def test_sobre_sem_textos_e_sem_botao_link(mapa):
+    r = mapa.evaluate("""() => ({ sobre: document.querySelector('[data-secao=sobre]').textContent,
+      link: !!document.querySelector('#btn-compartilhar'), validacao: !!document.querySelector('[data-secao=sobre] a[href="validacao.html"]') })""")
+    assert "Fontes" not in r["sobre"] and "Projeto independente" not in r["sobre"] and "junta a navegação" not in r["sobre"]
+    assert not r["link"] and r["validacao"], r
+
+
 def test_navegacao_fica_no_canto_com_ficha_aberta(mapa):
     antes = mapa.evaluate("document.querySelector('#navegacao').getBoundingClientRect().right")
     mapa.evaluate("bussola.identificar.abrir({ titulo: 'Teste', subtitulo: '', ponto: { lon: -49.28, lat: -16.70, alt: NaN } })")
