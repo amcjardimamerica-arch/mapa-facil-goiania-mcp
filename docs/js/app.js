@@ -8,6 +8,7 @@ import { Identificar } from './identificar.js';
 import { Busca } from './busca.js';
 import { Edificios } from './edificios.js';
 import { Servicos } from './servicos.js';
+import { registrarAcesso } from './registro.js';
 import { Medir } from './medir.js';
 import { Marcadores } from './marcadores.js';
 import { Localizacao } from './localizacao.js';
@@ -387,6 +388,10 @@ async function iniciar() {
     if (b) edificios.definirBairro(id, b.n, true).catch(() => {});
   }
   // Usuário removido ou com senha trocada perde o acesso também nos aparelhos já conectados.
+  // Abertura com sessão lembrada (sem passar pelo login): um registro por sessão do navegador.
+  try {
+    if (!sessionStorage.getItem('bussola:registrado')) { sessionStorage.setItem('bussola:registrado', '1'); registrarAcesso(sessao, 'abertura'); }
+  } catch { /* sem armazenamento */ }
   sessaoAindaValida(sessao).then((ok) => { if (!ok) { encerrarSessao(); location.replace('index.html'); } });
   if (!memoria.ler('bussola:visto', false)) {
     aviso('Clique em qualquer ponto de Goiânia para ver lote, quadra, bairro e cadastro.', 'info', 7000);

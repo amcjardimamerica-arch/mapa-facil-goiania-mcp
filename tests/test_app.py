@@ -521,6 +521,21 @@ def test_sobre_sem_textos_e_sem_botao_link(mapa):
     assert not r["link"] and r["validacao"], r
 
 
+def test_logs_de_acesso(mapa, servidor):
+    r = mapa.evaluate("""async () => {
+      const m = await import('./js/registro.js');
+      const a = await m.aparelho();
+      return { aparelho: a, botao: !!document.querySelector('[data-secao=sobre] a[href="validacao.html#logs"]') };
+    }""")
+    assert r["botao"] and r["aparelho"]["tipo"] in ("Computador", "Celular", "Tablet") and r["aparelho"]["navegador"].startswith("Chrome"), r
+    ctx = mapa.context
+    pagina = ctx.new_page()
+    pagina.goto(f"{servidor}/validacao.html#logs")
+    pagina.wait_for_selector("#logs-estado")
+    assert "Logs de acesso" in pagina.text_content("#logs") and pagina.is_visible("#logs-chave")
+    pagina.close()
+
+
 def test_navegacao_fica_no_canto_com_ficha_aberta(mapa):
     antes = mapa.evaluate("document.querySelector('#navegacao').getBoundingClientRect().right")
     mapa.evaluate("bussola.identificar.abrir({ titulo: 'Teste', subtitulo: '', ponto: { lon: -49.28, lat: -16.70, alt: NaN } })")

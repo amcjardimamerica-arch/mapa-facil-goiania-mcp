@@ -1,5 +1,5 @@
 // Configuração da Bússola. Tudo que depende de endereço externo fica aqui.
-export const VERSAO = '1.7.3';
+export const VERSAO = '1.7.4';
 
 const REST = 'https://portalmapa.goiania.go.gov.br/servicogyn/rest/services';
 
@@ -9,6 +9,10 @@ export const CFG = {
   rest: REST,
   ms: `${REST}/MapaServer`,
   baseCadastral: `${REST}/MapaServer/Feature_Base/MapServer`,
+
+  // Registro de acessos: endereço do aplicativo da Web do Apps Script (scripts/registro-acessos.gs).
+  // Vazio = registro desligado.
+  registro: { url: '' },
 
   // Fundo "Earth": mosaico de satélite mundial (sem chave). Nível 19 só existe
   // na área urbana; onde falta, o descarte de blocos usa o nível anterior.

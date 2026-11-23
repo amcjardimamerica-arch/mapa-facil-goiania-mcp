@@ -1,5 +1,6 @@
 // Portal de acesso: confere usuário e senha e abre a Bússola.
 import { carregarUsuarios, conferir, abrirSessao, lerSessao, encerrarSessao } from './acesso.js';
+import { registrarAcesso } from './registro.js';
 
 const $ = (s) => document.querySelector(s);
 const form = $('#form-acesso');
@@ -60,7 +61,10 @@ form.addEventListener('submit', async (e) => {
       $('#senha').select();
       return;
     }
-    abrirSessao(usuario, $('#lembrar').checked);
+    const sessaoNova = abrirSessao(usuario, $('#lembrar').checked);
+    // Registra o login (no máximo 3 s de espera; se falhar, entra assim mesmo).
+    await Promise.race([registrarAcesso(sessaoNova, 'login'), new Promise((ok) => setTimeout(ok, 3000))]);
+    try { sessionStorage.setItem('bussola:registrado', '1'); } catch { /* nada */ }
     saindo = true;
     botao.textContent = 'Abrindo a Bússola…';
     location.replace(destino);
