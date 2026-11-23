@@ -28,10 +28,13 @@ const RAIO_LAMPADA = 1.1;                           // esfera da luminária (+10
 // De longe a esfera cresce com a distância da câmera, até 6 vezes (+500%), para ver bairros inteiros.
 export const LAMPADA_ESCALA_MAX = 6;
 const LAMPADA_ALTURA_REF = 1000;                    // m de câmera: até 1 km fica no tamanho mínimo; acima, cresce
+const LAMPADA_ALTURA_MAX = 5000;                    // m de câmera em que chega a 6× (+500%)
 const LAMPADA_PASSO = 0.25;                         // degraus de escala (refaz as esferas só ao mudar de degrau)
 /** Escala da esfera da luminária para a altura da câmera (1 de perto; até 6 de longe). */
 export function escalaLampada(alturaCamera) {
-  const f = Math.min(LAMPADA_ESCALA_MAX, Math.max(1, alturaCamera / LAMPADA_ALTURA_REF));
+  // Mínimo até 1 km; cresce em linha reta até 6× (+500%) em 5 km; acima disso fica em 6×.
+  const t = Math.min(1, Math.max(0, (alturaCamera - LAMPADA_ALTURA_REF) / (LAMPADA_ALTURA_MAX - LAMPADA_ALTURA_REF)));
+  const f = 1 + (LAMPADA_ESCALA_MAX - 1) * t;
   return Math.round(f / LAMPADA_PASSO) * LAMPADA_PASSO;
 }
 const TRAFO = [2.2, 2.2, 2.8];                      // caixa do transformador, maior

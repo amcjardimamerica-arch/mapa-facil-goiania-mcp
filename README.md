@@ -155,6 +155,14 @@ e retoma de onde parou.
   retira o pedido; a data e a descrição são editáveis. Relatório para imprimir e planilha CSV no painel Bairros.
   Os pedidos ficam guardados no aparelho.
 
+## Botões e navegação (1.10)
+
+- Sem painel lateral de ícones: **Medir** e **Marcar** ficam à esquerda da busca; **Camadas** e **Bairros**, à direita;
+  **Fundo** é o ícone dentro da caixa de busca; **Sobre** fica no rodapé, à direita; **Sair** fica no canto superior direito.
+  Todos abrem a mesma tela de dados à esquerda.
+- O pássaro da busca bate as asas só ao clicar: o mesmo movimento e a mesma velocidade da tela de abertura.
+- Esferas das luminárias: tamanho mínimo até 1 km de altura da câmera; crescem até 6× (+500%) em 5 km.
+
 ## Acesso com usuário e senha
 
 A página inicial (`docs/index.html`) é o portal de acesso. O mapa fica em `docs/sistema.html` e só abre

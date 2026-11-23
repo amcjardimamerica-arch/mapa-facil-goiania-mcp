@@ -12,7 +12,7 @@
   --erro: #ff8a80;
   --raio: 12px;
   --sombra: 0 6px 24px rgba(0, 0, 0, .45);
-  --trilho: 68px;
+  --trilho: 0px; /* sem painel lateral de ícones (1.10): os botões ficam junto da busca e no rodapé */
   --rodape: 28px;
   --fonte: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
@@ -52,7 +52,9 @@ ul, ol { padding: 0; list-style: none; }
 .passaro .passaro-asa { transform-box: view-box; transform-origin: 558px 355px; }
 .passaro .passaro-bico { transform-box: view-box; transform-origin: 940px 330px; }
 @media (prefers-reduced-motion: no-preference) {
-  #abertura .passaro .passaro-asa, .marca:hover .passaro-asa, .marca.voa .passaro-asa { animation: bate-asa .26s ease-in-out infinite alternate; }
+  #abertura .passaro .passaro-asa { animation: bate-asa .26s ease-in-out infinite alternate; }
+  /* Na busca o pássaro só bate as asas ao clicar: mesmo movimento e mesma velocidade da abertura (4 batidas). */
+  .marca.voa .passaro-asa { animation: bate-asa .26s ease-in-out 8 alternate; }
   .marca.voa .passaro-bico { animation: pia .5s ease-in-out 1; }
   .marca.voa .passaro { animation: salto .55s cubic-bezier(.3, .7, .4, 1.4) 1; }
 }
@@ -81,9 +83,23 @@ ul, ol { padding: 0; list-style: none; }
 
 /* --------------------------------------------------------------------- busca */
 /* A busca fica centralizada sobre o mapa (a área à direita do trilho de ferramentas). */
-#topo { position: fixed; top: 12px; left: calc(var(--trilho) + (100vw - var(--trilho)) / 2); transform: translateX(-50%); z-index: 30;
-  width: min(460px, calc(100vw - var(--trilho) - 24px)); }
-body:has(#ficha:not([hidden])) #topo { left: calc(var(--trilho) + (100vw - var(--trilho) - 432px) / 2); width: min(460px, calc(100vw - var(--trilho) - 456px)); }
+#topo { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 30; display: flex; align-items: center; gap: 8px; }
+#topo #caixa-busca { width: min(460px, calc(100vw - 260px)); }
+body:has(#ficha:not([hidden])) #topo { left: calc((100vw - 432px) / 2); }
+body:has(#ficha:not([hidden])) #topo #caixa-busca { width: min(460px, calc(100vw - 432px - 240px)); }
+.topo-grupo { display: flex; gap: 6px; }
+.botao-topo { display: grid; place-items: center; width: 46px; height: 46px; padding: 0; border: 1px solid var(--linha); border-radius: 50%;
+  background: rgba(31, 34, 38, .94); color: var(--texto); box-shadow: var(--sombra); cursor: pointer; }
+.botao-topo svg { width: 22px; height: 22px; fill: currentColor; }
+.botao-topo:hover { border-color: var(--acento); color: var(--acento); }
+.botao-topo[aria-pressed="true"] { background: var(--acento-escuro); border-color: var(--acento); color: var(--acento); }
+.botao-sair { position: fixed; z-index: 30; top: 12px; right: 12px; }
+.busca-fundo svg { width: 20px; height: 20px; fill: currentColor; }
+.busca-fundo[aria-pressed="true"] { color: var(--acento); }
+.rodape-sobre { display: inline-flex; align-items: center; gap: 5px; height: calc(var(--rodape) - 4px); padding: 0 10px; border: 1px solid var(--linha);
+  border-radius: 10px; background: none; color: var(--texto); font: inherit; cursor: pointer; }
+.rodape-sobre svg { width: 14px; height: 14px; fill: currentColor; }
+.rodape-sobre:hover, .rodape-sobre[aria-pressed="true"] { border-color: var(--acento); color: var(--acento); }
 #caixa-busca .marca { flex: none; display: grid; place-items: center; width: 44px; height: 38px; padding: 3px 4px; border: 0; border-radius: 19px; background: #fff; cursor: pointer; }
 #caixa-busca .marca .passaro { width: 34px; height: auto; }
 #caixa-busca { position: relative; display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 8px 0 4px;
@@ -408,3 +424,14 @@ body:has(#ficha:not([hidden])) #gps-cartao { right: 432px; }
 .manut-botao.ligado { background: var(--acento); border-color: var(--acento); color: #1d1a10; font-weight: 650; }
 .poste-historico { display: flex; flex-direction: column; gap: 6px; }
 .poste-historico .campo { max-width: 160px; }
+
+/* --------------------------------------------- celular: busca em cima, botões logo abaixo (1.10) */
+@media (max-width: 760px) {
+  #topo, body:has(#ficha:not([hidden])) #topo { top: 8px; left: 50%; width: calc(100vw - 16px); flex-wrap: wrap; justify-content: center; }
+  #topo #caixa-busca, body:has(#ficha:not([hidden])) #topo #caixa-busca { order: -1; width: 100%; }
+  .topo-grupo { gap: 8px; }
+  .botao-topo { width: 40px; height: 40px; }
+  .botao-sair { top: auto; bottom: calc(var(--rodape) + 64px); right: 8px; }
+  #painel { top: 112px; bottom: calc(var(--rodape) + 8px); }
+  #ficha { bottom: calc(var(--rodape) + 8px); }
+}

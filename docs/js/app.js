@@ -117,7 +117,7 @@ async function iniciar() {
     painelAberto = painelAberto === nome ? null : nome;
     painel.hidden = !painelAberto;
     for (const s of $$('#painel > section')) s.hidden = s.dataset.secao !== painelAberto;
-    for (const b of $$('#trilho [data-painel]')) b.setAttribute('aria-pressed', String(b.dataset.painel === painelAberto));
+    for (const b of $$('[data-painel]')) b.setAttribute('aria-pressed', String(b.dataset.painel === painelAberto));
     if (painelAberto) $('#painel-titulo').textContent = $(`#painel > [data-secao="${painelAberto}"]`).dataset.titulo;
     if (painelAberto === 'camadas') camadas.atualizarEscala();
     if (painelAberto === 'levantamento') levantamento.mostrarBairros().catch((e) => aviso(`Levantamento indisponível: ${e.message}`, 'alerta'));
@@ -125,7 +125,7 @@ async function iniciar() {
     if (painelAberto !== 'marcadores') marcadores.cancelarPedido();
   };
   app.abrirPainel = abrirPainel;
-  $$('#trilho [data-painel]').forEach((b) => b.addEventListener('click', () => abrirPainel(b.dataset.painel)));
+  $$('[data-painel]').forEach((b) => b.addEventListener('click', () => abrirPainel(b.dataset.painel)));
   $('#painel-fechar').addEventListener('click', () => abrirPainel(painelAberto));
 
   // --------------------------------------------------------- bases e épocas
@@ -255,7 +255,7 @@ async function iniciar() {
   $('#marca-passaro').addEventListener('click', (e) => {
     const b = e.currentTarget;
     b.classList.remove('voa'); void b.offsetWidth; b.classList.add('voa');
-    setTimeout(() => b.classList.remove('voa'), 900);
+    setTimeout(() => b.classList.remove('voa'), 2200); // 4 batidas de asa (8 × 0,26 s)
     globo.irParaInicio(1.6);
   });
   $('#nav-foto').addEventListener('click', async () => {
