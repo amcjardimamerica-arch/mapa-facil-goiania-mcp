@@ -1,0 +1,18 @@
+servico,id,nome,esperado,baixado,diferenca,sem_geometria,exemplos_sem_geometria,fora_do_retangulo,ids_repetidos,falhas,detalhe_falhas,arquivo,bytes,segundos
+Feature_Base,0,Divisas de Lote,399522,399522,0,0,,0,0,0,,dados/Feature_Base/0-divisas-de-lote.geojson.gz,39934364,2211
+Feature_Base,1,Divisas de Quadra,25755,25755,0,0,,0,0,0,,dados/Feature_Base/1-divisas-de-quadra.geojson.gz,6879852,25
+Feature_Base,2,Divisas de Bairro,1209,1209,0,0,,0,0,0,,dados/Feature_Base/2-divisas-de-bairro.geojson.gz,1008403,7
+Feature_Base,3,Cadastro Imobiário,795418,788660,-6758,"geometria = lote (camada 0, campo id)",,,909,2,"cdbairro = 101: IncompleteRead(64498 bytes read) | cdbairro = 72: contagem 24341, baixadas 24334",dados/Feature_Base/3-cadastro-imobiario.geojson.gz,68847913,90
+Feature_Base,4,Área Pública,8436,8436,0,0,,0,0,0,,dados/Feature_Base/4-area-publica.geojson.gz,1948565,9
+Feature_Base,5,Número Predial Oficial,203981,203525,-456,0,,0,0,0,,dados/Feature_Base/5-numero-predial-oficial.geojson.gz,15893017,258
+Feature_Base,6,Setor Cadastral,228,228,0,0,,0,0,0,,dados/Feature_Base/6-setor-cadastral.geojson.gz,549546,12
+Feature_Base,7,Segmento de Logradouro,69288,69288,0,3,9393 17940 35880,379,0,0,,dados/Feature_Base/7-segmento-de-logradouro.geojson.gz,6228176,119
+Feature_Base,8,Logradouro,,5387,,0,,16,0,2,"id 4801: {""code"": 400, ""message"": ""Failed to execute query."", ""details"": []} | id 4801: {""code"": 400, ""message"": ""Failed to execute query."", ""details"": []}",dados/Feature_Base/8-logradouro.geojson.gz,828280,245
+Feature_Base,9,Cadastro Atividade Econômica,56543,56543,0,0,,0,0,0,,dados/Feature_Base/9-cadastro-atividade-economica.geojson.gz,8253829,56
+Feature_Base,10,Logradouro por Bairro,,5091,,0,,0,0,0,,dados/Feature_Base/10-logradouro-por-bairro.geojson.gz,606131,266
+Mapa_Energia,1,Barramento Poste,152665,152665,0,0,,0,0,0,,dados/Mapa_Energia/1-barramento-poste.geojson.gz,8739284,134
+Mapa_Energia,2,Tipo de Lâmpada,152665,152665,0,0,,0,0,0,,dados/Mapa_Energia/2-tipo-de-lampada.geojson.gz,8739291,107
+Mapa_Energia,3,Potência da Lâmpada,152665,152665,0,0,,0,0,0,,dados/Mapa_Energia/3-potencia-da-lampada.geojson.gz,8739305,102
+Mapa_TelecomunicacaoNew,0,Antenas de Rádio/Telefonia Móvel,710,710,0,0,,0,0,0,,dados/Mapa_TelecomunicacaoNew/0-antenas-de-radio-telefonia-movel.geojson.gz,72269,1
+Mapa_TelecomunicacaoNew,1,Pontos de Interesse MetroGyn,283,283,0,0,,0,0,0,,dados/Mapa_TelecomunicacaoNew/1-pontos-de-interesse-metrogyn.geojson.gz,22646,1
+Mapa_TelecomunicacaoNew,2,Fibra MetroGyn,342,342,0,0,,0,0,0,,dados/Mapa_TelecomunicacaoNew/2-fibra-metrogyn.geojson.gz,65138,2

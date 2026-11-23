@@ -1,6 +1,7 @@
 // Página de validação: confere dados locais, cálculos e os serviços ao vivo.
 // Cada teste devolve um texto de detalhe; lançar erro = falha; { alerta } = atenção.
 import { CFG, VERSAO } from './config.js';
+import { iniciarBanco } from './banco.js';
 import { $, el, pedirJSON, paraUTM, deUTM, mercX, mercY, areaM2, pontoNaGeometria, baixarArquivo, fmtNum, semAcento } from './util.js';
 
 const PRACA_CIVICA = { lon: -49.2556, lat: -16.6816 };
@@ -273,4 +274,5 @@ async function rodar() {
 $('#rodar').addEventListener('click', rodar);
 $('#baixar').addEventListener('click', () =>
   baixarArquivo(`validacao-bussola-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(relatorio, null, 2), 'application/json'));
-rodar();
+// A validação confere o sistema como ele funciona: com o banco local respondendo no lugar do servidor.
+iniciarBanco().finally(rodar);

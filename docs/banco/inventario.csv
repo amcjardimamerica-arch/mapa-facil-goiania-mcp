@@ -1,0 +1,226 @@
+servico,id,nome,geometria,feicoes,campos,oid,paginacao,maxRecordCount,oid_min,oid_max,observacao
+Feature_Base,0,Divisas de Lote,esriGeometryPolygon,399522,26,OBJECTID,True,1000000,1,708997,
+Feature_Base,1,Divisas de Quadra,esriGeometryPolygon,25755,17,OBJECTID,True,1000000,1,131776,
+Feature_Base,2,Divisas de Bairro,esriGeometryPolygon,1209,32,OBJECTID,True,1000000,1,32385,
+Feature_Base,3,Cadastro Imobiário,esriGeometryPolygon,,85,ESRI_OID,True,1000000,,,"contagem falhou: HTTP Error 502: Bad Gateway; min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Feature_Base,4,Área Pública,esriGeometryPolygon,8436,87,nr_apm,True,1000000,26,105262,
+Feature_Base,5,Número Predial Oficial,esriGeometryPolygon,203981,11,objectid,True,1000000,1,223147,
+Feature_Base,6,Setor Cadastral,esriGeometryPolygon,228,16,OBJECTID,True,1000000,1,9434,
+Feature_Base,7,Segmento de Logradouro,esriGeometryPolyline,69288,29,OBJECTID_1,True,1000000,1,196567,
+Feature_Base,8,Logradouro,esriGeometryPolyline,,6,ESRI_OID,True,1000000,,,"contagem falhou: {""code"": -2147215975, ""message"": ""Failed to execute query."", ""details"": []}; min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Feature_Base,9,Cadastro Atividade Econômica,esriGeometryPoint,56543,32,OBJECTID,True,1000000,1,56543,
+Feature_Base,10,Logradouro por Bairro,esriGeometryPolyline,,8,ESRI_OID,True,1000000,,,"contagem falhou: {""code"": -2147215975, ""message"": ""Failed to execute query."", ""details"": []}; min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Feature_Base,11,Anexo Lote,Table,39138,13,ATTACHMENTID,True,1000000,1,504562,
+Feature_Base,12,Anexo Bairro,Table,3005,17,ATTACHMENTID,True,1000000,3403,92190,
+Feature_Base,13,SIGGOPROD.SIGGO.PLV2022,Table,769963,6,,True,1000000,,,
+Mapa_TelecomunicacaoNew,0,Antenas de Rádio/Telefonia Móvel,esriGeometryPoint,710,25,OBJECTID,True,1000,1,710,
+Mapa_TelecomunicacaoNew,1,Pontos de Interesse MetroGyn,esriGeometryPoint,283,28,OBJECTID,True,1000,1,283,
+Mapa_TelecomunicacaoNew,2,Fibra MetroGyn,esriGeometryPolyline,342,14,OBJECTID,True,1000,1,342,
+Mapa_Energia,1,Barramento Poste,esriGeometryPoint,152665,32,OBJECTID_1,True,1000,1,152665,
+Mapa_Energia,2,Tipo de Lâmpada,esriGeometryPoint,152665,32,OBJECTID_1,True,1000,1,152665,
+Mapa_Energia,3,Potência da Lâmpada,esriGeometryPoint,152665,32,OBJECTID_1,True,1000,1,152665,
+Mapa_Energia,4,Poste,esriGeometryPoint,167015,62,OBJECTID,True,1000,1,167015,
+Mapa_Energia,5,Subestação de Energia,esriGeometryPoint,7,86,OBJECTID,True,1000,1,7,
+Mapa_Energia,6,Rede Eletrica Abastecimento,esriGeometryPolyline,1967,40,OBJECTID,True,1000,1,1975,
+Mapa_Energia,7,Rede Eletrica Primária,esriGeometryPolyline,62348,80,OBJECTID,True,1000,1,62348,
+Mapa_Energia,8,Rede Eletrica Secundária,esriGeometryPolyline,159358,28,OBJECTID,True,1000,1,159358,
+Mapa_Sanemanento,0,Esgoto,esriGeometryPolyline,222659,27,OBJECTID,True,1000,1,222659,
+Mapa_Sanemanento,1,Abastecimento de Água Potável,esriGeometryPolyline,166336,17,OBJECTID,True,1000,1,166336,
+Mapa_COMURG,0,Pontos de Interesse da COMURG,esriGeometryPoint,4,8,OBJECTID,True,1000,1,4,
+Mapa_COMURG,1,Divisão da Coleta de Residos Domiciliares Orgânicos ,esriGeometryPolygon,4,14,OBJECTID,True,1000,1,4,
+Mapa_COMURG,2,Aterro Sanitário,esriGeometryPolygon,0,30,ESRI_OID,True,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_COMURG,4,Circuitos Classificados por Dia,esriGeometryPolygon,181,17,OBJECTID,True,1000,1,181,
+Mapa_COMURG,5,Circuitos Classificados por Período,esriGeometryPolygon,181,17,OBJECTID,True,1000,1,181,
+Mapa_COMURG,6,Circuitos Classificados por Dia e Período,esriGeometryPolygon,181,17,OBJECTID,True,1000,1,181,
+Mapa_COMURG,7,Circuitos Classificados por Divisão,esriGeometryPolygon,181,17,OBJECTID,True,1000,1,181,
+Mapa_COMURG,8,Circuitos de Coleta Orgânica monocromatico,esriGeometryPolygon,181,17,OBJECTID,True,1000,1,181,
+Mapa_PontosNotaveis,0,Equipamento de Educação Municipal,esriGeometryPoint,359,8,OBJECTID,True,1000,1,759,
+Mapa_PontosNotaveis,1,Equipamento de Saúde,esriGeometryPoint,146,27,OBJECTID,True,1000,1,146,
+Mapa_PontosNotaveis,2,Grande Equipamento,esriGeometryPolygon,1224,16,OBJECTID,True,1000,1,1224,
+Mapa_PontosNotaveis,3,Patrimônio Histórico,esriGeometryPolygon,309,19,OBJECTID,True,1000,1,309,
+Mapa_PontosNotaveis,6,Pista,esriGeometryPolygon,8,21,OBJECTID,True,1000,1529,3938,
+Mapa_PontosNotaveis,7,Faixa de Pista,esriGeometryPolygon,8,21,OBJECTID,True,1000,1520,3937,
+Mapa_PontosNotaveis,8,Superfície de Aproximação,esriGeometryPolygon,17,21,OBJECTID,True,1000,1521,3935,
+Mapa_PontosNotaveis,9,Superfície de Aproximação Interna,esriGeometryPolygon,2,21,OBJECTID,True,1000,1735,1736,
+Mapa_PontosNotaveis,10,Superfície de Decolagem,esriGeometryPolygon,11,21,OBJECTID,True,1000,1524,3936,
+Mapa_PontosNotaveis,11,Superfície de Pouso Interrompido,esriGeometryPolygon,2,21,OBJECTID,True,1000,1737,1738,
+Mapa_PontosNotaveis,12,Superfície de Transição,esriGeometryPolygon,14,21,OBJECTID,True,1000,1665,3940,
+Mapa_PontosNotaveis,13,Superfície de Transição Interna,esriGeometryPolygon,2,21,OBJECTID,True,1000,1739,1740,
+Mapa_PontosNotaveis,14,Superfície Horizontal Interna,esriGeometryPolygon,7,21,OBJECTID,True,1000,1526,3948,
+Mapa_PontosNotaveis,15,Superfície Horizontal Externa,esriGeometryPolygon,1,21,OBJECTID,True,1000,1731,1731,
+Mapa_PontosNotaveis,16,Superfície Cônica,esriGeometryPolygon,7,21,OBJECTID,True,1000,1654,3947,
+Mapa_PontosNotaveis,17,Superfície Proteção Voo Visual Área 1,esriGeometryPolygon,18,21,OBJECTID,True,1000,1540,3943,
+Mapa_PontosNotaveis,18,Superfície Proteção Voo Visual Área 2,esriGeometryPolygon,9,21,OBJECTID,True,1000,1539,3946,
+Mapa_PontosNotaveis,19,Superfície Proteção Voo Visual Área 3,esriGeometryPolygon,3,21,OBJECTID,True,1000,1538,1542,
+Mapa_PontosNotaveis,21,Área de Aproximação,esriGeometryPolygon,56,21,OBJECTID,True,1000,1491,3993,
+Mapa_PontosNotaveis,22,Área de Decolagem,esriGeometryPolygon,56,21,OBJECTID,True,1000,1495,3994,
+Mapa_PontosNotaveis,23,Área Toque Fato,esriGeometryPolygon,48,21,OBJECTID,True,1000,1497,3991,
+Mapa_PontosNotaveis,24,Área de Segurança,esriGeometryPolygon,39,21,OBJECTID,True,1000,1501,3992,
+Mapa_PontosNotaveis,26,AEA-1 (65 - 70 dB),esriGeometryPolygon,1,21,OBJECTID,True,1000,4004,4004,
+Mapa_PontosNotaveis,27,AEA-2 (70 - 75 dB),esriGeometryPolygon,1,21,OBJECTID,True,1000,4003,4003,
+Mapa_PontosNotaveis,28,AEA-3 (75 - 80 dB),esriGeometryPolygon,1,21,OBJECTID,True,1000,4002,4002,
+Mapa_PontosNotaveis,29,AEA-4 (80 - 85 dB),esriGeometryPolygon,3,21,OBJECTID,True,1000,3997,4001,
+Mapa_PontosNotaveis,30,AEA-5 (acima de 85 dB),esriGeometryPolygon,4,21,OBJECTID,True,1000,3995,4000,
+Mapa_PontosNotaveis,32,NDB GOI,esriGeometryPolygon,2,21,OBJECTID,True,1000,1536,1537,
+Mapa_PontosNotaveis,33,D-VOR GNV,esriGeometryPolygon,2,21,OBJECTID,True,1000,1519,1535,
+Mapa_PontosNotaveis,34,PAPI,esriGeometryPolygon,6,21,OBJECTID,True,1000,1527,3960,
+Mapa_PUAMA,1,Área de Implantação dos Parques do PUAMA (v.2021-08-04),esriGeometryPolygon,1,13,OBJECTID,True,1000,52,52,
+Mapa_PUAMA,2,AID-PUAMA - Área de Influência Direta do PUAMA (v.2021-08-04),esriGeometryPolygon,2,17,OBJECTID,True,1000,424,824,
+Mapa_PUAMA,3,500m em torno do Parque Linear e Ambientais (v.2021-04-08),esriGeometryPolygon,1,10,OBJECTID,True,1000,2,2,
+Mapa_PUAMA,5,Bairro Beneficiado - Lei 9.123 ou 10.344,esriGeometryPolygon,136,5,OBJECTID,True,1000,8,27583,
+Mapa_PUAMA,6,Bairro Beneficiado - Decreto 2.747/2016,esriGeometryPolygon,14,5,OBJECTID,True,1000,350,1111,
+Mapa_PUAMA,7,Gleba Beneficiada,esriGeometryPolygon,85,5,OBJECTID,True,1000,62,1136,
+Mapa_Edificios,1,0 - 3,esriGeometryPoint,704,19,OBJECTID,True,1000,5,3410,
+Mapa_Edificios,2,4 - 10,esriGeometryPoint,1249,19,OBJECTID,True,1000,1,3408,
+Mapa_Edificios,3,11 - 20,esriGeometryPoint,996,19,OBJECTID,True,1000,3,3409,
+Mapa_Edificios,4,21 - 30,esriGeometryPoint,338,19,OBJECTID,True,1000,127,3401,
+Mapa_Edificios,5,+30,esriGeometryPoint,123,19,OBJECTID,True,1000,1838,3399,
+Mapa_Edificios,7, Planta de Valores,esriGeometryPolygon,2199,16,OBJECTID,True,1000,1,2199,
+Mapa_RedeViaria,1,Nome de Logradouro,esriGeometryPolyline,69288,29,OBJECTID_1,True,1000,1,196567,
+Mapa_RedeViaria,3,Escala 4000,esriGeometryPolyline,69288,29,OBJECTID_1,True,1000,1,196567,
+Mapa_RedeViaria,4,Escala 16000,esriGeometryPolyline,69288,29,OBJECTID_1,True,1000,1,196567,
+Mapa_RedeViaria,5,Escala 64000,esriGeometryPolyline,69288,29,OBJECTID_1,True,1000,1,196567,
+Mapa_RedeViaria,6,Escala 256000,esriGeometryPolyline,69288,29,OBJECTID_1,True,1000,1,196567,
+Mapa_RedeViaria,8,Escala abaixo de 4000,esriGeometryPolyline,68043,29,OBJECTID_1,True,1000,1,196567,
+Mapa_RedeViaria,9,Escala acima de 4000,esriGeometryPolyline,68043,29,OBJECTID_1,True,1000,1,196567,
+Mapa_RedeViaria,11,Escala 4000,esriGeometryPolyline,68043,29,OBJECTID_1,True,1000,1,196567,
+Mapa_RedeViaria,12,Escala 16000,esriGeometryPolyline,68043,29,OBJECTID_1,True,1000,1,196567,
+Mapa_RedeViaria,13,Escala 64000,esriGeometryPolyline,68043,29,OBJECTID_1,True,1000,1,196567,
+Mapa_RedeViaria,14,Escala 256000,esriGeometryPolyline,68043,29,OBJECTID_1,True,1000,1,196567,
+Mapa_RedeViaria,15,Logradouro,esriGeometryPolyline,,6,ESRI_OID,True,1000,,,"contagem falhou: {""code"": -2147215975, ""message"": ""Failed to execute query."", ""details"": []}; min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_RedeViaria,16,Vias Propostas,esriGeometryPolyline,489,20,OBJECTID,True,1000,1,6903,
+Mapa_RedeViaria,17,Logradouro CI,Table,14767,6,OBJECTID,True,1000,1,14767,
+Mapa_MeioAmbiente,0,Erosão,esriGeometryPoint,63,14,OBJECTID,True,1000,1,63,
+Mapa_MeioAmbiente,1,Nascente,esriGeometryPoint,616,13,OBJECTID,True,1000,1,5801,
+Mapa_MeioAmbiente,3,Árvore,esriGeometryPoint,90172,107,OBJECTID,True,1000,1,125627,
+Mapa_MeioAmbiente,4,Plantio,esriGeometryPoint,30694,107,OBJECTID,True,1000,6,117315,
+Mapa_MeioAmbiente,5,Remoção de Toco,esriGeometryPoint,4762,107,OBJECTID,True,1000,13,117125,
+Mapa_MeioAmbiente,6,Declividade Maior que 30%,esriGeometryPolyline,15,15,OBJECTID,True,1000,1,15,
+Mapa_MeioAmbiente,7,Curva de Nível (5 m),esriGeometryPolyline,2334,14,OBJECTID,True,1000,1,2334,
+Mapa_MeioAmbiente,8,Hidrografia,esriGeometryPolygon,2040,15,OBJECTID,True,1000,1,8113,
+Mapa_MeioAmbiente,9,Vegetação,esriGeometryPolygon,3857,16,OBJECTID,True,1000,,4722,
+Mapa_MeioAmbiente,10,Área de Proteção Permanente,esriGeometryPolygon,867,19,OBJECTID,True,1000,2,57700,
+Mapa_MeioAmbiente,11,Parque,esriGeometryPolygon,53,22,OBJECTID,True,1000,1,10865,
+Mapa_MeioAmbiente,12,Unidade de Conservação,esriGeometryPolygon,224,19,OBJECTID,True,1000,1,5827,
+Mapa_MeioAmbiente,13,Área de Proteção Ambiental,esriGeometryPolygon,1,22,OBJECTID,True,1000,31,31,
+Mapa_MeioAmbiente,14,Risco Geológico,esriGeometryPolygon,24,29,OBJECTID,True,1000,1,24,
+Mapa_PatrimonioHistorico,0,PHS (Classificação da Área),esriGeometryPolygon,177,19,OBJECTID,True,1000,1,309,
+Mapa_PatrimonioHistorico,1,PHS (Área Interna Pública),esriGeometryPolygon,29,19,OBJECTID,True,1000,39,219,
+Mapa_PatrimonioHistorico,2,PHS (Imóveis),esriGeometryPolygon,82,19,OBJECTID,True,1000,42,235,
+Mapa_PatrimonioHistorico,3,PHS (Árvores Históricas),esriGeometryPolygon,13,19,OBJECTID,True,1000,79,221,
+Mapa_PatrimonioHistorico,4,PHS (Área Pública Municipal),esriGeometryPolygon,2,19,OBJECTID,True,1000,225,227,
+Mapa_PatrimonioHistorico,5,PHS (Traçado Tombado),esriGeometryPolygon,1,19,OBJECTID,True,1000,304,304,
+Mapa_PatrimonioHistorico,6,PHS (Áreas de Interesse),esriGeometryPolygon,6,19,OBJECTID,True,1000,53,304,
+Mapa_OcupacaoIlegal,0,Regularização Fundiária (Em Processo),esriGeometryPolygon,318,32,OBJECTID,True,1000,1,2729,
+Mapa_OcupacaoIlegal,1,Regularização Fundiária (Regularizada),esriGeometryPolygon,20,32,OBJECTID,True,1000,2,324,
+Mapa_Legislacao,0,Lei Complemantar 181/2008,esriGeometryPolygon,65,30,ESRI_OID,True,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Legislacao,1,Lei Complementar 228/2012,esriGeometryPolygon,9,30,ESRI_OID,True,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_ModeloEspacial,1,Corredores,esriGeometryPolyline,36,9,OBJECTID,True,1000,1,3237,
+Mapa_ModeloEspacial,2,Declividade acima de 30%,esriGeometryPolyline,15,16,OBJECTID,True,1000,1,16,
+Mapa_ModeloEspacial,3,Vias,esriGeometryPolyline,14,11,OBJECTID,True,1000,1,14,
+Mapa_ModeloEspacial,4,Eixo de Desenvolvimento - ED,esriGeometryPolyline,12,10,OBJECTID,True,1000,39,50,
+Mapa_ModeloEspacial,5,Influência das Vias Expressas - Ive,esriGeometryPolygon,22,17,OBJECTID,True,1000,1,22,
+Mapa_ModeloEspacial,7,Áreas de Programas Especiais de Interesse Social - AEIS,esriGeometryPolygon,115,10,OBJECTID,True,1000,25,2534,
+Mapa_ModeloEspacial,8,Áreas de Programas Especiais de Interesse Urbanístico,esriGeometryPolygon,3,10,OBJECTID,True,1000,1,8,
+Mapa_ModeloEspacial,9,Áreas de Programas Especiais de Interesse Ambiental,esriGeometryPolygon,12,10,OBJECTID,True,1000,3,130,
+Mapa_ModeloEspacial,10,Áreas de Programas Especiais de Interesse Econômico,esriGeometryPolygon,10,10,OBJECTID,True,1000,14,24,
+Mapa_ModeloEspacial,12,Área Especial de Desenvolvimento Econômico - AEDE,esriGeometryPolygon,9,6,OBJECTID,True,1000,11,19,
+Mapa_ModeloEspacial,13,Área Básica de Desenvolvimento Ecológico-Econômico - ABADEE,esriGeometryPolygon,0,6,OBJECTID,True,1000,,,
+Mapa_ModeloEspacial,14,Area de Proteção Permanente - APP,esriGeometryPolygon,103,21,OBJECTID,True,1000,101,609,
+Mapa_ModeloEspacial,15,Áreas de Recuperação e Conservação Temporárias,esriGeometryPolygon,0,21,OBJECTID,True,1000,,,
+Mapa_ModeloEspacial,17,UPI's,esriGeometryPolygon,0,21,OBJECTID,True,1000,,,
+Mapa_ModeloEspacial,18,UUS's,esriGeometryPolygon,109,21,OBJECTID,True,1000,101,609,
+Mapa_ModeloEspacial,19,Áreas Verdes,esriGeometryPolygon,0,21,OBJECTID,True,1000,,,
+Mapa_ModeloEspacial,21,Area de Proteção Permanente - APP,esriGeometryPolygon,609,25,OBJECTID,True,1000,818,5832,
+Mapa_ModeloEspacial,22,Áreas de Recuperação e Conservação Temporárias,esriGeometryPolygon,0,25,OBJECTID,True,1000,,,
+Mapa_ModeloEspacial,24,UPI's,esriGeometryPolygon,0,25,OBJECTID,True,1000,,,
+Mapa_ModeloEspacial,25,UUS's,esriGeometryPolygon,612,25,OBJECTID,True,1000,818,5832,
+Mapa_ModeloEspacial,26,Áreas Verdes,esriGeometryPolygon,0,25,OBJECTID,True,1000,,,
+Mapa_ModeloEspacial,27,Jardim Botânico,esriGeometryPolygon,1,25,OBJECTID,True,1000,1428,1428,
+Mapa_ModeloEspacial,28,Áreas de Patrimonio Cultural -Apac,esriGeometryPolygon,103,20,OBJECTID,True,1000,1,505,
+Mapa_ModeloEspacial,29,Áreas de Ocupação Sustentável - AOS,esriGeometryPolygon,2040,25,OBJECTID,True,1000,1151,10171,
+Mapa_ModeloEspacial,30,Áreas de Desaceleração de Densidade - ADD,esriGeometryPolygon,7,25,OBJECTID,True,1000,1,7,
+Mapa_ModeloEspacial,31,Áreas Adensáveis - AA,esriGeometryPolygon,51,25,OBJECTID,True,1000,48,102,
+Mapa_ModeloEspacial,32,Outorga Onerosa de Alteração de Uso - OOAU,esriGeometryPolygon,27,18,OBJECTID_1,True,1000,1,27,
+Mapa_ModeloEspacial,33,Macrozoneamento,esriGeometryPolygon,40,22,OBJECTID_1,True,1000,50,490,
+Mapa_ModeloEspacial,34,LIMITE DO MUNICÍPIO,esriGeometryPolygon,1,13,OBJECTID_1,True,1000,136,136,
+Mapa_ModeloEspacial,35,MUNICÍPIOS ENTORNO,esriGeometryPolygon,245,13,OBJECTID_1,True,1000,1,246,
+Mapa_ModeloEspacial,38,Área de Aproximação do Aeroporto,esriGeometryPolygon,2,26,OBJECTID,True,1000,3,5,
+Mapa_ModeloEspacial,39,Área de Cone de Ruído do Aeródromo,esriGeometryPolygon,5,26,OBJECTID,True,1000,7,11,
+Mapa_ModeloEspacial,40,Área de Segurança e Proteção Aeroportuária,esriGeometryPolygon,2,26,OBJECTID,True,1000,1,2,
+Mapa_ModeloEspacial,42,Unidade de Uso Sustentável,esriGeometryPolygon,1248,19,OBJECTID,True,1000,1,84376,
+Mapa_ModeloEspacial,43,Área de Influência das Vias Especiais,esriGeometryPolygon,22,15,OBJECTID,True,1000,1,22,
+Mapa_ModeloEspacial,44,Área de Restrição Militar,esriGeometryPolygon,3,19,OBJECTID,True,1000,1,3,
+Mapa_ModeloEspacial,45,Área Adensável,esriGeometryPolygon,31,23,OBJECTID,True,1000,1,10547,
+Mapa_ModeloEspacial,46,Área de Desaceleração de Densidade,esriGeometryPolygon,4,23,OBJECTID,True,1000,10,26,
+Mapa_ModeloEspacial,47,Área Especial de Interesse Social III,esriGeometryPolygon,72,23,OBJECTID,True,1000,34,7351,
+Mapa_ModeloEspacial,48,"Área Especial de Interesse Social III, Pós LC 171/2007",esriGeometryPolygon,48,23,OBJECTID,True,1000,27,10148,
+Mapa_Limites,1,Escala 64000,esriGeometryPolygon,49,15,OBJECTID,True,1000,451,499,
+Mapa_Limites,2,Escala 256000,esriGeometryPolygon,49,15,OBJECTID,True,1000,451,499,
+Mapa_Limites,3,Circunscrição Cartorária,esriGeometryPolygon,4,14,OBJECTID,True,1000,1,4,
+Mapa_Limites,4,Divisas de Macrozona,esriGeometryPolygon,8,16,OBJECTID,True,1000,1,8,
+Mapa_Limites,5,Divisas de Região Administrativa (7),esriGeometryPolygon,7,15,OBJECTID,True,1000,15,824,
+Mapa_Limites,6,Divisas de Região (12),esriGeometryPolygon,12,15,OBJECTID,True,1000,1209,1220,
+Mapa_Limites,8,Escala 64000,esriGeometryPolygon,228,16,OBJECTID,True,1000,1,9434,
+Mapa_Limites,9,Escala 256000,esriGeometryPolygon,228,16,OBJECTID,True,1000,1,9434,
+Mapa_Limites,10,Zonas Eleitorais,esriGeometryPolygon,9,14,OBJECTID,True,1000,11,19,
+Mapa_Acessibilidade,1,Estabelecimentos Municipais de Educação - fonte: SIGGO,esriGeometryPoint,359,4,SIGGOPROD.SIGGO.Edm.OBJECTID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Invalid or missing input parameters."", ""details"": []}"
+Mapa_Acessibilidade,2,Estabelecimentos de Educação - fonte: SIGGO,esriGeometryPoint,518,4,OBJECTID,True,1000,2,2257,
+Mapa_Acessibilidade,3,Escolas Públicas - fonte: SIEG,esriGeometryPoint,110,4,sieg_escolas_publicas_2013.FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,5,Creches e Berçários - 8511200,esriGeometryPoint,270,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,6,Alfabetização e Pré-escola - 8512100,esriGeometryPoint,684,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,7,Ensino Fundamental - 8513900,esriGeometryPoint,664,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,8,Ensino Médio - 8520100,esriGeometryPoint,233,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,9,Ensino Superior - 8531700,esriGeometryPoint,55,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,11,Estabelecimentos Municipais de Saúde - SIGGO,esriGeometryPoint,146,4,SIGGOPROD.SIGGO.Sau.OBJECTID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Invalid or missing input parameters."", ""details"": []}"
+Mapa_Acessibilidade,13,Atividades de Atendimento Hospitalar - 8610101,esriGeometryPoint,176,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,14,Atividades de Prontosocorro e Urgências - 8610102,esriGeometryPoint,190,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,15,Atividade Medica Ambulatorial - 8630501,esriGeometryPoint,318,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,16,Servico de Dialise e Nefrologia - 8640203,esriGeometryPoint,16,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,17,Servicos de Quimioterapia - 8640210,esriGeometryPoint,32,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,18,Servicos de Radioterapia - 8640211,esriGeometryPoint,30,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,19,Atividades de Assistencia a Deficientes Físicos com Internação - 8711503,esriGeometryPoint,26,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,22,Shopping Center,esriGeometryPoint,10,5,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,23,Hipermercado - 4711301,esriGeometryPoint,165,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,24,Supermercado - 4711302,esriGeometryPoint,527,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,25,Lojas de Departamentos e Magazines - 4713001,esriGeometryPoint,32,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,28,Bancos Comerciais - 6421200,esriGeometryPoint,104,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,29,Bancos Multiplos - 6422100,esriGeometryPoint,116,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,30,Caixas Economicas - 6423900,esriGeometryPoint,38,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,33,Vapt Vupt,esriGeometryPoint,28,7,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,35,Agência de Correios - 5310501,esriGeometryPoint,17,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,36,Agencias de Correios Franqueadas - 5310502,esriGeometryPoint,19,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,37,Casas Lotericas - 8299706,esriGeometryPoint,170,4,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,40,Terminais de Ônibus,esriGeometryPoint,21,2,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,41,Plataformas e Pontos de Ônibus,esriGeometryPoint,7079,2,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,42,Linhas de Ônibus,esriGeometryPolyline,779,2,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,43,Edm_ind_end,Table,356,3,OID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,44,Shopping,Table,10,60,OID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,45,sieg_escolas_publicas_2013_end,Table,110,4,OID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Acessibilidade,46,Sau_ind_end,Table,146,4,OID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_Documentacao,0,Lote Documentos,esriGeometryPolygon,10409,3,ATTACHMENTID,True,1000,23813,35887,
+Mapa_Documentacao,1,Lote Vistórias,esriGeometryPolygon,15514,3,ATTACHMENTID,True,1000,1,36551,
+Mapa_Documentacao,2,Bairro Documentos,esriGeometryPolygon,3005,3,ATTACHMENTID,True,1000,3403,92190,
+Mapa_Fiscalizacao,0,Divisas de Subzona Fiscal,esriGeometryPolygon,1209,10,SIGGOPROD.SIGGO.Bai.OBJECTID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Invalid or missing input parameters."", ""details"": []}"
+Mapa_Fiscalizacao,1,SEFIN.dbo.CAD_BAIRRO_ASG,Table,877,7,,True,1000,,,
+Mapa_Simplifica_Goiania_UsoDoSolo,0,Divisas de Lote,esriGeometryPolygon,,32,OBJECTID,True,1000,,,"contagem falhou: {""code"": 400, ""message"": ""Requested operation is not supported by this service."", ""details"": [""The requested capability ; min/max falhou: {""code"": 400, ""message"": ""Requested operation is not supported by this service."", ""details"": [""The requested capability "
+Mapa_Simplifica_Goiania_UsoDoSolo,1,Segmento de Logradouro,esriGeometryPolyline,,29,OBJECTID_1,True,1000,,,"contagem falhou: {""code"": 400, ""message"": ""Requested operation is not supported by this service."", ""details"": [""The requested capability ; min/max falhou: {""code"": 400, ""message"": ""Requested operation is not supported by this service."", ""details"": [""The requested capability "
+Mapa_Simplifica_Goiania_UsoDoSolo,2,Logradouros,esriGeometryPolyline,,7,OBJECTID,True,1000,,,"contagem falhou: {""code"": 400, ""message"": ""Requested operation is not supported by this service."", ""details"": [""The requested capability ; min/max falhou: {""code"": 400, ""message"": ""Requested operation is not supported by this service."", ""details"": [""The requested capability "
+Mapa_Simplifica_Goiania_UsoDoSolo,3,Unidades Territoriais,esriGeometryPolygon,,25,OBJECTID,True,1000,,,"contagem falhou: {""code"": 400, ""message"": ""Requested operation is not supported by this service."", ""details"": [""The requested capability ; min/max falhou: {""code"": 400, ""message"": ""Requested operation is not supported by this service."", ""details"": [""The requested capability "
+Mapa_Tributario_Web,0,Unidade Territorial,esriGeometryPolygon,124997,70,FID,False,1000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_UsoDoSoloNew,1,Estatual,esriGeometryPolygon,2232,81,ESRI_OID,True,500000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_UsoDoSoloNew,2,Federal,esriGeometryPolygon,1019,81,ESRI_OID,True,500000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_UsoDoSoloNew,3,Municipal,esriGeometryPolygon,8881,81,ESRI_OID,True,500000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_UsoDoSoloNew,4,Particular,esriGeometryPolygon,,81,ESRI_OID,True,500000,,,"contagem falhou: HTTP Error 502: Bad Gateway; min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_UsoDoSoloNew,5,Religioso,esriGeometryPolygon,2283,81,ESRI_OID,True,500000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_UsoDoSoloNew,6,Não Identificado,esriGeometryPolygon,2,81,ESRI_OID,True,500000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_UsoDoSoloNew,8,Estadual,esriGeometryPolygon,78,87,nr_apm,True,500000,1826,103960,
+Mapa_UsoDoSoloNew,9,Federal,esriGeometryPolygon,11,87,nr_apm,True,500000,20081,92643,
+Mapa_UsoDoSoloNew,10,Municipal,esriGeometryPolygon,8147,87,nr_apm,True,500000,26,105262,
+Mapa_UsoDoSoloNew,11,Particular,esriGeometryPolygon,200,87,nr_apm,True,500000,1750,104422,
+Mapa_UsoDoSoloNew,12,Não Identificado,esriGeometryPolygon,0,87,nr_apm,True,500000,,,
+Mapa_UsoDoSoloNew,13,Parcelamento em aprovação,esriGeometryPolygon,17,29,ESRI_OID,True,500000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_UsoDoSoloNew,14,Glebas,esriGeometryPolygon,495,29,ESRI_OID,True,500000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_UsoDoSoloNew,15,Numeração Predial Oficial,esriGeometryPolygon,,11,nm_npo,True,500000,1,622966,"contagem falhou: {""code"": -2147211250, ""message"": ""Failed to execute query."", ""details"": []}"
+Mapa_UsoDoSoloNew,16,Vazios Urbanos,esriGeometryPolygon,104762,99,ESRI_OID,True,500000,,,"min/max falhou: {""code"": 400, ""message"": ""Unable to complete operation."", ""details"": []}"
+Mapa_UsoDoSoloNew,17,Rótulo Número Oficial,esriGeometryPolygon,203981,13,OBJECTID,True,500000,1,223147,

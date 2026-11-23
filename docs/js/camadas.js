@@ -7,6 +7,7 @@
 import { CFG } from './config.js';
 import { $$, el, pedirJSON, debounce, semAcento, aviso, fmtNum } from './util.js';
 import { provedorExport } from './globo.js';
+import { temServico, ProvedorTema, imagemLocal } from './banco.js';
 
 /** Organização dos projetos. `ids` lista camadas (folhas ou grupos) do serviço; sem `ids`, entra o serviço todo. */
 export const ORGANIZACAO = [
@@ -311,8 +312,12 @@ export class Camadas {
     if (e.camada) { this.globo.removerTema(e.camada); e.camada = null; }
     const ids = this._desenhadas(chave);
     if (ids.size) {
-      const provedor = provedorExport(t.url, { camadas: [...ids].sort((a, b) => a - b), retangulo: this.globo.ret,
-        credito: `${t.titulo}: Prefeitura de Goiânia (Mapa Fácil)` });
+      const lista = [...ids].sort((a, b) => a - b);
+      const credito = `${t.titulo}: Prefeitura de Goiânia (Mapa Fácil)`;
+      // Banco local: o tema é desenhado dos dados guardados no site; sem eles, a imagem vem do servidor municipal.
+      const provedor = temServico(t.chave)
+        ? new ProvedorTema({ servico: t.chave, camadas: lista, retangulo: this.globo.ret, credito: `${credito} · banco local` })
+        : imagemLocal(t.chave) || provedorExport(t.url, { camadas: lista, retangulo: this.globo.ret, credito });
       provedor.errorEvent.addEventListener((erro) => {
         if (erro.timesRetried === 0 && !e.avisou) {
           e.avisou = true;

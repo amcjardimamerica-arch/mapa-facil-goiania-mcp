@@ -16,6 +16,7 @@ import { Lotes } from './lotes.js';
 import { Levantamento } from './levantamento.js';
 import { Poligonos } from './poligonos.js';
 import { encerrarSessao, sessaoAindaValida } from './acesso.js';
+import { iniciarBanco } from './banco.js';
 
 const Cesium = window.Cesium;
 const app = (window.bussola = { versao: VERSAO, pronto: false, erros: [] });
@@ -34,6 +35,11 @@ function lerHash() {
 
 async function iniciar() {
   if (!Cesium) throw new Error('A biblioteca do globo (CesiumJS) não carregou. Verifique a conexão e recarregue.');
+  // Guarda no aparelho o banco local e os dados (abre de imediato nas próximas vezes).
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  estadoAbertura('Abrindo o banco de dados local…');
+  // Dados do Mapa Fácil guardados no próprio site: o sistema deixa de depender do servidor da Prefeitura.
+  const banco = await iniciarBanco();
   estadoAbertura('Carregando o território de Goiânia…');
   const [geo, catalogo, bairros, lugares, manifesto, satelite] = await Promise.all([
     pedirJSON(`${CFG.dados}territorio.geojson`),
@@ -44,6 +50,7 @@ async function iniciar() {
     pedirJSON(`${CFG.dados}satelite.json`).catch(() => ({ versoes: [] })), // opcional: sem ele, só não há datas antigas
   ]);
   catalogo.satelite = satelite.versoes || [];
+  catalogo.banco = banco;
   catalogo.bairros = bairros.bairros; // nomes de bairro no mapa desenhado
   const territorio = new Territorio(geo);
   const hash = lerHash();

@@ -1,5 +1,5 @@
 // Configuração da Bússola. Tudo que depende de endereço externo fica aqui.
-export const VERSAO = '1.7.7';
+export const VERSAO = '1.8.0';
 
 const REST = 'https://portalmapa.goiania.go.gov.br/servicogyn/rest/services';
 
@@ -9,6 +9,11 @@ export const CFG = {
   rest: REST,
   ms: `${REST}/MapaServer`,
   baseCadastral: `${REST}/MapaServer/Feature_Base/MapServer`,
+  // Banco local (docs/banco/): responde no lugar do servidor da Prefeitura. Com true, nunca consulta o servidor
+  // municipal, nem para o que o banco não tem; com false, o que faltar no banco ainda é pedido a ele.
+  bancoSoLocal: false,
+  // Serviços já desvinculados: tudo deles vem só do banco local, mesmo o que faltar (nunca vai ao servidor).
+  servicosSoLocais: ['Feature_Base'],
 
   // Registro de acessos: endereço do aplicativo da Web do Apps Script (scripts/registro-acessos.gs).
   // Vazio = registro desligado.

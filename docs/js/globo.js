@@ -3,6 +3,7 @@
 import { CFG } from './config.js';
 import { ProvedorMascara, rotularVizinhos } from './territorio.js';
 import { ProvedorVetorial } from './mapavetorial.js';
+import { imagemLocal } from './banco.js';
 
 const Cesium = window.Cesium;
 const rad = (graus) => (graus * Math.PI) / 180; // sem tocar no Cesium na carga do módulo
@@ -161,6 +162,8 @@ export class Globo {
     }
     const b = this.catalogo.bases.find((x) => x.chave === chave && !x.ano);
     if (!b) throw new Error(`base desconhecida: ${chave}`);
+    const local = imagemLocal(b.url.split('/MapServer')[0].split('/').pop());
+    if (local) return local;
     return provedorExport(b.url, {
       formato: 'jpg', transparente: false, retangulo: this.ret, nivelMaximo: 21,
       nivelMinimo: Math.max(NIVEL_MINIMO, b.nivel_minimo || NIVEL_MINIMO),

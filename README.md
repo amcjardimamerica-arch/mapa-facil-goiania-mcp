@@ -100,6 +100,48 @@ python scripts/importar_levantamento.py compilado.kmz compilado.xlsx   # aceita 
   de dados fica acessível a quem tiver o endereço direto, como tudo no GitHub Pages.
 - No Mapa e na camada "Ruas e quadras", a divisa de todos os bairros de Goiânia aparece tracejada.
 
+## Banco de dados local: sistema independente do servidor da Prefeitura (1.8)
+
+Os dados públicos do Mapa Fácil foram extraídos e ficam no próprio site, em `docs/banco/`. O sistema passa
+a responder ao clique, à busca, ao fundo "Mapa", às quadras e lotes por aproximação e aos temas do painel
+Camadas a partir desse banco, sem consultar o servidor municipal.
+
+- **Como funciona.** `docs/js/banco.js` atende, no próprio navegador, as mesmas perguntas que o sistema fazia
+  ao servidor ArcGIS da Prefeitura: `query`, `identify`, `legend` e metadados. Os módulos do sistema continuam iguais.
+  Só uma pergunta que o banco não sabe responder segue para o servidor municipal, se ele estiver no ar.
+  Para nunca consultar o servidor, use `bancoSoLocal: true` em `config.js`. Os serviços listados em
+  `servicosSoLocais` (hoje a Base Cadastral, `Feature_Base`) já estão desvinculados: nunca vão ao servidor, nem para
+  o que faltar no banco.
+- **Carregamento.** O `sw.js` (service worker) guarda no aparelho os arquivos de `banco/` e `data/`: da segunda vez
+  em diante o mapa abre com eles na hora e atualiza por trás.
+- **Temas do painel Camadas.** Deixam de ser imagens pedidas ao servidor e são desenhados dos dados, com as
+  cores, símbolos, rótulos e escalas originais de cada camada (`drawingInfo`). O que só existe como imagem
+  (Mapa Básico) fica em blocos de imagem em `docs/banco/blocos/`.
+- **Formato.**
+  - `manifesto.json`: serviços, camadas, campos, blocos e índices.
+  - `servicos/{Serviço}/`: metadados e legendas originais.
+  - `dados/{Serviço}/{camada}/`:
+    - camadas pequenas num arquivo só;
+    - camadas grandes em blocos Web Mercator (nível 15, ou 13 para áreas);
+    - visão simplificada para ver de longe;
+    - índices por `id` e por inscrição (`ci`).
+  - Cadastro imobiliário (unidades de IPTU): agrupado pela inscrição do lote.
+  - Tudo em JSON compactado (gzip), com todos os campos e nomes originais.
+- **Atualizar.** O banco é uma fotografia do servidor na data da extração (ver `docs/banco/manifesto.json` e
+  `docs/banco/conferencia.csv`). Para refazer:
+
+```bash
+python scripts/extrair_mapafacil.py inventario          # metadados, legendas e contagens
+python scripts/extrair_mapafacil.py baixar Feature_Base # base cadastral (ou "todos" para os projetos)
+python scripts/extrair_mapafacil.py cadastro            # cadastro imobiliário, por bairro
+python scripts/extrair_mapafacil.py reparar_todos       # completa o que faltou e a geometria pelo identify
+python scripts/extrair_blocos.py Mapa_Basico3 11 17 jpg # imagens do Mapa Básico
+python scripts/montar_banco.py extracao/saida           # monta docs/banco/
+```
+
+O servidor municipal cai com frequência (502). O extrator faz no máximo 3 pedidos simultâneos, espera e tenta de novo,
+e retoma de onde parou.
+
 ## Acesso com usuário e senha
 
 A página inicial (`docs/index.html`) é o portal de acesso. O mapa fica em `docs/sistema.html` e só abre
