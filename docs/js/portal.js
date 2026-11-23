@@ -9,7 +9,7 @@ const botao = $('#entrar');
 
 // Para onde voltar depois de entrar (só páginas internas deste site).
 const pedido = new URLSearchParams(location.search).get('volta') || '';
-const destino = /^(sistema|validacao)\.html(#.*)?$/.test(pedido) ? pedido : 'sistema.html';
+const destino = /^(sistema|validacao|logs)\.html(#.*)?$/.test(pedido) ? pedido : 'sistema.html';
 
 const mostrarErro = (texto) => { msg.textContent = texto; msg.hidden = !texto; };
 

@@ -28,13 +28,6 @@
   .ok .sinal { background: #7bd88f; } .falha .sinal { background: var(--erro); } .alerta .sinal { background: var(--acento); }
   .rodando .sinal { background: none; border: 2px solid var(--acento); border-right-color: transparent; animation: gira .8s linear infinite; }
   .falha .detalhe { color: var(--erro); }
-  .logs-corpo { padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
-  .logs-corpo .campo { max-width: 320px; }
-  .logs-tabela { overflow-x: auto; }
-  #logs-tabela { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  #logs-tabela th, #logs-tabela td { text-align: left; padding: 7px 8px; border-top: 1px solid #2d3238; vertical-align: top; }
-  #logs-tabela th { color: var(--texto-2); font-weight: 600; white-space: nowrap; }
-  #logs-tabela small { display: block; color: var(--texto-2); }
 </style>
 </head>
 <body>
@@ -43,25 +36,10 @@
     <div><h1>Validação da Bússola</h1><p class="nota">Testes automáticos dos dados, dos cálculos e dos serviços que o mapa usa. Rodam no seu navegador, ao vivo.</p></div>
     <div class="linha-botoes"><a class="botao" href="sistema.html">Abrir o mapa</a><button class="botao" id="rodar">Rodar de novo</button><button class="botao" id="baixar" disabled>Baixar relatório</button></div>
   </header>
-  <section id="logs" class="grupo-v logs" aria-labelledby="logs-titulo">
-    <h2 id="logs-titulo">Logs de acesso</h2>
-    <div class="logs-corpo">
-      <p class="nota" id="logs-estado">Quem acessou o sistema, quando, de onde e com qual aparelho.</p>
-      <div class="linha-botoes">
-        <input class="campo" id="logs-chave" type="password" autocomplete="off" placeholder="Chave de leitura dos logs" aria-label="Chave de leitura dos logs">
-        <button class="botao" id="logs-ver">Ver logs</button>
-      </div>
-      <div class="logs-tabela"><table id="logs-tabela" hidden>
-        <thead><tr><th>Data e hora</th><th>Usuário</th><th>Evento</th><th>Localização</th><th>Aparelho</th><th>Internet</th></tr></thead>
-        <tbody></tbody>
-      </table></div>
-    </div>
-  </section>
   <section id="resumo" aria-live="polite"></section>
   <div id="grupos"></div>
 </main>
 <div id="avisos"></div>
 <script type="module" src="js/validacao.js"></script>
-<script type="module" src="js/logs.js"></script>
 </body>
 </html>
