@@ -525,16 +525,16 @@ def test_logs_de_acesso(mapa, servidor):
     r = mapa.evaluate("""async () => {
       const m = await import('./js/registro.js');
       const a = await m.aparelho();
-      return { aparelho: a, botao: !!document.querySelector('[data-secao=sobre] a[href="logs.html"]') };
+      return { aparelho: a, botao: document.querySelectorAll('[data-secao=sobre] a.botao').length === 1 && !!document.querySelector('[data-secao=sobre] a[href="validacao.html"]') };
     }""")
     assert r["botao"] and r["aparelho"]["tipo"] in ("Computador", "Celular", "Tablet") and r["aparelho"]["navegador"].startswith("Chrome"), r
     ctx = mapa.context
     pagina = ctx.new_page()
-    pagina.goto(f"{servidor}/logs.html")
-    pagina.wait_for_selector("#logs-estado")
-    assert "Logs de acesso" in pagina.title() and pagina.is_visible("#logs-chave") and not pagina.query_selector("#grupos")
     pagina.goto(f"{servidor}/validacao.html")
-    assert not pagina.query_selector("#logs")
+    pagina.wait_for_selector("#abrir-logs")
+    assert not pagina.is_visible("#logs")
+    pagina.click("#abrir-logs")
+    assert pagina.is_visible("#logs") and pagina.is_visible("#logs-chave") and "Logs de acesso" in pagina.text_content("#logs")
     pagina.close()
 
 

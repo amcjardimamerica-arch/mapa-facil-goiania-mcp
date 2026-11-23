@@ -3,6 +3,11 @@ import { CFG } from './config.js';
 import { lerAcessos } from './registro.js';
 
 const $ = (s) => document.querySelector(s);
+// A seção fica fechada; abre pelo botão "Logs de acesso" do topo ou pelo endereço validacao.html#logs.
+const secao = $('#logs'), botaoLogs = $('#abrir-logs');
+const mostrar = (abre) => { secao.hidden = !abre; botaoLogs?.setAttribute('aria-pressed', String(abre)); if (abre) secao.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+botaoLogs?.addEventListener('click', () => mostrar(secao.hidden));
+if (location.hash === '#logs') mostrar(true);
 const estado = $('#logs-estado'), tabela = $('#logs-tabela'), corpo = tabela.querySelector('tbody');
 const txt = (v) => (v === undefined || v === null ? '' : String(v));
 
