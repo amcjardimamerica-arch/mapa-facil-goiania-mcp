@@ -307,23 +307,6 @@ async function iniciar() {
   }, 200);
   globo.camera.moveEnd.addEventListener(aoParar);
 
-  // ------------------------------------------------------------- explorar
-  const parques = lugares.lugares.filter((l) => l.tipo === 'parque');
-  const irLugar = (l) => busca.escolher({ tipo: 'lugar', n: l.n, dado: l });
-  for (const l of parques) $('#lista-parques').append(el('li', {}, el('button', { onclick: () => irLugar(l) }, el('span', {}, l.n))));
-  for (const b of bairros.bairros.slice(0, 12)) {
-    $('#lista-bairros').append(el('li', {}, el('button', { onclick: () => busca.escolher({ tipo: 'bairro', n: b.n, dado: b }) },
-      el('span', {}, b.n), el('small', {}, `${fmtNum(b.pop)} hab.`))));
-  }
-  if (bairros.bairros.length) {
-    $('#lista-bairros').after(el('p', { class: 'nota' },
-      'População conforme o campo da base municipal. A soma dos bairros equivale à do Censo de 2010, não à de 2022.'));
-  }
-  $('#sortear').addEventListener('click', () => {
-    const altos = edificios.lista.slice(0, 40);
-    const sorteio = [...parques.map((l) => () => irLugar(l)), ...altos.map((e) => () => edificios.irPara(e))];
-    if (sorteio.length) sorteio[Math.floor(Math.random() * sorteio.length)]();
-  });
 
   // ---------------------------------------------------------------- sobre
   $('#sobre-usuario').textContent = sessao.nome ? `Conectado como ${sessao.nome} (${sessao.login}).` : '';
