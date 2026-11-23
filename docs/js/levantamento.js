@@ -153,8 +153,8 @@ export class Levantamento {
       chave('bocas', 'Bocas de lobo', 'ícone com o número de unidades em sequência'),
       chave('postes', 'Postes', 'todos os postes do bairro: cinza concreto (redondo ou quadrado), marrom madeira; o braço aponta para a rua'),
       el('ul', { class: 'lv-legenda lv-legenda-postes' },
-        [['#ffee58', 'Bola do topo: rede de baixa tensão'], ['#f57c00', 'Bola do topo: rede de alta tensão'], ['#d32f2f', 'Bola do topo: com transformador (caixa vermelha no meio do poste)'],
-          ['#9e9e9e', 'Bola do topo: tensão não informada'], ['#2196f3', 'Esfera do braço: iluminação sem pedido'], ['#f44336', 'Esfera do braço: manutenção pedida']]
+        [['#ffff00', 'Bola do topo: rede de baixa tensão'], ['#ff6600', 'Bola do topo: rede de alta tensão'], ['#d32f2f', 'Bola do topo: com transformador'], ['#ff0000', 'Caixa do transformador (no meio do poste)'],
+          ['#9e9e9e', 'Bola do topo: tensão não informada'], ['#00ffff', 'Esfera do braço: iluminação sem pedido'], ['#f44336', 'Esfera do braço: manutenção pedida']]
           .map(([c, t]) => el('li', {}, el('span', { class: 'lv-cor', style: `background:${c}` }), el('span', {}, t)))),
       this._chaveEdificacoes = chave('edificacoes', 'Edificações em 3D nestes bairros', 'prédios e condomínios; a cidade inteira fica em Camadas → Edificações'),
       el('p', { class: 'nota' }, 'Locais de votação por zona e do Conselho Tutelar: Camadas → Zonas Eleitorais.'),

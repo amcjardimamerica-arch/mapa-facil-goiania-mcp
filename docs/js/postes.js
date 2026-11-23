@@ -2,7 +2,7 @@
 // com ou sem iluminação, juntos com o cadastro de iluminação do Mapa Fácil.
 // Cada poste é um cilindro 3D com uma bola no topo na cor da rede (amarelo = baixa tensão, laranja = alta,
 // vermelho = com transformador), caixa do transformador no meio quando há, e — nos que têm lâmpada — um
-// braço voltado para a rua com a esfera da iluminação (azul = sem pedido, vermelho = manutenção pedida).
+// braço voltado para a rua com a esfera da iluminação (ciano #00FFFF = sem pedido, vermelho = manutenção pedida).
 // Os postes do resto de Goiânia
 // (painel Camadas) não mudam.
 import { CFG } from './config.js';
@@ -10,14 +10,14 @@ import { el, aviso, pedirJSON, fmtNum, memoria } from './util.js';
 import { botaoManutencao, manutencao } from './manutencao.js';
 
 const Cesium = window.Cesium;
-const COR_REDE = { transformador: '#d32f2f', Alta: '#f57c00', Baixa: '#ffee58', '': '#9e9e9e' };
+const COR_REDE = { transformador: '#d32f2f', Alta: '#ff6600', Baixa: '#ffff00', '': '#9e9e9e' };
 const MATERIAL = { R: 'Concreto redondo (R)', Q: 'Concreto quadrado (Q)', M: 'Madeira (M)', '': 'Não informado' };
 const CHAVE_HIST = 'bussola:postes:historico';
 
 export const corDaRede = (p) => (p.transformador ? COR_REDE.transformador : COR_REDE[p.tensao] || COR_REDE['']);
 export const temLampada = (p) => !!(p.iluminacao || p.lampada);
-/** Esfera do braço: azul = iluminação sem pedido; vermelho = manutenção pedida (mau funcionamento). */
-export const corLampada = (p) => (manutencao.tem(p.codigo) ? '#f44336' : '#2196f3');
+/** Esfera do braço: ciano (#00FFFF) = iluminação sem pedido; vermelho = manutenção pedida (mau funcionamento). */
+export const corLampada = (p) => (manutencao.tem(p.codigo) ? '#f44336' : '#00ffff');
 // Medidas padronizadas: todos os postes com a mesma altura; haste e braço 50% maiores que na 1.9.1 e a
 // esfera da luminária com o dobro do tamanho.
 export const ALTURA_POSTE = 13.5;                 // m (antes 9 m, +50%)
@@ -28,7 +28,7 @@ const RAIO_LAMPADA = 1.1;                           // esfera da luminária (+10
 const TRAFO = [2.2, 2.2, 2.8];                      // caixa do transformador, maior
 // Cor da haste pelo material: madeira marrom; concreto (redondo ou quadrado) cinza.
 const corHaste = (p) => (p.material === 'M' ? '#8d6e63' : '#9e9e9e');
-const COR_BRACO = '#90a4ae', COR_TRAFO = '#d32f2f';
+const COR_BRACO = '#90a4ae', COR_TRAFO = '#ff0000';
 
 /** Ponto a `d` metros de (lon, lat) no rumo `rumo` (radianos, a partir do norte, sentido horário). */
 function deslocar(lon, lat, d, rumo) {

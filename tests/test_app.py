@@ -410,7 +410,7 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
     assert r["infra"]["marcadores"] == 0 and r["infra"]["pedido"] == "true" and r["infra"]["data"] and r["infra"]["retirado"] == "false", r["infra"]
     assert r["infra"]["historico"], r["infra"]
     assert r["infra"]["partes"] == ["haste", "topo", "trafo", "braco", "lampada"] and r["infra"]["lampadaMudou"], r["infra"]
-    assert r["infra"]["altura"] == 13.5 and r["infra"]["cores"] == {"quadrado": "#9e9e9e", "madeira": "#8d6e63", "trafo": "#d32f2f"}, r["infra"]
+    assert r["infra"]["altura"] == 13.5 and r["infra"]["cores"] == {"quadrado": "#9e9e9e", "madeira": "#8d6e63", "trafo": "#ff0000"}, r["infra"]
     assert r["infra"]["grupos"] == ["Residencial", "Comercial", "Misto", "Lote vago", "Público", "Religioso", "Não identificado"], r["infra"]["grupos"]
     assert "Pedir manutenção (LT-" in r["ficha"], r["ficha"][:200]
     assert r["hash"], r
