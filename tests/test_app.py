@@ -371,7 +371,13 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
       lv.postes.abrir(p0);
       infra.marcadores = bussola.identificar.fonte.entities.values.filter((e) => e.point || e.billboard).length;
       const btn = () => document.querySelector('#ficha-corpo .manut-botao');
+      const comLampada = lv.postes.dados.postes.find((p) => p.iluminacao && p.transformador) || p0;
+      lv.postes.abrir(comLampada);
+      const corLamp = () => { const a = lv.postes.primitiva.getGeometryInstanceAttributes(lv.postes._ids.get(`${comLampada.i}:lampada`)); return a ? [...a.color].slice(0, 3) : null; };
+      infra.partes = ['haste', 'topo', 'trafo', 'braco', 'lampada'].filter((x) => lv.postes._ids.has(`${comLampada.i}:${x}`));
+      const antesCor = corLamp();
       btn().click(); infra.pedido = btn().getAttribute('aria-pressed'); infra.data = !!document.querySelector('#ficha-corpo .manut input[type=text]');
+      const depoisCor = corLamp(); infra.lampadaMudou = !!antesCor && antesCor[0] < depoisCor[0] && antesCor[2] > depoisCor[2];
       btn().click(); infra.retirado = btn().getAttribute('aria-pressed');
       infra.historico = document.querySelectorAll('#ficha-corpo .poste-historico input[type=text]').length === lv.postes.historicoDe(p0).length;
       lv.opcoes.bocas = false; lv.opcoes.postes = false; bussola.identificar.fechar(); lv.redesenhar();
@@ -398,6 +404,7 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
     assert r["infra"]["bocas"] == 830 and r["infra"]["postes"] > 4600, r["infra"]
     assert r["infra"]["marcadores"] == 0 and r["infra"]["pedido"] == "true" and r["infra"]["data"] and r["infra"]["retirado"] == "false", r["infra"]
     assert r["infra"]["historico"], r["infra"]
+    assert r["infra"]["partes"] == ["haste", "topo", "trafo", "braco", "lampada"] and r["infra"]["lampadaMudou"], r["infra"]
     assert r["infra"]["grupos"] == ["Residencial", "Comercial", "Misto", "Lote vago", "Público", "Religioso", "Não identificado"], r["infra"]["grupos"]
     assert "Pedir manutenção (LT-" in r["ficha"], r["ficha"][:200]
     assert r["hash"], r

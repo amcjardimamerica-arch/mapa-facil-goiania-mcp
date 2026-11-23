@@ -151,9 +151,10 @@ export class Levantamento {
       chave('oficiais', 'Limite oficial do Mapa Fácil', 'para comparar com o limite pelos lotes'),
       chave('areas', 'Áreas públicas', 'praças, áreas verdes, canteiros e equipamentos'),
       chave('bocas', 'Bocas de lobo', 'ícone com o número de unidades em sequência'),
-      chave('postes', 'Postes', 'todos os postes, com e sem lâmpada: amarelo baixa tensão, laranja alta, vermelho com transformador'),
+      chave('postes', 'Postes', 'todos os postes do bairro, com e sem lâmpada; o braço aponta para a rua'),
       el('ul', { class: 'lv-legenda lv-legenda-postes' },
-        [['#ffee58', 'Rede de baixa tensão'], ['#f57c00', 'Rede de alta tensão'], ['#d32f2f', 'Com transformador'], ['#9e9e9e', 'Tensão não informada']]
+        [['#ffee58', 'Bola do topo: rede de baixa tensão'], ['#f57c00', 'Bola do topo: rede de alta tensão'], ['#d32f2f', 'Bola do topo: com transformador (caixa no meio do poste)'],
+          ['#9e9e9e', 'Bola do topo: tensão não informada'], ['#2196f3', 'Esfera do braço: iluminação sem pedido'], ['#f44336', 'Esfera do braço: manutenção pedida']]
           .map(([c, t]) => el('li', {}, el('span', { class: 'lv-cor', style: `background:${c}` }), el('span', {}, t)))),
       this._chaveEdificacoes = chave('edificacoes', 'Edificações em 3D nestes bairros', 'prédios e condomínios; a cidade inteira fica em Camadas → Edificações'),
       el('p', { class: 'nota' }, 'Locais de votação por zona e do Conselho Tutelar: Camadas → Zonas Eleitorais.'),
@@ -367,7 +368,7 @@ export class Levantamento {
         ent.levantamento = { tipo: 'boca', dado: b };
       }
     }
-    // Postes em 3D (cilindro na cor da rede + prisma no topo), só nos bairros visíveis.
+    // Postes em 3D (haste, bola da tensão, transformador e braço da luminária), só nos bairros visíveis.
     this.postes.mostrar(this.mostrar && !!this.opcoes.postes, bairroVisivel).catch((e) => aviso(`Postes indisponíveis: ${e.message}`, 'alerta'));
 
     if (this.mostrar && this.opcoes.areas) {
