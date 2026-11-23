@@ -74,7 +74,7 @@ async function iniciar() {
   levantamento.aoEdificacoes = (id, nome, ligado, aneis) => edificios.definirBairro(id, nome, ligado, aneis).then(() => lotes._desenharChips());
   // Os locais de votação só aparecem com o projeto Zonas Eleitorais ligado.
   levantamento.opcoes.eleicao = '';
-  const localizacao = new Localizacao({ globo, identificar, camadas, territorio, raiz: $('#painel-local'), botaoGps: $('#nav-local'), sessao });
+  const localizacao = new Localizacao({ globo, camadas, territorio, botaoGps: $('#nav-local') });
   Object.assign(app, { globo, camadas, identificar, servicos, edificios, medir, marcadores, poligonos, localizacao, lotes, levantamento, busca, territorio, catalogo, manifesto, sessao });
 
   const bases = globo.basesDisponiveis();
@@ -94,7 +94,6 @@ async function iniciar() {
     if (painelAberto === 'levantamento') levantamento.mostrarBairros().catch((e) => aviso(`Levantamento indisponível: ${e.message}`, 'alerta'));
     if (painelAberto !== 'medir') medir.cancelar();
     if (painelAberto !== 'marcadores') marcadores.cancelarPedido();
-    if (painelAberto !== 'local') localizacao.cancelarPedido();
   };
   app.abrirPainel = abrirPainel;
   $$('#trilho [data-painel]').forEach((b) => b.addEventListener('click', () => abrirPainel(b.dataset.painel)));
@@ -112,7 +111,6 @@ async function iniciar() {
   const marcarBase = () => {
     for (const b of $$('#lista-bases button, #epocas button')) b.setAttribute('aria-checked', String(b.dataset.base === globo.chaveBase));
     seletorData.value = globo.chaveBase.startsWith('sat-') ? globo.chaveBase : '';
-    $('#st-creditos').textContent = `Dados: Prefeitura de Goiânia (Mapa Fácil) · ${creditoBase(globo.chaveBase)} · CesiumJS`;
     $('#rotulo-esq').textContent = bases.find((b) => b.chave === globo.chaveBase)?.curto || '';
     // O mapa desenhado e o Mapa Básico já trazem ruas e nomes: a camada por cima do satélite sai.
     if (globo.camadaRealce) { globo.camadaRealce.show = !['basico', 'mapa'].includes(globo.chaveBase); globo.redesenhar(); }
@@ -248,11 +246,10 @@ async function iniciar() {
     if (poligonos.desenho) { poligonos.clique(ponto); return; }
     if (medir.ativo) { medir.clique(ponto); return; }
     if (marcadores.aguardando) { if (ponto) marcadores.adicionar(ponto); return; }
-    if (localizacao.aguardando) { if (ponto) localizacao.escolher(ponto); return; }
     const pego = globo.cena.pick(ev.position);
     edificios.limparSelecao();
     if (pego?.id?.alca) return; // alças de edição: tratadas no arrastar
-    if (poligonos.aoClicar(pego) || edificios.aoClicar(pego) || servicos.aoClicar(pego) || marcadores.aoClicar(pego) || localizacao.aoClicar(pego) || levantamento.aoClicar(pego, ponto)) return;
+    if (poligonos.aoClicar(pego) || edificios.aoClicar(pego) || servicos.aoClicar(pego) || marcadores.aoClicar(pego) || levantamento.aoClicar(pego, ponto)) return;
     if (ponto) identificar.emPonto(ponto);
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
   maos.setInputAction(() => {
@@ -356,12 +353,6 @@ async function iniciar() {
       () => aviso('Copie o endereço da barra do navegador para compartilhar esta vista.'));
   });
 
-  // Link de indicação colado numa aba já aberta.
-  window.addEventListener('hashchange', () => {
-    const ind = lerHash().ind;
-    if (ind && localizacao.abrirRecebida(ind)) { if (painelAberto !== 'local') abrirPainel('local'); }
-  });
-
   // -------------------------------------------------------------- teclado
   document.addEventListener('keydown', (e) => {
     if (poligonos.ocupado && (e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); poligonos.desfazer(); return; }
@@ -371,8 +362,7 @@ async function iniciar() {
     }
     const digitando = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '');
     if (e.key === 'Escape') {
-      if (medir.ativo) medir.cancelar(); else if (marcadores.aguardando) marcadores.cancelarPedido();
-      else if (localizacao.aguardando) localizacao.cancelarPedido(); else identificar.fechar();
+      if (medir.ativo) medir.cancelar(); else if (marcadores.aguardando) marcadores.cancelarPedido(); else identificar.fechar();
       return;
     }
     if (digitando || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -390,8 +380,7 @@ async function iniciar() {
   estadoAbertura('Pronto. Voando até Goiânia…');
   $('#abertura').classList.add('sai');
   setTimeout(() => $('#abertura').remove(), 900);
-  if (hash.ind) { globo.liberarLimites(); if (localizacao.abrirRecebida(hash.ind)) abrirPainel('local'); }
-  else if (hash.v && globo.aplicarVisao(hash.v)) globo.liberarLimites();
+  if (hash.v && globo.aplicarVisao(hash.v)) globo.liberarLimites();
   else { await globo.irParaInicio(3.4); globo.liberarLimites(); }
   app.pronto = true;
   aoParar();

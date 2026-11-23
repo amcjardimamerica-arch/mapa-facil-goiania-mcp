@@ -83,7 +83,7 @@ ul, ol { padding: 0; list-style: none; }
 /* A busca fica centralizada sobre o mapa (a área à direita do trilho de ferramentas). */
 #topo { position: fixed; top: 12px; left: calc(var(--trilho) + (100vw - var(--trilho)) / 2); transform: translateX(-50%); z-index: 30;
   width: min(460px, calc(100vw - var(--trilho) - 24px)); }
-body:has(#ficha:not([hidden])) #topo { left: calc(var(--trilho) + (100vw - var(--trilho) - 372px) / 2); width: min(460px, calc(100vw - var(--trilho) - 396px)); }
+body:has(#ficha:not([hidden])) #topo { left: calc(var(--trilho) + (100vw - var(--trilho) - 432px) / 2); width: min(460px, calc(100vw - var(--trilho) - 456px)); }
 #caixa-busca .marca { flex: none; display: grid; place-items: center; width: 44px; height: 38px; padding: 3px 4px; border: 0; border-radius: 19px; background: #fff; cursor: pointer; }
 #caixa-busca .marca .passaro { width: 34px; height: auto; }
 #caixa-busca { position: relative; display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 8px 0 4px;
@@ -104,9 +104,8 @@ body:has(#ficha:not([hidden])) #topo { left: calc(var(--trilho) + (100vw - var(-
 #painel, #ficha { position: fixed; z-index: 25; display: flex; flex-direction: column; width: 348px; max-width: calc(100vw - var(--trilho) - 20px);
   background: var(--fundo); border: 1px solid var(--linha); border-radius: var(--raio); box-shadow: var(--sombra); overflow: hidden; }
 #painel { left: calc(var(--trilho) + 10px); top: 68px; bottom: calc(var(--rodape) + 12px); }
-#ficha { right: 12px; top: 12px; max-height: calc(100vh - var(--rodape) - 24px); }
+#ficha { right: 72px; top: 12px; max-height: calc(100vh - var(--rodape) - 24px); }
 /* Com a ficha aberta, os controles de navegação e as épocas abrem espaço para ela. */
-body:has(#ficha:not([hidden])) #navegacao { right: 372px; }
 .painel-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 12px 10px 10px 16px; border-bottom: 1px solid var(--linha); }
 .painel-topo h2 { font-size: 16px; font-weight: 650; line-height: 1.25; overflow-wrap: anywhere; }
 .painel-topo small { color: var(--texto-2); }
@@ -389,3 +388,13 @@ input[type="checkbox"] { accent-color: var(--acento); }
 .compartimento > summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
 .edi-lista-bairros { display: flex; flex-direction: column; gap: 2px; }
 .edi-lista-bairros li { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+/* ------------------------------------------------- cartão do GPS (1.7.2) */
+#gps-cartao { position: fixed; z-index: 16; right: 64px; bottom: calc(var(--rodape) + 14px); width: 260px; padding: 12px;
+  display: flex; flex-direction: column; gap: 10px; background: rgba(31, 34, 38, .96); border: 1px solid var(--linha);
+  border-radius: 12px; box-shadow: var(--sombra); font-size: 13px; }
+body:has(#ficha:not([hidden])) #gps-cartao { right: 432px; }
+@media (max-width: 760px) {
+  #gps-cartao { right: 56px; left: 8px; width: auto; bottom: calc(var(--rodape) + 120px); }
+  body:has(#ficha:not([hidden])) #gps-cartao { display: none; }
+}
