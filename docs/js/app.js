@@ -12,6 +12,7 @@ import { Marcadores } from './marcadores.js';
 import { Localizacao } from './localizacao.js';
 import { Lotes } from './lotes.js';
 import { Levantamento } from './levantamento.js';
+import { Poligonos } from './poligonos.js';
 import { encerrarSessao, sessaoAindaValida } from './acesso.js';
 
 const Cesium = window.Cesium;
@@ -54,11 +55,14 @@ async function iniciar() {
   const marcadores = new Marcadores(globo, identificar, medir, $('#painel-marcadores'));
   const busca = new Busca({ globo, identificar, territorio, bairros: bairros.bairros, lugares: lugares.lugares, edificios });
   identificar.acoes.marcar = (ponto, nome) => marcadores.adicionar(ponto, nome);
+  const poligonos = new Poligonos(globo, identificar, $('#painel-marcadores'));
+  marcadores.poligonos = poligonos;
+  identificar.acoes.editarPoligono = (dados) => poligonos.doLote(dados);
   const sessao = window.bussolaSessao || { login: 'anonimo', nome: '' };
   const lotes = new Lotes({ globo, bairros: bairros.bairros, raiz: $('#painel-lotes') });
   const levantamento = new Levantamento({ globo, identificar, raiz: $('#painel-levantamento') });
   const localizacao = new Localizacao({ globo, identificar, camadas, territorio, raiz: $('#painel-local'), botaoGps: $('#nav-local'), sessao });
-  Object.assign(app, { globo, camadas, identificar, edificios, medir, marcadores, localizacao, lotes, levantamento, busca, territorio, catalogo, manifesto, sessao });
+  Object.assign(app, { globo, camadas, identificar, edificios, medir, marcadores, poligonos, localizacao, lotes, levantamento, busca, territorio, catalogo, manifesto, sessao });
 
   const bases = globo.basesDisponiveis();
   const baseInicial = bases.some((b) => b.chave === hash.b) ? hash.b : 'satelite';
@@ -222,16 +226,27 @@ async function iniciar() {
   const maos = new Cesium.ScreenSpaceEventHandler(globo.cena.canvas);
   maos.setInputAction((ev) => {
     const ponto = globo.pontoNaTela(ev.position);
+    if (poligonos.desenho) { poligonos.clique(ponto); return; }
     if (medir.ativo) { medir.clique(ponto); return; }
     if (marcadores.aguardando) { if (ponto) marcadores.adicionar(ponto); return; }
     if (localizacao.aguardando) { if (ponto) localizacao.escolher(ponto); return; }
     const pego = globo.cena.pick(ev.position);
     edificios.limparSelecao();
-    if (edificios.aoClicar(pego) || marcadores.aoClicar(pego) || localizacao.aoClicar(pego) || levantamento.aoClicar(pego, ponto)) return;
+    if (pego?.id?.alca) return; // alças de edição: tratadas no arrastar
+    if (poligonos.aoClicar(pego) || edificios.aoClicar(pego) || marcadores.aoClicar(pego) || localizacao.aoClicar(pego) || levantamento.aoClicar(pego, ponto)) return;
     if (ponto) identificar.emPonto(ponto);
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
-  maos.setInputAction(() => { if (medir.ativo) { medir.desfazer(); medir.concluir(); } }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
-  maos.setInputAction(() => { if (medir.ativo) medir.desfazer(); }, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+  maos.setInputAction(() => {
+    if (poligonos.desenho) { poligonos.desfazer(); poligonos.concluirDesenho(); return; }
+    if (medir.ativo) { medir.desfazer(); medir.concluir(); }
+  }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+  maos.setInputAction((ev) => {
+    if (poligonos.aoBotaoDireito(globo.cena.pick(ev.position))) return;
+    if (medir.ativo) medir.desfazer();
+  }, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+  // Edição de polígonos: arrastar vértices.
+  maos.setInputAction((ev) => { if (poligonos.editando) poligonos.aoPressionar(globo.cena.pick(ev.position)); }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
+  maos.setInputAction(() => { poligonos.aoSoltar(); }, Cesium.ScreenSpaceEventType.LEFT_UP);
 
   let quadro = 0, ultimaPos = null;
   const st = { coord: $('#st-coord'), utm: $('#st-utm'), alt: $('#st-alt'), olho: $('#st-olho'), escala: $('#st-escala') };
@@ -247,6 +262,7 @@ async function iniciar() {
   };
   maos.setInputAction((ev) => {
     ultimaPos = ev.endPosition;
+    if (poligonos.arrasto || poligonos.desenho) poligonos.aoMover(globo.pontoNaTela(ev.endPosition));
     if (!quadro) quadro = requestAnimationFrame(atualizarCursor);
   }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 
@@ -327,6 +343,11 @@ async function iniciar() {
 
   // -------------------------------------------------------------- teclado
   document.addEventListener('keydown', (e) => {
+    if (poligonos.ocupado && (e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); poligonos.desfazer(); return; }
+    if (poligonos.ocupado && e.key === 'Escape' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')) {
+      if (poligonos.desenho) poligonos.cancelarDesenho(); else poligonos.concluirEdicao();
+      return;
+    }
     const digitando = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '');
     if (e.key === 'Escape') {
       if (medir.ativo) medir.cancelar(); else if (marcadores.aguardando) marcadores.cancelarPedido();

@@ -208,6 +208,13 @@ export class Identificar {
     if (lote) {
       const corpo = this.secao('Lote', { aberto: true });
       corpo.append(this.tabela(atributosLegiveis(lote.attributes)));
+      if (lote.geometry?.rings && this.acoes.editarPoligono) {
+        const a = lote.attributes, qd = quadra?.attributes?.nm_qdr;
+        corpo.append(el('button', { class: 'botao destaque', onclick: () => this.acoes.editarPoligono({
+          aneis: lote.geometry.rings.map((r) => r.map(([x, y]) => deMercator(x, y))),
+          quadra: String(qd || '').trim(), lote: String(a.nm_lot || '').trim(), bairro: nomeDoBairro || '',
+          ci: String(a.ci || '').trim(), id: String(a.id || '').trim() }) }, 'Editar como polígono'));
+      }
       const ci = String(lote.attributes.ci || '').trim();
       if (/^\d{6,}$/.test(ci)) {
         const alvoCad = el('div', {});

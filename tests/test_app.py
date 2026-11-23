@@ -336,6 +336,47 @@ def test_edificios_trazem_os_predios_do_iptu(mapa):
     assert c["residencial"] == "#2196f3" and c["oficialComAptos"] == "#2196f3" and c["horizontal"] == "#00bfa5" and c["comercial"] == "#e91e63" and c["indefinido"] == "#9e9e9e", c
 
 
+def test_lote_vira_poligono_editavel(mapa):
+    r = mapa.evaluate("""async () => {
+      const P = bussola.poligonos, antes = P.lista.length;
+      const anel = [[-49.2860, -16.7070], [-49.2855, -16.7070], [-49.2855, -16.7066], [-49.2860, -16.7066]];
+      const p = P.doLote({ aneis: [anel], quadra: '200', lote: '7', bairro: 'Jardim América', ci: 'TESTE1', id: 'teste-1' });
+      const ficha = document.querySelector('#ficha-corpo').textContent;
+      P.editarForma(p);
+      const alcas = P.alcas.entities.values.length;
+      // inserir um vértice pelo ponto médio e arrastar
+      const meio = P.alcas.entities.values.find((e) => e.alca.tipo === 'm' && e.alca.i === 0);
+      P.aoPressionar({ id: meio }); P.aoMover({ lon: -49.28575, lat: -16.70710 }); P.aoSoltar();
+      const comInserido = p.pontos.length, movido = p.pontos[1];
+      // apagar o vértice com o botão direito e desfazer
+      const v = P.alcas.entities.values.find((e) => e.alca.tipo === 'v' && e.alca.i === 1);
+      P.aoBotaoDireito({ id: v }); const aposApagar = p.pontos.length; P.desfazer(); const aposDesfazer = p.pontos.length;
+      P.concluirEdicao();
+      // estilo e altitude (volume até o chão)
+      p.estilo.preenchimento = '#ff0000'; p.altitude = { modo: 'relativo', altura: 9, estender: true }; P._desenhar(p);
+      const kml = P.placemarks([p]);
+      const salvo = JSON.parse(localStorage.getItem('bussola:poligonos') || '[]').some((x) => x.id === p.id);
+      const repetido = P.doLote({ aneis: [anel], quadra: '200', lote: '7', ci: 'TESTE1', id: 'teste-1' }) === p;
+      const medidas = P.medidas(p);
+      P.restaurar(p); const restaurado = p.pontos.length;
+      P.remover(p);
+      return { antes, depois: P.lista.length, ficha, alcas, comInserido, movido, aposApagar, aposDesfazer, kml, salvo, repetido, area: medidas.area, restaurado };
+    }""")
+    assert "Editar forma" in r["ficha"] and "Altitude" in r["ficha"] and "Estilo" in r["ficha"] and "Medidas" in r["ficha"], r["ficha"][:300]
+    assert r["alcas"] == 8 and r["comInserido"] == 5 and abs(r["movido"][1] + 16.7071) < 1e-6, r
+    assert r["aposApagar"] == 4 and r["aposDesfazer"] == 5 and r["restaurado"] == 4, r
+    assert "<extrude>1</extrude>" in r["kml"] and "relativeToGround" in r["kml"] and "590000ff" in r["kml"].lower(), r["kml"][:400]
+    assert r["salvo"] and r["repetido"] and 2000 < r["area"] < 3000 and r["depois"] == r["antes"], r
+
+
+def test_lotes_aparecem_so_de_perto(mapa):
+    r = mapa.evaluate("""async () => {
+      const { NIVEIS } = await import('./js/mapavetorial.js');
+      return NIVEIS;
+    }""")
+    assert r["bairros"] < r["quadras"] < r["lotes"] and r["numeroQuadra"] <= r["numeroLote"] and r["lotes"] >= 16, r
+
+
 def test_sem_login_volta_ao_portal(navegador, servidor):
     ctx = _contexto(navegador, logado=False)
     pagina = ctx.new_page()

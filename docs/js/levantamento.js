@@ -497,7 +497,9 @@ export class Levantamento {
     const cond = this.condominioDoLote.get(l.i) || [];
     for (const r of cond) id.secao('Prédio / condomínio', { aberto: false }).append(this._tudo(d.condominios.colunas, r, ['Bairro', 'Quadra', 'Lote']));
     const m = this._manutencao(l.v[d.colunas_lote.indexOf('Código para manutenção')]);
-    if (m) id.corpo.insertBefore(el('div', { class: 'linha-botoes' }, m), id.corpo.querySelector('dl.atributos'));
+    const ed = id.acoes.editarPoligono ? el('button', { class: 'botao', onclick: () => id.acoes.editarPoligono({ aneis: l.aneis, quadra: l.q, lote: l.l,
+      bairro: d.bairros[l.b], ci: String(l.v[d.colunas_lote.indexOf('Inscrição do lote (CI)')] || ''), id: String(l.v[d.colunas_lote.indexOf('ID do lote (Mapa Fácil)')] || '') }) }, 'Editar como polígono') : null;
+    if (m || ed) id.corpo.insertBefore(el('div', { class: 'linha-botoes' }, m, ed), id.corpo.querySelector('dl.atributos'));
   }
 
   /** Botão que abre a página de Pedidos de Manutenção já no item (URL#CÓDIGO). */

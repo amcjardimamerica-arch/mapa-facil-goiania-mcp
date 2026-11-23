@@ -38,7 +38,7 @@ export class Marcadores {
       el('div', { class: 'linha-botoes' },
         el('button', { class: 'botao', onclick: () => this.exportarKML() }, 'Exportar KML'),
         el('button', { class: 'botao-texto', onclick: () => this.exportarGeoJSON() }, 'GeoJSON')),
-      el('p', { class: 'nota' }, 'Inclui marcadores e medições. O KML abre direto no Google Earth.'),
+      el('p', { class: 'nota' }, 'Inclui marcadores, medições e polígonos. O KML abre direto no Google Earth.'),
       el('h3', { class: 'subtitulo' }, 'Trazer um arquivo'),
       el('div', { class: 'linha-botoes' }, el('button', { class: 'botao', onclick: () => arquivo.click() }, 'Importar KML, KMZ ou GeoJSON'), arquivo),
       this.ulImportados);
@@ -135,7 +135,7 @@ export class Marcadores {
 
   // ------------------------------------------------------------- exportação
   _temAlgo() {
-    if (this.lista.length || this.medir.medidas.length) return true;
+    if (this.lista.length || this.medir.medidas.length || this.poligonos?.lista.length) return true;
     aviso('Crie um marcador ou uma medição antes de exportar.', 'alerta');
     return false;
   }
@@ -155,7 +155,8 @@ export class Marcadores {
       '<name>Bússola</name><description>Exportado da Bússola (dados: Mapa Fácil, Prefeitura de Goiânia)</description>' +
       '<Style id="alfinete"><IconStyle><color>ff4ad5ff</color><scale>1.1</scale></IconStyle></Style>' +
       '<Style id="medida"><LineStyle><color>ffe1d04d</color><width>3</width></LineStyle><PolyStyle><color>55e1d04d</color></PolyStyle></Style>' +
-      `<Folder><name>Marcadores</name>${pm.join('')}</Folder><Folder><name>Medições</name>${med.join('')}</Folder></Document></kml>`;
+      `<Folder><name>Marcadores</name>${pm.join('')}</Folder><Folder><name>Medições</name>${med.join('')}</Folder>` +
+      `<Folder><name>Polígonos</name>${this.poligonos ? this.poligonos.placemarks() : ''}</Folder></Document></kml>`;
   }
 
   geojson() {

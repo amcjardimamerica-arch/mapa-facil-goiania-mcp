@@ -240,3 +240,23 @@ Geographics. Globo: [CesiumJS](https://cesium.com/platform/cesiumjs/) (Apache 2.
   `docs/js/util.js`, `nome_bairro` em `scripts/extrair_dados.py`): "Bro Jardim América" vira
   "Jardim América", "S Bueno" vira "Bueno", "Jd Goiás" vira "Jardim Goiás". Quando o nome começa por
   "da", "de" ou "dos", o tipo fica por extenso ("Bairro da Vitória"). O nome oficial segue no campo `o`.
+
+## Lotes no mapa e polígonos editáveis (1.6)
+
+- **Aproximação progressiva**, como no Mapa Fácil (`NIVEIS` em `docs/js/mapavetorial.js`): de longe, só as divisas dos
+  bairros; ao aproximar, as quadras (nível 15) com o número da quadra (16); mais perto, as divisas de todos os lotes dentro
+  das quadras, com o número de cada lote (17). Os números crescem conforme a aproximação. Os lotes são carregados do
+  servidor do Mapa Fácil por bloco do mapa, só na área visível. As camadas de lotes coloridos (Bairros e levantamento)
+  também só aparecem de perto.
+- **Polígonos editáveis** (`docs/js/poligonos.js`): na ficha de qualquer lote (clique no mapa ou painel Bairros), o botão
+  "Editar como polígono" cria um polígono com as funções do Google Earth:
+  - nome e descrição, com o nome no mapa (opcional);
+  - estilo: cor e largura da linha, cor e opacidade do preenchimento;
+  - altitude: fixado no chão, relativo ao chão ou absoluto, com a altura em metros e a opção de estender os lados até
+    o chão (volume em 3D);
+  - forma: arrastar vértices, inserir um vértice pelo ponto médio, apagar com o botão direito, desfazer (Ctrl+Z);
+  - medidas: área, perímetro e vértices, ao vivo;
+  - salvar a vista, voar até, duplicar, ocultar, excluir, restaurar o desenho oficial do lote e exportar em KML
+    (com estilo, altitude e vista).
+  Também é possível desenhar um polígono novo no painel Marcar. Os polígonos ficam salvos no navegador e entram no
+  KML exportado junto com marcadores e medições.

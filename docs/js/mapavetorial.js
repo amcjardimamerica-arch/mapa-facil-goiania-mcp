@@ -10,6 +10,9 @@ import { CFG } from './config.js';
 const Cesium = window.Cesium;
 const MUNDO = 20037508.342789244;
 const NIVEL_MINIMO = 9;
+// Aproximação progressiva, como no Mapa Fácil: primeiro as divisas dos bairros, depois as
+// quadras, depois quadras e lotes. Os números aparecem e crescem conforme a aproximação.
+export const NIVEIS = { bairros: 11, quadras: 15, numeroQuadra: 16, lotes: 17, numeroLote: 17 };
 
 // ---------------------------------------------------------------- fila de pedidos
 /** Limita as consultas simultâneas ao servidor municipal (não o sobrecarrega). */
@@ -58,12 +61,14 @@ const ESTILO = {
   mapa: {
     fundo: '#e9e4da', urbano: '#efebe3', quadra: '#f7f4ee', quadraBorda: '#dcd5c8',
     via: { local: ['#d3ccbf', '#ffffff'], coletora: ['#cdc3b1', '#ffffff'], arterial: ['#e0bd62', '#ffe7a0'], expressa: ['#d49a3a', '#fbcf74'] },
-    texto: '#4f545b', halo: 'rgba(255,255,255,.95)', bairro: '#857a69', quadraTexto: '#aaa08f', divisa: '#9c8f7a',
+    texto: '#4f545b', halo: 'rgba(255,255,255,.95)', bairro: '#857a69', quadraTexto: '#8f8574', divisa: '#9c8f7a',
+    loteBorda: '#cfc6b6', loteTexto: '#7d7465',
   },
   sobre: {
     quadraBorda: 'rgba(255,255,255,.42)',
     via: { local: [null, 'rgba(255,255,255,.30)'], coletora: [null, 'rgba(255,255,255,.45)'], arterial: ['rgba(0,0,0,.25)', 'rgba(255,214,90,.6)'], expressa: ['rgba(0,0,0,.25)', 'rgba(255,185,70,.7)'] },
-    texto: '#ffffff', halo: 'rgba(0,0,0,.85)', bairro: '#ffe9a8', quadraTexto: 'rgba(255,255,255,.8)', divisa: 'rgba(255,233,168,.85)',
+    texto: '#ffffff', halo: 'rgba(0,0,0,.85)', bairro: '#ffe9a8', quadraTexto: '#ffffff', divisa: 'rgba(255,233,168,.85)',
+    loteBorda: 'rgba(255,255,255,.62)', loteTexto: 'rgba(255,255,255,.92)',
   },
 };
 
@@ -248,22 +253,25 @@ export class ProvedorVetorial extends ProvedorCanvas {
       spatialRel: 'esriSpatialRelIntersects', returnGeometry: 'true', geometryPrecision: '1',
       maxAllowableOffset: String(Math.max(0.3, q.mpp * 0.7)) };
     const sobre = this.modo === 'sobre';
-    const nivelQuadras = sobre ? 15 : 14;
+    const nivelQuadras = NIVEIS.quadras;
     const filtroVias = nivel >= (sobre ? 15 : 14) ? '1=1' : nivel >= 12 ? 'in_hie >= 21' : 'in_hie >= 40';
-    const [limites, quadras, vias] = await Promise.all([
-      nivel >= 12 ? consultar(2, { ...comum, outFields: 'OBJECTID', where: '1=1', maxAllowableOffset: String(Math.max(1, q.mpp)) }, cancelada).catch(() => []) : [],
-      nivel >= nivelQuadras ? consultar(1, { ...comum, outFields: nivel >= 17 ? 'nm_qdr' : 'OBJECTID', where: '1=1' }, cancelada).catch(() => []) : [],
+    const [limites, quadras, vias, lotes] = await Promise.all([
+      nivel >= NIVEIS.bairros ? consultar(2, { ...comum, outFields: 'OBJECTID', where: '1=1', maxAllowableOffset: String(Math.max(1, q.mpp)) }, cancelada).catch(() => []) : [],
+      nivel >= nivelQuadras ? consultar(1, { ...comum, outFields: nivel >= NIVEIS.numeroQuadra ? 'nm_qdr' : 'OBJECTID', where: '1=1' }, cancelada).catch(() => []) : [],
       consultar(7, { ...comum, outFields: 'nm,in_hie', where: filtroVias }, cancelada).catch(() => []),
+      // Divisas dos lotes dentro das quadras, carregadas por bloco do mapa conforme a aproximação.
+      nivel >= NIVEIS.lotes ? consultar(0, { ...comum, outFields: nivel >= NIVEIS.numeroLote ? 'nm_lot' : 'OBJECTID', where: '1=1',
+        maxAllowableOffset: String(Math.max(0.15, q.mpp * 0.5)) }, cancelada).catch(() => []) : [],
     ]);
-    return { limites, quadras, vias };
+    return { limites, quadras, vias, lotes };
   }
 
-  _desenhar(ret, nivel, relevo, { limites = [], quadras, vias }) {
+  _desenhar(ret, nivel, relevo, { limites = [], quadras, vias, lotes = [] }) {
     const T = this._T, e = this.estilo, q = new Quadro(ret, T);
     const tela = this._tela(), g = tela.getContext('2d');
     const mapa = this.modo === 'mapa';
 
-    if (mapa) { g.fillStyle = nivel >= 14 ? e.fundo : e.urbano; g.fillRect(0, 0, T, T); }
+    if (mapa) { g.fillStyle = nivel >= NIVEIS.quadras ? e.fundo : e.urbano; g.fillRect(0, 0, T, T); }
 
     // Quadras
     if (quadras.length) {
@@ -271,6 +279,15 @@ export class ProvedorVetorial extends ProvedorCanvas {
       for (const f of quadras) if (f.geometry?.rings) q.caminho(g, f.geometry.rings);
       if (mapa) { g.fillStyle = e.quadra; g.fill('evenodd'); }
       g.strokeStyle = e.quadraBorda; g.lineWidth = nivel >= 17 ? 1.2 : 0.8; g.stroke();
+    }
+    // Lotes: divisas finas dentro das quadras.
+    if (lotes.length) {
+      g.save();
+      g.beginPath();
+      for (const f of lotes) if (f.geometry?.rings) q.caminho(g, f.geometry.rings);
+      g.lineJoin = 'round';
+      g.strokeStyle = e.loteBorda; g.lineWidth = nivel >= 19 ? 1.1 : 0.8; g.stroke();
+      g.restore();
     }
 
     // Vias, das menores para as maiores: contorno de todas e depois o miolo.
@@ -335,16 +352,30 @@ export class ProvedorVetorial extends ProvedorCanvas {
       if (m.total < g.measureText(t).width + 16) continue;
       r.texto(t, m.x, m.y, { ang: m.ang, fonte, cor: e.texto, halo: e.halo, distanciaNome: 220 });
     }
-    // Número da quadra, bem de perto.
-    if (nivel >= 17) {
-      const fonte = '500 10.5px system-ui, "Segoe UI", Roboto, sans-serif';
+    // Número do lote (de perto), maior quanto mais perto.
+    if (nivel >= NIVEIS.numeroLote && lotes.length) {
+      const px = nivel >= 20 ? 14 : nivel >= 19 ? 12.5 : nivel >= 18 ? 11 : 9.5;
+      const fonte = `500 ${px}px system-ui, "Segoe UI", Roboto, sans-serif`;
+      for (const f of lotes) {
+        const nm = String(f.attributes.nm_lot || '').trim();
+        const anel = f.geometry?.rings?.[0];
+        if (!nm || !anel) continue;
+        let sx = 0, sy = 0;
+        for (const [a, b] of anel) { sx += a; sy += b; }
+        r.texto(nm, q.x(sx / anel.length), q.y(sy / anel.length), { fonte, cor: e.loteTexto, halo: e.halo });
+      }
+    }
+    // Número da quadra, a partir da vista de quadras, maior quanto mais perto.
+    if (nivel >= NIVEIS.numeroQuadra) {
+      const px = nivel >= 19 ? 15 : nivel >= 18 ? 13.5 : nivel >= 17 ? 12 : 10.5;
+      const fonte = `700 ${px}px system-ui, "Segoe UI", Roboto, sans-serif`;
       for (const f of quadras) {
         const nm = String(f.attributes.nm_qdr || '').trim();
         const anel = f.geometry?.rings?.[0];
         if (!nm || !anel) continue;
         let sx = 0, sy = 0;
         for (const [a, b] of anel) { sx += a; sy += b; }
-        r.texto(`Qd. ${nm}`, q.x(sx / anel.length), q.y(sy / anel.length), { fonte, cor: e.quadraTexto, halo: e.halo });
+        r.texto(`Qd. ${nm}`, q.x(sx / anel.length), q.y(sy / anel.length), { fonte, cor: e.quadraTexto, halo: e.halo, forcar: nivel >= NIVEIS.lotes });
       }
     }
     return tela;
@@ -362,6 +393,7 @@ export class ProvedorLotes extends ProvedorCanvas {
     const ret = this._grade.tileXYToNativeRectangle(x, y, nivel);
     const T = this._T, q = new Quadro(ret, T);
     const tela = this._tela(), g = tela.getContext('2d');
+    if (nivel < NIVEIS.lotes) return Promise.resolve(tela); // lotes só de perto
     const dentro = this.lotes.filter((l) => l.ext[0] < ret.east && l.ext[2] > ret.west && l.ext[1] < ret.north && l.ext[3] > ret.south);
     if (!dentro.length) return Promise.resolve(tela);
     for (const l of dentro) {
@@ -373,9 +405,9 @@ export class ProvedorLotes extends ProvedorCanvas {
     g.lineJoin = 'round';
     g.strokeStyle = 'rgba(20,24,28,.55)'; g.lineWidth = nivel >= 17 ? 2.6 : 1.8; g.stroke();
     if (this.borda) { g.strokeStyle = this.borda; g.lineWidth = nivel >= 17 ? 1.3 : 0.8; g.stroke(); }
-    if (nivel >= 17) {
+    if (nivel >= NIVEIS.numeroLote) {
       const r = new Rotulos(g, T);
-      const fonte = `600 ${nivel >= 18 ? 12 : 10.5}px system-ui, "Segoe UI", Roboto, sans-serif`;
+      const fonte = `600 ${nivel >= 20 ? 14 : nivel >= 19 ? 12.5 : nivel >= 18 ? 11 : 9.5}px system-ui, "Segoe UI", Roboto, sans-serif`;
       for (const l of dentro) {
         if (!l.nm) continue;
         const px = q.x(l.centro[0]), py = q.y(l.centro[1]);

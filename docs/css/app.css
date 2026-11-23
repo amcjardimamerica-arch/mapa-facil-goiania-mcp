@@ -365,3 +365,12 @@ input[type="checkbox"] { accent-color: var(--acento); }
 
 .legenda-usos { display: grid; gap: 4px; }
 .legenda-usos span { display: flex; align-items: center; gap: 8px; }
+
+/* Polígonos (propriedades no estilo do Google Earth) */
+.pol-estilo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; width: 100%; }
+.pol-estilo label { display: flex; flex-direction: column; gap: 4px; color: var(--texto-2); font-size: 12.5px; }
+.pol-estilo input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--linha); border-radius: 8px; background: var(--fundo-2); }
+.pol-estilo input[type="range"] { width: 100%; accent-color: var(--acento); }
+.lembrar-linha { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.botao.perigo { color: var(--erro); border-color: rgba(255, 138, 128, .45); }
+.campo.area { font: inherit; }
