@@ -27,7 +27,7 @@ const BRACO_COMPRIMENTO = 3.3, BRACO_RAIO = 0.135;  // braço (+50%)
 const RAIO_LAMPADA = 1.1;                           // esfera da luminária (+100%): tamanho mínimo, de perto
 // De longe a esfera cresce com a distância da câmera, até 6 vezes (+500%), para ver bairros inteiros.
 export const LAMPADA_ESCALA_MAX = 6;
-const LAMPADA_ALTURA_REF = 300;                     // m de câmera em que começa a crescer
+const LAMPADA_ALTURA_REF = 1000;                    // m de câmera: até 1 km fica no tamanho mínimo; acima, cresce
 const LAMPADA_PASSO = 0.25;                         // degraus de escala (refaz as esferas só ao mudar de degrau)
 /** Escala da esfera da luminária para a altura da câmera (1 de perto; até 6 de longe). */
 export function escalaLampada(alturaCamera) {

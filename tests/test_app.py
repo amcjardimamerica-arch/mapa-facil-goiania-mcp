@@ -378,7 +378,7 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
       infra.partes = ['haste', 'topo', 'trafo', 'braco'].filter((x) => lv.postes._ids.has(`${comLampada.i}:${x}`)).concat(lv.postes._lampIds.has(comLampada.i) ? ['lampada'] : []);
       const m = await import('./js/postes.js');
       infra.altura = m.ALTURA_POSTE;
-      infra.escalas = [m.escalaLampada(100), m.escalaLampada(300), m.escalaLampada(900), m.escalaLampada(50000)];
+      infra.escalas = [m.escalaLampada(100), m.escalaLampada(1000), m.escalaLampada(3000), m.escalaLampada(50000)];
       const quad = lv.postes.dados.postes.find((q) => q.material === 'Q' && q !== comLampada), mad = lv.postes.dados.postes.find((q) => q.material === 'M' && q !== comLampada);
       const corDe = (q, parte) => { const a = lv.postes.primitiva.getGeometryInstanceAttributes(lv.postes._ids.get(`${q.i}:${parte}`)); return a ? Cesium.Color.fromBytes(...a.color).toCssHexString() : null; };
       infra.cores = { quadrado: corDe(quad, 'haste'), madeira: corDe(mad, 'haste'), trafo: corDe(lv.postes.dados.postes.find((q) => q.transformador && q !== comLampada), 'trafo') };
