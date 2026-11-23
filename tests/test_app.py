@@ -348,9 +348,21 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
       lv.opcoes.edificacoes = false; await lv._edificacoes();
       unid.edificacoesDepois = { bairros: ed.bairros.size, primitiva: !!ed.primitiva };
       bussola.identificar.fechar();
-      lv.opcoes.eleicao = 'ct'; lv.redesenhar();
-      const ct = { setas: lv.fonte.entities.values.filter((e) => e.levantamento?.tipo === 'seta').length,
-                   transf: lv.fonte.entities.values.filter((e) => e.levantamento?.dado?.tipo === 'transferido').length };
+      // O tempo do quadro mede só o Conselho Tutelar: as camadas do painel Bairros saem durante a medida.
+      const quadro = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+      lv.mostrar = false; lv.redesenhar(); await quadro(); await quadro();
+      const b0 = performance.now(); await quadro(); const base = performance.now() - b0;
+      lv.opcoes.eleicao = 'ct'; lv.redesenhar(); await lv._rotulando;
+      const prov = lv.camadaEleitoral?.imageryProvider;
+      const cinza = (prov?.poligonos || []).filter((x) => x.borda === '#ffffff').length;
+      const ct = { setas: (prov?.linhas || []).filter((x) => x.tracejado).length,
+                   transf: lv.fonte.entities.values.filter((e) => e.levantamento?.dado?.tipo === 'transferido').length,
+                   cinza, pontos: lv.fonte.entities.values.filter((e) => e.point).length,
+                   comLote: Object.keys(lv.lotesEleitorais || {}).length };
+      const t0 = performance.now(); await quadro(); ct.quadroMs = performance.now() - t0 - base; ct.base = base; lv.mostrar = true;
+      const alvo = lv._locaisVisiveis.find((x) => x.p.tipo === 'ct');
+      const c = alvo.l.centro, ll = [Cesium.Math.toDegrees(c[0] / 6378137), Cesium.Math.toDegrees(2 * Math.atan(Math.exp(c[1] / 6378137)) - Math.PI / 2)];
+      ct.clique = lv.aoClicar(null, { lon: ll[0], lat: ll[1] }) && document.querySelector('#ficha-titulo').textContent === alvo.p.nome;
       lv.opcoes.eleicao = ''; lv.opcoes.bocas = true; lv.opcoes.iluminacao = true; lv.redesenhar();
       const infra = { bocas: lv.fonte.entities.values.filter((e) => e.levantamento?.tipo === 'boca').length,
                       postes: lv.fonte.entities.values.filter((e) => e.levantamento?.tipo === 'poste' && e.billboard).length };
@@ -370,7 +382,9 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
     eb = u["edificacoesBairros"]
     assert eb["bairros"] == 2 and not eb["cidade"] and 500 < eb["visiveis"] < eb["total"] and eb["horizontais"] > 100, eb
     assert u["edificacoesDepois"] == {"bairros": 0, "primitiva": False}, u
-    assert r["ct"]["setas"] > 150 and r["ct"]["transf"] > 150, r["ct"]
+    assert r["ct"]["setas"] > 150 and r["ct"]["transf"] > 150 and r["ct"]["cinza"] > 150, r["ct"]
+    assert r["ct"]["pontos"] == 0 and r["ct"]["comLote"] > 300 and r["ct"]["clique"], r["ct"]
+    assert r["ct"]["quadroMs"] < 8000, r["ct"]  # custo do Conselho Tutelar além do quadro normal
     assert r["infra"]["bocas"] == 830 and r["infra"]["postes"] == 4147, r["infra"]
     assert r["infra"]["link"].startswith("https://claude.ai/artifact/") and "#BL-" in r["infra"]["link"], r["infra"]
     assert "Pedir manutenção (LT-" in r["ficha"], r["ficha"][:200]

@@ -417,3 +417,47 @@ export class ProvedorLotes extends ProvedorCanvas {
     return Promise.resolve(tela);
   }
 }
+
+/**
+ * Desenho livre por cima do mapa (usado nos locais de votação): polígonos com preenchimento e borda
+ * próprios e linhas (tracejadas ou não). Tudo em imagem, sem custo de geometria 3D, e visível
+ * desde a vista da cidade: polígono pequeno demais vira um quadrado de 7 px.
+ */
+export class ProvedorDesenho extends ProvedorCanvas {
+  constructor({ poligonos = [], linhas = [], retangulo, credito = 'Levantamento da Associação', nivelMinimo = 10 }) {
+    super({ retangulo, credito, nivelMinimo });
+    this.poligonos = poligonos; // [{ aneis (mercator), ext, cor, borda, largura }]
+    this.linhas = linhas;       // [{ de: [x,y], para: [x,y], cor, contorno, largura, tracejado }]
+  }
+  requestImage(x, y, nivel) {
+    const ret = this._grade.tileXYToNativeRectangle(x, y, nivel);
+    const T = this._T, q = new Quadro(ret, T);
+    const tela = this._tela(), g = tela.getContext('2d');
+    const folga = (ret.east - ret.west) * 0.05;
+    const toca = (o, s, l, n) => o < ret.east + folga && l > ret.west - folga && s < ret.north + folga && n > ret.south - folga;
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    const escala = nivel >= 17 ? 1 : nivel >= 15 ? 0.8 : 0.6;
+    for (const ln of this.linhas) {
+      const [ax, ay] = ln.de, [bx, by] = ln.para;
+      if (!toca(Math.min(ax, bx), Math.min(ay, by), Math.max(ax, bx), Math.max(ay, by))) continue;
+      const w = (ln.largura || 3) * escala;
+      g.setLineDash(ln.tracejado ? [w * 4, w * 2.5] : []);
+      g.beginPath(); g.moveTo(q.x(ax), q.y(ay)); g.lineTo(q.x(bx), q.y(by));
+      if (ln.contorno) { g.strokeStyle = ln.contorno; g.lineWidth = w + 2.5; g.stroke(); }
+      g.strokeStyle = ln.cor; g.lineWidth = w; g.stroke();
+    }
+    g.setLineDash([]);
+    for (const p of this.poligonos) {
+      if (!toca(...p.ext)) continue;
+      const lado = Math.max(q.x(p.ext[2]) - q.x(p.ext[0]), q.y(p.ext[1]) - q.y(p.ext[3]));
+      g.beginPath();
+      if (lado < 7) { const cx = q.x(p.centro[0]), cy = q.y(p.centro[1]); g.rect(cx - 3.5, cy - 3.5, 7, 7); }
+      else q.caminho(g, p.aneis);
+      g.fillStyle = p.cor; g.fill('evenodd');
+      const w = (p.largura || 3) * escala;
+      g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = w + 2; g.stroke();
+      g.strokeStyle = p.borda; g.lineWidth = w; g.stroke();
+    }
+    return Promise.resolve(tela);
+  }
+}

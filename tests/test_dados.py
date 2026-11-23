@@ -255,3 +255,14 @@ def test_infraestrutura_e_manutencao():
     assert len(ip["linhas"]) == 4147 and (DADOS.parent / "img" / "icones" / "lampada.png").exists()
     k = d["colunas_lote"].index("Código para manutenção")
     assert all(str(l["v"][k]).startswith("LT-") for l in d["lotes"])
+
+
+def test_lotes_dos_locais_de_votacao():
+    """Cada local de votação tem o lote do colégio (polígono) para o destaque no mapa."""
+    d = ler("eleitoral_lotes.json")["lotes"]
+    pontos = {f'{p["lon"]},{p["lat"]}' for p in ler("levantamento.json")["eleitoral"]["pontos"]}
+    assert len(set(d) & pontos) >= 0.9 * len(pontos), (len(d), len(pontos))
+    for k, l in d.items():
+        assert l["aneis"] and len(l["aneis"][0]) >= 4, k
+        lon, lat = map(float, k.split(","))
+        assert -49.6 < lon < -48.9 and -17.0 < lat < -16.3

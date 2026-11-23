@@ -3,7 +3,7 @@
 // prédios em 3D e locais de votação, a partir de data/levantamento.json.
 import { CFG } from './config.js';
 import { el, aviso, fmtNum, pedirJSON, semAcento, memoria } from './util.js';
-import { ProvedorLotes } from './mapavetorial.js';
+import { ProvedorLotes, ProvedorDesenho } from './mapavetorial.js';
 
 const Cesium = window.Cesium;
 const R = 6378137;
@@ -63,6 +63,7 @@ export class Levantamento {
     this.estado.textContent = 'Carregando o levantamento…';
     this.estado.classList.add('carregando');
     const predios = pedirJSON(`${CFG.dados}predios.json`, { tempo: 60000 }).catch(() => null);
+    const lotesEleitorais = pedirJSON(`${CFG.dados}eleitoral_lotes.json`, { tempo: 60000 }).catch(() => null);
     this._carregando = pedirJSON(`${CFG.dados}levantamento.json`, { tempo: 90000 }).then(async (d) => {
       const ix = Object.fromEntries(d.colunas_lote.map((c, i) => [c, i]));
       this.ix = ix;
@@ -99,6 +100,7 @@ export class Levantamento {
       const ixs = d.empresas_sem_lote.colunas;
       this.semLote = d.empresas_sem_lote.linhas.map((r) => ({ v: r, busca: semAcento(r.filter((x) => x !== null).join(' | ')),
         nome: r[ixs.indexOf('Nome fantasia')] || r[ixs.indexOf('Razão social')], bairro: r[ixs.indexOf('Bairro')] }));
+      this.lotesEleitorais = (await lotesEleitorais)?.lotes || {};
       this.cor = Object.fromEntries(d.finalidades.map((f) => [f.nome, f.cor]));
       // Bases dos prédios (predios.json): a torre de cada lote, nunca o terreno inteiro.
       this.basesDoLote = new Map();
@@ -243,7 +245,7 @@ export class Levantamento {
           el('span', {}, g), el('small', {}, `${fmtNum(n)} locais`)));
       }
       if (m === 'ct') {
-        lista.append(el('p', { class: 'nota' }, 'Estrela laranja: local de votação do Conselho Tutelar. Cinza: local transferido, com seta para a escola que reuniu as urnas.'));
+        lista.append(el('p', { class: 'nota' }, 'Laranja com borda amarela: colégio com votação do Conselho Tutelar. Cinza com borda branca: colégio sem votação (transferido ou sem informação), com linha tracejada até o colégio que recebeu as urnas.'));
       }
     };
     seletor.addEventListener('change', () => { this.opcoes.eleicao = seletor.value; this._gravar(); montarGrupos(); this.redesenhar(); });
@@ -354,35 +356,106 @@ export class Levantamento {
       }
     }
 
-    const m = this.opcoes.eleicao;
-    if (m) {
-      const ve = (g) => (this.opcoes.grupos || {})[`${m}:${g}`] !== false;
-      const E = d.eleitoral;
-      const rotulo = (texto) => ({ text: texto, font: '600 12px system-ui, "Segoe UI", Roboto, sans-serif', fillColor: Cesium.Color.WHITE,
-        outlineColor: Cesium.Color.BLACK, outlineWidth: 3, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        pixelOffset: new Cesium.Cartesian2(0, -18), heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-        disableDepthTestDistance: Number.POSITIVE_INFINITY, distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 3000) });
-      const pontos = E.pontos.filter((p) => (m === 'geral' ? p.tipo === 'geral' && ve(p.grupo)
-        : (p.tipo === 'ct' || p.tipo === 'transferido') ? ve(p.grupo) : p.tipo === 'sem' && ve('Sem informação no edital')));
-      for (const p of pontos) {
-        const estilo = { geral: ['#ff8c00', 9], ct: ['#ffd700', 13], transferido: ['#9e9e9e', 8], sem: ['#e0e0e0', 7] }[p.tipo];
-        const ent = this.fonte.entities.add({ position: Cesium.Cartesian3.fromDegrees(p.lon, p.lat),
-          point: { pixelSize: estilo[1], color: Cesium.Color.fromCssColorString(estilo[0]), outlineColor: Cesium.Color.BLACK.withAlpha(0.85),
-            outlineWidth: 2, heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, disableDepthTestDistance: Number.POSITIVE_INFINITY },
-          label: rotulo(p.nome) });
-        ent.levantamento = { tipo: 'ponto', dado: p };
-      }
-      if (m === 'ct') {
-        for (const s of E.setas) {
-          if (!ve(s.regiao)) continue;
-          const ent = this.fonte.entities.add({ polyline: { positions: Cesium.Cartesian3.fromDegreesArray([...s.de, ...s.para]),
-            clampToGround: true, width: 9, material: new Cesium.PolylineArrowMaterialProperty(Cesium.Color.fromCssColorString('#bdbdbd').withAlpha(0.95)) } });
-          ent.levantamento = { tipo: 'seta', dado: s };
-        }
-      }
-    }
+    this._desenharEleitoral();
     this.globo.redesenhar();
     this.aoMudar();
+  }
+
+  // --------------------------------------------------------------- eleitoral
+  /** Lote do colégio de cada local (data/eleitoral_lotes.json); sem lote, um quadrado de ~30 m no ponto. */
+  _loteDoLocal(p) {
+    const k = `${p.lon},${p.lat}`;
+    if (!this._lotesLocais) this._lotesLocais = new Map();
+    if (this._lotesLocais.has(k)) return this._lotesLocais.get(k);
+    const l = this.lotesEleitorais?.[k];
+    const aneisLL = l?.aneis || [[[p.lon - 0.00014, p.lat - 0.00014], [p.lon + 0.00014, p.lat - 0.00014], [p.lon + 0.00014, p.lat + 0.00014], [p.lon - 0.00014, p.lat + 0.00014]]];
+    const m = aneisLL.map((a) => a.map(([lo, la]) => [mx(lo), my(la)]));
+    let o = Infinity, s = Infinity, e = -Infinity, n = -Infinity, cx = 0, cy = 0;
+    for (const [x, y] of m[0]) { o = Math.min(o, x); e = Math.max(e, x); s = Math.min(s, y); n = Math.max(n, y); cx += x; cy += y; }
+    const r = { aneisLL, m, ext: [o, s, e, n], centro: [cx / m[0].length, cy / m[0].length], lote: l || null };
+    this._lotesLocais.set(k, r);
+    return r;
+  }
+
+  /**
+   * Locais de votação como o lote inteiro do colégio: cor e borda fortes e o nome em cima.
+   * Conselho Tutelar: colégio sem votação (transferido ou sem informação) em cinza com borda branca e
+   * linha tracejada até o colégio que recebeu as urnas, que fica com a cor normal.
+   */
+  _desenharEleitoral() {
+    const camadas = this.globo.viewer.imageryLayers;
+    if (this.camadaEleitoral) { camadas.remove(this.camadaEleitoral, true); this.camadaEleitoral = null; }
+    this._locaisVisiveis = [];
+    const m = this.opcoes.eleicao;
+    if (!m || !this.dados) return;
+    const E = this.dados.eleitoral;
+    const ve = (g) => (this.opcoes.grupos || {})[`${m}:${g}`] !== false;
+    const pontos = E.pontos.filter((p) => (m === 'geral' ? p.tipo === 'geral' && ve(p.grupo)
+      : (p.tipo === 'ct' || p.tipo === 'transferido') ? ve(p.grupo) : p.tipo === 'sem' && ve('Sem informação no edital')));
+    const COR = { votacao: ['rgba(255,109,0,.62)', '#ffea00'], semVotacao: ['rgba(150,150,150,.72)', '#ffffff'] };
+    const poligonos = [];
+    for (const p of pontos) {
+      if (!(p.lon > -49.6 && p.lon < -48.9 && p.lat > -17 && p.lat < -16.3)) continue; // coordenada inválida no levantamento
+      const l = this._loteDoLocal(p);
+      const [cor, borda] = p.tipo === 'geral' || p.tipo === 'ct' ? COR.votacao : COR.semVotacao;
+      poligonos.push({ aneis: l.m, ext: l.ext, centro: l.centro, cor, borda, largura: 3.2 });
+      this._locaisVisiveis.push({ p, l });
+    }
+    this._rotulando = this._rotularLocais();
+    const linhas = [];
+    if (m === 'ct') {
+      for (const s of E.setas) {
+        if (!ve(s.regiao)) continue;
+        const de = this._loteDoLocal({ lon: s.de[0], lat: s.de[1] }), para = this._loteDoLocal({ lon: s.para[0], lat: s.para[1] });
+        linhas.push({ de: de.centro, para: para.centro, cor: '#ffffff', contorno: 'rgba(0,0,0,.6)', largura: 3, tracejado: true });
+      }
+    }
+    if (!poligonos.length) return;
+    let o = Infinity, s = Infinity, e = -Infinity, n = -Infinity;
+    for (const p of poligonos) { o = Math.min(o, p.ext[0]); s = Math.min(s, p.ext[1]); e = Math.max(e, p.ext[2]); n = Math.max(n, p.ext[3]); }
+    const g = (x, y) => [Cesium.Math.toDegrees(x / R), Cesium.Math.toDegrees(2 * Math.atan(Math.exp(y / R)) - Math.PI / 2)];
+    const folga = 300;
+    const [ow, ss] = g(o - folga, s - folga), [le, nn] = g(e + folga, n + folga);
+    const ret = Cesium.Rectangle.fromDegrees(ow, ss, le, nn);
+    this.camadaEleitoral = new Cesium.ImageryLayer(new ProvedorDesenho({ poligonos, linhas, retangulo: ret,
+      credito: 'Locais de votação: TSE e CMDCA (levantamento da Associação); lotes: Mapa Fácil' }), { rectangle: ret });
+    camadas.add(this.camadaEleitoral);
+    this.globo.organizarPilha();
+  }
+
+  /**
+   * Nome de cada colégio em cima do lote. A altitude do terreno é lida uma vez e guardada: rótulo preso
+   * ao chão (CLAMP_TO_GROUND) recalcula a altura a cada quadro e era o que travava o Conselho Tutelar.
+   */
+  async _rotularLocais() {
+    const vez = (this._vezRotulos = (this._vezRotulos || 0) + 1);
+    const locais = this._locaisVisiveis || [];
+    this._altLocais ||= new Map();
+    const graus = (c) => [Cesium.Math.toDegrees(c[0] / R), Cesium.Math.toDegrees(2 * Math.atan(Math.exp(c[1] / R)) - Math.PI / 2)];
+    const faltam = locais.filter(({ l }) => !this._altLocais.has(`${this.globo.relevoAtivo}|${l.centro.join()}`));
+    if (faltam.length) {
+      const alts = await this.globo.altitudes(faltam.map(({ l }) => graus(l.centro))).catch(() => faltam.map(() => 0));
+      faltam.forEach(({ l }, k) => this._altLocais.set(`${this.globo.relevoAtivo}|${l.centro.join()}`, Number.isFinite(alts[k]) ? alts[k] : 0));
+      if (vez !== this._vezRotulos) return;
+    }
+    const exagero = this.globo.cena.verticalExaggeration || 1;
+    for (const { p, l } of locais) {
+      const [lo, la] = graus(l.centro);
+      const votacao = p.tipo === 'geral' || p.tipo === 'ct';
+      const ent = this.fonte.entities.add({ position: Cesium.Cartesian3.fromDegrees(lo, la, (this._altLocais.get(`${this.globo.relevoAtivo}|${l.centro.join()}`) + 6) * exagero),
+        label: { text: p.nome.replace(/\s+-\s+[A-Z]{2}-[A-Z]{2,4}$/, ''), font: '700 12.5px system-ui, "Segoe UI", Roboto, sans-serif',
+          fillColor: votacao ? Cesium.Color.WHITE : Cesium.Color.fromCssColorString('#e0e0e0'),
+          outlineColor: Cesium.Color.BLACK, outlineWidth: 3, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM, pixelOffset: new Cesium.Cartesian2(0, -6),
+          disableDepthTestDistance: Number.POSITIVE_INFINITY, distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 3500) } });
+      ent.levantamento = { tipo: 'ponto', dado: p };
+    }
+    this.globo.redesenhar();
+  }
+
+  /** Clique dentro do lote de um colégio de votação. */
+  _localNoPonto(x, y) {
+    return (this._locaisVisiveis || []).find(({ l }) => x >= l.ext[0] && x <= l.ext[2] && y >= l.ext[1] && y <= l.ext[3] && dentro(l.m, x, y))?.p;
   }
 
   // ------------------------------------------------------------------- busca
@@ -432,8 +505,11 @@ export class Levantamento {
       else this.abrirPonto(lv.dado);
       return true;
     }
-    if (!ponto || !this.mostrar || !this.opcoes.lotes) return false;
+    if (!ponto) return false;
     const x = mx(ponto.lon), y = my(ponto.lat);
+    const local = this.opcoes.eleicao ? this._localNoPonto(x, y) : null;
+    if (local) { this.abrirPonto(local); return true; }
+    if (!this.mostrar || !this.opcoes.lotes) return false;
     const l = this._lotesVisiveis().find((t) => x >= t.ext[0] && x <= t.ext[2] && y >= t.ext[1] && y <= t.ext[3] && dentro(t.m, x, y));
     if (!l) return false;
     this.abrirLote(l);
@@ -587,6 +663,8 @@ export class Levantamento {
   abrirPonto(p) {
     const id = this.identificar, E = this.dados.eleitoral;
     id.fonte.entities.removeAll();
+    const lote = this._loteDoLocal(p);
+    if (lote.lote) id.destacarLonLat(lote.aneisLL, { fechado: true });
     const tipos = { geral: `${p.grupo} eleitoral`, ct: `Conselho Tutelar 2023 · região ${p.grupo}`,
       transferido: `Local transferido no Conselho Tutelar · região ${p.grupo}`, sem: 'Sem informação no edital do Conselho Tutelar' };
     id.abrir({ titulo: p.nome, subtitulo: tipos[p.tipo], ponto: { lon: p.lon, lat: p.lat, alt: NaN } });

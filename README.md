@@ -251,7 +251,10 @@ Geographics. Globo: [CesiumJS](https://cesium.com/platform/cesiumjs/) (Apache 2.
 - **Camadas → Projetos** (`ORGANIZACAO` em `docs/js/camadas.js`): cada projeto reúne camadas de um ou mais serviços do
   Mapa Fácil. Ordem: Base Cadastral, Zonas Eleitorais, Energia, Saneamento, Sistema Viário, Edificações, Meio Ambiente
   e os demais.
-  - **Zonas Eleitorais**: limite das zonas e os locais de votação por zona e do Conselho Tutelar.
+  - **Zonas Eleitorais**: limite das zonas e os locais de votação por zona e do Conselho Tutelar, cada local como o
+    lote inteiro do colégio (laranja com borda amarela e o nome em cima). No Conselho Tutelar, o colégio sem votação
+    fica cinza com borda branca e uma linha tracejada leva ao colégio que recebeu as urnas. Os lotes dos colégios
+    estão em `docs/data/eleitoral_lotes.json` (gerado por `scripts/lotes_eleitorais.py`).
   - **Edificações**: chave única "Edificações em 3D" (desligada por padrão; por bairro, pela busca), mais Edificações,
     equipamentos públicos, Patrimônio Histórico, Regularização Fundiária e Documentação de Bairros.
   - **Meio Ambiente** com o PUAMA; **Uso do Solo** com o Simplifica Goiânia; **Zonas Municipais** (antigo Pontos Notáveis).
