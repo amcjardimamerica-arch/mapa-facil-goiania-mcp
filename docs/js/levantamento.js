@@ -320,7 +320,7 @@ export class Levantamento {
           hierarchy: Cesium.Cartesian3.fromDegreesArray(l.aneis[0].flat()),
           height: 0, heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
           extrudedHeight: l.alt, extrudedHeightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,
-          material: Cesium.Color.fromCssColorString(this.cor[l.f] || '#9aa3ad').withAlpha(0.85), outline: false } });
+          material: Cesium.Color.fromCssColorString(/^Condomínio/.test(l.f) ? this.cor[l.f] : l.f === 'Residencial' ? '#2196f3' : l.f === 'Comercial' ? '#e91e63' : '#9e9e9e').withAlpha(0.85), outline: false } });
         ent.levantamento = { tipo: 'lote', dado: l };
       }
     }

@@ -255,6 +255,45 @@ def main(kml_path: str, xlsx_path: str) -> int:
     iluminacao = {"colunas": cab_ip, "linhas": [{"v": r} for r in linhas_ip]}
     conferencia_cab, conferencia = abas["Conferência de lotes"] if "Conferência de lotes" in abas else ([], [])
 
+    # ---------------------------------------------------- prédios e condomínios para a camada "Edifícios em 3D"
+    # Um registro por lote com prédio ou condomínio: polígono do lote, andares conferidos e de onde veio o número.
+    cc = condominios["colunas"]
+    kc = {c: i for i, c in enumerate(cc)}
+    predios = []
+    for item in condominios["linhas"]:
+        k, r = item["lote"], item["v"]
+        if k is None:
+            continue
+        lt = lotes[k]
+        anel0 = lt["g"][0]
+        pts, x, y = [], 0, 0
+        for i in range(0, len(anel0), 2):
+            x += anel0[i]; y += anel0[i + 1]
+            pts.append([round(x / 1e6, 6), round(y / 1e6, 6)])
+        if len(pts) < 3:
+            continue
+        cx, cy = sum(p[0] for p in pts) / len(pts), sum(p[1] for p in pts) / len(pts)
+        g = lambda nome: r[kc[nome]] if nome in kc else None
+        nome = str(g("Nome do edifício / condomínio") or "").split(";")[0].strip() or f"Quadra {lt['q']}, lote {lt['l']}"
+        fin = lt["f"]
+        uso = ("horizontal" if "horizontal" in fin else "residencial" if fin in ("Condomínio residencial", "Residencial")
+               else "comercial" if fin in ("Condomínio comercial", "Comercial") else "misto" if fin in ("Condomínio misto", "Misto") else "indefinido")
+        andares = int(num(g("Pavimentos adotados")) or 1)
+        # Condomínio horizontal: sempre 1 andar de altura no 3D (os andares das casas ficam em "andares_fontes").
+        predios.append({"n": nome, "p": 1 if uso == "horizontal" else andares, "andares": andares, "uso": uso, "a": num(g("Apartamentos")), "t": num(lt["v"][ix["Área do terreno (m²)"]]),
+                        "ci": str(lt["v"][ix["Inscrição do lote (CI)"]] or ""), "c": [round(cx, 6), round(cy, 6)], "f": pts, "lv": 1,
+                        "tipo": fin, "b": BAIRROS[lt["b"]], "q": lt["q"], "l": lt["l"],
+                        "insc": num(g("Inscrições de IPTU no lote")), "base": g("Base adotada"), "conf": g("Conferência"),
+                        "fontes": {"Mapa Fácil": g("Pav. Mapa Fácil (Edifícios em altura)"), "Levantamento": g("Pav. levantamento A.M.C. (Andares)"),
+                                   "Cadastro": g("Pav. cadastro imobiliário"), "Numeração das unidades": g("Pav. pela numeração das unidades (IPTU)")},
+                        "google": g("Nome no Google Maps"), "google_end": g("Endereço no Google Maps")})
+    predios.sort(key=lambda e: -e["p"])
+    (SAIDA.parent / "predios.json").write_text(json.dumps({
+        "fonte": "Levantamento da Associação: inscrições de IPTU por lote (cadastro imobiliário do Mapa Fácil), edifícios em altura do Mapa Fácil, levantamento A.M.C. e Google Maps",
+        "nota": "Base = polígono do lote; altura = andares × 3 m. Vale o maior número de andares entre as fontes.",
+        "bairros": BAIRROS, "predios": predios}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(f"{len(predios)} prédios e condomínios -> predios.json")
+
     resumo_cab, resumo = abas["Resumo"]
     dados = {
         "fonte": "Levantamento da Associação (A.M.C.): Mapa Fácil, Receita Federal (CNPJ), Google Maps, TSE e edital do Conselho Tutelar 2023",

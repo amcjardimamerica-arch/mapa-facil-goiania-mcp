@@ -362,3 +362,6 @@ input[type="checkbox"] { accent-color: var(--acento); }
 .lv-empresa[open] summary { margin-bottom: 6px; }
 .lv-google { display: flex; flex-direction: column; gap: 4px; padding-bottom: 8px; border-bottom: 1px solid var(--linha); }
 .lv-desc { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+
+.legenda-usos { display: grid; gap: 4px; }
+.legenda-usos span { display: flex; align-items: center; gap: 8px; }

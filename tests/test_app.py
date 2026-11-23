@@ -315,6 +315,27 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
 
 
 # ------------------------------------------------------------------ acesso
+def test_edificios_trazem_os_predios_do_iptu(mapa):
+    r = mapa.evaluate("""async () => {
+      const ed = bussola.edificios;
+      await ed.ligar(true);
+      const k = ed.lista.find((e) => e.n === 'RES KINGDOM PARK'), j = ed.lista.find((e) => e.n === 'JARDA BY PALME');
+      ed.selecionar(k.i);
+      const ficha = document.querySelector('#ficha-corpo').textContent;
+      const cor = (e) => ed.corDe(e).toCssHexString();
+      const h = ed.lista.find((e) => e.uso === 'horizontal'), c = ed.lista.find((e) => e.uso === 'comercial'), o = { a: 0 };
+      const cores = { residencial: cor(k), oficialComAptos: cor({ a: 12 }), horizontal: cor(h), comercial: cor(c), indefinido: cor(o), andarH: h.p, semRotulos: !ed.rotulos };
+      bussola.identificar.fechar(); await ed.ligar(false);
+      return { total: ed.lista.length, conferidos: ed.conferidos, kingdom: k.p, jarda: j.p, ficha, cores,
+               repetidos: ed.lista.filter((e) => !e.lv && e.ci && ed.lista.some((x) => x.lv && x.ci === e.ci)).length };
+    }""")
+    assert r["conferidos"] > 600 and r["kingdom"] >= 50 and r["jarda"] >= 23, r
+    assert "Inscrições de IPTU no lote" in r["ficha"] and "De onde veio" in r["ficha"], r["ficha"][:300]
+    c = r["cores"]
+    assert c["semRotulos"] and c["andarH"] == 1 and r["repetidos"] == 0, r
+    assert c["residencial"] == "#2196f3" and c["oficialComAptos"] == "#2196f3" and c["horizontal"] == "#00bfa5" and c["comercial"] == "#e91e63" and c["indefinido"] == "#9e9e9e", c
+
+
 def test_sem_login_volta_ao_portal(navegador, servidor):
     ctx = _contexto(navegador, logado=False)
     pagina = ctx.new_page()

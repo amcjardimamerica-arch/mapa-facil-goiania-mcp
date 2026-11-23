@@ -78,6 +78,10 @@ python scripts/importar_levantamento.py compilado.kmz compilado.xlsx   # aceita 
 - **Condomínios** (571): lote com mais de 5 inscrições de IPTU, ou marcado como condomínio no Mapa Fácil, com
   edifício em altura, listado no levantamento ou com CNPJ de condomínio. Quatro finalidades, cada uma com a
   sua cor: horizontal (casas), residencial, comercial e misto. Todos têm polígono e aparecem em 3D.
+- **Prédios pelo IPTU**: `docs/data/predios.json` leva à camada "Edifícios em 3D" os 638 prédios e condomínios dos dois
+  bairros, entre eles todos os lotes com mais de 5 inscrições de IPTU, com o polígono do lote e a altura
+  pelos andares. Andares = maior valor entre Mapa Fácil, levantamento, cadastro e numeração das unidades (AP 1202 = 12º andar).
+  Cor pelo uso: horizontal (1 andar) em verde-água, residencial em azul, comercial em rosa, misto em marrom, cinza sem uso definido.
 - **Unidades de condomínio**: na ficha do lote, a lista "Apartamento ou sala" (ou "Casa do condomínio")
   começa em ` -- `, a base geral do condomínio, e traz uma base própria por inscrição de IPTU
   (código `UN-<inscrição>`), com as empresas daquela unidade. Dados em `unidades.por_lote` do arquivo.

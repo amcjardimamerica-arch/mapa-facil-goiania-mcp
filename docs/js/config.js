@@ -41,6 +41,14 @@ export const CFG = {
   visaoInicial: { rumo: 0, inclinacao: -58, distancia: 82000 },
   camera: { distanciaMinima: 45, distanciaMaxima: 150000, folgaGraus: 0.35 },
 
+  // Cor dos prédios em 3D pelo uso. Cinza quando não dá para diferenciar.
+  usosEdificios: [
+    { uso: 'horizontal', rotulo: 'Condomínio horizontal (casas, 1 andar)', cor: '#00bfa5' },
+    { uso: 'residencial', rotulo: 'Residencial', cor: '#2196f3' },
+    { uso: 'comercial', rotulo: 'Comercial', cor: '#e91e63' },
+    { uso: 'misto', rotulo: 'Misto (residencial e comercial)', cor: '#8d6e63' },
+    { uso: 'indefinido', rotulo: 'Uso não diferenciado', cor: '#9e9e9e' },
+  ],
   // Faixas de pavimentos iguais às do tema "Edificações" do Mapa Fácil.
   faixasEdificios: [
     { ate: 3, rotulo: '0 – 3', cor: '#e9edf2' },

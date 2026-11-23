@@ -205,6 +205,21 @@ def test_condominios_e_unidades():
     assert all(l["f"] in tipos for l in d["lotes"] if (l["v"][k] or 0) > 5), "mais de 5 inscrições é sempre condomínio"
 
 
+def test_predios_conferidos_pelo_iptu():
+    """Todo lote com mais de 5 inscrições de IPTU vira prédio na camada Edifícios 3D, com polígono e andares."""
+    d, lv = ler("predios.json"), ler("levantamento.json")
+    predios = {p["ci"]: p for p in d["predios"]}
+    assert len(d["predios"]) > 600 and all(len(p["f"]) >= 3 and p["p"] >= 1 and p["lv"] == 1 for p in d["predios"])
+    kci, kun = lv["colunas_lote"].index("Inscrição do lote (CI)"), lv["colunas_lote"].index("Unidades no cadastro")
+    faltam = [l["v"][kci] for l in lv["lotes"] if (l["v"][kun] or 0) > 5 and str(l["v"][kci]) not in predios]
+    assert not faltam, f"lotes com mais de 5 IPTU sem prédio: {faltam[:5]}"
+    assert all(p["p"] == 1 for p in d["predios"] if p["uso"] == "horizontal"), "condomínio horizontal tem 1 andar de altura"
+    assert {p["uso"] for p in d["predios"]} <= {"horizontal", "residencial", "comercial", "misto", "indefinido"}
+    nomes = {p["n"]: p["p"] for p in d["predios"]}
+    assert nomes["RES KINGDOM PARK"] >= 50 and nomes["JARDA BY PALME"] >= 23
+    assert nomes["RES AMERICAN GARDEN"] >= 12, "andares pela numeração das unidades (AP 1202), não o 2 do cadastro"
+
+
 def test_nomes_de_bairro_sem_tipo():
     b = {x["id"]: x for x in ler("bairros.json")["bairros"]}
     assert b["000400000015"]["n"] == "Jardim América" and b["000400000017"]["n"].startswith("Nova Sui")

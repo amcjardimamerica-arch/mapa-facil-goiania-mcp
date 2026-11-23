@@ -280,7 +280,20 @@ export class Identificar {
   /** Ficha de um edifício do modelo 3D. */
   edificio(e, mpp) {
     this.fonte.entities.removeAll();
-    this.abrir({ titulo: e.n, subtitulo: 'Edifício em altura · Goiânia', ponto: { lon: e.c[0], lat: e.c[1], alt: NaN } });
+    this.abrir({ titulo: e.n, subtitulo: e.lv ? `${e.tipo} · ${e.b}` : 'Edifício em altura · Goiânia', ponto: { lon: e.c[0], lat: e.c[1], alt: NaN } });
+    if (e.lv) {
+      const fontes = Object.entries(e.fontes || {}).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join(' · ');
+      this.corpo.append(this.tabela([
+        ['Andares', e.uso === 'horizontal' ? `${e.andares} nas casas (no 3D, 1 andar)` : `${e.p}`],
+        ['Uso', { horizontal: 'Condomínio horizontal (casas)', residencial: 'Residencial', comercial: 'Comercial', misto: 'Misto', indefinido: 'Não diferenciado' }[e.uso] || '—'],
+        ['De onde veio', e.base || '—'],
+        ['Andares em cada fonte', fontes || 'nenhuma fonte informa'],
+        ['Conferência', e.conf || '—'],
+        ['Inscrições de IPTU no lote', e.insc ?? '—'],
+        ['Quadra e lote', `Quadra ${e.q}, lote ${e.l}`],
+        ['Google Maps', e.google ? `${e.google} — ${e.google_end || ''}` : 'não consultado ou não encontrado'],
+      ]));
+    }
     this.corpo.append(this.tabela([
       ['Pavimentos', e.p || 'não informado'],
       ['Altura estimada', `${fmtNum(Math.max(e.p, 1) * mpp)} m (${fmtNum(mpp, 1)} m por pavimento)`],
@@ -290,6 +303,7 @@ export class Identificar {
       ['Inscrição cadastral (CI)', e.ci || '—'],
     ]), el('button', { class: 'botao', onclick: () => this.emPonto({ lon: e.c[0], lat: e.c[1], alt: NaN }) },
       'Ver lote e cadastro'),
-    el('p', { class: 'nota' }, 'Volume esquemático: a base é aproximada a partir do lote e a altura vem do número de pavimentos do cadastro.'));
+    el('p', { class: 'nota' }, e.lv ? 'Prédio conferido pelo IPTU do lote: a base é o polígono do lote e a altura vem do maior número de andares entre as fontes.'
+      : 'Volume esquemático: a base é aproximada a partir do lote e a altura vem do número de pavimentos do cadastro.'));
   }
 }

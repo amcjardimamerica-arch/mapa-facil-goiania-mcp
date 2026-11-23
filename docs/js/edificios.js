@@ -1,7 +1,7 @@
 // Edifícios 3D: volumes gerados do cadastro "Edifício em altura" do Mapa Fácil
 // (número de pavimentos × altura por pavimento, sobre a base aproximada do lote).
 import { CFG } from './config.js';
-import { el, pedirJSON, semAcento, debounce, fmtNum, aviso } from './util.js';
+import { el, pedirJSON, semAcento, debounce, fmtNum, aviso, pontoNoAnel } from './util.js';
 
 const Cesium = window.Cesium;
 
@@ -21,8 +21,15 @@ export class Edificios {
     globo.aoMudarRelevo(() => this._refazer());
   }
 
-  corDe(pavimentos) {
-    const f = CFG.faixasEdificios.find((x) => pavimentos <= x.ate) || CFG.faixasEdificios.at(-1);
+  /** Uso do prédio: o do levantamento (campo `uso`) ou, no cadastro do Mapa Fácil, residencial quando há apartamentos. */
+  usoDe(e) {
+    if (e.uso) return e.uso;
+    return e.a > 0 ? 'residencial' : 'indefinido';
+  }
+
+  corDe(e) {
+    const u = this.usoDe(e);
+    const f = CFG.usosEdificios.find((x) => x.uso === u) || CFG.usosEdificios.at(-1);
     return Cesium.Color.fromCssColorString(f.cor);
   }
 
@@ -30,7 +37,22 @@ export class Edificios {
     if (this.lista.length) return;
     const d = await pedirJSON(`${CFG.dados}edificios.json`, { tempo: 60000 });
     this.mpp = d.metros_por_pavimento || 3;
-    this.lista = d.edificios.map((e, i) => ({ ...e, i, k: semAcento(e.n) }));
+    let lista = d.edificios;
+    // Prédios e condomínios conferidos pelo IPTU de cada lote (levantamento da Associação): substituem os do cadastro
+    // "Edifício em altura" no mesmo lote e acrescentam os que o Mapa Fácil não traz.
+    try {
+      const lv = await pedirJSON(`${CFG.dados}predios.json`, { tempo: 60000 });
+      const cis = new Set(lv.predios.map((p) => p.ci).filter(Boolean));
+      const caixas = lv.predios.map((p) => {
+        const xs = p.f.map((q) => q[0]), ys = p.f.map((q) => q[1]);
+        return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys), p.f];
+      });
+      const dentro = (x, y) => caixas.some(([o, s, l, n, f]) => x >= o && x <= l && y >= s && y <= n && pontoNoAnel(x, y, f));
+      lista = lista.filter((e) => !(cis.has(String(e.ci || '')) || dentro(e.c[0], e.c[1]))).concat(lv.predios);
+      this.conferidos = lv.predios.length;
+    } catch (e) { this.conferidos = 0; }
+    lista.sort((a, b) => b.p - a.p);
+    this.lista = lista.map((e, i) => ({ ...e, i, k: semAcento(e.n) }));
     this._montarPainel();
   }
 
@@ -64,7 +86,7 @@ export class Edificios {
         vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT,
       }),
       attributes: {
-        color: Cesium.ColorGeometryInstanceAttribute.fromColor(this.corDe(e.p)),
+        color: Cesium.ColorGeometryInstanceAttribute.fromColor(this.corDe(e)),
         show: new Cesium.ShowGeometryInstanceAttribute(e.p >= this.minimo),
       },
     }));
@@ -103,7 +125,7 @@ export class Edificios {
   }
 
   limparSelecao() {
-    if (this.selecionado >= 0) this._pintar(this.selecionado, this.corDe(this.lista[this.selecionado].p));
+    if (this.selecionado >= 0) this._pintar(this.selecionado, this.corDe(this.lista[this.selecionado]));
     this.selecionado = -1;
     this.globo.redesenhar();
   }
@@ -144,7 +166,7 @@ export class Edificios {
         this.filtrar(v);
       } });
     saida.textContent = `todos (${fmtNum(total)})`;
-    const legenda = el('div', { class: 'legenda-faixas' }, CFG.faixasEdificios.map((f) =>
+    const legenda = el('div', { class: 'legenda-faixas legenda-usos' }, CFG.usosEdificios.map((f) =>
       el('span', {}, el('i', { style: `background:${f.cor}` }), f.rotulo)));
     const altos = el('ol', { class: 'lista-links' }, this.lista.slice(0, 12).map((e) =>
       el('li', {}, el('button', { onclick: () => this.irPara(e) },
@@ -153,9 +175,9 @@ export class Edificios {
     alvo.textContent = '';
     alvo.append(
       el('label', { class: 'rotulo-faixa bloco' }, el('span', {}, 'Mostrar a partir de ', saida), faixa),
-      el('h3', { class: 'subtitulo' }, 'Pavimentos'), legenda,
+      el('h3', { class: 'subtitulo' }, 'Cor pelo uso'), legenda,
       el('h3', { class: 'subtitulo' }, 'Os mais altos do cadastro'), altos,
-      el('p', { class: 'nota' }, `${fmtNum(total)} edifícios do tema “Edificações”. Altura = pavimentos × ${fmtNum(this.mpp, 1)} m; ` +
+      el('p', { class: 'nota' }, `${fmtNum(total)} edifícios: o tema “Edificações” do Mapa Fácil e, no Jardim América e no Nova Suíça, ${fmtNum(this.conferidos || 0)} prédios e condomínios conferidos pelo IPTU de cada lote.`), el('p', { class: 'nota' }, ` Altura = pavimentos × ${fmtNum(this.mpp, 1)} m; ` +
         'a base é aproximada a partir do lote. É um modelo esquemático, não um levantamento das construções.'));
   }
 }
