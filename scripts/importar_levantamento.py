@@ -293,6 +293,10 @@ def main(kml_path: str, xlsx_path: str) -> int:
         "nota": "Base = polígono do lote; altura = andares × 3 m. Vale o maior número de andares entre as fontes.",
         "bairros": BAIRROS, "predios": predios}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"{len(predios)} prédios e condomínios -> predios.json")
+    # Base de cada prédio: desenho do Mapa Fácil ou construção vista na imagem de satélite (nunca o lote inteiro)
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import bases_predios
+    bases_predios.gerar()
 
     resumo_cab, resumo = abas["Resumo"]
     dados = {

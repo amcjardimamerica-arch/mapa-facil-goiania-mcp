@@ -55,7 +55,8 @@ export class Levantamento {
     if (this._carregando) return this._carregando;
     this.estado.textContent = 'Carregando o levantamento…';
     this.estado.classList.add('carregando');
-    this._carregando = pedirJSON(`${CFG.dados}levantamento.json`, { tempo: 90000 }).then((d) => {
+    const predios = pedirJSON(`${CFG.dados}predios.json`, { tempo: 60000 }).catch(() => null);
+    this._carregando = pedirJSON(`${CFG.dados}levantamento.json`, { tempo: 90000 }).then(async (d) => {
       const ix = Object.fromEntries(d.colunas_lote.map((c, i) => [c, i]));
       this.ix = ix;
       const porLote = (tabela) => {
@@ -92,6 +93,13 @@ export class Levantamento {
       this.semLote = d.empresas_sem_lote.linhas.map((r) => ({ v: r, busca: semAcento(r.filter((x) => x !== null).join(' | ')),
         nome: r[ixs.indexOf('Nome fantasia')] || r[ixs.indexOf('Razão social')], bairro: r[ixs.indexOf('Bairro')] }));
       this.cor = Object.fromEntries(d.finalidades.map((f) => [f.nome, f.cor]));
+      // Bases dos prédios (predios.json): a torre de cada lote, nunca o terreno inteiro.
+      this.basesDoLote = new Map();
+      for (const p of (await predios)?.predios || []) {
+        const k = `${p.b}|${p.q}|${p.l}`;
+        if (!this.basesDoLote.has(k)) this.basesDoLote.set(k, []);
+        this.basesDoLote.get(k).push(...[p.f, ...(p.fx || [])].map((anel) => ({ anel, alt: Math.max(p.p, 1) * 3 })));
+      }
       this.dados = d;
       this._montarFiltros();
       this.redesenhar();
@@ -314,14 +322,18 @@ export class Levantamento {
     }
 
     if (this.opcoes.predios) {
+      // Só a projeção de cada torre ou casa (predios.json) sobe; o lote, o estacionamento e o lote agregado ficam no chão.
       for (const l of this._lotesVisiveis()) {
-        if (!l.alt || !(l.pav >= 3 || /^Condomínio/.test(l.f))) continue;
-        const ent = this.fonte.entities.add({ polygon: {
-          hierarchy: Cesium.Cartesian3.fromDegreesArray(l.aneis[0].flat()),
-          height: 0, heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-          extrudedHeight: l.alt, extrudedHeightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,
-          material: Cesium.Color.fromCssColorString(/^Condomínio/.test(l.f) ? this.cor[l.f] : l.f === 'Residencial' ? '#2196f3' : l.f === 'Comercial' ? '#e91e63' : '#9e9e9e').withAlpha(0.85), outline: false } });
-        ent.levantamento = { tipo: 'lote', dado: l };
+        if (!(l.pav >= 3 || /^Condomínio/.test(l.f))) continue;
+        const bases = this.basesDoLote?.get(`${d.bairros[l.b]}|${l.q}|${l.l}`) || [];
+        for (const b of bases) {
+          const ent = this.fonte.entities.add({ polygon: {
+            hierarchy: Cesium.Cartesian3.fromDegreesArray(b.anel.flat()),
+            height: 0, heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            extrudedHeight: b.alt, extrudedHeightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,
+            material: Cesium.Color.fromCssColorString(/^Condomínio/.test(l.f) ? this.cor[l.f] : l.f === 'Residencial' ? '#2196f3' : l.f === 'Comercial' ? '#e91e63' : '#9e9e9e').withAlpha(0.85), outline: false } });
+          ent.levantamento = { tipo: 'lote', dado: l };
+        }
       }
     }
 

@@ -1,7 +1,8 @@
 // Edifícios 3D: volumes gerados do cadastro "Edifício em altura" do Mapa Fácil
-// (número de pavimentos × altura por pavimento, sobre a base aproximada do lote).
+// (número de pavimentos × altura por pavimento, sobre a base aproximada do lote) e prédios conferidos pelo IPTU
+// (predios.json: desenho do Mapa Fácil ou base estimada pela imagem de satélite).
 import { CFG } from './config.js';
-import { el, pedirJSON, semAcento, debounce, fmtNum, aviso, pontoNoAnel } from './util.js';
+import { el, pedirJSON, semAcento, debounce, fmtNum, aviso } from './util.js';
 
 const Cesium = window.Cesium;
 
@@ -42,13 +43,11 @@ export class Edificios {
     // "Edifício em altura" no mesmo lote e acrescentam os que o Mapa Fácil não traz.
     try {
       const lv = await pedirJSON(`${CFG.dados}predios.json`, { tempo: 60000 });
+      // O Mapa Fácil que já tinha o prédio cede o lugar ao registro conferido, que mantém o mesmo desenho (campo `mf`).
+      // Prédios novos chegam com a base estimada pela imagem de satélite; `lote` é só o terreno e nunca sobe inteiro.
+      const trocados = new Set((lv.substitui || []).map(String));
       const cis = new Set(lv.predios.map((p) => p.ci).filter(Boolean));
-      const caixas = lv.predios.map((p) => {
-        const xs = p.f.map((q) => q[0]), ys = p.f.map((q) => q[1]);
-        return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys), p.f];
-      });
-      const dentro = (x, y) => caixas.some(([o, s, l, n, f]) => x >= o && x <= l && y >= s && y <= n && pontoNoAnel(x, y, f));
-      lista = lista.filter((e) => !(cis.has(String(e.ci || '')) || dentro(e.c[0], e.c[1]))).concat(lv.predios);
+      lista = lista.filter((e) => !(trocados.has(String(e.id)) || cis.has(String(e.ci || '')))).concat(lv.predios);
       this.conferidos = lv.predios.length;
     } catch (e) { this.conferidos = 0; }
     lista.sort((a, b) => b.p - a.p);
@@ -77,10 +76,10 @@ export class Edificios {
     const altitudes = await this.globo.altitudes(this.lista.map((e) => e.c));
     if (vez !== this._vez || !this.ativo) return;
     const exagero = this.globo.cena.verticalExaggeration || 1;
-    const instancias = this.lista.map((e, i) => new Cesium.GeometryInstance({
-      id: `edi:${i}`,
+    const instancias = this.lista.flatMap((e, i) => this._partes(e).map((anel, k) => new Cesium.GeometryInstance({
+      id: this._id(i, k),
       geometry: new Cesium.PolygonGeometry({
-        polygonHierarchy: new Cesium.PolygonHierarchy(Cesium.Cartesian3.fromDegreesArray(e.f.flat())),
+        polygonHierarchy: new Cesium.PolygonHierarchy(Cesium.Cartesian3.fromDegreesArray(anel.flat())),
         height: (altitudes[i] - 15) * exagero,
         extrudedHeight: (altitudes[i] + Math.max(e.p, 1) * this.mpp) * exagero,
         vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT,
@@ -89,7 +88,7 @@ export class Edificios {
         color: Cesium.ColorGeometryInstanceAttribute.fromColor(this.corDe(e)),
         show: new Cesium.ShowGeometryInstanceAttribute(e.p >= this.minimo),
       },
-    }));
+    })));
     const nova = new Cesium.Primitive({
       geometryInstances: instancias,
       appearance: new Cesium.PerInstanceColorAppearance({ translucent: false, closed: true }),
@@ -105,23 +104,27 @@ export class Edificios {
     }, 200);
   }
 
+  /** Bases do registro: a torre (`f`) e, em casas de condomínio horizontal e prédios baixos, as demais construções (`fx`). */
+  _partes(e) { return [e.f, ...(e.fx || [])]; }
+
+  _id(i, k) { return k ? `edi:${i}:${k}` : `edi:${i}`; }
+
   _atributos(i) {
-    return this.primitiva && this.primitiva.ready ? this.primitiva.getGeometryInstanceAttributes(`edi:${i}`) : null;
+    if (!this.primitiva || !this.primitiva.ready || !this.lista[i]) return [];
+    return this._partes(this.lista[i]).map((_, k) => this.primitiva.getGeometryInstanceAttributes(this._id(i, k))).filter(Boolean);
   }
 
   filtrar(minimo) {
     this.minimo = minimo;
     if (!this.primitiva || !this.primitiva.ready) return;
     for (const e of this.lista) {
-      const a = this._atributos(e.i);
-      if (a) a.show = Cesium.ShowGeometryInstanceAttribute.toValue(e.p >= minimo, a.show);
+      for (const a of this._atributos(e.i)) a.show = Cesium.ShowGeometryInstanceAttribute.toValue(e.p >= minimo, a.show);
     }
     this.globo.redesenhar();
   }
 
   _pintar(i, cor) {
-    const a = this._atributos(i);
-    if (a) a.color = Cesium.ColorGeometryInstanceAttribute.toValue(cor, a.color);
+    for (const a of this._atributos(i)) a.color = Cesium.ColorGeometryInstanceAttribute.toValue(cor, a.color);
   }
 
   limparSelecao() {
@@ -150,7 +153,7 @@ export class Edificios {
   /** Trata um clique: devolve true se acertou um edifício. */
   aoClicar(pego) {
     if (!pego || typeof pego.id !== 'string' || !pego.id.startsWith('edi:')) return false;
-    this.selecionar(+pego.id.slice(4));
+    this.selecionar(+pego.id.split(':')[1]);
     return true;
   }
 
@@ -177,7 +180,8 @@ export class Edificios {
       el('label', { class: 'rotulo-faixa bloco' }, el('span', {}, 'Mostrar a partir de ', saida), faixa),
       el('h3', { class: 'subtitulo' }, 'Cor pelo uso'), legenda,
       el('h3', { class: 'subtitulo' }, 'Os mais altos do cadastro'), altos,
-      el('p', { class: 'nota' }, `${fmtNum(total)} edifícios: o tema “Edificações” do Mapa Fácil e, no Jardim América e no Nova Suíça, ${fmtNum(this.conferidos || 0)} prédios e condomínios conferidos pelo IPTU de cada lote.`), el('p', { class: 'nota' }, ` Altura = pavimentos × ${fmtNum(this.mpp, 1)} m; ` +
-        'a base é aproximada a partir do lote. É um modelo esquemático, não um levantamento das construções.'));
+      el('p', { class: 'nota' }, `${fmtNum(total)} edifícios: o tema “Edificações” do Mapa Fácil e, no Jardim América e no Nova Suíça, ${fmtNum(this.conferidos || 0)} prédios e condomínios conferidos pelo IPTU de cada lote.`), el('p', { class: 'nota' }, ` Altura = pavimentos × ${fmtNum(this.mpp, 1)} m. ` +
+        'Prédios que o Mapa Fácil já tinha mantêm o desenho anterior; os novos têm a base estimada pela construção vista na imagem de satélite, ' +
+        'só a torre sobe (estacionamento e lote agregado ficam no chão). É um modelo aproximado, não um levantamento das construções.'));
   }
 }

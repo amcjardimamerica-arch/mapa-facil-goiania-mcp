@@ -293,7 +293,8 @@ export class Identificar {
       this.corpo.append(this.tabela([
         ['Andares', e.uso === 'horizontal' ? `${e.andares} nas casas (no 3D, 1 andar)` : `${e.p}`],
         ['Uso', { horizontal: 'Condomínio horizontal (casas)', residencial: 'Residencial', comercial: 'Comercial', misto: 'Misto', indefinido: 'Não diferenciado' }[e.uso] || '—'],
-        ['De onde veio', e.base || '—'],
+        ['Andares: de onde veio', e.base || '—'],
+        ['Base no 3D', e.base_3d || '—'],
         ['Andares em cada fonte', fontes || 'nenhuma fonte informa'],
         ['Conferência', e.conf || '—'],
         ['Inscrições de IPTU no lote', e.insc ?? '—'],
@@ -310,7 +311,7 @@ export class Identificar {
       ['Inscrição cadastral (CI)', e.ci || '—'],
     ]), el('button', { class: 'botao', onclick: () => this.emPonto({ lon: e.c[0], lat: e.c[1], alt: NaN }) },
       'Ver lote e cadastro'),
-    el('p', { class: 'nota' }, e.lv ? 'Prédio conferido pelo IPTU do lote: a base é o polígono do lote e a altura vem do maior número de andares entre as fontes.'
+    el('p', { class: 'nota' }, e.lv ? 'Prédio conferido pelo IPTU do lote: a altura vem do maior número de andares entre as fontes. A base é o desenho do Mapa Fácil quando ele já tinha o prédio; nos novos, a construção vista na imagem de satélite (só a torre, sem o estacionamento).'
       : 'Volume esquemático: a base é aproximada a partir do lote e a altura vem do número de pavimentos do cadastro.'));
   }
 }

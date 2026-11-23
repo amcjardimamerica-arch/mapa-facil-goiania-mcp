@@ -220,6 +220,20 @@ def test_predios_conferidos_pelo_iptu():
     assert nomes["RES AMERICAN GARDEN"] >= 12, "andares pela numeração das unidades (AP 1202), não o 2 do cadastro"
 
 
+def test_predios_com_base_da_torre_e_nao_do_lote():
+    """A torre não ocupa o terreno inteiro: prédios do Mapa Fácil mantêm o desenho anterior e os novos têm base estimada."""
+    d, ed = ler("predios.json"), {e["id"]: e for e in ler("edificios.json")["edificios"]}
+    P = d["predios"]
+    assert all(p.get("lote") and p.get("base_3d") for p in P)
+    mf = [p for p in P if p.get("mf") is not None]
+    assert len(mf) > 250 and all(p["f"] == ed[p["mf"]]["f"] for p in mf), "mesmo desenho do Mapa Fácil de antes"
+    assert set(d["substitui"]) == {p["mf"] for p in mf}
+    altos = [p for p in P if p["p"] > 3]
+    assert not [p["n"] for p in altos if p["f"] == p["lote"]], "torre não pode ser o lote inteiro"
+    assert any(p["base_3d"].startswith("Estimada pela imagem") for p in altos)
+    assert any(p.get("fx") for p in P if p["uso"] == "horizontal"), "casas de condomínio horizontal, cada uma com sua forma"
+
+
 def test_nomes_de_bairro_sem_tipo():
     b = {x["id"]: x for x in ler("bairros.json")["bairros"]}
     assert b["000400000015"]["n"] == "Jardim América" and b["000400000017"]["n"].startswith("Nova Sui")

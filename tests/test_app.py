@@ -330,7 +330,7 @@ def test_edificios_trazem_os_predios_do_iptu(mapa):
                repetidos: ed.lista.filter((e) => !e.lv && e.ci && ed.lista.some((x) => x.lv && x.ci === e.ci)).length };
     }""")
     assert r["conferidos"] > 600 and r["kingdom"] >= 50 and r["jarda"] >= 23, r
-    assert "Inscrições de IPTU no lote" in r["ficha"] and "De onde veio" in r["ficha"], r["ficha"][:300]
+    assert "Inscrições de IPTU no lote" in r["ficha"] and "Base no 3D" in r["ficha"], r["ficha"][:300]
     c = r["cores"]
     assert c["semRotulos"] and c["andarH"] == 1 and r["repetidos"] == 0, r
     assert c["residencial"] == "#2196f3" and c["oficialComAptos"] == "#2196f3" and c["horizontal"] == "#00bfa5" and c["comercial"] == "#e91e63" and c["indefinido"] == "#9e9e9e", c
