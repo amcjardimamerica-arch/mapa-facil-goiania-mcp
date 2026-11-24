@@ -103,7 +103,7 @@ const grupos = [
     }],
   ] },
   { titulo: 'Cálculos', testes: [
-    ['Coordenadas UTM (SIRGAS 2000, fuso 22S) contra o servidor', async () => {
+    ['Coordenadas UTM (SIRGAS 2000, fuso 22S) contra os pontos oficiais', async () => {
       const r = await pedirJSON(`${CFG.ms}/Mapa_Edificios/MapServer/5/query`, { parametros: {
         where: '1=1', outFields: 'x_coord,y_coord', returnGeometry: 'true', outSR: '4326', resultRecordCount: 20, f: 'json' } });
       exigir(r.features?.length, 'sem pontos de referência');
@@ -114,11 +114,12 @@ const grupos = [
         const v = deUTM(u.e, u.n);
         exigir(Math.abs(v.lon - f.geometry.x) < 1e-9 && Math.abs(v.lat - f.geometry.y) < 1e-9, 'ida e volta não confere');
       }
-      exigir(pior < 0.01, `erro de ${pior.toFixed(3)} m`);
+      // Banco local: coordenadas guardadas com 7 casas decimais (~1 cm); a margem é de 10 cm.
+      exigir(pior < 0.1, `erro de ${pior.toFixed(3)} m`);
       return `${r.features.length} pontos oficiais; maior diferença ${fmtNum(pior * 1000, 2)} mm`;
     }],
   ] },
-  { titulo: 'Servidor municipal — consultas ao vivo', testes: [
+  { titulo: 'Consultas (respondidas pelo banco local)', testes: [
     ['Identificar: bairro, quadra e lote na Praça Cívica', async () => {
       const x = mercX(PRACA_CIVICA.lon), y = mercY(PRACA_CIVICA.lat);
       const r = await pedirJSON(`${CFG.baseCadastral}/identify`, { parametros: {
@@ -156,13 +157,34 @@ const grupos = [
       return `${r.layers.length} camadas com símbolos`;
     }],
   ] },
-  { titulo: 'Servidor municipal — imagem de cada tema', dinamico: async () => {
+  { titulo: 'Banco de dados local — cada tema (sem o servidor da Prefeitura)', dinamico: async () => {
     const c = await carregar('camadas.json');
+    const man = await (await fetch(`banco/manifesto.json?nc=${Date.now()}`, { cache: 'no-store' })).json();
+    const imagens = Array.isArray(man.imagens) ? man.imagens : Object.keys(man.imagens || {});
+    // Cada tema: o serviço está no banco e a primeira camada com dados responde à consulta local.
     const itens = c.temas.filter((t) => !t.somente_consulta).map((t) => [
       `${t.titulo}${t.oficial ? '' : ' (extra)'}`,
-      async () => imagem(urlExport(t.url, `&layers=show:${t.camadas.filter((x) => !x.grupo && x.visivel).map((x) => x.id).join(',') || t.camadas.filter((x) => !x.grupo).map((x) => x.id).join(',')}`)),
+      async () => {
+        const sv = man.servicos?.[t.chave];
+        exigir(sv || imagens.includes(t.chave), 'serviço fora do banco local');
+        const camadas = Object.entries(sv?.camadas || {}).filter(([, c]) => !c.copia_de);
+        if (!camadas.length) { exigir(imagens.includes(t.chave), 'sem camadas nem imagens no banco local'); return 'imagens guardadas no banco local'; }
+        const total = camadas.reduce((n, [, c]) => n + (c.total || 0), 0);
+        exigir(total > 0, 'nenhuma feição no banco local');
+        // Consulta de verdade ao banco: a primeira camada com geometria, num quadrado em volta da Praça Cívica.
+        const geo = camadas.find(([, c]) => c.geo && c.total);
+        if (geo) {
+          const r = await pedirJSON(`${t.url}/${geo[0]}/query`, { parametros: { f: 'json', where: '1=1', returnCountOnly: 'true',
+            geometry: bboxTeste(3000), geometryType: 'esriGeometryEnvelope', inSR: '3857', spatialRel: 'esriSpatialRelIntersects' } });
+          exigir(Number.isFinite(r?.count), 'consulta local sem resposta');
+        }
+        return `${camadas.length} camadas, ${fmtNum(total)} feições no banco local`;
+      },
     ]);
-    for (const b of c.bases.filter((x) => !x.ano)) itens.push([`Fundo: ${b.titulo}`, async () => imagem(urlExport(b.url).replace('png32', 'jpg').replace('transparent=true', 'transparent=false'))]);
+    for (const k of imagens) itens.push([`Imagens guardadas: ${k}`, async () => {
+      const info = Array.isArray(man.imagens) ? null : man.imagens[k];
+      return info ? `blocos de imagem no banco local (${JSON.stringify(info).slice(0, 60)}…)` : 'blocos de imagem no banco local';
+    }]);
     // O Mapa e a camada "Ruas e quadras" são desenhados aqui com os dados vetoriais da base cadastral.
     const consulta = (camada, campos) => pedirJSON(`${CFG.baseCadastral}/${camada}/query`, { parametros: { f: 'json',
       geometry: '-5484730,-1885010,-5483530,-1883810', geometryType: 'esriGeometryEnvelope', inSR: '3857', outSR: '3857',

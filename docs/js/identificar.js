@@ -3,6 +3,7 @@
 // território (limítrofe), sem dados.
 import { CFG, ROTULOS_CAMPOS, CAMPOS_OCULTOS, CAMPOS_SIM_NAO } from './config.js';
 import { $, el, pedirJSON, mercX, mercY, deMercator, paraUTM, fmtNum, fmtGraus, aviso, extensaoDe, nomeBairro } from './util.js';
+import { cofreDisponivel, cofreAberto, abrirCofre } from './banco.js';
 
 const Cesium = window.Cesium;
 const AMARELO = () => Cesium.Color.fromCssColorString(CFG.cores.destaque);
@@ -236,10 +237,11 @@ export class Identificar {
           quadra: String(qd || '').trim(), lote: String(a.nm_lot || '').trim(), bairro: nomeDoBairro || '',
           ci: String(a.ci || '').trim(), id: String(a.id || '').trim() }) }, 'Editar como polígono'));
       }
+      this._anexos(String(lote.attributes.id || '').trim(), corpo);
       const ci = String(lote.attributes.ci || '').trim();
       if (/^\d{6,}$/.test(ci)) {
         const alvoCad = el('div', {});
-        corpo.append(el('button', { class: 'botao', onclick: (ev) => { ev.target.remove(); this._cadastro(ci, alvoCad); } },
+        corpo.append(el('button', { class: 'botao', onclick: (ev) => { ev.target.remove(); this._cadastro(ci, alvoCad, ponto); } },
           'Ver cadastro imobiliário do lote'), alvoCad);
       }
     }
@@ -267,7 +269,50 @@ export class Identificar {
     if (resultados.length > 15) corpo.append(el('p', { class: 'nota' }, `Mais ${resultados.length - 15} resultado(s) não exibidos.`));
   }
 
-  async _cadastro(ci, alvo) {
+  /** Documentos anexados ao lote no Mapa Fácil (vistorias, plantas, certidões): lista do banco, arquivo no servidor municipal. */
+  async _anexos(idLote, alvo) {
+    if (!idLote) return;
+    try {
+      const r = await pedirJSON(`${CFG.baseCadastral}/11/query`, { parametros: {
+        f: 'json', where: `ID_OBJ = '${idLote.replace(/'/g, '')}'`, outFields: '*', returnGeometry: 'false' } });
+      const fs = (r.features || []).map((f) => f.attributes);
+      if (!fs.length) return;
+      const lista = el('ul', { class: 'lista-links' }, fs.map((a) => el('li', {},
+        el('a', { href: `${CFG.baseCadastral}/0/${a.REL_OBJECTID}/attachments/${a.ATTACHMENTID}`, target: '_blank', rel: 'noopener' },
+          String(a.NM || a.ATT_NAME || 'Documento').trim()),
+        el('small', {}, ` ${a.CONTENT_TYPE || ''} · ${a.DT_INC || ''}`))));
+      alvo.append(el('h4', { class: 'subtitulo' }, `Documentos anexados ao lote (${fs.length})`), lista,
+        el('p', { class: 'nota' }, 'Os arquivos abrem no servidor do Mapa Fácil. Os do Jardim América e do Nova Suíça também estão no pacote de anexos.'));
+    } catch (e) { /* sem anexos no banco */ }
+  }
+
+  /** Formulário da senha do cofre (dados pessoais cifrados no banco local). */
+  _formCofre(depois) {
+    const campo = el('input', { type: 'password', class: 'campo', placeholder: 'Senha do cofre', autocomplete: 'off', 'aria-label': 'Senha do cofre' });
+    const msg = el('p', { class: 'nota' }, 'Nome do proprietário, CPF/CNPJ, RG, telefone e demais dados pessoais estão cifrados no banco. Informe a senha do cofre para ver.');
+    const abrir = async () => {
+      try { await abrirCofre(campo.value); depois(); }
+      catch (e) { msg.textContent = e.message; msg.classList.add('erro'); }
+    };
+    campo.addEventListener('keydown', (e) => { if (e.key === 'Enter') abrir(); });
+    return el('div', { class: 'cofre' }, msg, campo, el('button', { class: 'botao', onclick: abrir }, 'Abrir dados pessoais'));
+  }
+
+  /** Proprietário e dados do bem no cadastro tributário (Mapa_Tributario_Web), pelo ponto do lote. */
+  async _proprietario(ponto, alvo) {
+    try {
+      const r = await pedirJSON(`${CFG.ms}/Mapa_Tributario_Web/MapServer/0/query`, { parametros: {
+        f: 'json', geometry: `${ponto.lon},${ponto.lat}`, geometryType: 'esriGeometryPoint', inSR: '4326',
+        spatialRel: 'esriSpatialRelIntersects', outFields: '*', returnGeometry: 'false' } });
+      const fs = r.features || [];
+      if (!fs.length) return;
+      const corpo = el('div', {});
+      for (const f of fs.slice(0, 20)) corpo.append(this.tabela(atributosLegiveis(f.attributes)));
+      alvo.append(el('h4', { class: 'subtitulo' }, `Cadastro tributário — proprietário e imóvel (${fs.length})`), corpo);
+    } catch (e) { /* tema tributário fora do banco */ }
+  }
+
+  async _cadastro(ci, alvo, ponto) {
     alvo.append(el('p', { class: 'nota carregando' }, 'Consultando o Cadastro Imobiliário…'));
     try {
       const r = await pedirJSON(`${CFG.baseCadastral}/3/query`, { parametros: {
@@ -299,6 +344,10 @@ export class Identificar {
         el('tbody', {}, linhas))),
       el('p', { class: 'nota' }, `${us.length > 200 ? `Exibidas 200 de ${us.length} inscrições. ` : ''}` +
         'Valor venal conforme a base publicada (o serviço não informa o exercício de referência).'));
+      if (ponto && cofreDisponivel()) {
+        if (cofreAberto()) this._proprietario(ponto, alvo);
+        else alvo.append(this._formCofre(() => { alvo.textContent = ''; this._cadastro(ci, alvo, ponto); }));
+      }
     } catch (e) {
       alvo.textContent = '';
       alvo.append(el('p', { class: 'nota erro' }, `Cadastro indisponível: ${e.message}`));

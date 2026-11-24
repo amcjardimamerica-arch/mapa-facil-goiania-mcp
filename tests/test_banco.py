@@ -89,3 +89,78 @@ def test_sistema_funciona_sem_o_servidor_da_prefeitura(navegador, servidor):
     assert r["ident"][:1] == [0] and set(r["ident"]) >= {0, 1, 2} and r["loteIdent"] == "3061190239", r
     assert r["env"] > 20, r
     assert not pedidos, f"o sistema pediu ao servidor da Prefeitura: {pedidos[:5]}"
+
+
+@pytest.mark.navegador
+def test_temas_e_mapa_basico_do_banco(navegador, servidor):
+    """Temas do painel Camadas desenhados dos dados locais e o Mapa Básico em blocos locais, sem o servidor municipal."""
+    man = manifesto()
+    if "Mapa_ModeloEspacial" not in man["servicos"]:
+        pytest.skip("projetos ainda não estão no banco")
+    ctx = _contexto(navegador)
+    pedidos = []
+    ctx.route("**/portalmapa.goiania.go.gov.br/**", lambda r: (pedidos.append(r.request.url), r.abort()))
+    pg = ctx.new_page()
+    pg.goto(f"{servidor}/sistema.html#ed=0&r=0")
+    pg.wait_for_function("window.bussola && (window.bussola.pronto || window.bussola.erros.length)", timeout=180_000)
+    r = pg.evaluate("""async () => {
+      const { ProvedorTema, imagemLocal } = await import('./js/banco.js');
+      const preenchidos = (tela) => { const d = tela.getContext('2d').getImageData(0, 0, tela.width, tela.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i]) n++; return n; };
+      // nível 14 sobre o Jardim América
+      const n = 2 ** 14, x = Math.floor((-49.2817 + 180) / 360 * n), s = Math.sin(-16.7047 * Math.PI / 180);
+      const y = Math.floor((0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)) * n);
+      const zona = new ProvedorTema({ servico: 'Mapa_ModeloEspacial', camadas: [1, 2, 3, 4, 5, 7, 8, 9, 10] });
+      const postes = new ProvedorTema({ servico: 'Mapa_Energia', camadas: [4] });
+      const t1 = await zona.requestImage(x, y, 14);
+      const t2 = await postes.requestImage(x * 8, y * 8, 17);
+      const basico = imagemLocal('Mapa_Basico3');
+      const url = basico ? basico.url : '';
+      return { zona: preenchidos(t1), postes: preenchidos(t2), basico: !!basico, url };
+    }""")
+    ctx.close()
+    assert r["zona"] > 1000 and r["postes"] > 50, r
+    if "imagens" in man:
+        assert r["basico"] and "banco/blocos/Mapa_Basico3" in r["url"], r
+    assert not pedidos, pedidos[:5]
+
+
+def test_dados_pessoais_so_no_cofre():
+    """Campos pessoais não aparecem em claro em nenhum arquivo do banco: só nos .pess, cifrados."""
+    man = manifesto()
+    if "cofre" not in man:
+        pytest.skip("banco montado sem cofre")
+    info = man["servicos"]["Mapa_Tributario_Web"]["camadas"]["0"]
+    assert "CPF_CNPJ" in info["pessoais"] and "CPF_CNPJ" not in info["campos"]
+    b = info["blocos"][0]
+    claro = gzip.open(BANCO / "dados" / "Mapa_Tributario_Web" / "0" / str(info["z"]) / f"{b}.json.gz", "rt", encoding="utf-8").read()
+    assert "CPF_CNPJ" not in claro and "PROPRIETAR" not in claro
+    cifrado = (BANCO / "dados" / "Mapa_Tributario_Web" / "0" / str(info["z"]) / f"{b}.pess").read_bytes()
+    assert cifrado[12:14] != b"\x1f\x8b", "o .pess precisa estar cifrado"
+
+
+@pytest.mark.navegador
+def test_cofre_abre_so_com_a_senha(navegador, servidor):
+    man = manifesto()
+    if "cofre" not in man:
+        pytest.skip("banco montado sem cofre")
+    senha = os.environ.get("BUSSOLA_SENHA_COFRE", "")
+    ctx = _contexto(navegador)
+    ctx.route("**/portalmapa.goiania.go.gov.br/**", lambda r: r.abort())
+    pg = ctx.new_page()
+    pg.goto(f"{servidor}/sistema.html#ed=0&r=0")
+    pg.wait_for_function("window.bussola && (window.bussola.pronto || window.bussola.erros.length)", timeout=180_000)
+    r = pg.evaluate("""async (senha) => {
+      const b = await import('./js/banco.js');
+      let errada = false;
+      try { await b.abrirCofre('senha-errada'); } catch { errada = true; }
+      const T = 'https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer/Mapa_Tributario_Web/MapServer/0/query';
+      const pede = async () => (await fetch(`${T}?${new URLSearchParams({ f: 'json', geometry: '-49.290591,-16.698472', geometryType: 'esriGeometryPoint', inSR: '4326', outFields: '*', returnGeometry: 'false' })}`)).json();
+      const fechado = await pede();
+      let aberto = null;
+      if (senha) { await b.abrirCofre(senha); aberto = await pede(); b.fecharCofre(); }
+      return { errada, fechado: fechado.features?.[0]?.attributes || null, aberto: aberto?.features?.[0]?.attributes || null };
+    }""", senha)
+    ctx.close()
+    assert r["errada"] and r["fechado"] and "PROPRIETAR" not in r["fechado"], r
+    if senha:
+        assert r["aberto"] and r["aberto"].get("PROPRIETAR"), r

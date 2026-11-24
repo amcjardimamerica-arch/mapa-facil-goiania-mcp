@@ -14,7 +14,7 @@ const latDe = (y) => (2 * Math.atan(Math.exp(y / R)) - Math.PI / 2) * 180 / Math
 
 export class NaoSuportado extends Error {}
 
-const estado = { manifesto: null, raiz: 'banco/', cache: new Map(), pedidos: new Map(), fetchOriginal: null, servidor: 0, local: 0 };
+const estado = { chave: null, manifesto: null, raiz: 'banco/', cache: new Map(), pedidos: new Map(), fetchOriginal: null, servidor: 0, local: 0 };
 
 // ------------------------------------------------------------------ arquivos
 async function lerArquivo(caminho) {
@@ -42,12 +42,76 @@ async function lerArquivo(caminho) {
   try { return await p; } finally { estado.pedidos.delete(caminho); }
 }
 
+// ------------------------------------------------------------------ cofre (dados pessoais cifrados)
+const camposDe = (info) => (estado.chave && info.pessoais ? [...info.campos, ...info.pessoais] : info.campos);
+const b64 = (t) => Uint8Array.from(atob(t), (c) => c.charCodeAt(0));
+
+async function decifrar(bytes) {
+  const claro = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: bytes.slice(0, 12) }, estado.chave, bytes.slice(12));
+  return new Uint8Array(claro);
+}
+
+export const cofreDisponivel = () => !!estado.manifesto?.cofre;
+export const cofreAberto = () => !!estado.chave;
+
+/** Abre o cofre com a senha: deriva a chave (PBKDF2) e confere no texto de teste do manifesto. */
+export async function abrirCofre(senha) {
+  const c = estado.manifesto?.cofre;
+  if (!c) throw new Error('este banco não tem cofre');
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(senha), 'PBKDF2', false, ['deriveKey']);
+  const chave = await crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt: b64(c.sal), iterations: c.iteracoes },
+    base, { name: 'AES-GCM', length: 256 }, true, ['decrypt']);
+  const anterior = estado.chave;
+  estado.chave = chave;
+  try {
+    const t = new TextDecoder().decode(await decifrar(b64(c.teste)));
+    if (t !== 'bussola-cofre') throw new Error('senha incorreta');
+  } catch (e) {
+    estado.chave = anterior;
+    throw new Error('senha do cofre incorreta');
+  }
+  try { sessionStorage.setItem('bussola:cofre', btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.exportKey('raw', chave))))); } catch { /* sem sessão */ }
+  estado.cache.clear();
+  return true;
+}
+
+export function fecharCofre() {
+  estado.chave = null;
+  try { sessionStorage.removeItem('bussola:cofre'); } catch { /* */ }
+  estado.cache.clear();
+}
+
+async function restaurarCofre() {
+  try {
+    const k = sessionStorage.getItem('bussola:cofre');
+    if (k && estado.manifesto?.cofre) estado.chave = await crypto.subtle.importKey('raw', b64(k), 'AES-GCM', true, ['decrypt']);
+  } catch { estado.chave = null; }
+}
+
+/** Arquivo de dados + campos pessoais do cofre (arquivo .pess ao lado), quando o cofre está aberto. */
+async function lerDados(caminho, info) {
+  const a = await lerArquivo(caminho);
+  if (!a || !info.pessoais || !estado.chave || a._p) return a;
+  const pess = caminho.replace(/\.json\.gz$/, '.pess');
+  try {
+    const r = await estado.fetchOriginal(estado.raiz + pess);
+    if (r.ok) {
+      let bytes = await decifrar(new Uint8Array(await r.arrayBuffer()));
+      const s = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+      a._p = JSON.parse(new TextDecoder().decode(await new Response(s).arrayBuffer()));
+    } else a._p = { v: {} };
+  } catch (e) { console.warn('cofre:', pess, e); a._p = { v: {} }; }
+  delete a._f;
+  return a;
+}
+
 export async function iniciarBanco() {
   try {
     estado.fetchOriginal = window.fetch.bind(window);
     const r = await estado.fetchOriginal(`${estado.raiz}manifesto.json`, { cache: 'no-cache' });
     if (!r.ok) return null;
     estado.manifesto = await r.json();
+    await restaurarCofre();
     instalarInterceptador();
     return estado.manifesto;
   } catch (e) {
@@ -62,11 +126,14 @@ export const temServico = (S) => Object.values(estado.manifesto?.servicos?.[S]?.
 export function imagemLocal(S) {
   const b = estado.manifesto?.imagens?.[S];
   if (!b) return null;
-  return new Cesium.UrlTemplateImageryProvider({
+  const p = new Cesium.UrlTemplateImageryProvider({
     url: `${estado.raiz}blocos/${S}/{z}/{x}/{y}.${b.formato || 'png'}`, minimumLevel: b.min, maximumLevel: b.max,
     rectangle: Cesium.Rectangle.fromDegrees(...b.extensao), credit: `${S}: Prefeitura de Goiânia (Mapa Fácil) · banco local`,
     enablePickFeatures: false, tileDiscardPolicy: new Cesium.NeverTileDiscardPolicy(),
   });
+  // Só existem blocos que tocam Goiânia: os do retângulo que ficam fora dela faltam de propósito.
+  p.errorEvent.addEventListener((erro) => { if (erro) erro.retry = false; });
+  return p;
 }
 
 function infoCamada(S, id) {
@@ -111,7 +178,10 @@ function extensaoGeo(g) {
 function feicoes(arquivo, chaveBloco, info) {
   if (!arquivo) return [];
   if (arquivo._f) return arquivo._f;
-  arquivo._f = arquivo.f.map(([oid, valores, enc]) => {
+  const pess = arquivo._p && info?.pessoais ? arquivo._p.v : null;
+  const vazios = pess ? info.pessoais.map(() => null) : null;
+  arquivo._f = arquivo.f.map(([oid, valores0, enc]) => {
+    const valores = pess ? [...valores0, ...(pess[String(oid)] || vazios)] : valores0;
     const f = { oid, valores, enc, geo: arquivo.g, bloco: chaveBloco };
     Object.defineProperty(f, 'g', { get() { return this._g === undefined ? (this._g = decodificar(this.geo, this.enc)) : this._g; } });
     Object.defineProperty(f, 'ext', { get() { return this._e || (this._e = this.g ? extensaoGeo(this.g) : null); } });
@@ -169,7 +239,7 @@ async function feicoesDosBlocos(info, blocos, visao = false) {
   const S = info._s, id = info._id, pasta = visao ? `v${info.zv}` : info.z;
   const caminho = (b) => (b === 'grandes' ? `dados/${S}/${id}/grandes.json.gz` : `dados/${S}/${id}/${pasta}/${b}.json.gz`);
   const lista = info.grandes && !blocos.includes('grandes') ? [...blocos, 'grandes'] : blocos;
-  const arqs = await Promise.all(lista.map((b) => lerArquivo(caminho(b)).then((a) => feicoes(a, visao && b !== 'grandes' ? null : b, info))));
+  const arqs = await Promise.all(lista.map((b) => lerDados(caminho(b), info).then((a) => feicoes(a, visao && b !== 'grandes' ? null : b, info))));
   return arqs.flat();
 }
 
@@ -185,7 +255,7 @@ async function feicoesNaExtensao(info, ext) {
 
 async function todasFeicoes(info) {
   const S = info._s, id = info._id;
-  if (info.z == null) return feicoes(await lerArquivo(`dados/${S}/${id}/todos.json.gz`), null, info);
+  if (info.z == null) return feicoes(await lerDados(`dados/${S}/${id}/todos.json.gz`, info), null, info);
   if ((info.blocos || []).length > 60) throw new NaoSuportado('camada grande: consulta sem área nem índice');
   return feicoesDosBlocos(info, info.blocos);
 }
@@ -351,7 +421,7 @@ function geometriaEsri(g, merc, casas) {
 }
 
 function saidaDe(info, meta, lista, p, merc) {
-  const campos = info.campos;
+  const campos = camposDe(info);
   const pedidos = String(p.outFields || '*').split(',').map((s) => s.trim()).filter(Boolean);
   const todos = pedidos.includes('*');
   const ks = todos ? campos.map((_, k) => k) : pedidos.map((n) => campos.findIndex((c) => c.toLowerCase() === n.toLowerCase())).filter((k) => k >= 0);
@@ -383,7 +453,7 @@ async function candidatos(info, p) {
     const vs = valoresDoIndice(p.where, 'ci');
     if (!vs) throw new NaoSuportado('cadastro: só por inscrição do lote (ci)');
     const pres = [...new Set(vs.map((v) => v.slice(0, 5)))];
-    const arqs = await Promise.all(pres.map((pre) => lerArquivo(`dados/${info._s}/${info._id}/ci/${pre}.json.gz`)));
+    const arqs = await Promise.all(pres.map((pre) => lerDados(`dados/${info._s}/${info._id}/ci/${pre}.json.gz`, info)));
     return { lista: arqs.flatMap((a) => feicoes(a, null, info)), q };
   }
   if (p.objectIds) {
@@ -415,7 +485,7 @@ export async function consultar(S, id, p) {
   if (p.outStatistics || p.groupByFieldsForStatistics || p.returnDistinctValues === 'true') throw new NaoSuportado('estatísticas');
   const meta = await metadados(info._s, info._id);
   const { lista, q, ids } = await candidatos(info, p);
-  const filtro = compilarWhere(p.where, info.campos);
+  const filtro = compilarWhere(p.where, camposDe(info));
   const vistos = new Set();
   let out = [];
   const chave = `${info._s}/${info._id}`;
@@ -434,7 +504,7 @@ export async function consultar(S, id, p) {
   if (p.returnCountOnly === 'true') return { count: out.length };
   if (p.returnIdsOnly === 'true') return { objectIdFieldName: info.oid || 'OBJECTID', objectIds: out.map((f) => f.oid) };
   if (p.orderByFields) {
-    const ord = String(p.orderByFields).split(',').map((s) => s.trim().split(/\s+/)).map(([c, d]) => [info.campos.findIndex((x) => x.toLowerCase() === c.toLowerCase()), /desc/i.test(d || '') ? -1 : 1]).filter(([k]) => k >= 0);
+    const ord = String(p.orderByFields).split(',').map((s) => s.trim().split(/\s+/)).map(([c, d]) => [camposDe(info).findIndex((x) => x.toLowerCase() === c.toLowerCase()), /desc/i.test(d || '') ? -1 : 1]).filter(([k]) => k >= 0);
     out.sort((a, b) => { for (const [k, d] of ord) { const x = a.valores[k], y = b.valores[k]; if (x === y) continue; return (x == null ? -1 : y == null ? 1 : x > y ? 1 : -1) * d; } return 0; });
   }
   const ini = +(p.resultOffset || 0), qtd = p.resultRecordCount ? +p.resultRecordCount : Infinity;
@@ -494,7 +564,7 @@ export async function identificar(S, p) {
     achados.sort((a, b) => a[0] - b[0]); // o que contém o ponto primeiro, depois o mais próximo
     for (const [, f] of achados) {
       const attributes = {};
-      info.campos.forEach((c, k) => { attributes[c] = f.valores[k]; });
+      camposDe(info).forEach((c, k) => { attributes[c] = f.valores[k]; });
       const disp = meta?.displayField || info.display;
       resultados.push({ layerId: +id, layerName: meta?.name || info.nome, displayFieldName: disp || '',
         value: disp != null && attributes[disp] != null ? String(attributes[disp]) : String(f.oid),
@@ -709,7 +779,7 @@ export class ProvedorTema {
       const alfa = 1 - (meta.drawingInfo?.transparency || 0) / 100;
       const escala = ESCALA_N0 / 2 ** nivel;
       const etiquetas = (meta.drawingInfo?.labelingInfo || []).filter((l) => l.labelExpression && (!l.minScale || escala <= l.minScale) && (!l.maxScale || escala >= l.maxScale))
-        .map((l) => ({ l, filtro: (() => { try { return compilarWhere(l.where, info.campos); } catch { return () => true; } })() }));
+        .map((l) => ({ l, filtro: (() => { try { return compilarWhere(l.where, camposDe(info)); } catch { return () => true; } })() }));
       const vistos = new Set();
       for (const f of feats) {
         if (vistos.has(f.oid)) continue;
@@ -719,7 +789,7 @@ export class ProvedorTema {
         const geo = f.g;
         for (const { l, filtro } of etiquetas) {
           if (!filtro(f)) continue;
-          const texto = textoDoRotulo(l.labelExpression, f.valores, info.campos);
+          const texto = textoDoRotulo(l.labelExpression, f.valores, camposDe(info));
           if (!texto) continue;
           let px, py;
           if (geo.tipo === 'ponto') [px, py] = [pxX(geo.pts[0][0]), pxY(geo.pts[0][1])];
@@ -727,7 +797,7 @@ export class ProvedorTema {
           else { const e2 = f.ext; [px, py] = [pxX((e2[0] + e2[2]) / 2), pxY((e2[1] + e2[3]) / 2)]; }
           rotulos.push({ texto, px, py, sim: l.symbol, ponto: geo.tipo === 'ponto' });
         }
-        const sim = simboloDe(ren, f.valores, info.campos);
+        const sim = simboloDe(ren, f.valores, camposDe(info));
         if (!sim) continue;
         if (geo.tipo === 'ponto') { for (const [lo, la] of geo.pts) desenharMarcador(g, sim, pxX(lo), pxY(la), alfa); continue; }
         g.beginPath();

@@ -28,6 +28,59 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
+# Dados pessoais publicados pelo servidor (nome de proprietário ou contribuinte, CPF, RG, telefone, data de nascimento,
+# nome da mãe, estado civil). O site do GitHub Pages é público mesmo com o repositório privado, e o login da Bússola
+# roda no navegador: por isso esses campos vão para o "cofre", cifrados (AES-256-GCM, chave derivada da senha do cofre
+# por PBKDF2-SHA256, 600 mil iterações). Sem a senha do cofre, os arquivos .pess são ilegíveis; com ela, o sistema mostra tudo.
+# Senha: variável de ambiente BUSSOLA_SENHA_COFRE ao montar o banco. Sem ela, os campos pessoais ficam de fora.
+CAMPOS_PESSOAIS = {
+    ("Feature_Base", 3): {"dtnascimen"},
+    ("Mapa_Tributario_Web", 0): {"PROPRIETAR", "CPF_CNPJ", "RG", "TELEFONE", "DT_NASCIME", "ESTADO_CIV"},
+    ("Mapa_UsoDoSoloNew", 16): {"nmcontrib", "cpf_cgc", "nmmae", "dtnascimen", "ddd_fone", "fone"},
+    ("Mapa_Acessibilidade", 44): {"NOME_CONTA", "INFO_CPFCN", "NUMR_CPFCN"},
+}
+
+COFRE = {"chave": None, "iteracoes": 600000}
+
+
+def preparar_cofre(man: dict):
+    import base64
+    import os as _os
+    senha = _os.environ.get("BUSSOLA_SENHA_COFRE")
+    if not senha:
+        man.pop("cofre", None)
+        return
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+    ant = man.get("cofre") or {}
+    sal = base64.b64decode(ant["sal"]) if ant.get("sal") else _os.urandom(16)
+    chave = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=sal, iterations=COFRE["iteracoes"]).derive(senha.encode())
+    COFRE["chave"] = chave
+    man["cofre"] = {"kdf": "PBKDF2-SHA256", "iteracoes": COFRE["iteracoes"], "sal": base64.b64encode(sal).decode(),
+                    "cifra": "AES-256-GCM (12 bytes de IV + texto cifrado de gzip(JSON))",
+                    "teste": base64.b64encode(cifrar(b"bussola-cofre")).decode()}
+
+
+def cifrar(dados: bytes) -> bytes:
+    import os as _os
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    iv = _os.urandom(12)
+    return iv + AESGCM(COFRE["chave"]).encrypt(iv, dados, None)
+
+
+def gravar_cofre(caminho: Path, pessoais: list[str], mapa: dict, chaves) -> int:
+    """Arquivo companheiro .pess: os campos pessoais das feições do arquivo de dados, cifrados."""
+    if COFRE["chave"] is None or not pessoais:
+        return 0
+    v = {str(k): mapa[k] for k in chaves if k in mapa}
+    if not v:
+        return 0
+    corpo = gzip.compress(json.dumps({"c": pessoais, "v": v}, ensure_ascii=False, separators=(",", ":")).encode(), 9)
+    caminho.parent.mkdir(parents=True, exist_ok=True)
+    caminho.write_bytes(cifrar(corpo))
+    return caminho.stat().st_size
+
+
 RAIZ = Path(__file__).resolve().parent.parent
 BANCO = RAIZ / "docs" / "banco"
 ESCALA = 1e6
@@ -124,7 +177,8 @@ def gravar_gz(caminho: Path, obj):
 
 def montar_camada(S, cid, arq: Path, meta: dict):
     d = ler_geojson(arq)
-    campos_meta = [c for c in meta.get("fields") or [] if c.get("type") != "esriFieldTypeGeometry"]
+    fora = CAMPOS_PESSOAIS.get((S, cid), set())
+    campos_meta = [c for c in meta.get("fields") or [] if c.get("type") != "esriFieldTypeGeometry" and c["name"] not in fora]
     campos = [c["name"] for c in campos_meta]
     oid = next((c["name"] for c in campos_meta if c.get("type") == "esriFieldTypeOID"), None)
     feats = d["features"]
@@ -134,9 +188,15 @@ def montar_camada(S, cid, arq: Path, meta: dict):
     if pasta.exists():
         shutil.rmtree(pasta)
     linhas = []
+    pessoais = sorted(fora)
+    mapa_p = {}
     for k, ft in enumerate(feats):
         at = ft.get("properties") or {}
-        chave = at.get(oid) if oid else k + 1
+        chave = at.get(oid) if oid else None
+        if chave is None:  # camadas de visão baixadas sem o identificador instável: número sequencial
+            chave = ft.get("id") if isinstance(ft.get("id"), int) else k + 1
+        if pessoais:
+            mapa_p[chave] = [at.get(c) for c in pessoais]
         g = ft.get("geometry")
         geo, partes, enc, ext = "", [], None, None
         if g:
@@ -152,8 +212,15 @@ def montar_camada(S, cid, arq: Path, meta: dict):
     z = zoom_da_camada(len(linhas), geo_tipo) if geo_tipo else None
     info = {"nome": meta.get("name"), "geo": geo_tipo, "campos": campos, "oid": oid, "display": meta.get("displayField"),
             "total": len(linhas), "z": z, "blocos": None, "indices": [], "bytes": 0}
+    if fora and COFRE["chave"] is None:
+        info["campos_pessoais_removidos"] = sorted(fora)
+    elif fora:
+        info["pessoais"] = pessoais
     if z is None:
         info["bytes"] = gravar_gz(pasta / "todos.json.gz", {"c": campos, "g": geo_tipo, "f": [[a, b, c] for a, b, c, _ in linhas]})
+        info["bytes"] += gravar_cofre(pasta / "todos.pess", pessoais, mapa_p, [l[0] for l in linhas])
+        if pessoais and COFRE["chave"] is not None:
+            info["pessoais"] = pessoais
         return info
     blocos = defaultdict(list)
     sem, grandes = [], []
@@ -173,11 +240,14 @@ def montar_camada(S, cid, arq: Path, meta: dict):
     total = 0
     for chave, lista in blocos.items():
         total += gravar_gz(pasta / str(z) / f"{chave}.json.gz", {"c": campos, "g": geo_tipo, "f": [[a, b, c] for a, b, c, _ in lista]})
+        total += gravar_cofre(pasta / str(z) / f"{chave}.pess", pessoais, mapa_p, [l[0] for l in lista])
     if grandes:
         total += gravar_gz(pasta / "grandes.json.gz", {"c": campos, "g": geo_tipo, "f": [[a, b, c] for a, b, c, _ in grandes]})
+        total += gravar_cofre(pasta / "grandes.pess", pessoais, mapa_p, [l[0] for l in grandes])
         info["grandes"] = len(grandes)
     if sem:
         total += gravar_gz(pasta / "sem-geometria.json.gz", {"c": campos, "g": geo_tipo, "f": [[a, b, c] for a, b, c, _ in sem]})
+        total += gravar_cofre(pasta / "sem-geometria.pess", pessoais, mapa_p, [l[0] for l in sem])
     info["blocos"] = sorted(blocos)
     info["sem_geometria"] = len(sem)
     # visão de longe (bloco 3 níveis acima, geometria simplificada) para linhas e áreas não tão numerosas
@@ -229,19 +299,27 @@ def montar_camada(S, cid, arq: Path, meta: dict):
 
 def montar_cadastro(S, arq: Path, meta: dict):
     d = ler_geojson(arq)
-    campos = [c["name"] for c in meta["fields"] if c.get("type") != "esriFieldTypeGeometry"]
+    fora = CAMPOS_PESSOAIS.get((S, 3), set())
+    campos = [c["name"] for c in meta["fields"] if c.get("type") != "esriFieldTypeGeometry" and c["name"] not in fora]
     grupos = defaultdict(list)
-    for ft in d["features"]:
+    pessoais = sorted(fora)
+    mapa_p = {}
+    for k, ft in enumerate(d["features"]):
         at = ft["properties"]
         ci = str(at.get("ci") or "").strip() or "sem-ci"
-        grupos[ci[:5]].append([at.get("ESRI_OID"), [at.get(c) for c in campos], None])
+        chave = k + 1  # ESRI_OID é só o número da linha na resposta do servidor
+        grupos[ci[:5]].append([chave, [at.get(c) for c in campos], None])
+        if pessoais:
+            mapa_p[chave] = [at.get(c) for c in pessoais]
     pasta = BANCO / "dados" / S / "3"
     if pasta.exists():
         shutil.rmtree(pasta)
     total = sum(gravar_gz(pasta / "ci" / f"{pre}.json.gz", {"c": campos, "g": "", "f": lista}) for pre, lista in grupos.items())
+    total += sum(gravar_cofre(pasta / "ci" / f"{pre}.pess", pessoais, mapa_p, [l[0] for l in lista]) for pre, lista in grupos.items())
     return {"nome": meta.get("name"), "geo": "", "campos": campos, "oid": "ESRI_OID", "display": meta.get("displayField"),
             "total": len(d["features"]), "z": None, "blocos": None, "agrupado": "ci", "grupos": len(grupos),
             "indices": ["ci"], "bytes": total,
+            **({"pessoais": pessoais} if COFRE["chave"] is not None and pessoais else {"campos_pessoais_removidos": pessoais}),
             "nota": "A geometria de cada unidade é o polígono do lote (Feature_Base 0, mesmo ci)."}
 
 
@@ -253,6 +331,7 @@ def main():
     ext = Path(a.extracao)
     man_arq = BANCO / "manifesto.json"
     man = json.loads(man_arq.read_text(encoding="utf-8")) if man_arq.exists() else {"servicos": {}}
+    preparar_cofre(man)
     inv = ext / "inventario.csv"
     copias = {}
     sem_contagem = set()
@@ -276,9 +355,22 @@ def main():
         for m in pasta_s.glob("*.json"):
             shutil.copy(m, destino / m.name)
         servico = man["servicos"].setdefault(S, {"camadas": {}})
-        for arq in sorted((ext / "dados" / S).glob("*.geojson.gz")) if (ext / "dados" / S).exists() else []:
+        assinaturas = {}
+        for arq in sorted((ext / "dados" / S).glob("*.geojson.gz"), key=lambda p: int(p.name.split("-")[0])) if (ext / "dados" / S).exists() else []:
             cid = int(arq.name.split("-")[0])
             meta = json.loads((pasta_s / f"{cid}.json").read_text(encoding="utf-8"))
+            # mesma tabela publicada com outro desenho (ex.: Mapa_Energia 1, 2 e 3): guarda uma vez só
+            if not (S == "Feature_Base" and cid == 3):
+                import hashlib
+                with gzip.open(arq, "rt", encoding="utf-8") as fa:
+                    h = hashlib.sha1(fa.read().split('"features":[', 1)[-1].encode()).hexdigest()
+                if h in assinaturas:
+                    servico["camadas"][str(cid)] = {"copia_de": str(assinaturas[h]), "nome": meta.get("name")}
+                    if (BANCO / "dados" / S / str(cid)).exists():
+                        shutil.rmtree(BANCO / "dados" / S / str(cid))
+                    print(f"{S}/{cid} {meta.get('name')}: mesmos dados da camada {assinaturas[h]}", flush=True)
+                    continue
+                assinaturas[h] = cid
             print(f"{S}/{cid} {meta.get('name')}…", flush=True)
             info = montar_cadastro(S, arq, meta) if (S == "Feature_Base" and cid == 3) else montar_camada(S, cid, arq, meta)
             if (S, str(cid)) in sem_contagem:

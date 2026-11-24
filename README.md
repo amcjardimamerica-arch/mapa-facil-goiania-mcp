@@ -174,6 +174,16 @@ e retoma de onde parou.
   Receita) por nível — infantil, fundamental, médio e superior — e "Aulas diversas" (idiomas, lutas e esportes, dança,
   música, artes, informática, preparatórios e demais cursos).
 
+## Sistema independente do Mapa Fácil (1.13)
+
+- `docs/banco/` traz o banco completo extraído do Mapa Fácil em 23 e 24/11/2026: 219 camadas de 21 serviços (cerca de
+  4,7 milhões de feições) e as imagens do Mapa Básico e do Simplifica Goiânia (`docs/banco/blocos/`).
+- `bancoSoLocal: true` em `docs/js/config.js`: nada é pedido ao servidor da Prefeitura. A única exceção é abrir um
+  documento anexado a um lote.
+- Dados pessoais do servidor ficam no cofre cifrado (arquivos `.pess`, AES-256-GCM, chave pela senha do cofre, que não
+  está no repositório); a ficha do lote pede a senha para mostrá-los.
+- A página de validação confere o banco local (cada tema, consultas e imagens), não o servidor.
+
 ## Acesso com usuário e senha
 
 A página inicial (`docs/index.html`) é o portal de acesso. O mapa fica em `docs/sistema.html` e só abre

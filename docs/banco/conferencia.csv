@@ -2,17 +2,219 @@ servico,id,nome,esperado,baixado,diferenca,sem_geometria,exemplos_sem_geometria,
 Feature_Base,0,Divisas de Lote,399522,399522,0,0,,0,0,0,,dados/Feature_Base/0-divisas-de-lote.geojson.gz,39934364,2211
 Feature_Base,1,Divisas de Quadra,25755,25755,0,0,,0,0,0,,dados/Feature_Base/1-divisas-de-quadra.geojson.gz,6879852,25
 Feature_Base,2,Divisas de Bairro,1209,1209,0,0,,0,0,0,,dados/Feature_Base/2-divisas-de-bairro.geojson.gz,1008403,7
-Feature_Base,3,Cadastro Imobiário,795418,788660,-6758,"geometria = lote (camada 0, campo id)",,,909,2,"cdbairro = 101: IncompleteRead(64498 bytes read) | cdbairro = 72: contagem 24341, baixadas 24334",dados/Feature_Base/3-cadastro-imobiario.geojson.gz,68847913,90
+Feature_Base,3,Cadastro Imobiário,795418,792429,-2989,"geometria = lote (camada 0, campo id)",,,909,1,"cdbairro = 101: contagem 3773, baixadas 3769",dados/Feature_Base/3-cadastro-imobiario.geojson.gz,69312337,60
 Feature_Base,4,Área Pública,8436,8436,0,0,,0,0,0,,dados/Feature_Base/4-area-publica.geojson.gz,1948565,9
 Feature_Base,5,Número Predial Oficial,203981,203525,-456,0,,0,0,0,,dados/Feature_Base/5-numero-predial-oficial.geojson.gz,15893017,258
 Feature_Base,6,Setor Cadastral,228,228,0,0,,0,0,0,,dados/Feature_Base/6-setor-cadastral.geojson.gz,549546,12
-Feature_Base,7,Segmento de Logradouro,69288,69288,0,3,9393 17940 35880,379,0,0,,dados/Feature_Base/7-segmento-de-logradouro.geojson.gz,6228176,119
-Feature_Base,8,Logradouro,,5387,,0,,16,0,2,"id 4801: {""code"": 400, ""message"": ""Failed to execute query."", ""details"": []} | id 4801: {""code"": 400, ""message"": ""Failed to execute query."", ""details"": []}",dados/Feature_Base/8-logradouro.geojson.gz,828280,245
+Feature_Base,7,Segmento de Logradouro,69288,69288,0,3,9393 17940 35880,379,0,0, | geometria pelo identify: 0 de 3,dados/Feature_Base/7-segmento-de-logradouro.geojson.gz,6228176,119
+Feature_Base,8,Logradouro,,6331,,0,,0,0,0,baixada por bairro (cdbairro); ,dados/Feature_Base/8-logradouro.geojson.gz,858789,24
 Feature_Base,9,Cadastro Atividade Econômica,56543,56543,0,0,,0,0,0,,dados/Feature_Base/9-cadastro-atividade-economica.geojson.gz,8253829,56
-Feature_Base,10,Logradouro por Bairro,,5091,,0,,0,0,0,,dados/Feature_Base/10-logradouro-por-bairro.geojson.gz,606131,266
+Feature_Base,10,Logradouro por Bairro,,11202,,0,,0,0,0,baixada por bairro (cdbairro); ,dados/Feature_Base/10-logradouro-por-bairro.geojson.gz,1065835,10
+Feature_Base,11,Anexo Lote,39138,39138,0,0,,0,0,0,,dados/Feature_Base/11-anexo-lote.geojson.gz,1360381,14
+Mapa_Acessibilidade,1,Estabelecimentos Municipais de Educação - fonte: SIGGO,359,359,0,0,1 2 3 4 5 6 7 8 9 10,0,0,0, | geometria pelo identify: 359 de 359,dados/Mapa_Acessibilidade/1-estabelecimentos-municipais-de-educacao-fonte-siggo.geojson.gz,14689,1
+Mapa_Acessibilidade,2,Estabelecimentos de Educação - fonte: SIGGO,518,518,0,0,2 3 4 5 7 8 9 10 11 12,0,0,0, | geometria pelo identify: 518 de 518,dados/Mapa_Acessibilidade/2-estabelecimentos-de-educacao-fonte-siggo.geojson.gz,17842,1
+Mapa_Acessibilidade,3,Escolas Públicas - fonte: SIEG,110,110,0,0,114 115 116 117 118 119 120 121 122 123,0,0,0, | geometria pelo identify: 110 de 110,dados/Mapa_Acessibilidade/3-escolas-publicas-fonte-sieg.geojson.gz,5639,1
+Mapa_Acessibilidade,5,Creches e Berçários - 8511200,270,270,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 270 de 270,dados/Mapa_Acessibilidade/5-creches-e-bercarios-8511200.geojson.gz,6189,1
+Mapa_Acessibilidade,6,Alfabetização e Pré-escola - 8512100,684,684,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 684 de 684,dados/Mapa_Acessibilidade/6-alfabetizacao-e-pre-escola-8512100.geojson.gz,14188,1
+Mapa_Acessibilidade,7,Ensino Fundamental - 8513900,664,664,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 664 de 664,dados/Mapa_Acessibilidade/7-ensino-fundamental-8513900.geojson.gz,13825,1
+Mapa_Acessibilidade,8,Ensino Médio - 8520100,233,233,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 233 de 233,dados/Mapa_Acessibilidade/8-ensino-medio-8520100.geojson.gz,5200,1
+Mapa_Acessibilidade,9,Ensino Superior - 8531700,55,55,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 55 de 55,dados/Mapa_Acessibilidade/9-ensino-superior-8531700.geojson.gz,1602,1
+Mapa_Acessibilidade,11,Estabelecimentos Municipais de Saúde - SIGGO,146,146,0,0,1 2 3 4 5 6 7 8 9 10,0,0,0, | geometria pelo identify: 146 de 146,dados/Mapa_Acessibilidade/11-estabelecimentos-municipais-de-saude-siggo.geojson.gz,6641,1
+Mapa_Acessibilidade,13,Atividades de Atendimento Hospitalar - 8610101,176,176,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 176 de 176,dados/Mapa_Acessibilidade/13-atividades-de-atendimento-hospitalar-8610101.geojson.gz,4002,1
+Mapa_Acessibilidade,14,Atividades de Prontosocorro e Urgências - 8610102,190,190,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 190 de 190,dados/Mapa_Acessibilidade/14-atividades-de-prontosocorro-e-urgencias-8610102.geojson.gz,4625,1
+Mapa_Acessibilidade,15,Atividade Medica Ambulatorial - 8630501,318,318,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 318 de 318,dados/Mapa_Acessibilidade/15-atividade-medica-ambulatorial-8630501.geojson.gz,7225,1
+Mapa_Acessibilidade,16,Servico de Dialise e Nefrologia - 8640203,16,16,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 16 de 16,dados/Mapa_Acessibilidade/16-servico-de-dialise-e-nefrologia-8640203.geojson.gz,773,1
+Mapa_Acessibilidade,17,Servicos de Quimioterapia - 8640210,32,32,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 32 de 32,dados/Mapa_Acessibilidade/17-servicos-de-quimioterapia-8640210.geojson.gz,1067,1
+Mapa_Acessibilidade,18,Servicos de Radioterapia - 8640211,30,30,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 30 de 30,dados/Mapa_Acessibilidade/18-servicos-de-radioterapia-8640211.geojson.gz,1010,1
+Mapa_Acessibilidade,19,Atividades de Assistencia a Deficientes Físicos com Internação - 8711503,26,26,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 26 de 26,dados/Mapa_Acessibilidade/19-atividades-de-assistencia-a-deficientes-fisicos-com-internac.geojson.gz,1090,1
+Mapa_Acessibilidade,22,Shopping Center,10,10,0,0,0 1 3 4 7 15 16 21 23 27,0,0,0, | geometria pelo identify: 10 de 10,dados/Mapa_Acessibilidade/22-shopping-center.geojson.gz,740,1
+Mapa_Acessibilidade,23,Hipermercado - 4711301,165,165,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 165 de 165,dados/Mapa_Acessibilidade/23-hipermercado-4711301.geojson.gz,3131,1
+Mapa_Acessibilidade,24,Supermercado - 4711302,527,527,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 527 de 527,dados/Mapa_Acessibilidade/24-supermercado-4711302.geojson.gz,8946,2
+Mapa_Acessibilidade,25,Lojas de Departamentos e Magazines - 4713001,32,32,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 32 de 32,dados/Mapa_Acessibilidade/25-lojas-de-departamentos-e-magazines-4713001.geojson.gz,793,1
+Mapa_Acessibilidade,28,Bancos Comerciais - 6421200,104,104,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 104 de 104,dados/Mapa_Acessibilidade/28-bancos-comerciais-6421200.geojson.gz,2431,2
+Mapa_Acessibilidade,29,Bancos Multiplos - 6422100,116,116,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 116 de 116,dados/Mapa_Acessibilidade/29-bancos-multiplos-6422100.geojson.gz,2581,1
+Mapa_Acessibilidade,30,Caixas Economicas - 6423900,38,38,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 38 de 38,dados/Mapa_Acessibilidade/30-caixas-economicas-6423900.geojson.gz,1174,1
+Mapa_Acessibilidade,33,Vapt Vupt,28,28,0,2,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 26 de 28 | geometria pelo identify: 0 de 2,dados/Mapa_Acessibilidade/33-vapt-vupt.geojson.gz,2312,1
+Mapa_Acessibilidade,35,Agência de Correios - 5310501,17,17,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 17 de 17,dados/Mapa_Acessibilidade/35-agencia-de-correios-5310501.geojson.gz,755,1
+Mapa_Acessibilidade,36,Agencias de Correios Franqueadas - 5310502,19,19,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 19 de 19,dados/Mapa_Acessibilidade/36-agencias-de-correios-franqueadas-5310502.geojson.gz,808,1
+Mapa_Acessibilidade,37,Casas Lotericas - 8299706,170,170,0,0,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 170 de 170,dados/Mapa_Acessibilidade/37-casas-lotericas-8299706.geojson.gz,3633,1
+Mapa_Acessibilidade,40,Terminais de Ônibus,21,21,0,2,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 19 de 21 | geometria pelo identify: 0 de 2,dados/Mapa_Acessibilidade/40-terminais-de-onibus.geojson.gz,564,1
+Mapa_Acessibilidade,41,Plataformas e Pontos de Ônibus,7079,7079,0,737,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 5782 de 7079 | geometria pelo identify: 560 de 1297,dados/Mapa_Acessibilidade/41-plataformas-e-pontos-de-onibus.geojson.gz,87881,3
+Mapa_Acessibilidade,42,Linhas de Ônibus,779,779,0,21,0 1 2 3 4 5 6 7 8 9,0,0,0, | geometria pelo identify: 758 de 779 | geometria pelo identify: 0 de 21,dados/Mapa_Acessibilidade/42-linhas-de-onibus.geojson.gz,12177,1
+Mapa_Acessibilidade,43,Edm_ind_end,356,356,0,0,,0,0,0,,dados/Mapa_Acessibilidade/43-edm-ind-end.geojson.gz,8915,1
+Mapa_Acessibilidade,44,Shopping,10,10,0,0,,0,0,0,,dados/Mapa_Acessibilidade/44-shopping.geojson.gz,3212,1
+Mapa_Acessibilidade,45,sieg_escolas_publicas_2013_end,110,110,0,0,,0,0,0,,dados/Mapa_Acessibilidade/45-sieg-escolas-publicas-2013-end.geojson.gz,5433,1
+Mapa_Acessibilidade,46,Sau_ind_end,146,146,0,0,,0,0,0,,dados/Mapa_Acessibilidade/46-sau-ind-end.geojson.gz,6349,1
+Mapa_COMURG,0,Pontos de Interesse da COMURG,4,4,0,0,,0,0,0,,dados/Mapa_COMURG/0-pontos-de-interesse-da-comurg.geojson.gz,646,1
+Mapa_COMURG,1,Divisão da Coleta de Residos Domiciliares Orgânicos ,4,4,0,0,,0,0,0,,dados/Mapa_COMURG/1-divisao-da-coleta-de-residos-domiciliares-organicos.geojson.gz,120747,2
+Mapa_COMURG,2,Aterro Sanitário,0,0,0,0,,0,0,0,,dados/Mapa_COMURG/2-aterro-sanitario.geojson.gz,510,27
+Mapa_COMURG,4,Circuitos Classificados por Dia,181,181,0,0,,0,0,0,,dados/Mapa_COMURG/4-circuitos-classificados-por-dia.geojson.gz,839304,11
+Mapa_COMURG,5,Circuitos Classificados por Período,181,181,0,0,,0,0,0,,dados/Mapa_COMURG/5-circuitos-classificados-por-periodo.geojson.gz,839314,4
+Mapa_COMURG,6,Circuitos Classificados por Dia e Período,181,181,0,0,,0,0,0,,dados/Mapa_COMURG/6-circuitos-classificados-por-dia-e-periodo.geojson.gz,839322,4
+Mapa_COMURG,7,Circuitos Classificados por Divisão,181,181,0,0,,0,0,0,,dados/Mapa_COMURG/7-circuitos-classificados-por-divisao.geojson.gz,839314,7
+Mapa_COMURG,8,Circuitos de Coleta Orgânica monocromatico,181,181,0,0,,0,0,0,,dados/Mapa_COMURG/8-circuitos-de-coleta-organica-monocromatico.geojson.gz,839323,4
+Mapa_Documentacao,0,Lote Documentos,10409,10409,0,0,,0,0,0,,dados/Mapa_Documentacao/0-lote-documentos.geojson.gz,1002077,12
+Mapa_Documentacao,1,Lote Vistórias,15514,15514,0,0,,0,0,0,,dados/Mapa_Documentacao/1-lote-vistorias.geojson.gz,724962,15
+Mapa_Documentacao,2,Bairro Documentos,3005,3005,0,0,,0,0,0,,dados/Mapa_Documentacao/2-bairro-documentos.geojson.gz,2012495,16
+Mapa_Edificios,1,0 - 3,704,704,0,0,,0,0,0,,dados/Mapa_Edificios/1-0-3.geojson.gz,51340,2
+Mapa_Edificios,2,4 - 10,1249,1249,0,0,,0,0,0,,dados/Mapa_Edificios/2-4-10.geojson.gz,90611,2
+Mapa_Edificios,3,11 - 20,996,996,0,0,,0,0,0,,dados/Mapa_Edificios/3-11-20.geojson.gz,72020,2
+Mapa_Edificios,4,21 - 30,338,338,0,0,,0,0,0,,dados/Mapa_Edificios/4-21-30.geojson.gz,22142,1
+Mapa_Edificios,5,+30,123,123,0,0,,0,0,0,,dados/Mapa_Edificios/5-30.geojson.gz,8911,1
+Mapa_Edificios,7, Planta de Valores,2199,2199,0,0,,0,0,0,,dados/Mapa_Edificios/7-planta-de-valores.geojson.gz,1054200,3
 Mapa_Energia,1,Barramento Poste,152665,152665,0,0,,0,0,0,,dados/Mapa_Energia/1-barramento-poste.geojson.gz,8739284,134
 Mapa_Energia,2,Tipo de Lâmpada,152665,152665,0,0,,0,0,0,,dados/Mapa_Energia/2-tipo-de-lampada.geojson.gz,8739291,107
 Mapa_Energia,3,Potência da Lâmpada,152665,152665,0,0,,0,0,0,,dados/Mapa_Energia/3-potencia-da-lampada.geojson.gz,8739305,102
+Mapa_Energia,4,Poste,167015,167015,0,0,,0,0,0,,dados/Mapa_Energia/4-poste.geojson.gz,11068033,115
+Mapa_Energia,5,Subestação de Energia,7,7,0,0,,0,0,0,,dados/Mapa_Energia/5-subestacao-de-energia.geojson.gz,2096,1
+Mapa_Energia,6,Rede Eletrica Abastecimento,1967,1967,0,0,,0,0,0,,dados/Mapa_Energia/6-rede-eletrica-abastecimento.geojson.gz,133277,3
+Mapa_Energia,7,Rede Eletrica Primária,62348,62348,0,0,,0,0,0,,dados/Mapa_Energia/7-rede-eletrica-primaria.geojson.gz,3824571,156
+Mapa_Energia,8,Rede Eletrica Secundária,159358,159358,0,0,,0,0,0,,dados/Mapa_Energia/8-rede-eletrica-secundaria.geojson.gz,8901363,148
+Mapa_Fiscalizacao,0,Divisas de Subzona Fiscal,1209,1209,0,1209,1 2 3 4 5 6 7 8 9 10,0,0,0, | geometria pelo identify: 0 de 1209 | geometria pelo identify: 0 de 1209,dados/Mapa_Fiscalizacao/0-divisas-de-subzona-fiscal.geojson.gz,25587,2
+Mapa_Fiscalizacao,1,SEFIN.dbo.CAD_BAIRRO_ASG,877,877,0,0,,0,0,0,tabela sem identificador: linhas repetidas removidas,dados/Mapa_Fiscalizacao/1-sefin-dbo-cad-bairro-asg.geojson.gz,1019274,26
+Mapa_Legislacao,0,Lei Complemantar 181/2008,65,65,0,0,,0,0,0,baixada por bairro (cdbairro); ,dados/Mapa_Legislacao/0-lei-complemantar-181-2008.geojson.gz,120917,6
+Mapa_Legislacao,1,Lei Complementar 228/2012,9,9,0,0,,0,0,0,baixada por bairro (cdbairro); ,dados/Mapa_Legislacao/1-lei-complementar-228-2012.geojson.gz,8802,1
+Mapa_Limites,1,Escala 64000,49,49,0,0,,31,0,0,,dados/Mapa_Limites/1-escala-64000.geojson.gz,1770692,6
+Mapa_Limites,2,Escala 256000,49,49,0,0,,31,0,0,,dados/Mapa_Limites/2-escala-256000.geojson.gz,1770698,9
+Mapa_Limites,3,Circunscrição Cartorária,4,4,0,0,,0,0,0,,dados/Mapa_Limites/3-circunscricao-cartoraria.geojson.gz,50400,2
+Mapa_Limites,4,Divisas de Macrozona,8,8,0,0,,0,0,0,,dados/Mapa_Limites/4-divisas-de-macrozona.geojson.gz,106514,2
+Mapa_Limites,5,Divisas de Região Administrativa (7),7,7,0,0,,0,0,0,,dados/Mapa_Limites/5-divisas-de-regiao-administrativa-7.geojson.gz,119923,2
+Mapa_Limites,6,Divisas de Região (12),12,12,0,0,,0,0,0,,dados/Mapa_Limites/6-divisas-de-regiao-12.geojson.gz,108412,3
+Mapa_Limites,8,Escala 64000,228,228,0,0,,0,0,0,,dados/Mapa_Limites/8-escala-64000.geojson.gz,549547,4
+Mapa_Limites,9,Escala 256000,228,228,0,0,,0,0,0,,dados/Mapa_Limites/9-escala-256000.geojson.gz,549550,3
+Mapa_Limites,10,Zonas Eleitorais,9,9,0,0,,0,0,0,,dados/Mapa_Limites/10-zonas-eleitorais.geojson.gz,169090,3
+Mapa_MeioAmbiente,0,Erosão,63,63,0,0,,0,0,0,,dados/Mapa_MeioAmbiente/0-erosao.geojson.gz,5222,2
+Mapa_MeioAmbiente,1,Nascente,616,616,0,302,5464 5465 5466 5468 5469 5470 5471 5472 5473 5474,0,0,0, | geometria pelo identify: 0 de 302,dados/Mapa_MeioAmbiente/1-nascente.geojson.gz,18711,2
+Mapa_MeioAmbiente,3,Árvore,90172,90172,0,0,,0,0,0,,dados/Mapa_MeioAmbiente/3-arvore.geojson.gz,6287857,114
+Mapa_MeioAmbiente,4,Plantio,30694,30694,0,0,,0,0,0,,dados/Mapa_MeioAmbiente/4-plantio.geojson.gz,1706152,43
+Mapa_MeioAmbiente,5,Remoção de Toco,4762,4762,0,0,,0,0,0,,dados/Mapa_MeioAmbiente/5-remocao-de-toco.geojson.gz,307244,8
+Mapa_MeioAmbiente,6,Declividade Maior que 30%,15,15,0,0,,0,0,0,,dados/Mapa_MeioAmbiente/6-declividade-maior-que-30.geojson.gz,9185,3
+Mapa_MeioAmbiente,7,Curva de Nível (5 m),2334,2334,0,0,,0,0,0,,dados/Mapa_MeioAmbiente/7-curva-de-nivel-5-m.geojson.gz,13457741,665
+Mapa_MeioAmbiente,8,Hidrografia,2040,2040,0,2,7934 7935,0,0,0, | geometria pelo identify: 0 de 2,dados/Mapa_MeioAmbiente/8-hidrografia.geojson.gz,1730211,5
+Mapa_MeioAmbiente,9,Vegetação,3857,3857,0,0,,0,0,0,,dados/Mapa_MeioAmbiente/9-vegetacao.geojson.gz,1864439,10
+Mapa_MeioAmbiente,10,Área de Proteção Permanente,867,867,0,1,121,0,0,0, | geometria pelo identify: 0 de 1,dados/Mapa_MeioAmbiente/10-area-de-protecao-permanente.geojson.gz,1625209,17
+Mapa_MeioAmbiente,11,Parque,53,53,0,0,,0,0,0,,dados/Mapa_MeioAmbiente/11-parque.geojson.gz,34853,2
+Mapa_MeioAmbiente,12,Unidade de Conservação,224,224,0,0,,0,0,0,,dados/Mapa_MeioAmbiente/12-unidade-de-conservacao.geojson.gz,137783,3
+Mapa_MeioAmbiente,13,Área de Proteção Ambiental,1,1,0,0,,0,0,0,,dados/Mapa_MeioAmbiente/13-area-de-protecao-ambiental.geojson.gz,6026,1
+Mapa_MeioAmbiente,14,Risco Geológico,24,24,0,0,,0,0,0,,dados/Mapa_MeioAmbiente/14-risco-geologico.geojson.gz,43116,2
+Mapa_ModeloEspacial,1,Corredores,36,36,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/1-corredores.geojson.gz,204208,3
+Mapa_ModeloEspacial,2,Declividade acima de 30%,15,15,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/2-declividade-acima-de-30.geojson.gz,9110,1
+Mapa_ModeloEspacial,3,Vias,14,14,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/3-vias.geojson.gz,2724,1
+Mapa_ModeloEspacial,4,Eixo de Desenvolvimento - ED,12,12,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/4-eixo-de-desenvolvimento-ed.geojson.gz,98156,2
+Mapa_ModeloEspacial,5,Influência das Vias Expressas - Ive,22,22,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/5-influencia-das-vias-expressas-ive.geojson.gz,49116,3
+Mapa_ModeloEspacial,7,Áreas de Programas Especiais de Interesse Social - AEIS,115,115,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/7-areas-de-programas-especiais-de-interesse-social-aeis.geojson.gz,65464,2
+Mapa_ModeloEspacial,8,Áreas de Programas Especiais de Interesse Urbanístico,3,3,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/8-areas-de-programas-especiais-de-interesse-urbanistico.geojson.gz,10710,1
+Mapa_ModeloEspacial,9,Áreas de Programas Especiais de Interesse Ambiental,12,12,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/9-areas-de-programas-especiais-de-interesse-ambiental.geojson.gz,105688,2
+Mapa_ModeloEspacial,10,Áreas de Programas Especiais de Interesse Econômico,10,10,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/10-areas-de-programas-especiais-de-interesse-economico.geojson.gz,35020,1
+Mapa_ModeloEspacial,12,Área Especial de Desenvolvimento Econômico - AEDE,9,9,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/12-area-especial-de-desenvolvimento-economico-aede.geojson.gz,16142,2
+Mapa_ModeloEspacial,13,Área Básica de Desenvolvimento Ecológico-Econômico - ABADEE,0,0,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/13-area-basica-de-desenvolvimento-ecologico-economico-abadee.geojson.gz,367,27
+Mapa_ModeloEspacial,14,Area de Proteção Permanente - APP,103,103,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/14-area-de-protecao-permanente-app.geojson.gz,627928,5
+Mapa_ModeloEspacial,15,Áreas de Recuperação e Conservação Temporárias,0,0,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/15-areas-de-recuperacao-e-conservacao-temporarias.geojson.gz,497,35
+Mapa_ModeloEspacial,17,UPI's,0,0,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/17-upi-s.geojson.gz,421,146
+Mapa_ModeloEspacial,18,UUS's,109,109,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/18-uus-s.geojson.gz,658002,6
+Mapa_ModeloEspacial,19,Áreas Verdes,0,0,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/19-areas-verdes.geojson.gz,436,28
+Mapa_ModeloEspacial,21,Area de Proteção Permanente - APP,609,609,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/21-area-de-protecao-permanente-app.geojson.gz,938030,4
+Mapa_ModeloEspacial,22,Áreas de Recuperação e Conservação Temporárias,0,0,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/22-areas-de-recuperacao-e-conservacao-temporarias.geojson.gz,518,24
+Mapa_ModeloEspacial,24,UPI's,0,0,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/24-upi-s.geojson.gz,444,24
+Mapa_ModeloEspacial,25,UUS's,612,612,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/25-uus-s.geojson.gz,946467,4
+Mapa_ModeloEspacial,26,Áreas Verdes,0,0,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/26-areas-verdes.geojson.gz,460,28
+Mapa_ModeloEspacial,27,Jardim Botânico,1,1,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/27-jardim-botanico.geojson.gz,3203,1
+Mapa_ModeloEspacial,28,Áreas de Patrimonio Cultural -Apac,103,103,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/28-areas-de-patrimonio-cultural-apac.geojson.gz,70258,7
+Mapa_ModeloEspacial,29,Áreas de Ocupação Sustentável - AOS,2040,2040,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/29-areas-de-ocupacao-sustentavel-aos.geojson.gz,1688410,16
+Mapa_ModeloEspacial,30,Áreas de Desaceleração de Densidade - ADD,7,7,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/30-areas-de-desaceleracao-de-densidade-add.geojson.gz,7374,4
+Mapa_ModeloEspacial,31,Áreas Adensáveis - AA,51,51,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/31-areas-adensaveis-aa.geojson.gz,66932,3
+Mapa_ModeloEspacial,32,Outorga Onerosa de Alteração de Uso - OOAU,27,27,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/32-outorga-onerosa-de-alteracao-de-uso-ooau.geojson.gz,127473,4
+Mapa_ModeloEspacial,33,Macrozoneamento,40,40,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/33-macrozoneamento.geojson.gz,353296,3
+Mapa_ModeloEspacial,34,LIMITE DO MUNICÍPIO,1,1,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/34-limite-do-municipio.geojson.gz,32033,3
+Mapa_ModeloEspacial,35,MUNICÍPIOS ENTORNO,245,245,0,0,,228,0,0,,dados/Mapa_ModeloEspacial/35-municipios-entorno.geojson.gz,11049822,676
+Mapa_ModeloEspacial,38,Área de Aproximação do Aeroporto,2,2,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/38-area-de-aproximacao-do-aeroporto.geojson.gz,1860,1
+Mapa_ModeloEspacial,39,Área de Cone de Ruído do Aeródromo,5,5,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/39-area-de-cone-de-ruido-do-aerodromo.geojson.gz,7488,3
+Mapa_ModeloEspacial,40,Área de Segurança e Proteção Aeroportuária,2,2,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/40-area-de-seguranca-e-protecao-aeroportuaria.geojson.gz,4428,1
+Mapa_ModeloEspacial,42,Unidade de Uso Sustentável,1248,1248,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/42-unidade-de-uso-sustentavel.geojson.gz,1650311,6
+Mapa_ModeloEspacial,43,Área de Influência das Vias Especiais,22,22,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/43-area-de-influencia-das-vias-especiais.geojson.gz,47212,2
+Mapa_ModeloEspacial,44,Área de Restrição Militar,3,3,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/44-area-de-restricao-militar.geojson.gz,4936,2
+Mapa_ModeloEspacial,45,Área Adensável,31,31,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/45-area-adensavel.geojson.gz,57135,3
+Mapa_ModeloEspacial,46,Área de Desaceleração de Densidade,4,4,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/46-area-de-desaceleracao-de-densidade.geojson.gz,4742,2
+Mapa_ModeloEspacial,47,Área Especial de Interesse Social III,72,72,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/47-area-especial-de-interesse-social-iii.geojson.gz,54916,3
+Mapa_ModeloEspacial,48,"Área Especial de Interesse Social III, Pós LC 171/2007",48,48,0,0,,0,0,0,,dados/Mapa_ModeloEspacial/48-area-especial-de-interesse-social-iii-pos-lc-171-2007.geojson.gz,18269,1
+Mapa_OcupacaoIlegal,0,Regularização Fundiária (Em Processo),318,318,0,0,,0,0,0,,dados/Mapa_OcupacaoIlegal/0-regularizacao-fundiaria-em-processo.geojson.gz,138828,2
+Mapa_OcupacaoIlegal,1,Regularização Fundiária (Regularizada),20,20,0,0,,0,0,0,,dados/Mapa_OcupacaoIlegal/1-regularizacao-fundiaria-regularizada.geojson.gz,26623,3
+Mapa_PUAMA,1,Área de Implantação dos Parques do PUAMA (v.2021-08-04),1,1,0,0,52,0,0,0, | geometria pelo identify: 1 de 1,dados/Mapa_PUAMA/1-area-de-implantacao-dos-parques-do-puama-v-2021-08-04.geojson.gz,685,1
+Mapa_PUAMA,2,AID-PUAMA - Área de Influência Direta do PUAMA (v.2021-08-04),2,2,0,0,,0,0,0,,dados/Mapa_PUAMA/2-aid-puama-area-de-influencia-direta-do-puama-v-2021-08-04.geojson.gz,35116,1
+Mapa_PUAMA,3,500m em torno do Parque Linear e Ambientais (v.2021-04-08),1,1,0,0,,0,0,0,,dados/Mapa_PUAMA/3-500m-em-torno-do-parque-linear-e-ambientais-v-2021-04-08.geojson.gz,22461,2
+Mapa_PUAMA,5,Bairro Beneficiado - Lei 9.123 ou 10.344,136,136,0,0,8 26 27 44 45 49 50 54 104 118,0,0,0, | geometria pelo identify: 136 de 136,dados/Mapa_PUAMA/5-bairro-beneficiado-lei-9-123-ou-10-344.geojson.gz,3266,1
+Mapa_PUAMA,6,Bairro Beneficiado - Decreto 2.747/2016,14,14,0,0,350 478 577 597 599 676 701 778 800 879,0,0,0, | geometria pelo identify: 14 de 14,dados/Mapa_PUAMA/6-bairro-beneficiado-decreto-2-747-2016.geojson.gz,729,1
+Mapa_PUAMA,7,Gleba Beneficiada,85,85,0,0,62 66 73 98 111 126 142 143 144 145,0,0,0, | geometria pelo identify: 85 de 85,dados/Mapa_PUAMA/7-gleba-beneficiada.geojson.gz,1244,1
+Mapa_PatrimonioHistorico,0,PHS (Classificação da Área),177,177,0,0,,0,0,0,,dados/Mapa_PatrimonioHistorico/0-phs-classificacao-da-area.geojson.gz,40604,3
+Mapa_PatrimonioHistorico,1,PHS (Área Interna Pública),29,29,0,0,,0,0,0,,dados/Mapa_PatrimonioHistorico/1-phs-area-interna-publica.geojson.gz,4977,3
+Mapa_PatrimonioHistorico,2,PHS (Imóveis),82,82,0,0,,0,0,0,,dados/Mapa_PatrimonioHistorico/2-phs-imoveis.geojson.gz,7077,3
+Mapa_PatrimonioHistorico,3,PHS (Árvores Históricas),13,13,0,0,,0,0,0,,dados/Mapa_PatrimonioHistorico/3-phs-arvores-historicas.geojson.gz,2019,2
+Mapa_PatrimonioHistorico,4,PHS (Área Pública Municipal),2,2,0,0,,0,0,0,,dados/Mapa_PatrimonioHistorico/4-phs-area-publica-municipal.geojson.gz,1048,1
+Mapa_PatrimonioHistorico,5,PHS (Traçado Tombado),1,1,0,0,,0,0,0,,dados/Mapa_PatrimonioHistorico/5-phs-tracado-tombado.geojson.gz,5297,2
+Mapa_PatrimonioHistorico,6,PHS (Áreas de Interesse),6,6,0,0,,0,0,0,,dados/Mapa_PatrimonioHistorico/6-phs-areas-de-interesse.geojson.gz,7987,1
+Mapa_PontosNotaveis,0,Equipamento de Educação Municipal,359,359,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/0-equipamento-de-educacao-municipal.geojson.gz,16885,1
+Mapa_PontosNotaveis,1,Equipamento de Saúde,146,146,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/1-equipamento-de-saude.geojson.gz,14976,1
+Mapa_PontosNotaveis,2,Grande Equipamento,1224,1224,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/2-grande-equipamento.geojson.gz,169404,2
+Mapa_PontosNotaveis,3,Patrimônio Histórico,309,309,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/3-patrimonio-historico.geojson.gz,59116,2
+Mapa_PontosNotaveis,6,Pista,8,8,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/6-pista.geojson.gz,1699,1
+Mapa_PontosNotaveis,7,Faixa de Pista,8,8,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/7-faixa-de-pista.geojson.gz,1725,1
+Mapa_PontosNotaveis,8,Superfície de Aproximação,17,17,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/8-superficie-de-aproximacao.geojson.gz,2635,1
+Mapa_PontosNotaveis,9,Superfície de Aproximação Interna,2,2,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/9-superficie-de-aproximacao-interna.geojson.gz,1018,1
+Mapa_PontosNotaveis,10,Superfície de Decolagem,11,11,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/10-superficie-de-decolagem.geojson.gz,2232,1
+Mapa_PontosNotaveis,11,Superfície de Pouso Interrompido,2,2,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/11-superficie-de-pouso-interrompido.geojson.gz,1006,1
+Mapa_PontosNotaveis,12,Superfície de Transição,14,14,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/12-superficie-de-transicao.geojson.gz,3912,1
+Mapa_PontosNotaveis,13,Superfície de Transição Interna,2,2,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/13-superficie-de-transicao-interna.geojson.gz,1071,1
+Mapa_PontosNotaveis,14,Superfície Horizontal Interna,7,7,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/14-superficie-horizontal-interna.geojson.gz,17124,2
+Mapa_PontosNotaveis,15,Superfície Horizontal Externa,1,1,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/15-superficie-horizontal-externa.geojson.gz,3842,1
+Mapa_PontosNotaveis,16,Superfície Cônica,7,7,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/16-superficie-conica.geojson.gz,17367,1
+Mapa_PontosNotaveis,17,Superfície Proteção Voo Visual Área 1,18,18,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/17-superficie-protecao-voo-visual-area-1.geojson.gz,2474,1
+Mapa_PontosNotaveis,18,Superfície Proteção Voo Visual Área 2,9,9,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/18-superficie-protecao-voo-visual-area-2.geojson.gz,1683,1
+Mapa_PontosNotaveis,19,Superfície Proteção Voo Visual Área 3,3,3,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/19-superficie-protecao-voo-visual-area-3.geojson.gz,1187,1
+Mapa_PontosNotaveis,21,Área de Aproximação,56,56,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/21-area-de-aproximacao.geojson.gz,7468,1
+Mapa_PontosNotaveis,22,Área de Decolagem,56,56,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/22-area-de-decolagem.geojson.gz,7493,2
+Mapa_PontosNotaveis,23,Área Toque Fato,48,48,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/23-area-toque-fato.geojson.gz,5868,1
+Mapa_PontosNotaveis,24,Área de Segurança,39,39,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/24-area-de-seguranca.geojson.gz,5316,2
+Mapa_PontosNotaveis,26,AEA-1 (65 - 70 dB),1,1,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/26-aea-1-65-70-db.geojson.gz,10937,2
+Mapa_PontosNotaveis,27,AEA-2 (70 - 75 dB),1,1,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/27-aea-2-70-75-db.geojson.gz,10343,1
+Mapa_PontosNotaveis,28,AEA-3 (75 - 80 dB),1,1,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/28-aea-3-75-80-db.geojson.gz,7957,1
+Mapa_PontosNotaveis,29,AEA-4 (80 - 85 dB),3,3,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/29-aea-4-80-85-db.geojson.gz,6287,1
+Mapa_PontosNotaveis,30,AEA-5 (acima de 85 dB),4,4,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/30-aea-5-acima-de-85-db.geojson.gz,3145,1
+Mapa_PontosNotaveis,32,NDB GOI,2,2,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/32-ndb-goi.geojson.gz,1910,1
+Mapa_PontosNotaveis,33,D-VOR GNV,2,2,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/33-d-vor-gnv.geojson.gz,5500,1
+Mapa_PontosNotaveis,34,PAPI,6,6,0,0,,0,0,0,,dados/Mapa_PontosNotaveis/34-papi.geojson.gz,1388,1
+Mapa_RedeViaria,1,Nome de Logradouro,69288,69288,0,3,9393 17940 35880,379,0,0, | geometria pelo identify: 0 de 3,dados/Mapa_RedeViaria/1-nome-de-logradouro.geojson.gz,6228172,58
+Mapa_RedeViaria,3,Escala 4000,69288,69288,0,3,9393 17940 35880,379,0,0,,dados/Mapa_RedeViaria/3-escala-4000.geojson.gz,6228156,66
+Mapa_RedeViaria,4,Escala 16000,69288,69288,0,3,9393 17940 35880,379,0,0,,dados/Mapa_RedeViaria/4-escala-16000.geojson.gz,6228156,60
+Mapa_RedeViaria,5,Escala 64000,69288,69288,0,3,9393 17940 35880,379,0,0,,dados/Mapa_RedeViaria/5-escala-64000.geojson.gz,6228161,75
+Mapa_RedeViaria,6,Escala 256000,69288,69288,0,3,9393 17940 35880,379,0,0,,dados/Mapa_RedeViaria/6-escala-256000.geojson.gz,6228161,97
+Mapa_RedeViaria,8,Escala abaixo de 4000,68043,68043,0,3,9393 17940 35880,0,0,0,,dados/Mapa_RedeViaria/8-escala-abaixo-de-4000.geojson.gz,6009980,89
+Mapa_RedeViaria,9,Escala acima de 4000,68043,68043,0,3,9393 17940 35880,0,0,0,,dados/Mapa_RedeViaria/9-escala-acima-de-4000.geojson.gz,6009980,49
+Mapa_RedeViaria,11,Escala 4000,68043,68043,0,3,9393 17940 35880,0,0,0,,dados/Mapa_RedeViaria/11-escala-4000.geojson.gz,6009957,460
+Mapa_RedeViaria,12,Escala 16000,68043,68043,0,3,9393 17940 35880,0,0,0,,dados/Mapa_RedeViaria/12-escala-16000.geojson.gz,6009964,267
+Mapa_RedeViaria,13,Escala 64000,68043,68043,0,3,9393 17940 35880,0,0,0,,dados/Mapa_RedeViaria/13-escala-64000.geojson.gz,6009964,160
+Mapa_RedeViaria,14,Escala 256000,68043,68043,0,3,9393 17940 35880,0,0,0,,dados/Mapa_RedeViaria/14-escala-256000.geojson.gz,6009967,95
+Mapa_RedeViaria,15,Logradouro,,6106,,0,,0,0,0,baixada por bairro (cdbairro); ,dados/Mapa_RedeViaria/15-logradouro.geojson.gz,831494,23
+Mapa_RedeViaria,16,Vias Propostas,489,489,0,10,19 20 2403 2404 2406 2411 2412 2415 2416 2417,0,0,0,,dados/Mapa_RedeViaria/16-vias-propostas.geojson.gz,55419,1
+Mapa_RedeViaria,17,Logradouro CI,14767,14767,0,0,,0,0,0,,dados/Mapa_RedeViaria/17-logradouro-ci.geojson.gz,283343,9
+Mapa_Sanemanento,0,Esgoto,222659,222659,0,0,,0,0,0,,dados/Mapa_Sanemanento/0-esgoto.geojson.gz,22253104,176
+Mapa_Sanemanento,1,Abastecimento de Água Potável,166336,166336,0,1,20576,0,0,0,,dados/Mapa_Sanemanento/1-abastecimento-de-agua-potavel.geojson.gz,15539592,172
 Mapa_TelecomunicacaoNew,0,Antenas de Rádio/Telefonia Móvel,710,710,0,0,,0,0,0,,dados/Mapa_TelecomunicacaoNew/0-antenas-de-radio-telefonia-movel.geojson.gz,72269,1
 Mapa_TelecomunicacaoNew,1,Pontos de Interesse MetroGyn,283,283,0,0,,0,0,0,,dados/Mapa_TelecomunicacaoNew/1-pontos-de-interesse-metrogyn.geojson.gz,22646,1
 Mapa_TelecomunicacaoNew,2,Fibra MetroGyn,342,342,0,0,,0,0,0,,dados/Mapa_TelecomunicacaoNew/2-fibra-metrogyn.geojson.gz,65138,2
+Mapa_Tributario_Web,0,Unidade Territorial,124997,124997,0,0,,0,0,0,,dados/Mapa_Tributario_Web/0-unidade-territorial.geojson.gz,27596524,133
+Mapa_UsoDoSoloNew,1,Estatual,2232,2232,0,0,,0,0,0,baixada por bairro (cdbairro); ,dados/Mapa_UsoDoSoloNew/1-estatual.geojson.gz,286855,4
+Mapa_UsoDoSoloNew,2,Federal,1019,1019,0,0,,0,0,0,baixada por bairro (cdbairro); ,dados/Mapa_UsoDoSoloNew/2-federal.geojson.gz,102566,3
+Mapa_UsoDoSoloNew,3,Municipal,8881,8881,0,0,,0,0,0,baixada por bairro (cdbairro); ,dados/Mapa_UsoDoSoloNew/3-municipal.geojson.gz,2361126,9
+Mapa_UsoDoSoloNew,4,Particular,,781001,,0,,0,0,0,baixada por bairro (cdbairro); ,dados/Mapa_UsoDoSoloNew/4-particular.geojson.gz,72841435,95
+Mapa_UsoDoSoloNew,5,Religioso,2283,2283,0,0,,0,0,0,baixada por bairro (cdbairro); ,dados/Mapa_UsoDoSoloNew/5-religioso.geojson.gz,449215,3
+Mapa_UsoDoSoloNew,6,Não Identificado,2,2,0,0,,0,0,0,baixada por bairro (cdbairro); ,dados/Mapa_UsoDoSoloNew/6-nao-identificado.geojson.gz,4681,2
+Mapa_UsoDoSoloNew,8,Estadual,78,78,0,0,,0,0,0,,dados/Mapa_UsoDoSoloNew/8-estadual.geojson.gz,23967,2
+Mapa_UsoDoSoloNew,9,Federal,11,11,0,0,,0,0,0,,dados/Mapa_UsoDoSoloNew/9-federal.geojson.gz,4204,2
+Mapa_UsoDoSoloNew,10,Municipal,8147,8147,0,0,,0,0,0,,dados/Mapa_UsoDoSoloNew/10-municipal.geojson.gz,1883994,9
+Mapa_UsoDoSoloNew,11,Particular,200,200,0,0,,0,0,0,,dados/Mapa_UsoDoSoloNew/11-particular.geojson.gz,46251,3
+Mapa_UsoDoSoloNew,12,Não Identificado,0,0,0,0,,0,0,0,,dados/Mapa_UsoDoSoloNew/12-nao-identificado.geojson.gz,974,75
+Mapa_UsoDoSoloNew,13,Parcelamento em aprovação,17,17,0,0,,0,0,0,baixada por bairro (cdbairro); ,dados/Mapa_UsoDoSoloNew/13-parcelamento-em-aprovacao.geojson.gz,15472,1
+Mapa_UsoDoSoloNew,14,Glebas,495,495,0,0,,0,0,0,baixada por bairro (cdbairro); ,dados/Mapa_UsoDoSoloNew/14-glebas.geojson.gz,268676,2
+Mapa_UsoDoSoloNew,15,Numeração Predial Oficial,,3943,,0,,0,0,0,,dados/Mapa_UsoDoSoloNew/15-numeracao-predial-oficial.geojson.gz,294223,286
+Mapa_UsoDoSoloNew,16,Vazios Urbanos,104762,104762,0,0,,0,0,0,baixada por bairro (cdbairro); ,dados/Mapa_UsoDoSoloNew/16-vazios-urbanos.geojson.gz,18375057,14
+Mapa_UsoDoSoloNew,17,Rótulo Número Oficial,203981,203525,-456,0,,0,0,0,,dados/Mapa_UsoDoSoloNew/17-rotulo-numero-oficial.geojson.gz,16017456,225
