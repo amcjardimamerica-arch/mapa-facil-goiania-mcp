@@ -211,10 +211,10 @@ async function iniciar() {
 
   // Quadras e lotes pela altura da câmera (5 km), número da quadra (4 km) e do lote (3 km): ao cruzar uma dessas
   // alturas, os mapas desenhados (fundo Mapa, Ruas e quadras e lotes) são refeitos para a nova faixa.
-  globo.camera.percentageChanged = Math.min(globo.camera.percentageChanged, 0.05);
+  // A altura é lida a cada quadro desenhado (barato) — o evento "camera.changed" não dispara em toda mudança de vista.
   ALTURA.camera = globo.camera.positionCartographic.height;
   let faixa = faixaAltura(ALTURA.camera);
-  globo.camera.changed.addEventListener(() => {
+  globo.cena.postRender.addEventListener(() => {
     ALTURA.camera = globo.camera.positionCartographic.height;
     const f = faixaAltura(ALTURA.camera);
     if (f === faixa) return;

@@ -377,25 +377,41 @@ export class ProvedorVetorial extends ProvedorCanvas {
       if (m.total < g.measureText(t).width + 16) continue;
       r.texto(t, m.x, m.y, { ang: m.ang, fonte, cor: e.texto, halo: e.halo, distanciaNome: 220 });
     }
-    // Número da quadra. Quando os números de lote aparecem, a quadra vai por baixo, maior e mais clara, para ser
-    // identificada sem esconder nenhum número de lote.
+    // Número da quadra. De 4 km a 2,5 km, no centro da quadra. Quando os números de lote aparecem, a quadra vai
+    // para a rua, junto do lado mais comprido dela, no mesmo tamanho dos números de lote: fica fora dos polígonos
+    // dos lotes (que não a cobrem) e não esconde nenhum número de lote.
     if (ver.numeroQuadra) {
       const comLotes = ver.numeroLote && lotes.length;
-      const px = comLotes ? (nivel >= 18 ? 26 : 20) : nivel >= 19 ? 15 : nivel >= 18 ? 13.5 : nivel >= 17 ? 12 : 10.5;
-      const fonte = `800 ${px}px system-ui, "Segoe UI", Roboto, sans-serif`;
+      const pxLote = nivel >= 20 ? 14 : nivel >= 19 ? 12.5 : nivel >= 18 ? 11 : 9.5;
+      const px = comLotes ? pxLote : nivel >= 19 ? 15 : nivel >= 18 ? 13.5 : nivel >= 17 ? 12 : 10.5;
+      const fonte = `700 ${px}px system-ui, "Segoe UI", Roboto, sans-serif`;
       for (const f of quadras) {
         const nm = String(f.attributes.nm_qdr || '').trim();
         const anel = f.geometry?.rings?.[0];
         if (!nm || !anel) continue;
-        let sx = 0, sy = 0;
-        for (const [a, b] of anel) { sx += a; sy += b; }
-        if (comLotes) {
-          g.save(); g.globalAlpha = 0.5;
-          r.texto(`Qd. ${nm}`, q.x(sx / anel.length), q.y(sy / anel.length), { fonte, cor: e.quadraTexto, halo: e.halo, forcar: true });
-          g.restore();
-        } else {
-          r.texto(`Qd. ${nm}`, q.x(sx / anel.length), q.y(sy / anel.length), { fonte, cor: e.quadraTexto, halo: e.halo, forcar: nivel >= NIVEIS.lotes });
+        const pts = anel.map(([a, b]) => [q.x(a), q.y(b)]);
+        let cx = 0, cy = 0;
+        for (const [a, b] of pts) { cx += a; cy += b; }
+        cx /= pts.length; cy /= pts.length;
+        if (!comLotes) {
+          r.texto(`Qd. ${nm}`, cx, cy, { fonte, cor: e.quadraTexto, halo: e.halo, forcar: nivel >= NIVEIS.lotes });
+          continue;
         }
+        // Lado mais comprido da quadra e o ponto na rua logo à frente dele.
+        let melhor = null;
+        for (let k = 1; k < pts.length; k++) {
+          const [ax, ay] = pts[k - 1], [bx, by] = pts[k];
+          const L = Math.hypot(bx - ax, by - ay);
+          if (!melhor || L > melhor.L) melhor = { L, ax, ay, bx, by };
+        }
+        if (!melhor || melhor.L < 8) continue;
+        const mx = (melhor.ax + melhor.bx) / 2, my = (melhor.ay + melhor.by) / 2;
+        let nx = -(melhor.by - melhor.ay) / melhor.L, ny = (melhor.bx - melhor.ax) / melhor.L;
+        if (nx * (cx - mx) + ny * (cy - my) > 0) { nx = -nx; ny = -ny; } // normal para fora da quadra
+        const d = px * 0.75 + 3;
+        let ang = Math.atan2(melhor.by - melhor.ay, melhor.bx - melhor.ax);
+        if (ang > Math.PI / 2) ang -= Math.PI; else if (ang < -Math.PI / 2) ang += Math.PI;
+        r.texto(`Qd. ${nm}`, mx + nx * d, my + ny * d, { ang, fonte, cor: e.quadraTexto, halo: e.halo, forcar: true });
       }
     }
     // Número de todos os lotes, por cima da quadra: nenhum é escondido; a fonte se ajusta ao lote.
