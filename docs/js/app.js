@@ -216,16 +216,21 @@ async function iniciar() {
   let faixa = faixaAltura(ALTURA.camera);
   const novasQuadras = () => globo.definirQuadras(new ProvedorQuadras({ retangulo: globo.ret }));
   novasQuadras();
+  // Refaz os mapas desenhados (fundo Mapa, Ruas e quadras, números das quadras e lotes por bairro).
+  const refazerVetoriais = () => {
+    novasQuadras();
+    if (globo.chaveBase === 'mapa') globo.definirBase('mapa').catch(() => {});
+    if (globo.camadaRealce) { globo.definirRealce(false); globo.definirRealce(realce.checked); marcarBase(); }
+    lotes._atualizarCamada?.();
+  };
+  levantamento.aoMudarFiltroMapa = refazerVetoriais;
   globo.cena.postRender.addEventListener(() => {
     ALTURA.camera = globo.camera.positionCartographic.height;
     const f = faixaAltura(ALTURA.camera);
     if (f === faixa) return;
     faixa = f;
-    novasQuadras();
-    if (globo.chaveBase === 'mapa') globo.definirBase('mapa').catch(() => {});
-    if (globo.camadaRealce) { globo.definirRealce(false); globo.definirRealce(realce.checked); marcarBase(); }
+    refazerVetoriais();
     if (levantamento.dados) levantamento.redesenhar();
-    lotes._atualizarCamada?.();
   });
   marcarBase();
 

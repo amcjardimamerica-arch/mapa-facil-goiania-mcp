@@ -3,7 +3,7 @@
 // prédios em 3D e locais de votação, a partir de data/levantamento.json.
 import { CFG } from './config.js';
 import { el, aviso, fmtNum, pedirJSON, semAcento, memoria } from './util.js';
-import { ProvedorLotes, ProvedorDesenho } from './mapavetorial.js';
+import { ProvedorLotes, ProvedorDesenho, FILTRO_BAIRROS } from './mapavetorial.js';
 import { Postes } from './postes.js';
 import { Escolas, NIVEIS, AULAS } from './escolas.js';
 import { botaoManutencao, manutencao, relatorioCSV, relatorioImpressao } from './manutencao.js';
@@ -391,6 +391,7 @@ export class Levantamento {
     }
 
     if (this.escolas.itens) this.escolas.mostrar(this.mostrar && !!this.opcoes.escolas, this.opcoes.escolasFiltro, bairroVisivel);
+    this._filtroDoMapa();
     this._desenharEleitoral();
     this.globo.organizarPilha();
     this.globo.redesenhar();
@@ -487,6 +488,33 @@ export class Levantamento {
       ent.levantamento = { tipo: 'ponto', dado: p };
     }
     this.globo.redesenhar();
+  }
+
+  /**
+   * Com o painel Bairros aberto, o mapa (quadras, lotes e números de quadra) mostra só os bairros marcados; com o
+   * painel fechado, volta a mostrar a cidade inteira.
+   */
+  _filtroDoMapa() {
+    const d = this.dados;
+    let aneis = null, ext = null;
+    if (this.mostrar && d) {
+      aneis = [];
+      d.limites.forEach((lim, i) => {
+        if (this.opcoes.bairros[i] === false) return;
+        const of = d.limites_oficiais?.[i];
+        const ll = of ? of.aneis.map(decodificarAnel) : lim.aneisLL;
+        aneis.push(ll.map((a) => a.map(([lo, la]) => [mx(lo), my(la)])));
+      });
+      ext = [Infinity, Infinity, -Infinity, -Infinity];
+      for (const an of aneis) for (const a of an) for (const [x, y] of a) { ext[0] = Math.min(ext[0], x); ext[1] = Math.min(ext[1], y); ext[2] = Math.max(ext[2], x); ext[3] = Math.max(ext[3], y); }
+      if (!aneis.length) ext = [0, 0, 0, 0]; // nenhum bairro marcado: nada de quadras e lotes
+    }
+    const assinatura = JSON.stringify(ext);
+    if (assinatura === this._assinaturaFiltro) return;
+    this._assinaturaFiltro = assinatura;
+    FILTRO_BAIRROS.aneis = aneis;
+    FILTRO_BAIRROS.ext = ext;
+    this.aoMudarFiltroMapa?.();
   }
 
   /** Clique dentro do lote de um colégio de votação. */

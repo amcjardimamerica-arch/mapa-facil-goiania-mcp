@@ -609,3 +609,17 @@ def test_alturas_de_quadras_e_lotes_e_condominio_horizontal(mapa):
     assert r["faixas"] == [0, 1, 2, 3]
     assert r["quadras"] == [False, True] and r["numQuadra"] == [False, True] and r["numLote"] == [False, True], r
     assert r["horizontais"] > 100 and r["umPavimento"], r
+
+
+def test_mapa_filtra_bairros_do_painel(mapa):
+    r = mapa.evaluate("""async () => {
+      const m = await import('./js/mapavetorial.js');
+      const lv = bussola.levantamento;
+      if (!lv.ativo) await lv.alternar?.(true);
+      lv.mostrar = true; lv.opcoes.bairros = [true, false]; lv.redesenhar();
+      const comJA = m.FILTRO_BAIRROS.aneis?.length;
+      const dentro = m.passaFiltro({ geometry: { rings: [[[-5486600, -1884500], [-5486500, -1884500], [-5486500, -1884400], [-5486600, -1884400]]] } });
+      lv.opcoes.bairros = [true, true]; lv.mostrar = false; lv.redesenhar();
+      return { comJA, semFiltro: m.FILTRO_BAIRROS.aneis === null, dentro };
+    }""")
+    assert r["comJA"] == 1 and r["semFiltro"], r

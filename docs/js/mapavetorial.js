@@ -21,6 +21,36 @@ export const LIMITE_ALTURA = { quadras: 5000, lotes: 5000, numeroQuadra: 4000, n
 const NIVEL_MINIMO_DE = { quadras: 13, lotes: 14, numeroQuadra: 14, numeroLote: 15 };
 export const mostraNaAltura = (item, nivel) => ALTURA.camera <= LIMITE_ALTURA[item] && nivel >= NIVEL_MINIMO_DE[item];
 /** Faixa de altura: muda quando a câmera cruza 5, 4 ou 3 km (então os mapas desenhados são refeitos). */
+/**
+ * Filtro de bairros do painel Bairros: com ele ligado, o mapa desenha quadras, lotes e números de quadra só dentro
+ * dos bairros marcados (Jardim América e/ou Nova Suíça). `aneis` são anéis em Web Mercator; null = cidade inteira.
+ */
+export const FILTRO_BAIRROS = { aneis: null, ext: null };
+function dentroAneis(aneis, x, y) {
+  let d = false;
+  for (const a of aneis) {
+    for (let i = 0, j = a.length - 1; i < a.length; j = i++) {
+      const [xi, yi] = a[i], [xj, yj] = a[j];
+      if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) d = !d;
+    }
+  }
+  return d;
+}
+/** A feição (polígono) entra no filtro pelo ponto médio do primeiro anel. */
+export function passaFiltro(f) {
+  if (!FILTRO_BAIRROS.aneis) return true;
+  const anel = f.geometry?.rings?.[0];
+  if (!anel) return false;
+  let sx = 0, sy = 0;
+  for (const [a, b] of anel) { sx += a; sy += b; }
+  return FILTRO_BAIRROS.aneis.some((an) => dentroAneis(an, sx / anel.length, sy / anel.length));
+}
+/** O bloco do mapa toca a área dos bairros filtrados? (evita consultar fora dela) */
+export function blocoNoFiltro(ret) {
+  const e = FILTRO_BAIRROS.ext;
+  return !e || (ret.west < e[2] && ret.east > e[0] && ret.south < e[3] && ret.north > e[1]);
+}
+
 export const faixaAltura = (h) => (h > 5000 ? 0 : h > 4000 ? 1 : h > 2500 ? 2 : 3);
 
 // ---------------------------------------------------------------- fila de pedidos
@@ -275,7 +305,8 @@ export class ProvedorVetorial extends ProvedorCanvas {
       spatialRel: 'esriSpatialRelIntersects', returnGeometry: 'true', geometryPrecision: '1',
       maxAllowableOffset: String(Math.max(0.3, q.mpp * 0.7)) };
     const sobre = this.modo === 'sobre';
-    const ver = { quadras: mostraNaAltura('quadras', nivel), lotes: mostraNaAltura('lotes', nivel),
+    const noFiltro = blocoNoFiltro(ret);
+    const ver = { quadras: noFiltro && mostraNaAltura('quadras', nivel), lotes: noFiltro && mostraNaAltura('lotes', nivel),
       numeroQuadra: mostraNaAltura('numeroQuadra', nivel), numeroLote: mostraNaAltura('numeroLote', nivel) };
     const filtroVias = nivel >= (sobre ? 15 : 14) ? '1=1' : nivel >= 12 ? 'in_hie >= 21' : 'in_hie >= 40';
     const [limites, quadras, vias, lotes] = await Promise.all([
@@ -286,7 +317,8 @@ export class ProvedorVetorial extends ProvedorCanvas {
       ver.lotes ? consultar(0, { ...comum, outFields: ver.numeroLote ? 'nm_lot' : 'OBJECTID', where: '1=1',
         maxAllowableOffset: String(Math.max(0.15, q.mpp * 0.5)) }, cancelada).catch(() => []) : [],
     ]);
-    return { limites, quadras, vias, lotes, ver };
+    // Painel Bairros com bairros marcados: quadras e lotes só deles.
+    return { limites, quadras: quadras.filter(passaFiltro), vias, lotes: lotes.filter(passaFiltro), ver };
   }
 
   _desenhar(ret, nivel, relevo, { limites = [], quadras, vias, lotes = [], ver = {} }) {
@@ -478,8 +510,7 @@ export class ProvedorDesenho extends ProvedorCanvas {
 /**
  * Número de todas as quadras, sem esconder nenhum: marcador retangular de cantos arredondados, preto, com o número
  * em amarelo (#FFFF00). Fica numa camada própria acima dos lotes, dos condomínios e dos temas (só a máscara de fora
- * do município vai por cima). Aparece a partir de 4 km de altura; quando os números de lote aparecem (2,5 km), o
- * marcador vai para a rua, na frente do lado mais comprido da quadra, para não cobrir nenhum número de lote.
+ * do município vai por cima). Aparece a partir de 4 km de altura, sempre no meio da quadra.
  */
 export class ProvedorQuadras extends ProvedorCanvas {
   constructor({ retangulo }) {
@@ -489,6 +520,7 @@ export class ProvedorQuadras extends ProvedorCanvas {
     const tela = this._tela();
     if (!mostraNaAltura('numeroQuadra', nivel)) return tela;
     const ret = this._grade.tileXYToNativeRectangle(x, y, nivel);
+    if (!blocoNoFiltro(ret)) return tela;
     const T = this._T, q = new Quadro(ret, T);
     const folga = (ret.east - ret.west) * 0.15;
     const env = [ret.west - folga, ret.south - folga, ret.east + folga, ret.north + folga].join(',');
@@ -511,24 +543,8 @@ export class ProvedorQuadras extends ProvedorCanvas {
       let cx = 0, cy = 0;
       for (const [a, b] of pts) { cx += a; cy += b; }
       cx /= pts.length; cy /= pts.length;
-      let px0 = cx, py0 = cy, ang = 0;
-      if (comLotes) {
-        let m = null;
-        for (let k = 1; k < pts.length; k++) {
-          const [ax, ay] = pts[k - 1], [bx, by] = pts[k];
-          const L = Math.hypot(bx - ax, by - ay);
-          if (!m || L > m.L) m = { L, ax, ay, bx, by };
-        }
-        if (m && m.L > 8) {
-          const mx = (m.ax + m.bx) / 2, my = (m.ay + m.by) / 2;
-          let nx = -(m.by - m.ay) / m.L, ny = (m.bx - m.ax) / m.L;
-          if (nx * (cx - mx) + ny * (cy - my) > 0) { nx = -nx; ny = -ny; }
-          const d = px * 0.8 + 3;
-          px0 = mx + nx * d; py0 = my + ny * d;
-          ang = Math.atan2(m.by - m.ay, m.bx - m.ax);
-          if (ang > Math.PI / 2) ang -= Math.PI; else if (ang < -Math.PI / 2) ang += Math.PI;
-        }
-      }
+      // No meio da quadra, sempre (também de perto).
+      const px0 = cx, py0 = cy, ang = 0;
       const texto = nm;
       const w = g.measureText(texto).width + px * 0.9, h = px * 1.45;
       if (px0 < -w || px0 > T + w || py0 < -w || py0 > T + w) continue;
