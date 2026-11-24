@@ -538,7 +538,7 @@ export class ProvedorQuadras extends ProvedorCanvas {
     for (const f of quadras) {
       const nm = String(f.attributes.nm_qdr || '').trim();
       const anel = f.geometry?.rings?.[0];
-      if (!nm || !anel) continue;
+      if (!nm || !anel || !passaFiltro(f)) continue; // com o painel Bairros aberto, só as quadras dos bairros marcados
       const pts = anel.map(([a, b]) => [q.x(a), q.y(b)]);
       let cx = 0, cy = 0;
       for (const [a, b] of pts) { cx += a; cy += b; }
