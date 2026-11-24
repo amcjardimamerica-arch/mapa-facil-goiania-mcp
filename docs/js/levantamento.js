@@ -648,6 +648,9 @@ export class Levantamento {
             el('small', {}, ` ${fmtNum(principais)} unidades principais, ${fmtNum(unidades.length - 1)} inscrições de IPTU`)), seletor));
       }
       if (k > 0) this._corpoUnidade(l, unidades[k], cu); else this._corpoGeral(l, unidades[0], cu);
+      // Cadastro imobiliário e dados complementares do lote, abertos direto na ficha.
+      const ci = String(l.v[d.colunas_lote.indexOf('Inscrição do lote (CI)')] || '').replace(/\D/g, '');
+      if (ci.length >= 6) id.cadastroNaFicha(ci, ponto);
       id.corpo.append(el('button', { class: 'botao', onclick: () => id.emPonto(ponto) }, 'Consultar este ponto no Mapa Fácil'));
     };
     desenhar(0);

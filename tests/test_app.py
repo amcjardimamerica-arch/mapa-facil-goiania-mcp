@@ -657,3 +657,19 @@ def test_base_cadastral_eleicoes_e_associacao(mapa):
     }""")
     assert r["desligada"] and r["base"] and r["zonas"] and r["exclusivo"], r
     assert r["titulo"] == "Associação" and r["camadasTitulo"] == "Camadas", r
+
+
+def test_dados_complementares_no_sobre_e_na_ficha(mapa):
+    r = mapa.evaluate("""async () => {
+      bussola.abrirPainel('sobre');
+      const caixa = document.querySelector('#cofre-sobre');
+      const temCampo = !!caixa.querySelector('input[type=password]');
+      const msg = caixa.textContent;
+      await bussola.identificar.emPonto({ lon: -49.2600, lat: -16.6800, alt: NaN });
+      await new Promise((ok) => setTimeout(ok, 6000));
+      const corpo = document.querySelector('#ficha-corpo').textContent;
+      return { temCampo, msg, semBotao: !/Ver cadastro imobili/.test(corpo), cadastro: /Cadastro imobiliário e dados complementares/.test(corpo),
+               inscricoes: /Inscrições no lote/.test(corpo), cadeado: /🔒 Proprietário/.test(corpo) };
+    }""")
+    assert r["temCampo"] and "24 horas" in r["msg"], r
+    assert r["semBotao"] and r["cadastro"] and r["inscricoes"] and r["cadeado"], r

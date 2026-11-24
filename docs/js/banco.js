@@ -75,21 +75,31 @@ export async function abrirCofre(senha) {
     estado.chave = anterior;
     throw new Error('senha do cofre incorreta');
   }
-  try { sessionStorage.setItem('bussola:cofre', btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.exportKey('raw', chave))))); } catch { /* sem sessão */ }
+  // Liberado por 24 horas para este usuário, neste aparelho (a senha não é guardada; só a chave derivada).
+  try { localStorage.setItem(chaveGuardada(), JSON.stringify({ k: btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.exportKey('raw', chave)))), ate: Date.now() + 24 * 3600e3 })); } catch { /* sem armazenamento */ }
   estado.cache.clear();
   return true;
 }
 
 export function fecharCofre() {
   estado.chave = null;
-  try { sessionStorage.removeItem('bussola:cofre'); } catch { /* */ }
+  try { localStorage.removeItem(chaveGuardada()); sessionStorage.removeItem('bussola:cofre'); } catch { /* */ }
   estado.cache.clear();
 }
 
+const chaveGuardada = () => `bussola:cofre:${window.bussolaSessao?.login || 'anonimo'}`;
+/** Até quando os dados complementares estão liberados para este usuário (ou null). */
+export function cofreLiberadoAte() {
+  try { const g = JSON.parse(localStorage.getItem(chaveGuardada()) || 'null'); return g && g.ate > Date.now() ? new Date(g.ate) : null; } catch { return null; }
+}
+/** Campos pessoais (do cofre) de uma camada, para mostrar com cadeado quando o cofre está fechado. */
+export const camposPessoais = (S, id) => estado.manifesto?.servicos?.[S]?.camadas?.[String(id)]?.pessoais || [];
+
 async function restaurarCofre() {
   try {
-    const k = sessionStorage.getItem('bussola:cofre');
-    if (k && estado.manifesto?.cofre) estado.chave = await crypto.subtle.importKey('raw', b64(k), 'AES-GCM', true, ['decrypt']);
+    const g = JSON.parse(localStorage.getItem(chaveGuardada()) || 'null');
+    if (g && g.ate > Date.now() && estado.manifesto?.cofre) estado.chave = await crypto.subtle.importKey('raw', b64(g.k), 'AES-GCM', true, ['decrypt']);
+    else if (g) localStorage.removeItem(chaveGuardada()); // venceram as 24 horas
   } catch { estado.chave = null; }
 }
 

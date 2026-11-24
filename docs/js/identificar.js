@@ -3,7 +3,7 @@
 // território (limítrofe), sem dados.
 import { CFG, ROTULOS_CAMPOS, CAMPOS_OCULTOS, CAMPOS_SIM_NAO } from './config.js';
 import { $, el, pedirJSON, mercX, mercY, deMercator, paraUTM, fmtNum, fmtGraus, aviso, extensaoDe, nomeBairro } from './util.js';
-import { cofreDisponivel, cofreAberto, abrirCofre } from './banco.js';
+import { cofreDisponivel, cofreAberto, abrirCofre, camposPessoais } from './banco.js';
 
 const Cesium = window.Cesium;
 const AMARELO = () => Cesium.Color.fromCssColorString(CFG.cores.destaque);
@@ -242,11 +242,7 @@ export class Identificar {
       }
       this._anexos(String(lote.attributes.id || '').trim(), corpo);
       const ci = String(lote.attributes.ci || '').trim();
-      if (/^\d{6,}$/.test(ci)) {
-        const alvoCad = el('div', {});
-        corpo.append(el('button', { class: 'botao', onclick: (ev) => { ev.target.remove(); this._cadastro(ci, alvoCad, ponto); } },
-          'Ver cadastro imobiliário do lote'), alvoCad);
-      }
+      if (/^\d{6,}$/.test(ci)) this.cadastroNaFicha(ci, ponto);
     }
     if (quadra) this.secao('Quadra').append(this.tabela(atributosLegiveis(quadra.attributes)),
       el('button', { class: 'botao-texto', onclick: () => this.destacar(quadra.geometry) }, 'Destacar no mapa'));
@@ -267,7 +263,8 @@ export class Identificar {
       corpo.append(el('div', { class: 'resultado' },
         el('div', { class: 'resultado-topo' }, el('strong', {}, r.layerName), nome ? el('span', {}, nome) : null,
           r.geometry ? el('button', { class: 'botao-texto', onclick: () => this.destacar(r.geometry, { cor: Cesium.Color.CYAN }) }, 'Ver') : null),
-        this.tabela(atributosLegiveis(r.attributes))));
+        this.tabela(atributosLegiveis(r.attributes)),
+        !cofreAberto() && tema.chave && camposPessoais(tema.chave, r.layerId).length ? this._cadeados(camposPessoais(tema.chave, r.layerId)) : null));
     }
     if (resultados.length > 15) corpo.append(el('p', { class: 'nota' }, `Mais ${resultados.length - 15} resultado(s) não exibidos.`));
   }
@@ -287,6 +284,22 @@ export class Identificar {
       alvo.append(el('h4', { class: 'subtitulo' }, `Documentos anexados ao lote (${fs.length})`), lista,
         el('p', { class: 'nota' }, 'Os arquivos abrem no servidor do Mapa Fácil. Os do Jardim América e do Nova Suíça também estão no pacote de anexos.'));
     } catch (e) { /* sem anexos no banco */ }
+  }
+
+  /** Cadastro imobiliário e dados complementares do lote, já abertos na ficha (sem botão). */
+  cadastroNaFicha(ci, ponto) {
+    const alvo = this.secao('Cadastro imobiliário e dados complementares', { aberto: true });
+    this._cadastro(ci, alvo, ponto);
+  }
+
+  /** Campos pessoais com cadeado e sem valor (cofre fechado). */
+  _cadeados(campos, titulo = 'Dados complementares') {
+    const ROTULO = { PROPRIETAR: 'Proprietário', CPF_CNPJ: 'CPF/CNPJ', RG: 'RG', TELEFONE: 'Telefone', DT_NASCIME: 'Data de nascimento',
+      ESTADO_CIV: 'Estado civil', dtnascimen: 'Data de nascimento', NOME_CONTA: 'Contador', NUMR_CPFCN: 'CPF/CNPJ do contador', INFO_CPFCN: 'CPF/CNPJ' };
+    const lista = el('dl', { class: 'atributos cadeados' });
+    for (const c of campos) lista.append(el('dt', {}, `🔒 ${ROTULO[c] || c}`), el('dd', {}, ''));
+    return el('div', {}, el('h4', { class: 'subtitulo' }, `🔒 ${titulo}`), lista,
+      el('p', { class: 'nota' }, 'Bloqueado: libere os dados complementares em Sobre (canto inferior direito) com a senha.'));
   }
 
   /** Formulário da senha do cofre (dados pessoais cifrados no banco local). */
@@ -349,7 +362,7 @@ export class Identificar {
         'Valor venal conforme a base publicada (o serviço não informa o exercício de referência).'));
       if (ponto && cofreDisponivel()) {
         if (cofreAberto()) this._proprietario(ponto, alvo);
-        else alvo.append(this._formCofre(() => { alvo.textContent = ''; this._cadastro(ci, alvo, ponto); }));
+        else alvo.append(this._cadeados(['PROPRIETAR', 'CPF_CNPJ', 'RG', 'TELEFONE', 'DT_NASCIME', 'ESTADO_CIV'], 'Proprietário (cadastro tributário)'));
       }
     } catch (e) {
       alvo.textContent = '';

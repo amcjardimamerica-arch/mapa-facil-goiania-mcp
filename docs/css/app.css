@@ -440,3 +440,8 @@ body:has(#ficha:not([hidden])) #gps-cartao { right: 432px; }
 }
 
 .lv-cores { display: inline-flex; gap: 2px; }
+
+/* ------------------------------------------------ dados complementares (cofre) */
+.cofre-sobre .linha-botoes .campo { flex: 1; min-width: 160px; }
+.cadeados dt { color: var(--texto-2); }
+.cadeados dd { min-height: 1em; }
