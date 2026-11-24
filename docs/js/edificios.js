@@ -111,8 +111,42 @@ export class Edificios {
   }
 
   _remover() {
+    this.fonteTetos?.entities.removeAll();
     if (this.primitiva) { this.globo.cena.primitives.remove(this.primitiva); this.primitiva = null; }
     this.globo.redesenhar();
+  }
+
+  /**
+   * Número do lote (ou dos lotes) e da quadra chapado no teto de cada condomínio/prédio conferido: o volume não
+   * esconde a identificação do lote, que fica na superfície do próprio polígono.
+   */
+  _tetos(lista, altitudes, exagero) {
+    if (!this.fonteTetos) { this.fonteTetos = new Cesium.CustomDataSource('tetos'); this.globo.viewer.dataSources.add(this.fonteTetos); }
+    this.fonteTetos.entities.removeAll();
+    const perto = new Cesium.DistanceDisplayCondition(0, 2500);
+    lista.forEach((e, j) => {
+      if (!e.l || !e.q || !e.f) return;
+      const anel = e.f;
+      const lons = anel.map((p) => p[0]), lats = anel.map((p) => p[1]);
+      const kx = 111320 * Math.cos((e.c[1] * Math.PI) / 180);
+      const wm = (Math.max(...lons) - Math.min(...lons)) * kx, hm = (Math.max(...lats) - Math.min(...lats)) * 110540;
+      if (wm < 2 || hm < 2) return;
+      const W = 512, H = Math.max(64, Math.min(1024, Math.round((W * hm) / wm)));
+      const tela = document.createElement('canvas'); tela.width = W; tela.height = H;
+      const g = tela.getContext('2d');
+      const lote = `Lt ${String(e.l).replace(/;/g, ' · ')}`, quadra = `Qd ${e.q}`;
+      let px = Math.min(H * 0.38, (W * 0.86) / Math.max(4, lote.length * 0.6));
+      g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+      g.font = `800 ${px}px system-ui, "Segoe UI", Roboto, sans-serif`;
+      g.lineWidth = px / 5; g.strokeStyle = 'rgba(255,255,255,.95)'; g.fillStyle = '#111418';
+      g.strokeText(lote, W / 2, H / 2 - px * 0.35); g.fillText(lote, W / 2, H / 2 - px * 0.35);
+      const pq = px * 0.6;
+      g.font = `700 ${pq}px system-ui, "Segoe UI", Roboto, sans-serif`; g.lineWidth = pq / 5;
+      g.strokeText(quadra, W / 2, H / 2 + px * 0.55); g.fillText(quadra, W / 2, H / 2 + px * 0.55);
+      const teto = (altitudes[j] + Math.max(e.p, 1) * this.mpp) * exagero + 0.25;
+      this.fonteTetos.entities.add({ polygon: { hierarchy: Cesium.Cartesian3.fromDegreesArray(anel.flat()), height: teto, perPositionHeight: false,
+        material: new Cesium.ImageMaterialProperty({ image: tela, transparent: true }), distanceDisplayCondition: perto } });
+    });
   }
 
   async _construir() {
@@ -142,6 +176,7 @@ export class Edificios {
     });
     this._remover();
     this.primitiva = this.globo.cena.primitives.add(nova);
+    this._tetos(lista, altitudes, exagero);
     this.selecionado = -1;
     // Em modo "renderizar sob demanda" é preciso pedir quadros até a geometria ficar pronta.
     const espera = setInterval(() => {

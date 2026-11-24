@@ -14,14 +14,14 @@ const NIVEL_MINIMO = 9;
 // quadras, depois quadras e lotes. Os números aparecem e crescem conforme a aproximação.
 export const NIVEIS = { bairros: 11, quadras: 15, numeroQuadra: 16, lotes: 17, numeroLote: 17 };
 // Aparecimento pela altura da câmera (a mesma do rodapé): quadras e lotes a partir de 5 km para baixo,
-// número da quadra a partir de 4 km e número do lote a partir de 3 km. O nível mínimo do bloco evita pedir a
+// número da quadra a partir de 4 km e número do lote a partir de 2,5 km (com 3 km não cabiam todos). O nível mínimo do bloco evita pedir a
 // cidade inteira de uma vez quando a câmera está inclinada.
 export const ALTURA = { camera: Infinity };
-export const LIMITE_ALTURA = { quadras: 5000, lotes: 5000, numeroQuadra: 4000, numeroLote: 3000 };
+export const LIMITE_ALTURA = { quadras: 5000, lotes: 5000, numeroQuadra: 4000, numeroLote: 2500 };
 const NIVEL_MINIMO_DE = { quadras: 13, lotes: 14, numeroQuadra: 14, numeroLote: 15 };
 export const mostraNaAltura = (item, nivel) => ALTURA.camera <= LIMITE_ALTURA[item] && nivel >= NIVEL_MINIMO_DE[item];
 /** Faixa de altura: muda quando a câmera cruza 5, 4 ou 3 km (então os mapas desenhados são refeitos). */
-export const faixaAltura = (h) => (h > 5000 ? 0 : h > 4000 ? 1 : h > 3000 ? 2 : 3);
+export const faixaAltura = (h) => (h > 5000 ? 0 : h > 4000 ? 1 : h > 2500 ? 2 : 3);
 
 // ---------------------------------------------------------------- fila de pedidos
 /** Limita as consultas simultâneas ao servidor municipal (não o sobrecarrega). */
@@ -135,6 +135,19 @@ function meioDaLinha(q, partes) {
     alvo -= d;
   }
   return null;
+}
+
+/**
+ * Número do lote sempre desenhado (nenhum some): a fonte se ajusta ao tamanho do lote na tela, com mínimo legível.
+ */
+export function numeroNoLote(g, texto, cx, cy, larguraPx, alturaPx, { cor, halo, max = 14, min = 7 }) {
+  const px = Math.max(min, Math.min(max, (larguraPx * 0.85) / Math.max(1, texto.length * 0.6), alturaPx * 0.6));
+  g.save();
+  g.font = `600 ${px.toFixed(1)}px system-ui, "Segoe UI", Roboto, sans-serif`;
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+  g.lineWidth = Math.max(2, px / 4); g.strokeStyle = halo; g.strokeText(texto, cx, cy);
+  g.fillStyle = cor; g.fillText(texto, cx, cy);
+  g.restore();
 }
 
 /** Desenha rótulos sem sobreposição e sem cortar na borda do bloco. */
@@ -364,30 +377,37 @@ export class ProvedorVetorial extends ProvedorCanvas {
       if (m.total < g.measureText(t).width + 16) continue;
       r.texto(t, m.x, m.y, { ang: m.ang, fonte, cor: e.texto, halo: e.halo, distanciaNome: 220 });
     }
-    // Número do lote (de perto), maior quanto mais perto.
-    if (ver.numeroLote && lotes.length) {
-      const px = nivel >= 20 ? 14 : nivel >= 19 ? 12.5 : nivel >= 18 ? 11 : 9.5;
-      const fonte = `500 ${px}px system-ui, "Segoe UI", Roboto, sans-serif`;
-      for (const f of lotes) {
-        const nm = String(f.attributes.nm_lot || '').trim();
-        const anel = f.geometry?.rings?.[0];
-        if (!nm || !anel) continue;
-        let sx = 0, sy = 0;
-        for (const [a, b] of anel) { sx += a; sy += b; }
-        r.texto(nm, q.x(sx / anel.length), q.y(sy / anel.length), { fonte, cor: e.loteTexto, halo: e.halo });
-      }
-    }
-    // Número da quadra, a partir da vista de quadras, maior quanto mais perto.
+    // Número da quadra. Quando os números de lote aparecem, a quadra vai por baixo, maior e mais clara, para ser
+    // identificada sem esconder nenhum número de lote.
     if (ver.numeroQuadra) {
-      const px = nivel >= 19 ? 15 : nivel >= 18 ? 13.5 : nivel >= 17 ? 12 : 10.5;
-      const fonte = `700 ${px}px system-ui, "Segoe UI", Roboto, sans-serif`;
+      const comLotes = ver.numeroLote && lotes.length;
+      const px = comLotes ? (nivel >= 18 ? 26 : 20) : nivel >= 19 ? 15 : nivel >= 18 ? 13.5 : nivel >= 17 ? 12 : 10.5;
+      const fonte = `800 ${px}px system-ui, "Segoe UI", Roboto, sans-serif`;
       for (const f of quadras) {
         const nm = String(f.attributes.nm_qdr || '').trim();
         const anel = f.geometry?.rings?.[0];
         if (!nm || !anel) continue;
         let sx = 0, sy = 0;
         for (const [a, b] of anel) { sx += a; sy += b; }
-        r.texto(`Qd. ${nm}`, q.x(sx / anel.length), q.y(sy / anel.length), { fonte, cor: e.quadraTexto, halo: e.halo, forcar: nivel >= NIVEIS.lotes });
+        if (comLotes) {
+          g.save(); g.globalAlpha = 0.5;
+          r.texto(`Qd. ${nm}`, q.x(sx / anel.length), q.y(sy / anel.length), { fonte, cor: e.quadraTexto, halo: e.halo, forcar: true });
+          g.restore();
+        } else {
+          r.texto(`Qd. ${nm}`, q.x(sx / anel.length), q.y(sy / anel.length), { fonte, cor: e.quadraTexto, halo: e.halo, forcar: nivel >= NIVEIS.lotes });
+        }
+      }
+    }
+    // Número de todos os lotes, por cima da quadra: nenhum é escondido; a fonte se ajusta ao lote.
+    if (ver.numeroLote && lotes.length) {
+      const max = nivel >= 20 ? 14 : nivel >= 19 ? 12.5 : nivel >= 18 ? 11 : 9.5;
+      for (const f of lotes) {
+        const nm = String(f.attributes.nm_lot || '').trim();
+        const anel = f.geometry?.rings?.[0];
+        if (!nm || !anel) continue;
+        let sx = 0, sy = 0, o = Infinity, l = -Infinity, s0 = Infinity, n0 = -Infinity;
+        for (const [a, b] of anel) { sx += a; sy += b; o = Math.min(o, a); l = Math.max(l, a); s0 = Math.min(s0, b); n0 = Math.max(n0, b); }
+        numeroNoLote(g, nm, q.x(sx / anel.length), q.y(sy / anel.length), q.x(l) - q.x(o), q.y(s0) - q.y(n0), { cor: e.loteTexto, halo: e.halo, max });
       }
     }
     return tela;
@@ -419,12 +439,11 @@ export class ProvedorLotes extends ProvedorCanvas {
     g.strokeStyle = 'rgba(20,24,28,.55)'; g.lineWidth = nivel >= 17 ? 2.6 : 1.8; g.stroke();
     if (this.borda) { g.strokeStyle = this.borda; g.lineWidth = nivel >= 17 ? 1.3 : 0.8; g.stroke(); }
     if (mostraNaAltura('numeroLote', nivel) && this.rotulos()) {
-      const r = new Rotulos(g, T);
-      const fonte = `600 ${nivel >= 20 ? 14 : nivel >= 19 ? 12.5 : nivel >= 18 ? 11 : 9.5}px system-ui, "Segoe UI", Roboto, sans-serif`;
+      const max = nivel >= 20 ? 14 : nivel >= 19 ? 12.5 : nivel >= 18 ? 11 : 9.5;
       for (const l of dentro) {
         if (!l.nm) continue;
-        const px = q.x(l.centro[0]), py = q.y(l.centro[1]);
-        r.texto(l.nm, px, py, { fonte, cor: '#1f2226', halo: 'rgba(255,255,255,.9)' });
+        numeroNoLote(g, l.nm, q.x(l.centro[0]), q.y(l.centro[1]), q.x(l.ext[2]) - q.x(l.ext[0]), q.y(l.ext[1]) - q.y(l.ext[3]),
+          { cor: '#1f2226', halo: 'rgba(255,255,255,.9)', max });
       }
     }
     return Promise.resolve(tela);

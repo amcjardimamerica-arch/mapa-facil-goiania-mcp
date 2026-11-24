@@ -439,6 +439,7 @@ def test_edificios_trazem_os_predios_do_iptu(mapa):
       const ed = bussola.edificios;
       await ed.ligar(true);
       const ligada = !!ed.primitiva && ed.cidade;
+      const tetos = ed.fonteTetos ? ed.fonteTetos.entities.values.filter((t) => t.polygon?.material).length : 0;
       const k = ed.lista.find((e) => e.n === 'RES KINGDOM PARK'), j = ed.lista.find((e) => e.n === 'JARDA BY PALME');
       ed.selecionar(k.i);
       const ficha = document.querySelector('#ficha-corpo').textContent;
@@ -447,10 +448,11 @@ def test_edificios_trazem_os_predios_do_iptu(mapa):
       const cores = { residencial: cor(k), oficialComAptos: cor({ a: 12 }), horizontal: cor(h), comercial: cor(c), indefinido: cor(o), andarH: h.p, semRotulos: !ed.rotulos };
       bussola.identificar.fechar(); await ed.ligar(false);
       const desligada = !ed.primitiva && !ed.ativo;
-      return { ligada, desligada, total: ed.lista.length, conferidos: ed.conferidos, kingdom: k.p, jarda: j.p, ficha, cores,
+      return { ligada, desligada, tetos, total: ed.lista.length, conferidos: ed.conferidos, kingdom: k.p, jarda: j.p, ficha, cores,
                repetidos: ed.lista.filter((e) => !e.lv && e.ci && ed.lista.some((x) => x.lv && x.ci === e.ci)).length };
     }""")
     assert r["ligada"] and r["desligada"], r
+    assert r["tetos"] > 500, r  # número do lote e da quadra no teto de cada condomínio/prédio conferido
     assert r["conferidos"] > 600 and r["kingdom"] >= 50 and r["jarda"] >= 23, r
     assert "Inscrições de IPTU no lote" in r["ficha"] and "Base no 3D" in r["ficha"], r["ficha"][:300]
     c = r["cores"]
@@ -600,7 +602,7 @@ def test_alturas_de_quadras_e_lotes_e_condominio_horizontal(mapa):
         faixas: [m.faixaAltura(6000), m.faixaAltura(4500), m.faixaAltura(3500), m.faixaAltura(2000)],
         quadras: [ver(5500, 'quadras', 16), ver(5000, 'quadras', 16)],
         numQuadra: [ver(4500, 'numeroQuadra', 16), ver(4000, 'numeroQuadra', 16)],
-        numLote: [ver(3500, 'numeroLote', 17), ver(3000, 'numeroLote', 17)],
+        numLote: [ver(3000, 'numeroLote', 17), ver(2500, 'numeroLote', 17)],
         horizontais: horiz.length, umPavimento: horiz.every((e) => e.p === 1 && (!e.fx || !e.fx.length) && e.f === e.lote),
       };
     }""")

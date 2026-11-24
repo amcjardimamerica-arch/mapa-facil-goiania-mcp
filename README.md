@@ -164,7 +164,8 @@ e retoma de onde parou.
 - O pássaro da busca bate as asas só ao clicar: o mesmo movimento e a mesma velocidade da tela de abertura.
 - Esferas das luminárias: tamanho mínimo até 1 km de altura da câmera; crescem até 6× (+500%) em 4 km.
 - Quadras e lotes aparecem a partir de 5 km de altura da câmera; o número da quadra a partir de 4 km e o do lote a
-  partir de 3 km (`ALTURA`/`LIMITE_ALTURA` em `docs/js/mapavetorial.js`).
+  partir de 2,5 km, todos, sem esconder nenhum (`ALTURA`/`LIMITE_ALTURA` em `docs/js/mapavetorial.js`); o número da quadra
+  fica por baixo, maior e mais claro, e os condomínios em 3D trazem o lote e a quadra chapados no teto.
 - Divisa única de bairro em todo o sistema: limite oficial do Mapa Fácil, em preto, amarelo e preto.
 - Escolas e cursos em tons de verde: particulares claras, públicas escuras, um tom por nível.
 - Condomínio horizontal em 3D: um volume só, no lote inteiro, com 1 pavimento.
