@@ -623,3 +623,13 @@ def test_mapa_filtra_bairros_do_painel(mapa):
       return { comJA, semFiltro: m.FILTRO_BAIRROS.aneis === null, dentro };
     }""")
     assert r["comJA"] == 1 and r["semFiltro"], r
+
+
+def test_marcadores_de_quadra_e_pracas(mapa):
+    mapa.evaluate("bussola.globo.aplicarVisao('-49.2857,-16.7077,1700,0,-90')")
+    mapa.wait_for_timeout(1500)
+    r = mapa.evaluate("""async () => { await bussola.quadras.atualizar();
+      const m = bussola.quadras.marcadores, nomes = [...bussola.quadras.imagens.keys()].map((k) => k.split('|')[0]);
+      const b = m.length ? m.get(0) : null;
+      return { n: m.length, pracas: nomes.filter((x) => /^Pça\\./.test(x)).length, sobre: b ? b.disableDepthTestDistance : 0 }; }""")
+    assert r["n"] > 50 and r["pracas"] >= 1 and r["sobre"] > 1e12, r

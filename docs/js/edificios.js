@@ -117,8 +117,8 @@ export class Edificios {
   }
 
   /**
-   * Número do lote (ou dos lotes) e da quadra chapado no teto de cada condomínio/prédio conferido: o volume não
-   * esconde a identificação do lote, que fica na superfície do próprio polígono.
+   * Número do lote (ou dos lotes) chapado no teto de cada condomínio/prédio conferido, no mesmo formato dos números
+   * de lote do mapa (sem quadra): o volume não esconde a identificação do lote.
    */
   _tetos(lista, altitudes, exagero) {
     if (!this.fonteTetos) { this.fonteTetos = new Cesium.CustomDataSource('tetos'); this.globo.viewer.dataSources.add(this.fonteTetos); }
@@ -134,15 +134,14 @@ export class Edificios {
       const W = 512, H = Math.max(64, Math.min(1024, Math.round((W * hm) / wm)));
       const tela = document.createElement('canvas'); tela.width = W; tela.height = H;
       const g = tela.getContext('2d');
-      const lote = `Lt ${String(e.l).replace(/;/g, ' · ')}`, quadra = `Qd ${e.q}`;
-      let px = Math.min(H * 0.38, (W * 0.86) / Math.max(4, lote.length * 0.6));
+      // Só o número do lote (ou dos lotes), no mesmo formato dos números de lote do mapa: texto escuro com contorno
+      // claro, sem "Lt" e sem quadra (o número da quadra fica no marcador próprio).
+      const lote = String(e.l).replace(/;/g, ' · ');
+      const px = Math.min(H * 0.42, (W * 0.8) / Math.max(2, lote.length * 0.58));
       g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
-      g.font = `800 ${px}px system-ui, "Segoe UI", Roboto, sans-serif`;
-      g.lineWidth = px / 5; g.strokeStyle = 'rgba(255,255,255,.95)'; g.fillStyle = '#111418';
-      g.strokeText(lote, W / 2, H / 2 - px * 0.35); g.fillText(lote, W / 2, H / 2 - px * 0.35);
-      const pq = px * 0.6;
-      g.font = `700 ${pq}px system-ui, "Segoe UI", Roboto, sans-serif`; g.lineWidth = pq / 5;
-      g.strokeText(quadra, W / 2, H / 2 + px * 0.55); g.fillText(quadra, W / 2, H / 2 + px * 0.55);
+      g.font = `600 ${px}px system-ui, "Segoe UI", Roboto, sans-serif`;
+      g.lineWidth = px / 4; g.strokeStyle = 'rgba(255,255,255,.9)'; g.strokeText(lote, W / 2, H / 2);
+      g.fillStyle = '#1f2226'; g.fillText(lote, W / 2, H / 2);
       const teto = (altitudes[j] + Math.max(e.p, 1) * this.mpp) * exagero + 0.25;
       this.fonteTetos.entities.add({ polygon: { hierarchy: Cesium.Cartesian3.fromDegreesArray(anel.flat()), height: teto, perPositionHeight: false,
         material: new Cesium.ImageMaterialProperty({ image: tela, transparent: true }), distanceDisplayCondition: perto } });

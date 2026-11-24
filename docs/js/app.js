@@ -17,7 +17,8 @@ import { Levantamento } from './levantamento.js';
 import { Poligonos } from './poligonos.js';
 import { encerrarSessao, sessaoAindaValida } from './acesso.js';
 import { iniciarBanco } from './banco.js';
-import { ALTURA, faixaAltura, ProvedorQuadras } from './mapavetorial.js';
+import { ALTURA, faixaAltura } from './mapavetorial.js';
+import { Quadras } from './quadras.js';
 
 const Cesium = window.Cesium;
 const app = (window.bussola = { versao: VERSAO, pronto: false, erros: [] });
@@ -214,7 +215,10 @@ async function iniciar() {
   // A altura é lida a cada quadro desenhado (barato) — o evento "camera.changed" não dispara em toda mudança de vista.
   ALTURA.camera = globo.camera.positionCartographic.height;
   let faixa = faixaAltura(ALTURA.camera);
-  const novasQuadras = () => globo.definirQuadras(new ProvedorQuadras({ retangulo: globo.ret }));
+  // Número das quadras: marcadores de tela, por cima de lotes e construções 3D (docs/js/quadras.js).
+  const quadras = new Quadras({ globo });
+  app.quadras = quadras;
+  const novasQuadras = () => quadras.atualizar();
   novasQuadras();
   // Refaz os mapas desenhados (fundo Mapa, Ruas e quadras, números das quadras e lotes por bairro).
   const refazerVetoriais = () => {
