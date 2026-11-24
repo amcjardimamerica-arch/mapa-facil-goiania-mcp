@@ -151,9 +151,8 @@ export class Levantamento {
     this.raiz.append(
       this.estado,
       this.caixaBairros,
-      chave('lotes', 'Lotes por finalidade', 'residencial, comercial, condominial…'),
+      chave('lotes', 'Lotes por finalidade'),
       this.legenda,
-      chave('oficiais', 'Limite oficial do Mapa Fácil'),
       chave('imoveis', 'Imóveis públicos'),
       chave('verdes', 'Praças e áreas verdes'),
       chave('escolas', 'Escolas e cursos'),
@@ -231,14 +230,15 @@ export class Levantamento {
     const f = (this.opcoes.escolasFiltro ||= { publica: true, particular: true, infantil: true, fundamental: true, medio: true, superior: true, aulas: true });
     const conta = this.escolas.contagem();
     const porNivel = (id) => this.escolas.itens.filter((i) => i.tipo !== 'aulas' && i.niveis.includes(id)).length;
-    const item = (id, nome, cor, n, borda) => el('li', {}, el('label', {},
+    const item = (id, nome, cor, n, borda, cor2) => el('li', {}, el('label', {},
       el('input', { type: 'checkbox', checked: f[id] !== false, onchange: (e) => { f[id] = e.target.checked; this._gravar(); this.redesenhar(); } }),
-      el('span', { class: 'lv-cor', style: `background:${cor}${borda ? `;border:2px solid ${borda}` : ''}` }), el('span', {}, nome), el('small', {}, fmtNum(n))));
+      el('span', { class: 'lv-cores' }, el('span', { class: 'lv-cor', style: `background:${cor}${borda ? `;border:2px solid ${borda}` : ''}` }),
+        cor2 ? el('span', { class: 'lv-cor', style: `background:${cor2}` }) : null), el('span', {}, nome), el('small', {}, fmtNum(n))));
     this.caixaEscolas.textContent = '';
     this.caixaEscolas.append(el('ul', { class: 'lv-legenda' },
-      item('publica', 'Escolas públicas (borda branca)', '#9e9e9e', conta.publica, '#ffffff'),
-      item('particular', 'Escolas particulares (borda escura)', '#9e9e9e', conta.particular, '#1f2226'),
-      ...NIVEIS.map((n) => item(n.id, n.nome, n.cor, porNivel(n.id))),
+      item('publica', 'Escolas públicas (verde escuro)', '#2e7d32', conta.publica, '#ffffff'),
+      item('particular', 'Escolas particulares (verde claro)', '#8de0a0', conta.particular, '#1f2226'),
+      ...NIVEIS.map((n) => item(n.id, n.nome, n.cor, porNivel(n.id), null, n.corPublica)),
       item('aulas', `${AULAS.nome} (idiomas, lutas, dança, música, cursos)`, AULAS.cor, conta.aulas)));
   }
 
@@ -343,10 +343,14 @@ export class Levantamento {
       d.limites.forEach((lim, i) => {
         if (this.opcoes.bairros[i] === false) return;
         const cor = Cesium.Color.fromCssColorString(CORES_LIMITE[i % 2]);
-        for (const anel of lim.aneisLL) {
+        // Divisa única do sistema: o limite oficial do Mapa Fácil (todos os lotes do bairro ficam dentro dele), no
+        // mesmo padrão das divisas de todos os bairros — preta, amarela e preta (#000000, #FFFF00, #000000).
+        const oficial = d.limites_oficiais?.[i];
+        const aneis = oficial ? oficial.aneis.map(decodificarAnel) : lim.aneisLL;
+        for (const anel of aneis) {
           const pos = Cesium.Cartesian3.fromDegreesArray([...anel, anel[0]].flat());
-          this.fonte.entities.add({ polyline: { positions: pos, clampToGround: true, width: 4,
-            material: new Cesium.PolylineOutlineMaterialProperty({ color: cor, outlineColor: Cesium.Color.BLACK.withAlpha(0.6), outlineWidth: 1.5 }) } });
+          this.fonte.entities.add({ polyline: { positions: pos, clampToGround: true, width: 6, zIndex: 0, material: Cesium.Color.fromCssColorString('#000000') } });
+          this.fonte.entities.add({ polyline: { positions: pos, clampToGround: true, width: 2, zIndex: 1, material: Cesium.Color.fromCssColorString('#FFFF00') } });
         }
         const pts = lim.aneisLL[0];
         const c = pts.reduce((a, p) => [a[0] + p[0] / pts.length, a[1] + p[1] / pts.length], [0, 0]);
@@ -355,16 +359,6 @@ export class Levantamento {
           fillColor: cor, outlineColor: Cesium.Color.BLACK, outlineWidth: 4, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
           heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, disableDepthTestDistance: Number.POSITIVE_INFINITY,
           distanceDisplayCondition: new Cesium.DistanceDisplayCondition(2500, 60000) } });
-      });
-    }
-
-    if (this.mostrar && this.opcoes.oficiais) {
-      (d.limites_oficiais || []).forEach((lim, i) => {
-        if (this.opcoes.bairros[i] === false) return;
-        for (const anel of lim.aneis.map(decodificarAnel)) {
-          this.fonte.entities.add({ polyline: { positions: Cesium.Cartesian3.fromDegreesArray([...anel, anel[0]].flat()), clampToGround: true,
-            width: 3, material: new Cesium.PolylineDashMaterialProperty({ color: Cesium.Color.WHITE.withAlpha(0.9), dashLength: 14 }) } });
-        }
       });
     }
 

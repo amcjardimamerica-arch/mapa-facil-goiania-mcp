@@ -50,7 +50,10 @@ export class Edificios {
       // Prédios novos chegam com a base estimada pela imagem de satélite; `lote` é só o terreno e nunca sobe inteiro.
       const trocados = new Set((lv.substitui || []).map(String));
       const cis = new Set(lv.predios.map((p) => p.ci).filter(Boolean));
-      lista = lista.filter((e) => !(trocados.has(String(e.id)) || cis.has(String(e.ci || '')))).concat(lv.predios);
+      // Condomínio horizontal: um volume só, ocupando o lote inteiro, com 1 pavimento (sem casas separadas).
+      const predios = lv.predios.map((p) => (p.uso === 'horizontal' && p.lote ? { ...p, f: p.lote, fx: [], p: 1,
+        base_3d: 'Lote inteiro, 1 pavimento (condomínio horizontal)' } : p));
+      lista = lista.filter((e) => !(trocados.has(String(e.id)) || cis.has(String(e.ci || '')))).concat(predios);
       this.conferidos = lv.predios.length;
     } catch (e) { this.conferidos = 0; }
     lista.sort((a, b) => b.p - a.p);

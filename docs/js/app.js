@@ -17,6 +17,7 @@ import { Levantamento } from './levantamento.js';
 import { Poligonos } from './poligonos.js';
 import { encerrarSessao, sessaoAindaValida } from './acesso.js';
 import { iniciarBanco } from './banco.js';
+import { ALTURA, faixaAltura } from './mapavetorial.js';
 
 const Cesium = window.Cesium;
 const app = (window.bussola = { versao: VERSAO, pronto: false, erros: [] });
@@ -207,6 +208,22 @@ async function iniciar() {
   realce.checked = hash.n !== '0';
   realce.addEventListener('change', () => { globo.definirRealce(realce.checked); marcarBase(); atualizarLink(); });
   globo.definirRealce(realce.checked);
+
+  // Quadras e lotes pela altura da câmera (5 km), número da quadra (4 km) e do lote (3 km): ao cruzar uma dessas
+  // alturas, os mapas desenhados (fundo Mapa, Ruas e quadras e lotes) são refeitos para a nova faixa.
+  globo.camera.percentageChanged = Math.min(globo.camera.percentageChanged, 0.05);
+  ALTURA.camera = globo.camera.positionCartographic.height;
+  let faixa = faixaAltura(ALTURA.camera);
+  globo.camera.changed.addEventListener(() => {
+    ALTURA.camera = globo.camera.positionCartographic.height;
+    const f = faixaAltura(ALTURA.camera);
+    if (f === faixa) return;
+    faixa = f;
+    if (globo.chaveBase === 'mapa') globo.definirBase('mapa').catch(() => {});
+    if (globo.camadaRealce) { globo.definirRealce(false); globo.definirRealce(realce.checked); marcarBase(); }
+    if (levantamento.dados) levantamento.redesenhar();
+    lotes._atualizarCamada?.();
+  });
   marcarBase();
 
   const relevo = $('#relevo-liga');

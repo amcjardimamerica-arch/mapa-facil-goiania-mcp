@@ -588,3 +588,22 @@ def test_navegacao_fica_no_canto_com_ficha_aberta(mapa):
     mapa.evaluate("bussola.identificar.fechar()")
     assert abs(r["nav"] - antes) < 1, (antes, r)
     assert r["ficha"]["right"] <= r["navLeft"] + 1, r
+
+
+def test_alturas_de_quadras_e_lotes_e_condominio_horizontal(mapa):
+    r = mapa.evaluate("""async () => {
+      const m = await import('./js/mapavetorial.js');
+      const ver = (h, item, nivel) => { const antes = m.ALTURA.camera; m.ALTURA.camera = h; const v = m.mostraNaAltura(item, nivel); m.ALTURA.camera = antes; return v; };
+      const ed = bussola.edificios; await ed.carregar();
+      const horiz = ed.lista.filter((e) => e.uso === 'horizontal');
+      return {
+        faixas: [m.faixaAltura(6000), m.faixaAltura(4500), m.faixaAltura(3500), m.faixaAltura(2000)],
+        quadras: [ver(5500, 'quadras', 16), ver(5000, 'quadras', 16)],
+        numQuadra: [ver(4500, 'numeroQuadra', 16), ver(4000, 'numeroQuadra', 16)],
+        numLote: [ver(3500, 'numeroLote', 17), ver(3000, 'numeroLote', 17)],
+        horizontais: horiz.length, umPavimento: horiz.every((e) => e.p === 1 && (!e.fx || !e.fx.length) && e.f === e.lote),
+      };
+    }""")
+    assert r["faixas"] == [0, 1, 2, 3]
+    assert r["quadras"] == [False, True] and r["numQuadra"] == [False, True] and r["numLote"] == [False, True], r
+    assert r["horizontais"] > 100 and r["umPavimento"], r

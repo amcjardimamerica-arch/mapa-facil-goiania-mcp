@@ -13,6 +13,15 @@ const NIVEL_MINIMO = 9;
 // Aproximação progressiva, como no Mapa Fácil: primeiro as divisas dos bairros, depois as
 // quadras, depois quadras e lotes. Os números aparecem e crescem conforme a aproximação.
 export const NIVEIS = { bairros: 11, quadras: 15, numeroQuadra: 16, lotes: 17, numeroLote: 17 };
+// Aparecimento pela altura da câmera (a mesma do rodapé): quadras e lotes a partir de 5 km para baixo,
+// número da quadra a partir de 4 km e número do lote a partir de 3 km. O nível mínimo do bloco evita pedir a
+// cidade inteira de uma vez quando a câmera está inclinada.
+export const ALTURA = { camera: Infinity };
+export const LIMITE_ALTURA = { quadras: 5000, lotes: 5000, numeroQuadra: 4000, numeroLote: 3000 };
+const NIVEL_MINIMO_DE = { quadras: 13, lotes: 14, numeroQuadra: 14, numeroLote: 15 };
+export const mostraNaAltura = (item, nivel) => ALTURA.camera <= LIMITE_ALTURA[item] && nivel >= NIVEL_MINIMO_DE[item];
+/** Faixa de altura: muda quando a câmera cruza 5, 4 ou 3 km (então os mapas desenhados são refeitos). */
+export const faixaAltura = (h) => (h > 5000 ? 0 : h > 4000 ? 1 : h > 3000 ? 2 : 3);
 
 // ---------------------------------------------------------------- fila de pedidos
 /** Limita as consultas simultâneas ao servidor municipal (não o sobrecarrega). */
@@ -253,25 +262,26 @@ export class ProvedorVetorial extends ProvedorCanvas {
       spatialRel: 'esriSpatialRelIntersects', returnGeometry: 'true', geometryPrecision: '1',
       maxAllowableOffset: String(Math.max(0.3, q.mpp * 0.7)) };
     const sobre = this.modo === 'sobre';
-    const nivelQuadras = NIVEIS.quadras;
+    const ver = { quadras: mostraNaAltura('quadras', nivel), lotes: mostraNaAltura('lotes', nivel),
+      numeroQuadra: mostraNaAltura('numeroQuadra', nivel), numeroLote: mostraNaAltura('numeroLote', nivel) };
     const filtroVias = nivel >= (sobre ? 15 : 14) ? '1=1' : nivel >= 12 ? 'in_hie >= 21' : 'in_hie >= 40';
     const [limites, quadras, vias, lotes] = await Promise.all([
       nivel >= NIVEIS.bairros ? consultar(2, { ...comum, outFields: 'OBJECTID', where: '1=1', maxAllowableOffset: String(Math.max(1, q.mpp)) }, cancelada).catch(() => []) : [],
-      nivel >= nivelQuadras ? consultar(1, { ...comum, outFields: nivel >= NIVEIS.numeroQuadra ? 'nm_qdr' : 'OBJECTID', where: '1=1' }, cancelada).catch(() => []) : [],
+      ver.quadras ? consultar(1, { ...comum, outFields: ver.numeroQuadra ? 'nm_qdr' : 'OBJECTID', where: '1=1' }, cancelada).catch(() => []) : [],
       consultar(7, { ...comum, outFields: 'nm,in_hie', where: filtroVias }, cancelada).catch(() => []),
       // Divisas dos lotes dentro das quadras, carregadas por bloco do mapa conforme a aproximação.
-      nivel >= NIVEIS.lotes ? consultar(0, { ...comum, outFields: nivel >= NIVEIS.numeroLote ? 'nm_lot' : 'OBJECTID', where: '1=1',
+      ver.lotes ? consultar(0, { ...comum, outFields: ver.numeroLote ? 'nm_lot' : 'OBJECTID', where: '1=1',
         maxAllowableOffset: String(Math.max(0.15, q.mpp * 0.5)) }, cancelada).catch(() => []) : [],
     ]);
-    return { limites, quadras, vias, lotes };
+    return { limites, quadras, vias, lotes, ver };
   }
 
-  _desenhar(ret, nivel, relevo, { limites = [], quadras, vias, lotes = [] }) {
+  _desenhar(ret, nivel, relevo, { limites = [], quadras, vias, lotes = [], ver = {} }) {
     const T = this._T, e = this.estilo, q = new Quadro(ret, T);
     const tela = this._tela(), g = tela.getContext('2d');
     const mapa = this.modo === 'mapa';
 
-    if (mapa) { g.fillStyle = nivel >= NIVEIS.quadras ? e.fundo : e.urbano; g.fillRect(0, 0, T, T); }
+    if (mapa) { g.fillStyle = ver.quadras ? e.fundo : e.urbano; g.fillRect(0, 0, T, T); }
 
     // Quadras
     if (quadras.length) {
@@ -355,7 +365,7 @@ export class ProvedorVetorial extends ProvedorCanvas {
       r.texto(t, m.x, m.y, { ang: m.ang, fonte, cor: e.texto, halo: e.halo, distanciaNome: 220 });
     }
     // Número do lote (de perto), maior quanto mais perto.
-    if (nivel >= NIVEIS.numeroLote && lotes.length) {
+    if (ver.numeroLote && lotes.length) {
       const px = nivel >= 20 ? 14 : nivel >= 19 ? 12.5 : nivel >= 18 ? 11 : 9.5;
       const fonte = `500 ${px}px system-ui, "Segoe UI", Roboto, sans-serif`;
       for (const f of lotes) {
@@ -368,7 +378,7 @@ export class ProvedorVetorial extends ProvedorCanvas {
       }
     }
     // Número da quadra, a partir da vista de quadras, maior quanto mais perto.
-    if (nivel >= NIVEIS.numeroQuadra) {
+    if (ver.numeroQuadra) {
       const px = nivel >= 19 ? 15 : nivel >= 18 ? 13.5 : nivel >= 17 ? 12 : 10.5;
       const fonte = `700 ${px}px system-ui, "Segoe UI", Roboto, sans-serif`;
       for (const f of quadras) {
@@ -396,7 +406,7 @@ export class ProvedorLotes extends ProvedorCanvas {
     const ret = this._grade.tileXYToNativeRectangle(x, y, nivel);
     const T = this._T, q = new Quadro(ret, T);
     const tela = this._tela(), g = tela.getContext('2d');
-    if (nivel < NIVEIS.lotes) return Promise.resolve(tela); // lotes só de perto
+    if (!mostraNaAltura('lotes', nivel)) return Promise.resolve(tela); // lotes a partir de 5 km de altura
     const dentro = this.lotes.filter((l) => l.ext[0] < ret.east && l.ext[2] > ret.west && l.ext[1] < ret.north && l.ext[3] > ret.south);
     if (!dentro.length) return Promise.resolve(tela);
     for (const l of dentro) {
@@ -408,7 +418,7 @@ export class ProvedorLotes extends ProvedorCanvas {
     g.lineJoin = 'round';
     g.strokeStyle = 'rgba(20,24,28,.55)'; g.lineWidth = nivel >= 17 ? 2.6 : 1.8; g.stroke();
     if (this.borda) { g.strokeStyle = this.borda; g.lineWidth = nivel >= 17 ? 1.3 : 0.8; g.stroke(); }
-    if (nivel >= NIVEIS.numeroLote && this.rotulos()) {
+    if (mostraNaAltura('numeroLote', nivel) && this.rotulos()) {
       const r = new Rotulos(g, T);
       const fonte = `600 ${nivel >= 20 ? 14 : nivel >= 19 ? 12.5 : nivel >= 18 ? 11 : 9.5}px system-ui, "Segoe UI", Roboto, sans-serif`;
       for (const l of dentro) {

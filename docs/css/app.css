@@ -438,3 +438,5 @@ body:has(#ficha:not([hidden])) #gps-cartao { right: 432px; }
   #painel { top: 112px; bottom: calc(var(--rodape) + 8px); }
   #ficha { bottom: calc(var(--rodape) + 8px); }
 }
+
+.lv-cores { display: inline-flex; gap: 2px; }

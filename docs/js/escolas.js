@@ -9,13 +9,18 @@ import { iconeServico } from './servicos.js';
 
 const Cesium = window.Cesium;
 
+// Tudo em verde, do mais claro ao mais escuro: aulas diversas, depois as particulares (claras) e as públicas
+// (escuras), com um tom diferente para cada nível de ensino.
 export const NIVEIS = [
-  { id: 'infantil', nome: 'Educação infantil', cor: '#ec407a' },
-  { id: 'fundamental', nome: 'Ensino fundamental', cor: '#ffb300' },
-  { id: 'medio', nome: 'Ensino médio', cor: '#43a047' },
-  { id: 'superior', nome: 'Ensino superior', cor: '#1e88e5' },
+  { id: 'infantil', nome: 'Educação infantil', cor: '#b9f6ca', corPublica: '#43a047' },
+  { id: 'fundamental', nome: 'Ensino fundamental', cor: '#8de0a0', corPublica: '#2e7d32' },
+  { id: 'medio', nome: 'Ensino médio', cor: '#66cc80', corPublica: '#1b5e20' },
+  { id: 'superior', nome: 'Ensino superior', cor: '#4cb868', corPublica: '#0b3d14' },
 ];
-export const AULAS = { id: 'aulas', nome: 'Aulas diversas', cor: '#8e24aa' };
+export const AULAS = { id: 'aulas', nome: 'Aulas diversas', cor: '#e3fce8' };
+/** Cor do marcador: verde claro nas particulares e aulas; verde escuro nas públicas; um tom por nível. */
+export const corEscola = (tipo, nivel) => (tipo === 'aulas' ? AULAS.cor : tipo === 'publica' ? nivel.corPublica : nivel.cor);
+const SIMBOLO_ESCURO = '#1b3d22';
 const BORDA = { publica: '#ffffff', particular: '#1f2226' };
 
 /** Nível (ou "aulas") pelo CNAE da empresa. */
@@ -99,7 +104,7 @@ export class Escolas {
       if (!nivel) continue;
       const borda = i.tipo === 'publica' ? BORDA.publica : BORDA.particular;
       const ent = this.fonte.entities.add({ position: Cesium.Cartesian3.fromDegrees(i.lon, i.lat),
-        billboard: { image: iconeServico('escola', nivel.cor, borda), width: 30, height: 39, verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+        billboard: { image: iconeServico('escola', corEscola(i.tipo, nivel), borda, i.tipo === 'publica' ? '#ffffff' : SIMBOLO_ESCURO), width: 30, height: 39, verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
           heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, disableDepthTestDistance: Number.POSITIVE_INFINITY,
           distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 9000) },
         label: { text: i.nome, font: '600 12px system-ui, "Segoe UI", Roboto, sans-serif', fillColor: Cesium.Color.WHITE,

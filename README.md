@@ -163,6 +163,11 @@ e retoma de onde parou.
   Todos abrem a mesma tela de dados à esquerda.
 - O pássaro da busca bate as asas só ao clicar: o mesmo movimento e a mesma velocidade da tela de abertura.
 - Esferas das luminárias: tamanho mínimo até 1 km de altura da câmera; crescem até 6× (+500%) em 4 km.
+- Quadras e lotes aparecem a partir de 5 km de altura da câmera; o número da quadra a partir de 4 km e o do lote a
+  partir de 3 km (`ALTURA`/`LIMITE_ALTURA` em `docs/js/mapavetorial.js`).
+- Divisa única de bairro em todo o sistema: limite oficial do Mapa Fácil, em preto, amarelo e preto.
+- Escolas e cursos em tons de verde: particulares claras, públicas escuras, um tom por nível.
+- Condomínio horizontal em 3D: um volume só, no lote inteiro, com 1 pavimento.
 - Painel Bairros: imóveis públicos separados de praças e áreas verdes (com canteiros centrais e áreas remanescentes);
   **Escolas e cursos** (`docs/js/escolas.js`) em marcadores: públicas (áreas de Educação) e particulares (CNAE da
   Receita) por nível — infantil, fundamental, médio e superior — e "Aulas diversas" (idiomas, lutas e esportes, dança,
