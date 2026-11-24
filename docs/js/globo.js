@@ -230,7 +230,17 @@ export class Globo {
   organizarPilha() {
     const camadas = this.viewer.imageryLayers;
     if (this.camadaRealce) camadas.raiseToTop(this.camadaRealce);
+    if (this.camadaQuadras) camadas.raiseToTop(this.camadaQuadras); // número das quadras por cima de lotes e temas
     camadas.raiseToTop(this.camadaMascara);
+  }
+
+  /** Camada dos números de quadra (marcadores), refeita quando a altura de exibição muda de faixa. */
+  definirQuadras(provedor) {
+    const camadas = this.viewer.imageryLayers;
+    if (this.camadaQuadras) camadas.remove(this.camadaQuadras, true);
+    this.camadaQuadras = provedor ? camadas.addImageryProvider(provedor) : null;
+    this.organizarPilha();
+    this.redesenhar();
   }
 
   /** Adiciona a camada de um tema acima das bases e abaixo dos rótulos/máscara. */

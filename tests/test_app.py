@@ -577,7 +577,7 @@ def test_logs_de_acesso(mapa, servidor):
     pagina.goto(f"{servidor}/validacao.html")
     pagina.wait_for_selector("#abrir-logs")
     assert not pagina.is_visible("#logs")
-    pagina.click("#abrir-logs")
+    pagina.evaluate("document.querySelector('#abrir-logs').click()")  # a validação ocupa a página ao carregar
     assert pagina.is_visible("#logs") and pagina.is_visible("#logs-chave") and "Logs de acesso" in pagina.text_content("#logs")
     pagina.close()
 

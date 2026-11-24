@@ -392,6 +392,7 @@ export class Levantamento {
 
     if (this.escolas.itens) this.escolas.mostrar(this.mostrar && !!this.opcoes.escolas, this.opcoes.escolasFiltro, bairroVisivel);
     this._desenharEleitoral();
+    this.globo.organizarPilha();
     this.globo.redesenhar();
     this.aoMudar();
   }

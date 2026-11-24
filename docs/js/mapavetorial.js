@@ -377,43 +377,7 @@ export class ProvedorVetorial extends ProvedorCanvas {
       if (m.total < g.measureText(t).width + 16) continue;
       r.texto(t, m.x, m.y, { ang: m.ang, fonte, cor: e.texto, halo: e.halo, distanciaNome: 220 });
     }
-    // Número da quadra. De 4 km a 2,5 km, no centro da quadra. Quando os números de lote aparecem, a quadra vai
-    // para a rua, junto do lado mais comprido dela, no mesmo tamanho dos números de lote: fica fora dos polígonos
-    // dos lotes (que não a cobrem) e não esconde nenhum número de lote.
-    if (ver.numeroQuadra) {
-      const comLotes = ver.numeroLote && lotes.length;
-      const pxLote = nivel >= 20 ? 14 : nivel >= 19 ? 12.5 : nivel >= 18 ? 11 : 9.5;
-      const px = comLotes ? pxLote : nivel >= 19 ? 15 : nivel >= 18 ? 13.5 : nivel >= 17 ? 12 : 10.5;
-      const fonte = `700 ${px}px system-ui, "Segoe UI", Roboto, sans-serif`;
-      for (const f of quadras) {
-        const nm = String(f.attributes.nm_qdr || '').trim();
-        const anel = f.geometry?.rings?.[0];
-        if (!nm || !anel) continue;
-        const pts = anel.map(([a, b]) => [q.x(a), q.y(b)]);
-        let cx = 0, cy = 0;
-        for (const [a, b] of pts) { cx += a; cy += b; }
-        cx /= pts.length; cy /= pts.length;
-        if (!comLotes) {
-          r.texto(`Qd. ${nm}`, cx, cy, { fonte, cor: e.quadraTexto, halo: e.halo, forcar: nivel >= NIVEIS.lotes });
-          continue;
-        }
-        // Lado mais comprido da quadra e o ponto na rua logo à frente dele.
-        let melhor = null;
-        for (let k = 1; k < pts.length; k++) {
-          const [ax, ay] = pts[k - 1], [bx, by] = pts[k];
-          const L = Math.hypot(bx - ax, by - ay);
-          if (!melhor || L > melhor.L) melhor = { L, ax, ay, bx, by };
-        }
-        if (!melhor || melhor.L < 8) continue;
-        const mx = (melhor.ax + melhor.bx) / 2, my = (melhor.ay + melhor.by) / 2;
-        let nx = -(melhor.by - melhor.ay) / melhor.L, ny = (melhor.bx - melhor.ax) / melhor.L;
-        if (nx * (cx - mx) + ny * (cy - my) > 0) { nx = -nx; ny = -ny; } // normal para fora da quadra
-        const d = px * 0.75 + 3;
-        let ang = Math.atan2(melhor.by - melhor.ay, melhor.bx - melhor.ax);
-        if (ang > Math.PI / 2) ang -= Math.PI; else if (ang < -Math.PI / 2) ang += Math.PI;
-        r.texto(`Qd. ${nm}`, mx + nx * d, my + ny * d, { ang, fonte, cor: e.quadraTexto, halo: e.halo, forcar: true });
-      }
-    }
+    // Número da quadra: camada própria por cima de tudo (ProvedorQuadras), com marcador preto e número amarelo.
     // Número de todos os lotes, por cima da quadra: nenhum é escondido; a fonte se ajusta ao lote.
     if (ver.numeroLote && lotes.length) {
       const max = nivel >= 20 ? 14 : nivel >= 19 ? 12.5 : nivel >= 18 ? 11 : 9.5;
@@ -507,5 +471,76 @@ export class ProvedorDesenho extends ProvedorCanvas {
       g.strokeStyle = p.borda; g.lineWidth = w; g.stroke();
     }
     return Promise.resolve(tela);
+  }
+}
+
+
+/**
+ * Número de todas as quadras, sem esconder nenhum: marcador retangular de cantos arredondados, preto, com o número
+ * em amarelo (#FFFF00). Fica numa camada própria acima dos lotes, dos condomínios e dos temas (só a máscara de fora
+ * do município vai por cima). Aparece a partir de 4 km de altura; quando os números de lote aparecem (2,5 km), o
+ * marcador vai para a rua, na frente do lado mais comprido da quadra, para não cobrir nenhum número de lote.
+ */
+export class ProvedorQuadras extends ProvedorCanvas {
+  constructor({ retangulo }) {
+    super({ retangulo, credito: 'Quadras: Prefeitura de Goiânia (Mapa Fácil), banco local', nivelMinimo: 12 });
+  }
+  async requestImage(x, y, nivel) {
+    const tela = this._tela();
+    if (!mostraNaAltura('numeroQuadra', nivel)) return tela;
+    const ret = this._grade.tileXYToNativeRectangle(x, y, nivel);
+    const T = this._T, q = new Quadro(ret, T);
+    const folga = (ret.east - ret.west) * 0.15;
+    const env = [ret.west - folga, ret.south - folga, ret.east + folga, ret.north + folga].join(',');
+    let quadras = [];
+    try {
+      quadras = await consultar(1, { geometry: env, geometryType: 'esriGeometryEnvelope', inSR: '3857', outSR: '3857',
+        spatialRel: 'esriSpatialRelIntersects', returnGeometry: 'true', geometryPrecision: '1', outFields: 'nm_qdr', where: '1=1',
+        maxAllowableOffset: String(Math.max(0.3, q.mpp * 0.7)) });
+    } catch { return tela; }
+    const comLotes = mostraNaAltura('numeroLote', nivel);
+    const px = comLotes ? (nivel >= 20 ? 14 : nivel >= 19 ? 12.5 : nivel >= 18 ? 11 : 9.5) : (nivel >= 16 ? 11 : 10);
+    const g = tela.getContext('2d');
+    g.font = `800 ${px}px system-ui, "Segoe UI", Roboto, sans-serif`;
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    for (const f of quadras) {
+      const nm = String(f.attributes.nm_qdr || '').trim();
+      const anel = f.geometry?.rings?.[0];
+      if (!nm || !anel) continue;
+      const pts = anel.map(([a, b]) => [q.x(a), q.y(b)]);
+      let cx = 0, cy = 0;
+      for (const [a, b] of pts) { cx += a; cy += b; }
+      cx /= pts.length; cy /= pts.length;
+      let px0 = cx, py0 = cy, ang = 0;
+      if (comLotes) {
+        let m = null;
+        for (let k = 1; k < pts.length; k++) {
+          const [ax, ay] = pts[k - 1], [bx, by] = pts[k];
+          const L = Math.hypot(bx - ax, by - ay);
+          if (!m || L > m.L) m = { L, ax, ay, bx, by };
+        }
+        if (m && m.L > 8) {
+          const mx = (m.ax + m.bx) / 2, my = (m.ay + m.by) / 2;
+          let nx = -(m.by - m.ay) / m.L, ny = (m.bx - m.ax) / m.L;
+          if (nx * (cx - mx) + ny * (cy - my) > 0) { nx = -nx; ny = -ny; }
+          const d = px * 0.8 + 3;
+          px0 = mx + nx * d; py0 = my + ny * d;
+          ang = Math.atan2(m.by - m.ay, m.bx - m.ax);
+          if (ang > Math.PI / 2) ang -= Math.PI; else if (ang < -Math.PI / 2) ang += Math.PI;
+        }
+      }
+      const texto = nm;
+      const w = g.measureText(texto).width + px * 0.9, h = px * 1.45;
+      if (px0 < -w || px0 > T + w || py0 < -w || py0 > T + w) continue;
+      g.save();
+      g.translate(px0, py0); g.rotate(ang);
+      g.beginPath();
+      if (g.roundRect) g.roundRect(-w / 2, -h / 2, w, h, h * 0.35); else g.rect(-w / 2, -h / 2, w, h);
+      g.fillStyle = '#000000'; g.fill();
+      g.lineWidth = 1; g.strokeStyle = 'rgba(255,255,0,.55)'; g.stroke();
+      g.fillStyle = '#FFFF00'; g.fillText(texto, 0, h * 0.04);
+      g.restore();
+    }
+    return tela;
   }
 }
