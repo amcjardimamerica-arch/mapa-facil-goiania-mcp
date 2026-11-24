@@ -392,6 +392,14 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
       lv.opcoes.bocas = false; lv.opcoes.postes = false; bussola.identificar.fechar(); lv.redesenhar();
       // Grupos de finalidade
       infra.grupos = [...document.querySelectorAll('.lv-grupo-fin > label strong')].map((x) => x.textContent);
+      // Escolas e cursos: públicas, particulares por nível e aulas diversas, como marcadores.
+      lv.opcoes.escolas = true; lv.redesenhar();
+      infra.escolas = lv.escolas.contagem();
+      infra.marcEscolas = lv.escolas.fonte.entities.values.length;
+      infra.niveis = [...new Set(lv.escolas.itens.flatMap((i) => i.niveis))].sort();
+      lv.opcoes.escolas = false; lv.redesenhar();
+      infra.textosRemovidos = !/para comparar com o limite|ícone com o número|Bola do topo|Conferência de lotes|Fontes: Mapa Fácil|Camadas → Zonas Eleitorais/.test(document.querySelector('#painel-levantamento').textContent);
+      infra.areasSeparadas = !!document.querySelector('#lv-imoveis') && !!document.querySelector('#lv-verdes');
       return { ...antes, tratou, titulo, semResid, soJA, achou, ficha, ct, infra, unid, hash: location.hash.includes('lv=1') };
     }""")
     assert r["lotes"] > 8000 and r["limites"] == 2 and r["camada"] and r["bordas"] >= 2, r
@@ -413,11 +421,14 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
     assert r["infra"]["bocas"] == 830 and r["infra"]["postes"] > 4600, r["infra"]
     assert r["infra"]["marcadores"] == 0 and r["infra"]["pedido"] == "true" and r["infra"]["data"] and r["infra"]["retirado"] == "false", r["infra"]
     assert r["infra"]["historico"], r["infra"]
+    assert r["infra"]["escolas"]["publica"] >= 10 and r["infra"]["escolas"]["particular"] >= 10 and r["infra"]["escolas"]["aulas"] > 100, r["infra"]["escolas"]
+    assert r["infra"]["marcEscolas"] > 100 and r["infra"]["niveis"] == ["aulas", "fundamental", "infantil", "medio", "superior"], r["infra"]
+    assert r["infra"]["textosRemovidos"] and r["infra"]["areasSeparadas"], r["infra"]
     assert r["infra"]["partes"] == ["haste", "topo", "trafo", "braco", "lampada"] and r["infra"]["lampadaMudou"], r["infra"]
-    assert r["infra"]["escalas"] == [1, 1, 3.5, 6], r["infra"]["escalas"]
+    assert r["infra"]["escalas"] == [1, 1, 4.25, 6], r["infra"]["escalas"]
     assert r["infra"]["corPedido"] == "#ff00ff", r["infra"]
     assert r["infra"]["altura"] == 13.5 and r["infra"]["cores"] == {"quadrado": "#9e9e9e", "madeira": "#8d6e63", "trafo": "#ff0000"}, r["infra"]
-    assert r["infra"]["grupos"] == ["Residencial", "Comercial", "Misto", "Lote vago", "Público", "Religioso", "Não identificado"], r["infra"]["grupos"]
+    assert r["infra"]["grupos"] == ["Residencial", "Comercial", "Misto", "Público", "Religioso", "Lote vago", "Não identificado"], r["infra"]["grupos"]
     assert "Pedir manutenção (LT-" in r["ficha"], r["ficha"][:200]
     assert r["hash"], r
 

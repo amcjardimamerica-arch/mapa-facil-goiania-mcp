@@ -157,11 +157,16 @@ e retoma de onde parou.
 
 ## Botões e navegação (1.10)
 
-- Sem painel lateral de ícones: **Medir** e **Marcar** ficam à esquerda da busca; **Camadas** e **Bairros**, à direita;
-  **Fundo** é o ícone dentro da caixa de busca; **Sobre** fica no rodapé, à direita; **Sair** fica no canto superior direito.
+- Sem painel lateral de ícones: **Camadas**, **Bairros**, **Medir** e **Marcar** ficam em linha no canto superior esquerdo,
+  sobre a tela de dados; **Fundo** é o ícone dentro da caixa de busca; **Sobre** fica no rodapé, à direita; **Sair** fica no
+  canto superior direito.
   Todos abrem a mesma tela de dados à esquerda.
 - O pássaro da busca bate as asas só ao clicar: o mesmo movimento e a mesma velocidade da tela de abertura.
-- Esferas das luminárias: tamanho mínimo até 1 km de altura da câmera; crescem até 6× (+500%) em 5 km.
+- Esferas das luminárias: tamanho mínimo até 1 km de altura da câmera; crescem até 6× (+500%) em 4 km.
+- Painel Bairros: imóveis públicos separados de praças e áreas verdes (com canteiros centrais e áreas remanescentes);
+  **Escolas e cursos** (`docs/js/escolas.js`) em marcadores: públicas (áreas de Educação) e particulares (CNAE da
+  Receita) por nível — infantil, fundamental, médio e superior — e "Aulas diversas" (idiomas, lutas e esportes, dança,
+  música, artes, informática, preparatórios e demais cursos).
 
 ## Acesso com usuário e senha
 

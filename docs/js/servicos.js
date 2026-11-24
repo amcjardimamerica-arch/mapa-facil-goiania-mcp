@@ -44,11 +44,11 @@ function categoria(nomes) {
 
 const iconeCache = new Map();
 /** Marcador no estilo dos pins do Earth: gota colorida com o símbolo branco. */
-export function iconeServico(simbolo, cor) {
-  const chave = `${simbolo}|${cor}`;
+export function iconeServico(simbolo, cor, borda = '#ffffff') {
+  const chave = `${simbolo}|${cor}|${borda}`;
   if (!iconeCache.has(chave)) {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="52" viewBox="0 0 40 52">` +
-      `<path d="M20 2C10.6 2 3 9.6 3 19c0 12.5 17 31 17 31s17-18.5 17-31C37 9.6 29.4 2 20 2z" fill="${cor}" stroke="#ffffff" stroke-width="2.5"/>` +
+      `<path d="M20 2C10.6 2 3 9.6 3 19c0 12.5 17 31 17 31s17-18.5 17-31C37 9.6 29.4 2 20 2z" fill="${cor}" stroke="${borda}" stroke-width="2.5"/>` +
       `<g transform="translate(9 8) scale(.92)" fill="#ffffff"><path d="${SIMBOLOS[simbolo]}"/></g></svg>`;
     iconeCache.set(chave, `data:image/svg+xml,${encodeURIComponent(svg)}`);
   }
