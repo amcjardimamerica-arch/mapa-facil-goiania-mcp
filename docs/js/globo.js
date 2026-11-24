@@ -337,6 +337,31 @@ export class Globo {
     }));
   }
 
+  /**
+   * Chegada ao abrir: começa olhando o mapa de cima, plano, bem alto sobre Goiânia, e desce dando uma volta
+   * completa em torno da cidade até a vista inicial (em vez de vir do espaço como o Google Earth).
+   */
+  chegada(duracao = 5.5) {
+    const v = CFG.visaoInicial;
+    const alvo = Cesium.Cartesian3.fromDegrees(this.centro[0], this.centro[1], 760);
+    const ini = { dist: 90000, pitch: -89.9, rumo: v.rumo + 360 }, fim = { dist: v.distancia, pitch: v.inclinacao, rumo: v.rumo };
+    const suave = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    return new Promise((ok) => {
+      const t0 = performance.now();
+      const passo = (agora) => {
+        const t = Math.min(1, (agora - t0) / (duracao * 1000)), e = suave(t);
+        const dist = Math.exp(Math.log(ini.dist) + (Math.log(fim.dist) - Math.log(ini.dist)) * e);
+        const pitch = ini.pitch + (fim.pitch - ini.pitch) * Math.min(1, e * 1.15);
+        const rumo = ini.rumo + (fim.rumo - ini.rumo) * e;
+        this.camera.lookAt(alvo, new Cesium.HeadingPitchRange(rad(rumo), rad(pitch), dist));
+        this.redesenhar();
+        if (t < 1) requestAnimationFrame(passo);
+        else { this.camera.lookAtTransform(Cesium.Matrix4.IDENTITY); ok(); }
+      };
+      requestAnimationFrame(passo);
+    });
+  }
+
   /** Voa até um ponto ou extensão, mantendo o rumo atual. */
   voarPara({ lon, lat, extensao, distancia, inclinacao = -50, duracao = 1.8 }) {
     let alvo, alcance = distancia;

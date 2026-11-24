@@ -1,0 +1,14 @@
+{
+  "nota": "Associações e os acessos (login) de cada uma. Quem tem 've_todas' vê o painel Associação de todas; os demais, só o da própria associação. Para cadastrar outra: acrescente aqui com os bairros, os arquivos de dados e os logins.",
+  "associacoes": [
+    {
+      "id": "amc-jardim-america",
+      "nome": "A.M.C. Jardim América",
+      "bairros": ["Jardim América", "Nova Suíça"],
+      "dados": "levantamento.json",
+      "postes": "postes.json",
+      "ve_todas": true,
+      "logins": ["admin", "amc.jardimamerica", "visitante"]
+    }
+  ]
+}

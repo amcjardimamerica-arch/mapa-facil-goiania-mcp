@@ -26,6 +26,14 @@ export const mostraNaAltura = (item, nivel) => ALTURA.camera <= LIMITE_ALTURA[it
  * dos bairros marcados (Jardim América e/ou Nova Suíça). `aneis` são anéis em Web Mercator; null = cidade inteira.
  */
 export const FILTRO_BAIRROS = { aneis: null, ext: null };
+/**
+ * Opções da Base Cadastral (painel Camadas): controlam o desenho cadastral na cidade inteira — nomes de rua,
+ * quadras, lotes, divisas e nomes de bairro, áreas públicas (verde #00FF00, contorno branco) e atividades econômicas.
+ */
+export const BASE = Object.assign({ ligado: true, ruas: true, quadras: true, lotes: true, divisas: true, nomesBairros: true, areas: false, atividades: false },
+  (() => { try { return JSON.parse(localStorage.getItem('bussola:base') || '{}'); } catch { return {}; } })());
+export const gravarBase = () => { try { localStorage.setItem('bussola:base', JSON.stringify(BASE)); } catch { /* nada */ } };
+const baseVe = (k) => BASE.ligado && BASE[k];
 function dentroAneis(aneis, x, y) {
   let d = false;
   for (const a of aneis) {
@@ -306,22 +314,25 @@ export class ProvedorVetorial extends ProvedorCanvas {
       maxAllowableOffset: String(Math.max(0.3, q.mpp * 0.7)) };
     const sobre = this.modo === 'sobre';
     const noFiltro = blocoNoFiltro(ret);
-    const ver = { quadras: noFiltro && mostraNaAltura('quadras', nivel), lotes: noFiltro && mostraNaAltura('lotes', nivel),
-      numeroQuadra: mostraNaAltura('numeroQuadra', nivel), numeroLote: mostraNaAltura('numeroLote', nivel) };
+    const ver = { quadras: baseVe('quadras') && noFiltro && mostraNaAltura('quadras', nivel), lotes: baseVe('lotes') && noFiltro && mostraNaAltura('lotes', nivel),
+      numeroQuadra: mostraNaAltura('numeroQuadra', nivel), numeroLote: baseVe('lotes') && mostraNaAltura('numeroLote', nivel),
+      ruas: !BASE.ligado || BASE.ruas, nomesBairros: baseVe('nomesBairros'), areas: baseVe('areas') && nivel >= 13, atividades: baseVe('atividades') && nivel >= 15 };
     const filtroVias = nivel >= (sobre ? 15 : 14) ? '1=1' : nivel >= 12 ? 'in_hie >= 21' : 'in_hie >= 40';
-    const [limites, quadras, vias, lotes] = await Promise.all([
-      nivel >= NIVEIS.bairros ? consultar(2, { ...comum, outFields: 'OBJECTID', where: '1=1', maxAllowableOffset: String(Math.max(1, q.mpp)) }, cancelada).catch(() => []) : [],
+    const [limites, quadras, vias, lotes, areas, atividades] = await Promise.all([
+      baseVe('divisas') && nivel >= NIVEIS.bairros ? consultar(2, { ...comum, outFields: 'OBJECTID', where: '1=1', maxAllowableOffset: String(Math.max(1, q.mpp)) }, cancelada).catch(() => []) : [],
       ver.quadras ? consultar(1, { ...comum, outFields: ver.numeroQuadra ? 'nm_qdr' : 'OBJECTID', where: '1=1' }, cancelada).catch(() => []) : [],
       consultar(7, { ...comum, outFields: 'nm,in_hie', where: filtroVias }, cancelada).catch(() => []),
       // Divisas dos lotes dentro das quadras, carregadas por bloco do mapa conforme a aproximação.
       ver.lotes ? consultar(0, { ...comum, outFields: ver.numeroLote ? 'nm_lot' : 'OBJECTID', where: '1=1',
         maxAllowableOffset: String(Math.max(0.15, q.mpp * 0.5)) }, cancelada).catch(() => []) : [],
+      ver.areas ? consultar(4, { ...comum, outFields: 'nm_destin', where: '1=1' }, cancelada).catch(() => []) : [],
+      ver.atividades ? consultar(9, { ...comum, outFields: 'OBJECTID', where: '1=1' }, cancelada).catch(() => []) : [],
     ]);
     // Painel Bairros com bairros marcados: quadras e lotes só deles.
-    return { limites, quadras: quadras.filter(passaFiltro), vias, lotes: lotes.filter(passaFiltro), ver };
+    return { limites, quadras: quadras.filter(passaFiltro), vias, lotes: lotes.filter(passaFiltro), areas: areas.filter(passaFiltro), atividades, ver };
   }
 
-  _desenhar(ret, nivel, relevo, { limites = [], quadras, vias, lotes = [], ver = {} }) {
+  _desenhar(ret, nivel, relevo, { limites = [], quadras, vias, lotes = [], areas = [], atividades = [], ver = {} }) {
     const T = this._T, e = this.estilo, q = new Quadro(ret, T);
     const tela = this._tela(), g = tela.getContext('2d');
     const mapa = this.modo === 'mapa';
@@ -345,6 +356,14 @@ export class ProvedorVetorial extends ProvedorCanvas {
       g.restore();
     }
 
+    // Áreas públicas (Base Cadastral): verde #00FF00 com contorno branco.
+    if (areas.length) {
+      g.save(); g.beginPath();
+      for (const f of areas) if (f.geometry?.rings) q.caminho(g, f.geometry.rings);
+      g.globalAlpha = 0.55; g.fillStyle = '#00FF00'; g.fill('evenodd');
+      g.globalAlpha = 1; g.lineJoin = 'round'; g.strokeStyle = '#FFFFFF'; g.lineWidth = nivel >= 16 ? 2 : 1.3; g.stroke();
+      g.restore();
+    }
     // Vias, das menores para as maiores: contorno de todas e depois o miolo.
     const porClasse = Object.fromEntries(ORDEM.map((c) => [c, []]));
     for (const f of vias) if (f.geometry?.paths) porClasse[classeVia(f.attributes.in_hie)].push(f);
@@ -389,8 +408,19 @@ export class ProvedorVetorial extends ProvedorCanvas {
     }
 
     const r = new Rotulos(g, T);
+    // Atividades econômicas (Base Cadastral): ponto por estabelecimento.
+    if (atividades.length) {
+      g.save();
+      for (const f of atividades) {
+        const x = f.geometry?.x, y = f.geometry?.y;
+        if (x == null) continue;
+        g.beginPath(); g.arc(q.x(x), q.y(y), nivel >= 17 ? 3.5 : 2.5, 0, Math.PI * 2);
+        g.fillStyle = '#e91e63'; g.fill(); g.lineWidth = 1; g.strokeStyle = '#ffffff'; g.stroke();
+      }
+      g.restore();
+    }
     // Nomes de bairro (vista de bairros)
-    if (nivel >= 12 && nivel <= 15) {
+    if (ver.nomesBairros && nivel >= 12 && nivel <= 15) {
       const { fonte, lista } = this._bairrosDoNivel(nivel);
       for (const b of lista) {
         if (b.c.x1 < ret.west || b.c.x0 > ret.east || b.c.y1 < ret.south || b.c.y0 > ret.north) continue;
@@ -398,7 +428,7 @@ export class ProvedorVetorial extends ProvedorCanvas {
       }
     }
     // Nomes de rua: arteriais desde o nível 14, todas a partir do 16.
-    const nomeadas = [...porClasse.expressa, ...porClasse.arterial, ...(nivel >= 15 ? porClasse.coletora : []), ...(nivel >= 16 ? porClasse.local : [])];
+    const nomeadas = ver.ruas === false ? [] : [...porClasse.expressa, ...porClasse.arterial, ...(nivel >= 15 ? porClasse.coletora : []), ...(nivel >= 16 ? porClasse.local : [])];
     for (const f of nomeadas) {
       const t = nomeVia(f.attributes.nm);
       if (!t || nivel < 14) continue;

@@ -40,7 +40,8 @@ const comAlfa = (hex, a) => {
 };
 
 export class Levantamento {
-  constructor({ globo, identificar, raiz }) {
+  constructor({ globo, identificar, raiz, sessao }) {
+    this.sessao = sessao || { login: '' };
     Object.assign(this, { globo, identificar, raiz });
     this.dados = null;
     this.camadaLotes = null;
@@ -59,12 +60,40 @@ export class Levantamento {
 
   /** Mostra as camadas do levantamento (lotes, limites…) — ao abrir o painel Bairros ou por link. */
   async mostrarBairros() {
+    const ass = await this.associacaoDoAcesso();
+    if (!ass) {
+      // Acesso sem associação cadastrada: nada do levantamento aparece no painel nem no mapa.
+      this.mostrar = false;
+      this.raiz.textContent = '';
+      this.raiz.append(el('p', { class: 'nota' }, 'Nenhuma associação cadastrada para este acesso. Peça à A.M.C. Jardim América o cadastro da sua associação.'));
+      return;
+    }
+    if (!this._tituloFeito) {
+      this._tituloFeito = true;
+      const outras = ass.ve_todas ? this.associacoes.filter((a) => a !== ass) : [];
+      this.raiz.prepend(el('p', { class: 'nota' }, el('strong', {}, ass.nome), ` · ${ass.bairros.join(' e ')}`,
+        outras.length ? ` · acesso às demais: ${outras.map((a) => a.nome).join(', ')}` : ''));
+    }
     this.mostrar = true;
     await this.carregar();
     this.redesenhar();
   }
 
   // ------------------------------------------------------------------ dados
+  /**
+   * Associação do acesso (data/associacoes.json): cada login vê o painel da sua associação; a que tem
+   * 've_todas' (A.M.C. Jardim América) vê todas. Sem associação, o painel fica fechado para esse acesso.
+   */
+  async associacaoDoAcesso() {
+    if (this._ass !== undefined) return this._ass;
+    try {
+      const d = await pedirJSON(`${CFG.dados}associacoes.json`);
+      this.associacoes = d.associacoes || [];
+      this._ass = this.associacoes.find((a) => (a.logins || []).includes(this.sessao.login)) || null;
+    } catch { this.associacoes = []; this._ass = null; }
+    return this._ass;
+  }
+
   async carregar() {
     if (this.dados) return this.dados;
     if (this._carregando) return this._carregando;

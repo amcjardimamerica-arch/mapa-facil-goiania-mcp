@@ -184,6 +184,20 @@ e retoma de onde parou.
   está no repositório); a ficha do lote pede a senha para mostrá-los.
 - A página de validação confere o banco local (cada tema, consultas e imagens), não o servidor.
 
+## Camadas, eleições e associações (1.16)
+
+- **Camadas** (cidade inteira) e **Associação** (área de cada associação) têm papéis separados.
+- **Base Cadastral** liga e desliga o desenho cadastral da cidade e tem opções: nomes das ruas, quadras, lotes,
+  divisas e nomes dos bairros, áreas públicas (verde #00FF00, contorno branco) e Cadastro de Atividade Econômica.
+- Clique: acima de 5 km seleciona o bairro; de 5 a 2,5 km, a quadra; abaixo de 2,5 km, o lote.
+- **Zonas Eleitorais** e **Conselho Tutelar** são mapas próprios (`docs/js/eleicoes.js`), um de cada vez, com divisa
+  preta-vermelha-preta e cor clara por área; o clique seleciona a zona/região inteira ou o colégio. As regiões do
+  Conselho Tutelar (`docs/data/conselho_regioes.geojson`, `scripts/regioes_conselho.py`) são aproximadas pelos
+  locais de votação do edital de 2023.
+- **Associação**: `docs/data/associacoes.json` liga cada login à sua associação; a A.M.C. Jardim América (`ve_todas`)
+  vê todas. Como o site é estático, a separação é de tela: os arquivos de dados continuam acessíveis pelo endereço.
+- Abertura: a câmera começa de cima, com o mapa plano, e desce dando uma volta em torno de Goiânia.
+
 ## Acesso com usuário e senha
 
 A página inicial (`docs/index.html`) é o portal de acesso. O mapa fica em `docs/sistema.html` e só abre

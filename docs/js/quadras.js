@@ -5,7 +5,7 @@
 // números de lote (em geral o encontro dos fundos dos lotes). Quadra que é praça leva o nome da praça
 // (logradouro "Pça" que a contorna); "ÁREA" só fica onde o Mapa Fácil não traz nenhuma referência de praça.
 import { CFG } from './config.js';
-import { ALTURA, LIMITE_ALTURA, passaFiltro } from './mapavetorial.js';
+import { ALTURA, LIMITE_ALTURA, passaFiltro, BASE } from './mapavetorial.js';
 
 const Cesium = window.Cesium;
 const R = 6378137;
@@ -71,7 +71,7 @@ export class Quadras {
   async atualizar() {
     const vez = ++this._vez;
     const h = ALTURA.camera;
-    if (!(h <= LIMITE_ALTURA.numeroQuadra)) { this.limpar(); return; }
+    if (!(h <= LIMITE_ALTURA.numeroQuadra) || !BASE.ligado || !BASE.quadras) { this.limpar(); return; }
     const vista = this.globo.camera.computeViewRectangle(this.globo.cena.globe.ellipsoid);
     if (!vista) { this.limpar(); return; }
     const merc = (lon, lat) => [lon * (Math.PI / 180) * R, Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) * R];

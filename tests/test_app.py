@@ -57,6 +57,10 @@ GPS_JARDIM_AMERICA = {"latitude": -16.70766, "longitude": -49.28568}
 def _contexto(navegador, logado=True, **extra):
     ctx = navegador.new_context(viewport={"width": 1280, "height": 800}, **extra)
     ctx.route("**/acesso/usuarios.json", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(USUARIOS_TESTE)))
+    # O acesso de teste pertence à associação do Jardim América (o arquivo real lista só os logins reais).
+    ass = json.loads((DOCS / "data" / "associacoes.json").read_text(encoding="utf-8"))
+    ass["associacoes"][0]["logins"] = ass["associacoes"][0]["logins"] + ["teste"]
+    ctx.route("**/data/associacoes.json", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(ass)))
     if logado:
         ctx.add_init_script(f"localStorage.setItem('bussola:sessao', JSON.stringify({json.dumps(SESSAO_TESTE)}))")
     return ctx
@@ -148,7 +152,7 @@ def test_camadas_organizadas_em_projetos(mapa):
       const C = bussola.camadas, g = (k) => C.grupo(k);
       const fontes = (k) => g(k).fontes.map((f) => [f.tema.chave, [...f.folhas].sort((a, b) => a - b), f.sub]);
       return {
-        ordem: C.grupos.map((x) => x.titulo).slice(0, 7),
+        ordem: C.grupos.map((x) => x.titulo).slice(0, 8),
         titulos: C.grupos.map((x) => x.titulo),
         eleitoral: fontes('eleitoral'), limites: fontes('limites'), edificacoes: fontes('edificacoes'),
         meio: fontes('meio'), uso: fontes('uso'), zonas: fontes('zonas'),
@@ -158,7 +162,7 @@ def test_camadas_organizadas_em_projetos(mapa):
         edificiosDesligados: !bussola.edificios.ativo && !bussola.edificios.primitiva,
       };
     }""")
-    assert r["ordem"] == ["Base Cadastral", "Zonas Eleitorais", "Energia", "Saneamento", "Sistema Viário", "Edificações", "Meio Ambiente"], r["ordem"]
+    assert r["ordem"] == ["Base Cadastral", "Zonas Eleitorais", "Conselho Tutelar", "Energia", "Saneamento", "Sistema Viário", "Edificações", "Meio Ambiente"], r["ordem"]
     assert "Zonas Municipais" in r["titulos"] and "Pontos Notáveis" not in r["titulos"] and "PUAMA" not in r["titulos"]
     assert "Simplifica Goiânia – Uso do Solo" not in r["titulos"] and "Documentação de Bairros" not in r["titulos"]
     assert r["eleitoral"] == [["Mapa_Limites", [10], ""]] and all(10 not in f[1] for f in r["limites"]), r["limites"]
@@ -633,3 +637,23 @@ def test_marcadores_de_quadra_e_pracas(mapa):
       const b = m.length ? m.get(0) : null;
       return { n: m.length, pracas: nomes.filter((x) => /^Pça\\./.test(x)).length, sobre: b ? b.disableDepthTestDistance : 0 }; }""")
     assert r["n"] > 50 and r["pracas"] >= 1 and r["sobre"] > 1e12, r
+
+
+
+def test_base_cadastral_eleicoes_e_associacao(mapa):
+    r = mapa.evaluate("""async () => {
+      const m = await import('./js/mapavetorial.js');
+      const cam = bussola.camadas, base = cam.grupo('base');
+      const antes = m.BASE.ligado;
+      cam.ligar('base', false); const desligada = m.BASE.ligado === false; cam.ligar('base', true);
+      cam.ligar('eleitoral', true); await new Promise((ok) => setTimeout(ok, 2500));
+      const zonas = bussola.camadas.grupo('eleitoral').ligado;
+      cam.ligar('conselho', true); await new Promise((ok) => setTimeout(ok, 2500));
+      const exclusivo = !cam.grupo('eleitoral').ligado && cam.grupo('conselho').ligado;
+      cam.ligar('conselho', false);
+      const titulo = document.querySelector('[data-secao=levantamento]').dataset.titulo;
+      const camadasTitulo = document.querySelector('[data-secao=camadas]').dataset.titulo;
+      return { antes, desligada, base: !base.liga.disabled, zonas, exclusivo, titulo, camadasTitulo };
+    }""")
+    assert r["desligada"] and r["base"] and r["zonas"] and r["exclusivo"], r
+    assert r["titulo"] == "Associação" and r["camadasTitulo"] == "Camadas", r

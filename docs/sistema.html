@@ -46,8 +46,8 @@
   </div>
 </header>
 <nav id="ferramentas" class="topo-grupo" aria-label="Ferramentas">
-    <button type="button" class="botao-topo" data-painel="camadas" title="Camadas do Mapa Fácil" aria-label="Camadas do Mapa Fácil"><svg viewBox="0 0 24 24"><path d="M12 3 2.5 8.5 12 14l9.5-5.5z"/><path d="M4.5 12.5 2.5 13.7 12 19.2l9.5-5.5-2-1.2L12 16.8z"/></svg></button>
-    <button type="button" class="botao-topo" data-painel="levantamento" title="Jardim América e Nova Suíça: levantamento da Associação" aria-label="Levantamento do Jardim América e do Nova Suíça"><svg viewBox="0 0 24 24"><path d="M3 5.5 9 3l6 2.5L21 3v15.5L15 21l-6-2.5L3 21zm6-.3v11.4l6 2.5V7.7z"/></svg></button>
+    <button type="button" class="botao-topo" data-painel="camadas" title="Camadas" aria-label="Camadas"><svg viewBox="0 0 24 24"><path d="M12 3 2.5 8.5 12 14l9.5-5.5z"/><path d="M4.5 12.5 2.5 13.7 12 19.2l9.5-5.5-2-1.2L12 16.8z"/></svg></button>
+    <button type="button" class="botao-topo" data-painel="levantamento" title="Associação" aria-label="Associação"><svg viewBox="0 0 24 24"><path d="M3 5.5 9 3l6 2.5L21 3v15.5L15 21l-6-2.5L3 21zm6-.3v11.4l6 2.5V7.7z"/></svg></button>
     <button type="button" class="botao-topo" data-painel="medir" title="Medir distância e área" aria-label="Medir distância e área"><svg viewBox="0 0 24 24"><path d="m2.5 16.5 14-14 5 5-14 14zM6 16l1.5 1.5M8.5 13.5 10.5 15.5M11 11l1.5 1.5M13.5 8.5l2 2M16 6l1.5 1.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></button>
     <button type="button" class="botao-topo" data-painel="marcadores" title="Marcadores e arquivos KML" aria-label="Marcadores e arquivos KML"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.6A2.6 2.6 0 1 1 12 6.4a2.6 2.6 0 0 1 0 5.2z"/></svg></button>
 </nav>
@@ -57,7 +57,7 @@
 <aside id="painel" hidden aria-live="polite" aria-label="Painel de ferramentas">
   <div class="painel-topo"><h2 id="painel-titulo"></h2><button id="painel-fechar" class="botao-icone" aria-label="Fechar painel">×</button></div>
 
-  <section data-secao="camadas" data-titulo="Camadas do Mapa Fácil" hidden>
+  <section data-secao="camadas" data-titulo="Camadas" hidden>
     <div id="lista-camadas"></div>
   </section>
 
@@ -83,7 +83,7 @@
   <section data-secao="medir" data-titulo="Medir" hidden><div id="painel-medir"></div></section>
   <section data-secao="marcadores" data-titulo="Marcadores e arquivos" hidden><div id="painel-marcadores"></div></section>
 
-  <section data-secao="levantamento" data-titulo="Jardim América e Nova Suíça" hidden><div id="painel-levantamento" class="painel-levantamento"></div></section>
+  <section data-secao="levantamento" data-titulo="Associação" hidden><div id="painel-levantamento" class="painel-levantamento"></div></section>
 
 
 

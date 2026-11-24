@@ -17,8 +17,9 @@ import { Levantamento } from './levantamento.js';
 import { Poligonos } from './poligonos.js';
 import { encerrarSessao, sessaoAindaValida } from './acesso.js';
 import { iniciarBanco } from './banco.js';
-import { ALTURA, faixaAltura } from './mapavetorial.js';
+import { ALTURA, faixaAltura, BASE, gravarBase } from './mapavetorial.js';
 import { Quadras } from './quadras.js';
+import { Eleicoes } from './eleicoes.js';
 
 const Cesium = window.Cesium;
 const app = (window.bussola = { versao: VERSAO, pronto: false, erros: [] });
@@ -80,12 +81,24 @@ async function iniciar() {
   const globo = new Globo(territorio, catalogo);
   // Conteúdos próprios de alguns projetos do painel Camadas (os módulos são criados logo abaixo).
   const especiais = {
-    eleitoral: (caixa) => levantamento.montarEleitoralEm(caixa).catch((e) => { caixa.textContent = `Locais de votação indisponíveis: ${e.message}`; }),
-    eleitoralLigar: (ligado) => levantamento.definirEleicao(ligado ? (levantamento.opcoes.eleicao || 'geral') : '').catch(() => {}),
+    // Base Cadastral: opções do desenho cadastral da cidade inteira.
+    base: (caixa) => {
+      const op = (k, titulo) => el('label', { class: 'linha-chave' }, el('span', {}, el('strong', {}, titulo)),
+        el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', checked: !!BASE[k], onchange: (e) => { BASE[k] = e.target.checked; gravarBase(); app.refazerMapas?.(); } }), el('span', {})));
+      caixa.append(op('ruas', 'Nomes das ruas'), op('quadras', 'Quadras'), op('lotes', 'Lotes'), op('divisas', 'Divisas dos bairros'),
+        op('nomesBairros', 'Nomes dos bairros'), op('areas', 'Áreas públicas (verde)'), op('atividades', 'Cadastro de Atividade Econômica'));
+    },
+    baseLigar: (ligado) => { BASE.ligado = ligado; gravarBase(); app.refazerMapas?.(); },
+    // Mapas de eleição: Zonas Eleitorais (TSE) e Conselho Tutelar (regiões e locais da eleição de 2023).
+    eleitoral: (caixa) => caixa.append(el('p', { class: 'nota' }, 'Zonas eleitorais do TSE e os colégios de votação. O clique seleciona a zona inteira ou o colégio.')),
+    eleitoralLigar: (ligado) => { eleicoes.definir(ligado ? 'zonas' : '').catch(() => {}); levantamento.definirEleicao(ligado ? 'geral' : '').catch(() => {}); },
+    conselho: (caixa) => caixa.append(el('p', { class: 'nota' }, 'Regiões da eleição do Conselho Tutelar (juntam zonas inteiras ou partes delas), com os colégios de votação e as transferências de seções.')),
+    conselhoLigar: (ligado) => { eleicoes.definir(ligado ? 'conselho' : '').catch(() => {}); levantamento.definirEleicao(ligado ? 'ct' : '').catch(() => {}); },
     edificacoes: (caixa) => edificios.montarEm(caixa),
   };
   const camadas = new Camadas(globo, catalogo, $('#lista-camadas'), { especiais });
   const identificar = new Identificar(globo, camadas, territorio);
+  const eleicoes = new Eleicoes({ globo, identificar });
   const servicos = new Servicos({ globo, identificar });
   camadas.servicos = servicos;
   const edificios = new Edificios(globo, identificar);
@@ -98,7 +111,7 @@ async function iniciar() {
   identificar.acoes.editarPoligono = (dados) => poligonos.doLote(dados);
   const sessao = window.bussolaSessao || { login: 'anonimo', nome: '' };
   const lotes = new Lotes({ globo, bairros: bairros.bairros, raiz: $('#painel-lotes') });
-  const levantamento = new Levantamento({ globo, identificar, raiz: $('#painel-levantamento') });
+  const levantamento = new Levantamento({ globo, identificar, raiz: $('#painel-levantamento'), sessao });
   lotes.edificios = edificios;
   // O número do lote sai uma vez só: se o mapa de baixo (fundo Mapa ou "Ruas e quadras") já o escreve, o levantamento não repete.
   levantamento.numerosNoMapa = () => globo.chaveBase === 'mapa' || !!globo.camadaRealce?.show;
@@ -221,7 +234,7 @@ async function iniciar() {
   const novasQuadras = () => quadras.atualizar();
   novasQuadras();
   // Refaz os mapas desenhados (fundo Mapa, Ruas e quadras, números das quadras e lotes por bairro).
-  const refazerVetoriais = () => {
+  const refazerVetoriais = app.refazerMapas = () => {
     novasQuadras();
     if (globo.chaveBase === 'mapa') globo.definirBase('mapa').catch(() => {});
     if (globo.camadaRealce) { globo.definirRealce(false); globo.definirRealce(realce.checked); marcarBase(); }
@@ -309,6 +322,7 @@ async function iniciar() {
     edificios.limparSelecao();
     if (pego?.id?.alca) return; // alças de edição: tratadas no arrastar
     if (poligonos.aoClicar(pego) || edificios.aoClicar(pego) || servicos.aoClicar(pego) || marcadores.aoClicar(pego) || levantamento.aoClicar(pego, ponto)) return;
+    if (eleicoes.aoClicar(ponto)) return; // mapa de eleição ligado: zona ou região inteira, nunca quadra ou lote
     if (ponto) identificar.emPonto(ponto);
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
   maos.setInputAction(() => {
@@ -417,7 +431,7 @@ async function iniciar() {
   $('#abertura').classList.add('sai');
   setTimeout(() => $('#abertura').remove(), 900);
   if (hash.v && globo.aplicarVisao(hash.v)) globo.liberarLimites();
-  else { await globo.irParaInicio(3.4); globo.liberarLimites(); }
+  else { await globo.chegada(); globo.liberarLimites(); }
   app.pronto = true;
   aoParar();
 

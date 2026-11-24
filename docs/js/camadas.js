@@ -11,8 +11,10 @@ import { temServico, ProvedorTema, imagemLocal } from './banco.js';
 
 /** Organização dos projetos. `ids` lista camadas (folhas ou grupos) do serviço; sem `ids`, entra o serviço todo. */
 export const ORGANIZACAO = [
-  { chave: 'base', titulo: 'Base Cadastral', fontes: [{ tema: 'Feature_Base' }] },
-  { chave: 'eleitoral', titulo: 'Zonas Eleitorais', especial: 'eleitoral', fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
+  { chave: 'base', titulo: 'Base Cadastral', especial: 'base', fontes: [{ tema: 'Feature_Base' }] },
+  // Mapas de eleição: desenho próprio (eleicoes.js), um de cada vez.
+  { chave: 'eleitoral', titulo: 'Zonas Eleitorais', especial: 'eleitoral', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
+  { chave: 'conselho', titulo: 'Conselho Tutelar', especial: 'conselho', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
   { chave: 'energia', titulo: 'Energia', fontes: [{ tema: 'Mapa_Energia' }] },
   { chave: 'saneamento', titulo: 'Saneamento', fontes: [{ tema: 'Mapa_Sanemanento' }] },
   { chave: 'viario', titulo: 'Sistema Viário', fontes: [{ tema: 'Mapa_RedeViaria' }] },
@@ -117,7 +119,7 @@ export class Camadas {
     const liga = el('input', { type: 'checkbox', class: 'tema-liga', 'aria-label': `Ligar ${g.titulo}`,
       onchange: (ev) => this.ligar(g.chave, ev.target.checked) });
     liga.checked = g.ligado;
-    liga.disabled = g.consulta;
+    liga.disabled = g.consulta && g.chave !== 'base'; // a Base Cadastral liga e desliga o desenho cadastral da cidade
     const conta = el('small', { class: 'tema-conta' });
     const corpo = el('div', { class: 'tema-corpo', hidden: true });
     const titulo = el('button', { class: 'tema-titulo', 'aria-expanded': 'false', onclick: () => {
@@ -142,8 +144,9 @@ export class Camadas {
       this.especiais[g.especial](caixa, g);
     }
     if (g.consulta) {
-      corpo.append(el('p', { class: 'nota' },
-        'Este serviço não tem desenho próprio: ele responde ao clique no mapa. Marque o que deve aparecer na ficha do local.'));
+      corpo.append(el('p', { class: 'nota' }, 'Ficha do local (clique no mapa): marque o que deve aparecer.'));
+    } else if (g.proprio) {
+      // desenho próprio: sem opacidade nem legenda do servidor
     } else {
       const faixa = el('input', { type: 'range', min: 10, max: 100, value: Math.round(g.opacidade * 100),
         'aria-label': 'Opacidade', oninput: (ev) => this.opacidade(g.chave, ev.target.value / 100) });
@@ -154,7 +157,7 @@ export class Camadas {
         el('button', { class: 'botao-texto', title: 'Voltar à seleção padrão do portal', onclick: () => this.restaurar(g.chave) }, 'Padrão')), legenda);
       if (g.marcadores) corpo.append(el('p', { class: 'nota' }, 'Os pontos aparecem como marcadores com ícone por tipo; clique em um marcador para ver os dados.'));
     }
-    for (const f of g.fontes) {
+    for (const f of (g.proprio ? [] : g.fontes)) {
       const filhosDe = (pai) => f.tema.camadas.filter((c) => c.pai === pai && f.nos.has(c.id));
       const montar = (pai) => {
         const itens = filhosDe(pai);
@@ -245,7 +248,11 @@ export class Camadas {
 
   ligar(chave, ligado) {
     const g = this.grupo(chave);
-    if (!g || g.consulta) return;
+    if (!g) return;
+    if (g.chave === 'base') { g.ligado = ligado; g.liga.checked = ligado; this._aoLigar(g, ligado); this.aoMudar(); return; }
+    if (g.consulta) return;
+    // Zonas Eleitorais e Conselho Tutelar: um mapa de eleição de cada vez.
+    if (ligado && g.proprio) for (const o of this.grupos) if (o !== g && o.proprio && o.ligado) { o.ligado = false; o.liga.checked = false; this._aoLigar(o, false); }
     g.ligado = ligado;
     if (ligado && g.fontes.every((f) => !f.sel.size)) {
       for (const f of g.fontes) { f.padrao.forEach((id) => f.sel.add(id)); if (!f.sel.size) f.folhas.forEach((id) => f.sel.add(id)); }
@@ -288,7 +295,7 @@ export class Camadas {
   _desenhadas(chave) {
     const ids = new Set();
     for (const g of this.grupos) {
-      if (!g.ligado || g.consulta) continue;
+      if (!g.ligado || g.consulta || g.proprio) continue;
       for (const f of g.fontes) {
         if (f.tema.chave !== chave) continue;
         for (const id of f.sel) if (!(g.marcadores && this.servicos?.ehMarcador(chave, id))) ids.add(id);

@@ -224,8 +224,11 @@ export class Identificar {
     if (quadra && !vazio(quadra.attributes.nm_qdr)) partes.push(`Quadra ${quadra.attributes.nm_qdr.trim()}`);
     this.titulo(partes.join(' · ') || nomeDoBairro || 'Local em Goiânia',
       partes.length ? [nomeDoBairro, 'Goiânia'].filter(Boolean).join(' · ') : (nomeDoBairro ? 'Bairro · Goiânia' : 'Goiânia'));
-    const alvo = lote || quadra;
-    if (alvo?.geometry) { this.destacar(alvo.geometry); this.alfinete(ponto.lon, ponto.lat); }
+    // O que se seleciona depende do que aparece no mapa: sem quadras (acima de 5 km), o bairro inteiro; com
+    // quadras (5 km a 2,5 km), a quadra; com os números de lote (2,5 km ou menos), o lote.
+    const h = this.globo.camera.positionCartographic.height;
+    const alvo = h > 5000 ? bairro : h > 2500 ? (quadra || bairro) : (lote || quadra || bairro);
+    if (alvo?.geometry) this.destacar(alvo.geometry);
 
     if (lote) {
       const corpo = this.secao('Lote', { aberto: true });
