@@ -294,7 +294,7 @@ export class Postes {
     // Pedir manutenção deixa rosa (#FF00FF) a esfera da luminária (mau funcionamento); retirar o pedido volta ao ciano.
     c.append(botaoManutencao({ codigo: p.codigo, tipo: 'Poste', titulo: `Poste ${p.plaqueta || p.codigo}`, bairro: p.bairro,
       local: p.local, lon: p.lon, lat: p.lat }, { aoMudar: () => this._aplicarCores(p, true) }));
-    if (ilum && Object.keys(ilum).length) id.secao('Cadastro de iluminação (Mapa Fácil)', { aberto: false }).append(id.tabela(Object.entries(ilum).map(([k, v]) => [k, String(v)])));
+    if (ilum && Object.keys(ilum).length) id.secao('Cadastro de iluminação', { aberto: false }).append(id.tabela(Object.entries(ilum).map(([k, v]) => [k, String(v)])));
     if (!this.ligado) aviso('Ligue "Postes" no painel Bairros para ver os postes em 3D.');
   }
 

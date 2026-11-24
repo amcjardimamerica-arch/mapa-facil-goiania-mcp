@@ -445,3 +445,4 @@ body:has(#ficha:not([hidden])) #gps-cartao { right: 432px; }
 .cofre-sobre .linha-botoes .campo { flex: 1; min-width: 160px; }
 .cadeados dt { color: var(--texto-2); }
 .cadeados dd { min-height: 1em; }
+.unidade-vertical { padding: 6px 0; border-top: 1px solid var(--linha); }

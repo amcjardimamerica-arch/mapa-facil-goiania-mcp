@@ -619,10 +619,25 @@ export class Levantamento {
   }
 
   /** Tabela com todas as colunas preenchidas de uma linha. */
-  _tudo(colunas, valores, pular = []) {
-    return this.identificar.tabela(colunas.map((c, k) => [c, valores[k]])
-      .filter(([c, v]) => v !== null && v !== undefined && v !== '' && !pular.includes(c))
+  _tudo(colunas, valores, pular = [], lote = null) {
+    const OCULTOS = ['Alvarás municipais', 'Local de votação mais próximo (2026)', 'Distância ao local (m)',
+      'Conselho Tutelar 2023 — situação do local', 'Conselho Tutelar — onde votou'];
+    const EDITAVEIS = ['Contatos do levantamento', 'Telefones do levantamento'];
+    const tabela = this.identificar.tabela(colunas.map((c, k) => [c, valores[k]])
+      .filter(([c, v]) => v !== null && v !== undefined && v !== '' && !pular.includes(c) && !OCULTOS.includes(c) && !(lote && EDITAVEIS.includes(c)))
       .map(([c, v]) => [c, typeof v === 'number' ? (Number.isInteger(v) ? fmtNum(v) : String(v).replace('.', ',')) : String(v)]));
+    if (!lote) return tabela;
+    // Contatos e telefones: caixa de texto editável por lote (guardada neste aparelho; o levantamento original fica intacto).
+    const chave = `bussola:lote-edicao:${lote.ci || `${lote.b}-${lote.q}-${lote.l}`}`;
+    const salvo = (() => { try { return JSON.parse(localStorage.getItem(chave) || '{}'); } catch { return {}; } })();
+    const caixas = EDITAVEIS.map((c) => {
+      const original = valores[colunas.indexOf(c)];
+      const area = el('textarea', { class: 'campo area', rows: 3, 'aria-label': c,
+        onchange: (e) => { salvo[c] = e.target.value; try { localStorage.setItem(chave, JSON.stringify(salvo)); } catch { /* sem armazenamento */ } } },
+      salvo[c] ?? (original == null ? '' : String(original)));
+      return el('label', { class: 'rotulo-faixa bloco' }, el('span', {}, c), area);
+    });
+    return el('div', {}, tabela, ...caixas);
   }
 
   abrirLote(l, voar = false) {
@@ -651,7 +666,7 @@ export class Levantamento {
       // Cadastro imobiliário e dados complementares do lote, abertos direto na ficha.
       const ci = String(l.v[d.colunas_lote.indexOf('Inscrição do lote (CI)')] || '').replace(/\D/g, '');
       if (ci.length >= 6) id.cadastroNaFicha(ci, ponto);
-      id.corpo.append(el('button', { class: 'botao', onclick: () => id.emPonto(ponto) }, 'Consultar este ponto no Mapa Fácil'));
+      id.corpo.append(el('button', { class: 'botao', onclick: () => id.emPonto(ponto) }, 'Consultar este ponto'));
     };
     desenhar(0);
     if (voar) this.globo.voarPara({ lon: c[0], lat: c[1], distancia: 350, inclinacao: -60 });
@@ -688,7 +703,7 @@ export class Levantamento {
   /** Base geral do lote (ou do condomínio, quando há unidades). */
   _corpoGeral(l, geral, cu) {
     const d = this.dados, id = this.identificar;
-    id.corpo.append(this._tudo(d.colunas_lote, l.v, ['Bairro', 'Quadra', 'Lote']));
+    id.corpo.append(this._tudo(d.colunas_lote, l.v, ['Bairro', 'Quadra', 'Lote'], { ci: String(l.v[d.colunas_lote.indexOf('Inscrição do lote (CI)')] || ''), b: l.b, q: l.q, l: l.l }));
     const empresas = this.empresasDoLote.get(l.i) || [];
     if (geral) {
       this._listarEmpresas('Empresas do condomínio, sem unidade identificada', this._empresasDaBase(l, geral[cu.indexOf('CNPJs ativos')]), false);
@@ -709,7 +724,10 @@ export class Levantamento {
     const m = this._manutencao(l.v[d.colunas_lote.indexOf('Código para manutenção')]);
     const ed = id.acoes.editarPoligono ? el('button', { class: 'botao', onclick: () => id.acoes.editarPoligono({ aneis: l.aneis, quadra: l.q, lote: l.l,
       bairro: d.bairros[l.b], ci: String(l.v[d.colunas_lote.indexOf('Inscrição do lote (CI)')] || ''), id: String(l.v[d.colunas_lote.indexOf('ID do lote (Mapa Fácil)')] || '') }) }, 'Editar como polígono') : null;
-    if (m || ed) id.corpo.insertBefore(el('div', { class: 'linha-botoes' }, m, ed), id.corpo.querySelector('dl.atributos'));
+    if (m || ed) {
+      const ref = [...id.corpo.children].find((c) => c.matches('dl.atributos') || c.querySelector(':scope > dl.atributos')) || null;
+      id.corpo.insertBefore(el('div', { class: 'linha-botoes' }, m, ed), ref);
+    }
   }
 
   /** Pedido de manutenção registrado no sistema: o botão fica marcado; clicar de novo retira. */

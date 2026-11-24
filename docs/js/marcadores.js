@@ -116,7 +116,7 @@ export class Marcadores {
     this.identificar.limparDestaque();
     this.identificar.abrir({ titulo: m.nome, subtitulo: 'Marcador', ponto: { lon: m.lon, lat: m.lat, alt: NaN } });
     this.identificar.corpo.append(el('button', { class: 'botao',
-      onclick: () => this.identificar.emPonto({ lon: m.lon, lat: m.lat, alt: NaN }) }, 'Consultar este ponto no Mapa Fácil'));
+      onclick: () => this.identificar.emPonto({ lon: m.lon, lat: m.lat, alt: NaN }) }, 'Consultar este ponto'));
     return true;
   }
 

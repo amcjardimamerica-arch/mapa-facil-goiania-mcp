@@ -55,7 +55,8 @@ GPS_JARDIM_AMERICA = {"latitude": -16.70766, "longitude": -49.28568}
 
 
 def _contexto(navegador, logado=True, **extra):
-    ctx = navegador.new_context(viewport={"width": 1280, "height": 800}, **extra)
+    # bypass_csp: o Playwright avalia expressões com eval, que a política de segurança da página (CSP) bloqueia.
+    ctx = navegador.new_context(viewport={"width": 1280, "height": 800}, bypass_csp=True, **extra)
     ctx.route("**/acesso/usuarios.json", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(USUARIOS_TESTE)))
     # O acesso de teste pertence à associação do Jardim América (o arquivo real lista só os logins reais).
     ass = json.loads((DOCS / "data" / "associacoes.json").read_text(encoding="utf-8"))
@@ -535,7 +536,7 @@ def test_login_errado_e_certo(navegador, servidor):
 
 
 def test_usuario_removido_perde_o_acesso(navegador, servidor):
-    ctx = navegador.new_context()
+    ctx = navegador.new_context(bypass_csp=True)
     ctx.route("**/acesso/usuarios.json", lambda r: r.fulfill(status=200, content_type="application/json", body='{"usuarios": []}'))
     ctx.add_init_script("if (location.pathname.endsWith('sistema.html')) "
                         f"localStorage.setItem('bussola:sessao', JSON.stringify({json.dumps(SESSAO_TESTE)}))")
@@ -663,7 +664,7 @@ def test_dados_complementares_no_sobre_e_na_ficha(mapa):
     r = mapa.evaluate("""async () => {
       bussola.abrirPainel('sobre');
       const caixa = document.querySelector('#cofre-sobre');
-      const temCampo = !!caixa.querySelector('input[type=password]');
+      const temCampo = !caixa.querySelector('input[type=password]') && !document.querySelector('input[type=password]'); // a senha fica na página de validação
       const msg = caixa.textContent;
       await bussola.identificar.emPonto({ lon: -49.2600, lat: -16.6800, alt: NaN });
       await new Promise((ok) => setTimeout(ok, 6000));
@@ -691,3 +692,22 @@ def test_busca_de_pessoas_so_com_dados_liberados(mapa):
       return { fechado: fechado.length, semGrupo, piscando, limpou: bussola.identificar.fonte.entities.values.length === 0 };
     }""")
     assert r["fechado"] == 0 and r["semGrupo"] and r["piscando"] and r["limpou"], r
+
+
+
+def test_senha_do_cofre_na_validacao_e_sem_mapa_facil(navegador, servidor):
+    ctx = _contexto(navegador)
+    externos = []
+    ctx.on("request", lambda r: "portalmapa" in r.url and externos.append(r.url))
+    p = ctx.new_page()
+    p.goto(f"{servidor}/validacao.html")
+    p.wait_for_selector("#cofre-corpo input[type=password], #cofre-corpo .nota", timeout=60_000)
+    p.wait_for_timeout(4000)
+    tem = p.evaluate("!!document.querySelector('#cofre-corpo input[type=password]') || /Liberados|não tem dados/.test(document.querySelector('#cofre-corpo').textContent)")
+    p.goto(f"{servidor}/sistema.html#ed=0&r=0")
+    p.wait_for_function("window.bussola && bussola.pronto", timeout=180_000)
+    p.evaluate("for (const g of bussola.camadas.grupos) if (!g.consulta && !g.proprio) bussola.camadas.ligar(g.chave, true)")
+    p.wait_for_timeout(6000)
+    busca = p.evaluate("document.querySelector('#busca').value")
+    ctx.close()
+    assert tem and busca == "" and not externos, (tem, busca, externos[:3])

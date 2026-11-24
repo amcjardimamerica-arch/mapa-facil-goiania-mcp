@@ -11,7 +11,24 @@ const NIVEL_MINIMO = 9;
 
 // ---------------------------------------------------------------- provedores
 /** Imagem dinâmica de um MapServer do Mapa Fácil (operação "export"), em blocos. */
-export function provedorExport(url, { camadas, formato = 'png32', transparente = true, tamanho = 512,
+/** Provedor vazio: nada é pedido a lugar nenhum (o sistema não consulta mais o servidor da Prefeitura). */
+class ProvedorVazio {
+  constructor(retangulo) { this._g = new Cesium.WebMercatorTilingScheme(); this._r = retangulo; this._e = new Cesium.Event(); }
+  get tileWidth() { return 256; } get tileHeight() { return 256; } get minimumLevel() { return 0; } get maximumLevel() { return 21; }
+  get tilingScheme() { return this._g; } get rectangle() { return this._r || this._g.rectangle; } get tileDiscardPolicy() { return undefined; }
+  get errorEvent() { return this._e; } get credit() { return undefined; } get proxy() { return undefined; } get hasAlphaChannel() { return true; }
+  get ready() { return true; } get readyPromise() { return Promise.resolve(true); }
+  getTileCredits() { return undefined; } pickFeatures() { return undefined; }
+  requestImage() { const c = document.createElement('canvas'); c.width = c.height = 1; return Promise.resolve(c); }
+}
+
+export function provedorExport(url, opcoes = {}) {
+  // Desligado do Mapa Fácil: nenhuma imagem é pedida ao servidor municipal.
+  if (CFG.bancoSoLocal && /portalmapa\.goiania/.test(url)) return new ProvedorVazio(opcoes.retangulo);
+  return provedorExportServidor(url, opcoes);
+}
+
+function provedorExportServidor(url, { camadas, formato = 'png32', transparente = true, tamanho = 512,
   retangulo, nivelMinimo = NIVEL_MINIMO, nivelMaximo = 20, credito } = {}) {
   const p = new URLSearchParams({
     bboxSR: '3857', imageSR: '3857', size: `${tamanho},${tamanho}`,
@@ -130,7 +147,7 @@ export class Globo {
       { chave: 'mapa', titulo: 'Mapa', curto: 'Mapa', ano: null, tipo: 'vetor' },
     ];
     // As ortofotos antigas (2006, 2011, 2016) ficam de fora: o fundo é o satélite ou o mapa.
-    for (const b of this.catalogo.bases) if (!b.ano) lista.push({ ...b, titulo: 'Mapa Básico da Prefeitura', curto: 'Básico', tipo: 'mapa' });
+    for (const b of this.catalogo.bases) if (!b.ano && (!CFG.bancoSoLocal || imagemLocal(b.url.split('/MapServer')[0].split('/').pop()))) lista.push({ ...b, titulo: 'Mapa Básico da Prefeitura', curto: 'Básico', tipo: 'mapa' });
     // Datas anteriores do satélite (Esri World Imagery Wayback), da mais nova para a mais antiga.
     for (const v of [...(this.catalogo.satelite || [])].reverse()) {
       const quando = new Date(`${v.captura}T12:00:00Z`);
@@ -338,13 +355,14 @@ export class Globo {
   }
 
   /**
-   * Chegada ao abrir: começa olhando o mapa de cima, plano, bem alto sobre Goiânia, e desce dando uma volta
-   * completa em torno da cidade até a vista inicial (em vez de vir do espaço como o Google Earth).
+   * Chegada ao abrir: começa olhando o mapa de cima, bem alto sobre Goiânia, e desce girando 180° até perto
+   * da cidade (aproximação grande).
    */
-  chegada(duracao = 5.5) {
+  chegada(duracao = 6) {
+    // Começa bem alto, olhando de cima, e desce girando meia volta (180°) até perto da cidade.
     const v = CFG.visaoInicial;
     const alvo = Cesium.Cartesian3.fromDegrees(this.centro[0], this.centro[1], 760);
-    const ini = { dist: 90000, pitch: -89.9, rumo: v.rumo + 360 }, fim = { dist: v.distancia, pitch: v.inclinacao, rumo: v.rumo };
+    const ini = { dist: 260000, pitch: -89.9, rumo: v.rumo + 180 }, fim = { dist: 14000, pitch: -52, rumo: v.rumo };
     const suave = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
     return new Promise((ok) => {
       const t0 = performance.now();

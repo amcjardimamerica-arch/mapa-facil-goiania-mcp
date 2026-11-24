@@ -161,9 +161,7 @@ export class Identificar {
           .then(() => aviso('Coordenadas copiadas.'), () => aviso('Não foi possível copiar.', 'alerta')) }, 'Copiar'),
         this.acoes.marcar ? el('button', { class: 'botao-texto', onclick: () => this.acoes.marcar(p, $('#ficha-titulo').textContent) }, 'Marcar') : null,
         el('a', { class: 'botao-texto', target: '_blank', rel: 'noopener',
-          href: `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${p.lat},${p.lon}` }, 'Street View'),
-        el('a', { class: 'botao-texto', target: '_blank', rel: 'noopener',
-          href: `${CFG.portal}?center=${p.lon},${p.lat},4326&scale=2000` }, 'Mapa Fácil')));
+          href: `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${p.lat},${p.lon}` }, 'Street View')));
   }
 
   secao(titulo, { aberto = false, classe = '' } = {}) {
@@ -174,7 +172,9 @@ export class Identificar {
   }
 
   tabela(pares) {
-    return el('dl', { class: 'atributos' }, pares.flatMap(([k, v]) => [el('dt', {}, k), el('dd', {}, v)]));
+    // Sem referências ao Mapa Fácil nas fichas: o sistema funciona só com os próprios dados.
+    const limpa = (t) => (typeof t === 'string' ? t.replace(/\s*\(Mapa F[aá]cil\)/gi, '').replace(/(do |no )?Mapa F[aá]cil/gi, 'cadastro municipal') : t);
+    return el('dl', { class: 'atributos' }, pares.flatMap(([k, v]) => [el('dt', {}, limpa(k)), el('dd', {}, limpa(v))]));
   }
 
   // ------------------------------------------------------------------ consulta
@@ -210,7 +210,7 @@ export class Identificar {
     }
     this.abrir({ titulo: 'Consultando…', subtitulo: 'Goiânia', ponto });
     this.alfinete(ponto.lon, ponto.lat);
-    const estado = el('p', { class: 'nota carregando' }, 'Consultando o Mapa Fácil…');
+    const estado = el('p', { class: 'nota carregando' }, 'Consultando…');
     this.corpo.append(estado);
 
     const base = this.camadas.consultaBase();
@@ -295,12 +295,11 @@ export class Identificar {
         f: 'json', where: `ID_OBJ = '${idLote.replace(/'/g, '')}'`, outFields: '*', returnGeometry: 'false' } });
       const fs = (r.features || []).map((f) => f.attributes);
       if (!fs.length) return;
+      // Só a lista: o sistema não abre arquivos fora dele.
       const lista = el('ul', { class: 'lista-links' }, fs.map((a) => el('li', {},
-        el('a', { href: `${CFG.baseCadastral}/0/${a.REL_OBJECTID}/attachments/${a.ATTACHMENTID}`, target: '_blank', rel: 'noopener' },
-          String(a.NM || a.ATT_NAME || 'Documento').trim()),
+        el('span', {}, String(a.NM || a.ATT_NAME || 'Documento').trim()),
         el('small', {}, ` ${a.CONTENT_TYPE || ''} · ${a.DT_INC || ''}`))));
-      alvo.append(el('h4', { class: 'subtitulo' }, `Documentos anexados ao lote (${fs.length})`), lista,
-        el('p', { class: 'nota' }, 'Os arquivos abrem no servidor do Mapa Fácil. Os do Jardim América e do Nova Suíça também estão no pacote de anexos.'));
+      alvo.append(el('h4', { class: 'subtitulo' }, `Documentos anexados ao lote (${fs.length})`), lista);
     } catch (e) { /* sem anexos no banco */ }
   }
 
@@ -316,8 +315,7 @@ export class Identificar {
       ESTADO_CIV: 'Estado civil', dtnascimen: 'Data de nascimento', NOME_CONTA: 'Contador', NUMR_CPFCN: 'CPF/CNPJ do contador', INFO_CPFCN: 'CPF/CNPJ' };
     const lista = el('dl', { class: 'atributos cadeados' });
     for (const c of campos) lista.append(el('dt', {}, `🔒 ${ROTULO[c] || c}`), el('dd', {}, ''));
-    return el('div', {}, el('h4', { class: 'subtitulo' }, `🔒 ${titulo}`), lista,
-      el('p', { class: 'nota' }, 'Bloqueado: libere os dados complementares em Sobre (canto inferior direito) com a senha.'));
+    return el('div', {}, el('h4', { class: 'subtitulo' }, `🔒 ${titulo}`), lista);
   }
 
   /** Formulário da senha do cofre (dados pessoais cifrados no banco local). */
@@ -368,16 +366,14 @@ export class Identificar {
         ['Área total edificada', u0.areattedif ? `${fmtNum(u0.areattedif, 2)} m²` : ''],
         ['Pavimentos', u0.nrpaviment || ''],
       ].filter(([, v]) => !vazio(v))));
-      const linhas = us.slice(0, 200).map((u) => el('tr', {},
-        el('td', {}, t(u.nrinscr)), el('td', {}, t(u.incompl) || '—'),
-        el('td', { class: 'num' }, u.areaedif ? fmtNum(u.areaedif, 2) : '—'),
-        el('td', { class: 'num' }, u.vlvenal ? fmtNum(u.vlvenal, 2) : '—')));
-      alvo.append(el('div', { class: 'rolagem' }, el('table', { class: 'unidades' },
-        el('thead', {}, el('tr', {}, el('th', {}, 'Inscrição'), el('th', {}, 'Complemento'),
-          el('th', { class: 'num' }, 'Área edif. (m²)'), el('th', { class: 'num' }, 'Valor venal (R$)'))),
-        el('tbody', {}, linhas))),
-      el('p', { class: 'nota' }, `${us.length > 200 ? `Exibidas 200 de ${us.length} inscrições. ` : ''}` +
-        'Valor venal conforme a base publicada (o serviço não informa o exercício de referência).'));
+      // Cada inscrição em bloco vertical, no mesmo plano da ficha (sem barra de rolagem lateral).
+      const blocos = us.slice(0, 200).map((u) => el('dl', { class: 'atributos unidade-vertical' },
+        el('dt', {}, 'Inscrição'), el('dd', {}, t(u.nrinscr)),
+        el('dt', {}, 'Complemento'), el('dd', {}, t(u.incompl) || '—'),
+        el('dt', {}, 'Área edificada'), el('dd', {}, u.areaedif ? `${fmtNum(u.areaedif, 2)} m²` : '—'),
+        el('dt', {}, 'Valor venal'), el('dd', {}, u.vlvenal ? `R$ ${fmtNum(u.vlvenal, 2)}` : '—')));
+      alvo.append(...blocos);
+      if (us.length > 200) alvo.append(el('p', { class: 'nota' }, `Exibidas 200 de ${us.length} inscrições.`));
       if (ponto && cofreDisponivel()) {
         if (cofreAberto()) this._proprietario(ponto, alvo);
         else alvo.append(this._cadeados(['PROPRIETAR', 'CPF_CNPJ', 'RG', 'TELEFONE', 'DT_NASCIME', 'ESTADO_CIV'], 'Proprietário (cadastro tributário)'));
@@ -415,7 +411,7 @@ export class Identificar {
       ['Inscrição cadastral (CI)', e.ci || '—'],
     ]), el('button', { class: 'botao', onclick: () => this.emPonto({ lon: e.c[0], lat: e.c[1], alt: NaN }) },
       'Ver lote e cadastro'),
-    el('p', { class: 'nota' }, e.lv ? 'Prédio conferido pelo IPTU do lote: a altura vem do maior número de andares entre as fontes. A base é o desenho do Mapa Fácil quando ele já tinha o prédio; nos novos, a construção vista na imagem de satélite (só a torre, sem o estacionamento).'
+    el('p', { class: 'nota' }, e.lv ? 'Prédio conferido pelo IPTU do lote: a altura vem do maior número de andares entre as fontes. A base é o desenho do cadastro municipal quando ele já tinha o prédio; nos novos, a construção vista na imagem de satélite (só a torre, sem o estacionamento).'
       : 'Volume esquemático: a base é aproximada a partir do lote e a altura vem do número de pavimentos do cadastro.'));
   }
 }

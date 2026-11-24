@@ -77,7 +77,7 @@ export class Edificios {
         const d = await pedirJSON(`${CFG.baseCadastral}/2/query`, { parametros: { f: 'json', where: `id = '${String(id).replace(/'/g, '')}'`,
           outFields: 'id', returnGeometry: 'true', outSR: '4326', geometryPrecision: '6' } });
         aneis = d.features?.[0]?.geometry?.rings;
-        if (!aneis) { aviso(`Limite de ${nome} não encontrado no Mapa Fácil.`, 'alerta'); return; }
+        if (!aneis) { aviso(`Limite de ${nome} não encontrado.`, 'alerta'); return; }
       }
       this.bairros.set(id, { nome, aneis });
     }
@@ -288,8 +288,8 @@ export class Edificios {
       el('label', { class: 'rotulo-faixa bloco' }, el('span', {}, 'Mostrar a partir de ', saida), faixa),
       el('h3', { class: 'subtitulo' }, 'Cor pelo uso'), legenda,
       el('h3', { class: 'subtitulo' }, 'Os mais altos do cadastro'), altos,
-      el('p', { class: 'nota' }, `${fmtNum(total)} edifícios: o tema “Edificações” do Mapa Fácil e, no Jardim América e no Nova Suíça, ${fmtNum(this.conferidos || 0)} prédios e condomínios conferidos pelo IPTU de cada lote.`), el('p', { class: 'nota' }, ` Altura = pavimentos × ${fmtNum(this.mpp, 1)} m. ` +
-        'Prédios que o Mapa Fácil já tinha mantêm o desenho anterior; os novos têm a base estimada pela construção vista na imagem de satélite, ' +
+      el('p', { class: 'nota' }, `${fmtNum(total)} edifícios: o tema “Edificações” do cadastro municipal e, no Jardim América e no Nova Suíça, ${fmtNum(this.conferidos || 0)} prédios e condomínios conferidos pelo IPTU de cada lote.`), el('p', { class: 'nota' }, ` Altura = pavimentos × ${fmtNum(this.mpp, 1)} m. ` +
+        'Prédios que já estavam no cadastro municipal mantêm o desenho anterior; os novos têm a base estimada pela construção vista na imagem de satélite, ' +
         'só a torre sobe (estacionamento e lote agregado ficam no chão). É um modelo aproximado, não um levantamento das construções.'));
   }
 

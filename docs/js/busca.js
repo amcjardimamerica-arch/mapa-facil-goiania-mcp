@@ -52,7 +52,10 @@ export class Busca {
     this.lista = $('#resultados');
     this.itens = [];
     this.ativo = -1;
-    this.campo.addEventListener('input', debounce(() => this.procurar(), 120));
+    this.campo.addEventListener('input', debounce(() => this.procurar(), 180));
+    // O navegador às vezes preenche a busca com o login salvo ("admin"): começa sempre em branco.
+    const limpar = () => { if (document.activeElement !== this.campo) { this.campo.value = ''; this._fechar?.(); } };
+    limpar(); setTimeout(limpar, 400); setTimeout(limpar, 1500); window.addEventListener('pageshow', limpar);
     this.campo.addEventListener('focus', () => { this._carregarRuas(); if (this.campo.value) this.procurar(); });
     this.campo.addEventListener('keydown', (e) => this._tecla(e));
     $('#busca-limpar').addEventListener('click', () => { this.campo.value = ''; this._fechar(); this.campo.focus(); });

@@ -145,7 +145,7 @@ export class Localizacao {
 
   async _consultarEndereco(ponto) {
     const alvo = this.cartao.querySelector('#gps-endereco');
-    alvo.textContent = 'Consultando o Mapa Fácil…';
+    alvo.textContent = 'Consultando…';
     alvo.classList.add('carregando');
     try { alvo.textContent = (await this.endereco(ponto)).texto; }
     catch (err) { alvo.textContent = `Endereço indisponível agora (${err.message}).`; }

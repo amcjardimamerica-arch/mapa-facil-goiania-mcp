@@ -16,7 +16,7 @@ import { Lotes } from './lotes.js';
 import { Levantamento } from './levantamento.js';
 import { Poligonos } from './poligonos.js';
 import { encerrarSessao, sessaoAindaValida } from './acesso.js';
-import { iniciarBanco, cofreDisponivel, cofreAberto, abrirCofre, fecharCofre, cofreLiberadoAte } from './banco.js';
+import { iniciarBanco, cofreDisponivel, cofreAberto, cofreLiberadoAte } from './banco.js';
 import { ALTURA, faixaAltura, BASE, gravarBase } from './mapavetorial.js';
 import { Quadras } from './quadras.js';
 import { Eleicoes } from './eleicoes.js';
@@ -380,20 +380,10 @@ async function iniciar() {
     const caixa = $('#cofre-sobre');
     caixa.textContent = '';
     if (!cofreDisponivel()) { caixa.append(el('p', { class: 'nota' }, 'Este banco não tem dados complementares cifrados.')); return; }
-    if (cofreAberto()) {
-      const ate = cofreLiberadoAte();
-      caixa.append(el('p', { class: 'nota' }, `🔓 Liberados${ate ? ` até ${ate.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}` : ''}: proprietário, CPF/CNPJ e demais dados aparecem nas fichas.`),
-        el('button', { class: 'botao-texto', onclick: () => { fecharCofre(); montarCofreSobre(); identificar.fechar(); aviso('Dados complementares bloqueados.'); } }, 'Bloquear agora'));
-      return;
-    }
-    const campo = el('input', { type: 'password', class: 'campo', placeholder: 'Senha dos dados complementares', autocomplete: 'off', 'aria-label': 'Senha dos dados complementares' });
-    const msg = el('p', { class: 'nota' }, '🔒 Bloqueados. A senha libera os dados complementares (proprietário, CPF/CNPJ, RG, telefone…) em todo o mapa, por 24 horas, para este usuário.');
-    const liberar = async () => {
-      try { await abrirCofre(campo.value); campo.value = ''; aviso('Dados complementares liberados por 24 horas.'); montarCofreSobre(); identificar.fechar(); }
-      catch (e) { msg.textContent = `🔒 ${e.message}`; msg.classList.add('erro'); }
-    };
-    campo.addEventListener('keydown', (e) => { if (e.key === 'Enter') liberar(); });
-    caixa.append(msg, el('div', { class: 'linha-botoes' }, campo, el('button', { class: 'botao', onclick: liberar }, 'Liberar por 24 horas')));
+    const ate = cofreLiberadoAte();
+    caixa.append(el('p', { class: 'nota' }, cofreAberto()
+      ? `🔓 Liberados${ate ? ` até ${ate.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}` : ''} para esta conta.`
+      : '🔒 Bloqueados. A senha é aplicada na página de validação e vale 24 horas para esta conta.'));
   };
   montarCofreSobre();
   $('#sobre-usuario').textContent = sessao.nome ? `Conectado como ${sessao.nome} (${sessao.login}).` : '';

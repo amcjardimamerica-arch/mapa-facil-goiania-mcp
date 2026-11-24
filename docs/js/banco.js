@@ -121,7 +121,14 @@ async function lerDados(caminho, info) {
   return a;
 }
 
-export async function iniciarBanco() {
+let iniciando = null;
+/** Uma única inicialização por página (vários módulos podem pedir). */
+export function iniciarBanco() {
+  if (!iniciando) iniciando = iniciarBancoUmaVez();
+  return iniciando;
+}
+
+async function iniciarBancoUmaVez() {
   try {
     estado.fetchOriginal = window.fetch.bind(window);
     const r = await estado.fetchOriginal(`${estado.raiz}manifesto.json`, { cache: 'no-cache' });
@@ -914,6 +921,7 @@ async function montarIndicePessoas() {
         let p = null;
         try { p = await lerPess(caminho); } catch { return; }
         if (!p?.v) return;
+        await new Promise((ok) => setTimeout(ok, 0)); // devolve a vez à tela entre arquivos (sem travar)
         for (const [oid, v] of Object.entries(p.v)) {
           const nome = String(v[kN] ?? '').trim(), doc = String(v[kD] ?? '').replace(/\D/g, '');
           if (!nome && !doc) continue;

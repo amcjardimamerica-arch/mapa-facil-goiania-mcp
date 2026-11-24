@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'wasm-unsafe-eval'; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com; img-src 'self' data: blob: https://*.arcgisonline.com https://*.arcgis.com https://cdn.jsdelivr.net; connect-src 'self' data: blob: https://cdn.jsdelivr.net https://*.arcgisonline.com https://*.arcgis.com https://s3-us-west-2.amazonaws.com https://ipwho.is https://script.google.com https://script.googleusercontent.com; frame-src 'none'; object-src 'none'">
 <script src="js/guarda.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Validação — Bússola</title>
@@ -44,6 +45,10 @@
     <div><h1>Validação da Bússola</h1><p class="nota">Testes automáticos dos dados, dos cálculos e dos serviços que o mapa usa. Rodam no seu navegador, ao vivo.</p></div>
     <div class="linha-botoes"><a class="botao" href="sistema.html">Abrir o mapa</a><button class="botao" id="abrir-logs" aria-pressed="false" aria-controls="logs">Logs de acesso</button><button class="botao" id="rodar">Rodar de novo</button><button class="botao" id="baixar" disabled>Baixar relatório</button></div>
   </header>
+  <section id="cofre" class="grupo-v" aria-labelledby="cofre-titulo">
+    <h2 id="cofre-titulo">Dados complementares (cofre)</h2>
+    <div class="logs-corpo" id="cofre-corpo"></div>
+  </section>
   <section id="logs" class="grupo-v logs" hidden aria-labelledby="logs-titulo">
     <h2 id="logs-titulo">Logs de acesso</h2>
     <div class="logs-corpo">
@@ -64,5 +69,6 @@
 <div id="avisos"></div>
 <script type="module" src="js/validacao.js"></script>
 <script type="module" src="js/logs.js"></script>
+<script type="module" src="js/cofre-validacao.js"></script>
 </body>
 </html>
