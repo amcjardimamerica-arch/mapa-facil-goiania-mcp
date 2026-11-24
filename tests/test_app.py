@@ -636,7 +636,7 @@ def test_marcadores_de_quadra_e_pracas(mapa):
       const m = bussola.quadras.marcadores, nomes = [...bussola.quadras.imagens.keys()].map((k) => k.split('|')[0]);
       const b = m.length ? m.get(0) : null;
       return { n: m.length, pracas: nomes.filter((x) => /^Pça\\./.test(x)).length, sobre: b ? b.disableDepthTestDistance : 0 }; }""")
-    assert r["n"] > 50 and r["pracas"] >= 1 and r["sobre"] > 1e12, r
+    assert r["n"] > 20 and r["pracas"] >= 1 and r["sobre"] > 1e12, r  # com o painel Bairros aberto antes, só os bairros marcados
 
 
 
@@ -673,3 +673,21 @@ def test_dados_complementares_no_sobre_e_na_ficha(mapa):
     }""")
     assert r["temCampo"] and "24 horas" in r["msg"], r
     assert r["semBotao"] and r["cadastro"] and r["inscricoes"] and r["cadeado"], r
+
+
+def test_busca_de_pessoas_so_com_dados_liberados(mapa):
+    r = mapa.evaluate("""async () => {
+      const b = await import('./js/banco.js');
+      const fechado = await b.buscarPessoas('SILVA');
+      const campo = document.querySelector('#busca');
+      campo.value = 'Maria da Silva'; campo.dispatchEvent(new Event('input'));
+      await new Promise((ok) => setTimeout(ok, 800));
+      const semGrupo = !/Pessoas \\(dados complementares\\)/.test(document.querySelector('#busca-resultados, #resultados-busca, [role=listbox]')?.textContent || '');
+      campo.value = ''; campo.dispatchEvent(new Event('input'));
+      bussola.identificar.abrir({ titulo: 'Teste', subtitulo: '' });
+      bussola.identificar.piscar([[[-49.286, -16.708], [-49.285, -16.708], [-49.285, -16.707], [-49.286, -16.707]]]);
+      const piscando = bussola.identificar.fonte.entities.values.length >= 2;
+      bussola.identificar.fechar();
+      return { fechado: fechado.length, semGrupo, piscando, limpou: bussola.identificar.fonte.entities.values.length === 0 };
+    }""")
+    assert r["fechado"] == 0 and r["semGrupo"] and r["piscando"] and r["limpou"], r

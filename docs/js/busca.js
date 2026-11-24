@@ -3,6 +3,7 @@
 // Fácil), por isso a busca ignora acentos e maiúsculas e responde na hora; a
 // geometria do item escolhido é pedida ao servidor municipal.
 import { CFG } from './config.js';
+import { cofreAberto, buscarPessoas, vinculosDaPessoa } from './banco.js';
 import { $, el, pedirJSON, semAcento, debounce, deUTM, extensaoDe, fmtNum, aviso, nomeBairro } from './util.js';
 
 const chave = (s) => semAcento(s).replace(/[-–.]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -110,6 +111,45 @@ export class Busca {
     const l = melhores(this.lugares, q, 5);
     if (l.length) grupos.push(['Lugares', l.map((x) => ({ tipo: 'lugar', n: x.n, sub: x.r, dado: x }))]);
     this._mostrar(grupos, bruto);
+    // Dados complementares liberados: também procura pessoas pelo nome ou pelo CPF/CNPJ.
+    if (cofreAberto() && bruto.length >= 4) this._pessoas(bruto, grupos);
+  }
+
+  async _pessoas(bruto, grupos) {
+    const vez = (this._vezPessoas = (this._vezPessoas || 0) + 1);
+    const aguarde = [['Pessoas (dados complementares)', [{ tipo: 'nada', n: 'Procurando nos dados complementares…', sub: 'a primeira busca prepara o índice e leva alguns segundos' }]]];
+    this._mostrar([...aguarde, ...grupos], bruto);
+    let ps = [];
+    try { ps = await buscarPessoas(bruto); } catch (e) { console.warn('busca de pessoas', e); }
+    if (vez !== this._vezPessoas || this.campo.value.trim() !== bruto) return;
+    const docF = (d) => (d.length === 11 ? d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+      : d.length === 14 ? d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5') : d);
+    const g = ps.length ? [['Pessoas (dados complementares)', ps.map((p) => ({ tipo: 'pessoa', n: p.nome || docF(p.doc),
+      sub: `${p.doc ? `${docF(p.doc)} · ` : ''}${p.vinculos.length} vínculo(s)`, dado: p }))]] : [];
+    this._mostrar([...g, ...grupos], bruto);
+  }
+
+  _ir_nada() {}
+
+  /** Pessoa: os lotes e locais vinculados piscam no mapa e a ficha lista cada vínculo. */
+  async _ir_pessoa(it) {
+    const p = it.dado;
+    const vs = await vinculosDaPessoa(p.vinculos);
+    const id = this.identificar;
+    id.abrir({ titulo: p.nome || 'Pessoa', subtitulo: `${p.doc || ''} · ${vs.length} vínculo(s) nos dados complementares` });
+    const aneis = vs.flatMap((v) => v.aneis);
+    if (aneis.length) {
+      id.piscar(aneis);
+      let o = Infinity, s = Infinity, l = -Infinity, n = -Infinity;
+      for (const a of aneis) for (const [x, y] of a) { o = Math.min(o, x); l = Math.max(l, x); s = Math.min(s, y); n = Math.max(n, y); }
+      this.globo.voarPara({ extensao: [o, s, l, n], inclinacao: -70 });
+    }
+    for (const v of vs) {
+      const a = v.atributos;
+      id.secao(`${v.rotulo}${a.INSCRICAO || a.nrinscr ? ` — ${a.INSCRICAO || a.nrinscr}` : ''}`, { aberto: vs.length <= 3 })
+        .append(id.tabela(Object.entries(a).filter(([, x]) => x !== null && x !== '' && x !== undefined).map(([k, x]) => [k, String(x)])));
+    }
+    if (!vs.length) id.corpo.append(el('p', { class: 'nota' }, 'Os vínculos desta pessoa não têm desenho no mapa.'));
   }
 
   _mostrar(grupos, bruto) {

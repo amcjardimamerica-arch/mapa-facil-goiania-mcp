@@ -65,6 +65,24 @@ export class Identificar {
     this._restaurar = restaurar;
   }
 
+  /** Lotes/locais piscando (amarelo forte) até outra seleção ou o fechamento da ficha. */
+  piscar(aneis) {
+    this.limparDestaque();
+    const t0 = performance.now();
+    const fase = () => (Math.floor((performance.now() - t0) / 450) % 2 === 0);
+    const cor = new Cesium.CallbackProperty(() => (fase() ? Cesium.Color.fromCssColorString('#FFFF00').withAlpha(0.75) : Cesium.Color.fromCssColorString('#FF00FF').withAlpha(0.25)), false);
+    const linha = new Cesium.CallbackProperty(() => (fase() ? Cesium.Color.fromCssColorString('#FF0000') : Cesium.Color.WHITE), false);
+    for (const a of aneis) {
+      if (a.length < 3) continue;
+      const pos = Cesium.Cartesian3.fromDegreesArray(a.flat());
+      this.fonte.entities.add({ polygon: { hierarchy: pos, material: new Cesium.ColorMaterialProperty(cor), classificationType: Cesium.ClassificationType.TERRAIN } });
+      this.fonte.entities.add({ polyline: { positions: [...pos, pos[0]], clampToGround: true, width: 4, material: new Cesium.ColorMaterialProperty(linha) } });
+    }
+    const relogio = setInterval(() => this.globo.redesenhar(), 450);
+    this.selecionar(() => clearInterval(relogio));
+    this.globo.redesenhar();
+  }
+
   limparDestaque() {
     this._restaurar?.();
     this._restaurar = null;

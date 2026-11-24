@@ -83,6 +83,7 @@ export async function abrirCofre(senha) {
 
 export function fecharCofre() {
   estado.chave = null;
+  indicePessoas = null;
   try { localStorage.removeItem(chaveGuardada()); sessionStorage.removeItem('bussola:cofre'); } catch { /* */ }
   estado.cache.clear();
 }
@@ -878,3 +879,90 @@ function textoDoRotulo(expr, valores, campos) {
     .replace(/\s*&\s*/g, '').replace(/"\s*"/g, ' ').replace(/^"|"$/g, '').replace(/\bvbnewline\b/gi, ' ').trim();
   return t.length > 60 ? `${t.slice(0, 58)}…` : t;
 }
+
+
+// ------------------------------------------------------------------ busca de pessoas (cofre aberto)
+// Com os dados complementares liberados, a busca do topo acha pessoas pelo nome ou pelo CPF/CNPJ nos cadastros
+// que trazem esses campos. O índice é montado uma vez, no próprio navegador, só a partir dos arquivos cifrados
+// (.pess) e só enquanto o cofre está aberto; nada é gravado em disco nem enviado a lugar nenhum.
+const PESSOAS = [
+  { S: 'Mapa_Tributario_Web', id: '0', nome: 'PROPRIETAR', doc: 'CPF_CNPJ', rotulo: 'Proprietário (cadastro tributário)' },
+  { S: 'Mapa_UsoDoSoloNew', id: '16', nome: 'nmcontrib', doc: 'cpf_cgc', rotulo: 'Contribuinte (vazios urbanos)' },
+];
+const semAcentoP = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/\s+/g, ' ').trim();
+let indicePessoas = null;
+
+async function lerPess(caminho) {
+  const r = await estado.fetchOriginal(estado.raiz + caminho);
+  if (!r.ok) return null;
+  const bytes = await decifrar(new Uint8Array(await r.arrayBuffer()));
+  const s = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return JSON.parse(new TextDecoder().decode(await new Response(s).arrayBuffer()));
+}
+
+async function montarIndicePessoas() {
+  const itens = [];
+  for (const P of PESSOAS) {
+    const info = infoCamada(P.S, P.id);
+    if (!info?.pessoais) continue;
+    const kN = info.pessoais.indexOf(P.nome), kD = info.pessoais.indexOf(P.doc);
+    const base = `dados/${info._s}/${info._id}`;
+    const arqs = info.z == null ? [[`${base}/todos.pess`, null]]
+      : [...(info.blocos || []).map((b) => [`${base}/${info.z}/${b}.pess`, b]), ...(info.grandes ? [[`${base}/grandes.pess`, 'grandes']] : [])];
+    for (let i = 0; i < arqs.length; i += 12) {
+      await Promise.all(arqs.slice(i, i + 12).map(async ([caminho, bloco]) => {
+        let p = null;
+        try { p = await lerPess(caminho); } catch { return; }
+        if (!p?.v) return;
+        for (const [oid, v] of Object.entries(p.v)) {
+          const nome = String(v[kN] ?? '').trim(), doc = String(v[kD] ?? '').replace(/\D/g, '');
+          if (!nome && !doc) continue;
+          itens.push({ P, bloco, oid, nome, doc, n: semAcentoP(nome) });
+        }
+      }));
+    }
+  }
+  return itens;
+}
+
+/** Pessoas pelo nome (todas as palavras) ou pelo CPF/CNPJ (dígitos). Agrupa os vínculos por pessoa. */
+export async function buscarPessoas(texto, limite = 15) {
+  if (!estado.chave) return [];
+  if (!indicePessoas) indicePessoas = montarIndicePessoas().catch((e) => { indicePessoas = null; throw e; });
+  const idx = await indicePessoas;
+  const t = String(texto || '').trim(), dig = t.replace(/\D/g, '');
+  const numerico = dig.length >= 5 && /^[\d.\s/-]+$/.test(t);
+  const palavras = semAcentoP(t).split(' ').filter((p) => p.length >= 2);
+  if (!numerico && (!palavras.length || semAcentoP(t).length < 4)) return [];
+  const pessoas = new Map();
+  for (const i of idx) {
+    if (numerico ? !i.doc.includes(dig) : !palavras.every((p) => i.n.includes(p))) continue;
+    const k = i.doc || i.n;
+    if (!pessoas.has(k)) pessoas.set(k, { nome: i.nome, doc: i.doc, vinculos: [] });
+    const p = pessoas.get(k);
+    if (!p.nome && i.nome) p.nome = i.nome;
+    p.vinculos.push({ S: i.P.S, id: i.P.id, rotulo: i.P.rotulo, bloco: i.bloco, oid: i.oid });
+    if (pessoas.size > limite * 4) break;
+  }
+  return [...pessoas.values()].sort((a, b) => b.vinculos.length - a.vinculos.length).slice(0, limite);
+}
+
+/** Geometria (lon/lat) e dados de cada vínculo de uma pessoa, para destacar no mapa e mostrar na ficha. */
+export async function vinculosDaPessoa(vinculos) {
+  const saida = [];
+  for (const v of vinculos.slice(0, 60)) {
+    const info = infoCamada(v.S, v.id);
+    if (!info) continue;
+    const base = `dados/${info._s}/${info._id}`;
+    const caminho = v.bloco == null ? `${base}/todos.json.gz` : v.bloco === 'grandes' ? `${base}/grandes.json.gz` : `${base}/${info.z}/${v.bloco}.json.gz`;
+    const fs = feicoes(await lerDados(caminho, info), v.bloco, info);
+    const f = fs.find((x) => String(x.oid) === String(v.oid));
+    if (!f) continue;
+    const campos = camposDe(info);
+    saida.push({ ...v, aneis: f.g?.partes || [], atributos: Object.fromEntries(campos.map((c, k) => [c, f.valores[k]])) });
+  }
+  return saida;
+}
+
+/** Fecha o cofre também apaga o índice de pessoas da memória. */
+export function esquecerPessoas() { indicePessoas = null; }
