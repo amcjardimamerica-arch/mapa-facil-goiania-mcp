@@ -198,6 +198,15 @@ e retoma de onde parou.
   vê todas. Como o site é estático, a separação é de tela: os arquivos de dados continuam acessíveis pelo endereço.
 - Abertura: a câmera começa de cima, com o mapa plano, e desce dando uma volta em torno de Goiânia.
 
+## Desempenho (roteiro, passos 1 e 2)
+
+- `docs/js/desempenho.js`: medidas por etapa (baixar, descompactar, interpretar, consultar, desenhar-tema,
+  desenhar-mapa), contadores e tarefas longas. No console: `bussola.desempenho()` e `bussola.zerarDesempenho()`.
+- `tests/test_desempenho.py`: roteiro fixo com CPU 4× mais lenta e o servidor da Prefeitura bloqueado; grava em
+  `tests/desempenho-base.json` por versão (não reprova por tempo).
+- `tests/test_equivalencia.py`: 200 consultas sorteadas (semente 20261124) comparadas com
+  `tests/equivalencia-referencia.json.gz`; `BUSSOLA_REGRAVAR_EQUIVALENCIA=1` regrava (com justificativa no commit).
+
 ## Acesso com usuário e senha
 
 A página inicial (`docs/index.html`) é o portal de acesso. O mapa fica em `docs/sistema.html` e só abre

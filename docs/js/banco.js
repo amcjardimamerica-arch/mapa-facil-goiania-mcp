@@ -2,6 +2,7 @@
 // Responde no lugar do servidor da Prefeitura às mesmas perguntas que o sistema fazia a ele
 // (query, identify, legenda e metadados), e desenha os temas do painel Camadas a partir dos dados.
 // Só o que o banco não sabe responder segue para o servidor municipal, se ele estiver no ar.
+import { cronometrar, cronometrarSinc, contadores } from './desempenho.js';
 import { CFG } from './config.js';
 
 const Cesium = window.Cesium;
@@ -19,21 +20,25 @@ const estado = { chave: null, manifesto: null, raiz: 'banco/', cache: new Map(),
 // ------------------------------------------------------------------ arquivos
 async function lerArquivo(caminho) {
   if (estado.cache.has(caminho)) {
+    contadores.cacheMemoria++;
     const v = estado.cache.get(caminho);
     estado.cache.delete(caminho); estado.cache.set(caminho, v); // mais recente por último
     return v;
   }
   if (estado.pedidos.has(caminho)) return estado.pedidos.get(caminho);
   const p = (async () => {
-    const r = await estado.fetchOriginal(estado.raiz + caminho);
+    const r = await cronometrar('baixar', () => estado.fetchOriginal(estado.raiz + caminho));
     if (r.status === 404) return null;
     if (!r.ok) throw new Error(`banco local: HTTP ${r.status} em ${caminho}`);
     let bytes = new Uint8Array(await r.arrayBuffer());
+    contadores.pedidos++; contadores.bytes += bytes.length;
     if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
-      const s = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-      bytes = new Uint8Array(await new Response(s).arrayBuffer());
+      bytes = await cronometrar('descompactar', async () => {
+        const s = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+        return new Uint8Array(await new Response(s).arrayBuffer());
+      });
     }
-    const d = JSON.parse(new TextDecoder().decode(bytes));
+    const d = cronometrarSinc('interpretar', () => JSON.parse(new TextDecoder().decode(bytes)));
     estado.cache.set(caminho, d);
     while (estado.cache.size > 800) estado.cache.delete(estado.cache.keys().next().value);
     return d;
@@ -480,6 +485,10 @@ async function candidatos(info, p) {
 }
 
 export async function consultar(S, id, p) {
+  return cronometrar('consultar', () => consultarSemMedida(S, id, p));
+}
+
+async function consultarSemMedida(S, id, p) {
   const info = infoCamada(S, id);
   if (!info) throw new NaoSuportado(`${S}/${id} fora do banco`);
   if (p.outStatistics || p.groupByFieldsForStatistics || p.returnDistinctValues === 'true') throw new NaoSuportado('estatísticas');
@@ -756,6 +765,10 @@ export class ProvedorTema {
   _tela() { const c = document.createElement('canvas'); c.width = c.height = this._T; return c; }
 
   async _desenhar(x, y, nivel) {
+    return cronometrar('desenhar-tema', () => this._desenharSemMedida(x, y, nivel));
+  }
+
+  async _desenharSemMedida(x, y, nivel) {
     const metas = await this._carregarMetas();
     const ret = this._grade.tileXYToRectangle(x, y, nivel);
     const ext = [ret.west, ret.south, ret.east, ret.north].map((r) => r * 180 / Math.PI);

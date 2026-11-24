@@ -1,0 +1,55 @@
+{
+ "1.16.0 (linha de base)": {
+  "etapas": {
+   "baixar": {
+    "n": 150,
+    "media": 540.4,
+    "p95": 1354.3,
+    "max": 1608.8
+   },
+   "interpretar": {
+    "n": 150,
+    "media": 20.9,
+    "p95": 73.8,
+    "max": 575.6
+   },
+   "descompactar": {
+    "n": 140,
+    "media": 578.6,
+    "p95": 1607,
+    "max": 1811.1
+   },
+   "consultar": {
+    "n": 111,
+    "media": 599,
+    "p95": 3621.1,
+    "max": 4568.2
+   },
+   "desenhar-mapa": {
+    "n": 29,
+    "media": 74.3,
+    "p95": 191.5,
+    "max": 240
+   },
+   "desenhar-tema": {
+    "n": 42,
+    "media": 372.8,
+    "p95": 1218.9,
+    "max": 1584.6
+   }
+  },
+  "contadores": {
+   "bytes": 14833478,
+   "pedidos": 150,
+   "cacheMemoria": 653,
+   "cacheDisco": 0,
+   "cancelados": 0
+  },
+  "tarefasLongas": {
+   "n": 152,
+   "max": 9928,
+   "acimaDe50": 148
+  },
+  "memoria": 326
+ }
+}

@@ -1,5 +1,5 @@
 // Configuração da Bússola. Tudo que depende de endereço externo fica aqui.
-export const VERSAO = '1.16.0';
+export const VERSAO = '1.16.1';
 
 const REST = 'https://portalmapa.goiania.go.gov.br/servicogyn/rest/services';
 

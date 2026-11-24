@@ -20,9 +20,13 @@ import { iniciarBanco } from './banco.js';
 import { ALTURA, faixaAltura, BASE, gravarBase } from './mapavetorial.js';
 import { Quadras } from './quadras.js';
 import { Eleicoes } from './eleicoes.js';
+import { relatorio as relatorioDesempenho, zerar as zerarDesempenho } from './desempenho.js';
 
 const Cesium = window.Cesium;
 const app = (window.bussola = { versao: VERSAO, pronto: false, erros: [] });
+// Medidas de desempenho: bussola.desempenho() no console; bussola.zerarDesempenho() recomeça a contagem.
+app.desempenho = () => relatorioDesempenho();
+app.zerarDesempenho = () => zerarDesempenho();
 
 const estadoAbertura = (texto, erro = false) => {
   const no = $('#abertura-estado');

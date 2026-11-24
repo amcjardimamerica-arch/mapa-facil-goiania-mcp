@@ -6,6 +6,7 @@
 // - ProvedorLotes: os lotes de um ou mais bairros escolhidos, carregados sob demanda
 //   e desenhados aqui mesmo, sem pedir o mapa de Goiânia inteira ao servidor.
 import { CFG } from './config.js';
+import { cronometrarSinc } from './desempenho.js';
 
 const Cesium = window.Cesium;
 const MUNDO = 20037508.342789244;
@@ -332,7 +333,11 @@ export class ProvedorVetorial extends ProvedorCanvas {
     return { limites, quadras: quadras.filter(passaFiltro), vias, lotes: lotes.filter(passaFiltro), areas: areas.filter(passaFiltro), atividades, ver };
   }
 
-  _desenhar(ret, nivel, relevo, { limites = [], quadras, vias, lotes = [], areas = [], atividades = [], ver = {} }) {
+  _desenhar(ret, nivel, relevo, dados) {
+    return cronometrarSinc('desenhar-mapa', () => this._desenharSemMedida(ret, nivel, relevo, dados));
+  }
+
+  _desenharSemMedida(ret, nivel, relevo, { limites = [], quadras, vias, lotes = [], areas = [], atividades = [], ver = {} }) {
     const T = this._T, e = this.estilo, q = new Quadro(ret, T);
     const tela = this._tela(), g = tela.getContext('2d');
     const mapa = this.modo === 'mapa';
