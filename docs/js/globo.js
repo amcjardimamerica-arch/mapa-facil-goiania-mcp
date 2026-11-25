@@ -442,6 +442,7 @@ export class Globo {
     this._chegando = false; // interrompe a animação de chegada
     const [lon, lat, alt, rumo, incl] = String(texto).split(',').map(Number);
     if (![lon, lat, alt].every(Number.isFinite)) return false;
+    this.camera.cancelFlight(); // um voo em andamento não pode levar a câmera de volta depois
     this.camera.setView({
       destination: Cesium.Cartesian3.fromDegrees(lon, lat, Math.min(alt, CFG.camera.distanciaMaxima)),
       orientation: { heading: rad(rumo || 0), pitch: rad(Number.isFinite(incl) ? incl : -90), roll: 0 },

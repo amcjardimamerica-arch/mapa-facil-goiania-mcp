@@ -637,11 +637,17 @@ def test_marcadores_de_quadra_e_pracas(mapa):
       Object.assign(m.BASE, { ligado: true, quadras: true }); }""")
     mapa.evaluate("bussola.globo.aplicarVisao('-49.2857,-16.7077,1700,0,-90')")
     mapa.wait_for_timeout(1500)
-    r = mapa.evaluate("""async () => { await bussola.quadras.atualizar();
+    # A atualização também roda ao parar a câmera; espera a última terminar.
+    mapa.evaluate("bussola.quadras.atualizar()")
+    mapa.wait_for_function("bussola.quadras.marcadores.length > 20", polling=500, timeout=30_000)
+    r = mapa.evaluate("""async () => {
       const m = bussola.quadras.marcadores, nomes = [...bussola.quadras.imagens.keys()].map((k) => k.split('|')[0]);
       const b = m.length ? m.get(0) : null;
-      return { n: m.length, pracas: nomes.filter((x) => /^Pça\\./.test(x)).length, sobre: b ? b.disableDepthTestDistance : 0 }; }""")
-    assert r["n"] > 20 and r["pracas"] >= 1 and r["sobre"] > 1e12, r  # com o painel Bairros aberto antes, só os bairros marcados
+      const mv = await import('./js/mapavetorial.js');
+      const vista = bussola.globo.camera.computeViewRectangle(bussola.globo.cena.globe.ellipsoid);
+      return { n: m.length, pracas: nomes.filter((x) => /^Pça\\./.test(x)).length, sobre: b ? b.disableDepthTestDistance : 0,
+        alt: Math.round(mv.ALTURA.camera), h: Math.round(bussola.globo.camera.positionCartographic.height), base: { ...mv.BASE }, filtro: !!mv.FILTRO_BAIRROS.aneis, vista: !!vista }; }""")
+    assert r["n"] > 20 and r["pracas"] >= 1 and r["sobre"] > 1e12, json.dumps(r, ensure_ascii=False)  # com o painel Bairros aberto antes, só os bairros marcados
 
 
 
@@ -708,7 +714,8 @@ def test_senha_do_cofre_na_validacao_e_sem_mapa_facil(navegador, servidor):
     p.wait_for_selector("#cofre-corpo input[type=password], #cofre-corpo .nota", timeout=60_000)
     p.wait_for_timeout(4000)
     tem = p.evaluate("!!document.querySelector('#cofre-corpo input[type=password]') || /Liberados|não tem dados/.test(document.querySelector('#cofre-corpo').textContent)")
-    p.goto(f"{servidor}/sistema.html#ed=0&r=0")
+    # Só o HTML: o evento "load" do mapa pode passar de 30 s no ambiente de teste (o sistema fica pronto depois).
+    p.goto(f"{servidor}/sistema.html#ed=0&r=0", wait_until="domcontentloaded", timeout=120_000)
     p.wait_for_function("window.bussola && bussola.pronto", timeout=180_000)
     p.evaluate("for (const g of bussola.camadas.grupos) if (!g.consulta && !g.proprio) bussola.camadas.ligar(g.chave, true)")
     p.wait_for_timeout(6000)
