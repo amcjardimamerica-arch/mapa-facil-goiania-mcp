@@ -7,20 +7,21 @@
 import { CFG } from './config.js';
 import {
   estado, NaoSuportado, lerArquivo, metadados, consultar, identificar, temServico, bancoAtivo, estatisticas,
-  derivarChave, definirChave, b64, buscarPessoas, vinculosDaPessoa, esquecerPessoas,
+  derivarChave, definirChave, b64, buscarPessoas, vinculosDaPessoa, esquecerPessoas, Cancelado,
 } from './banco-nucleo.js';
+import { contadores } from './desempenho.js';
 import { ProvedorTema, definirFornecedorDesenho } from './banco-desenho.js';
 import * as Comlink from './vendor/comlink.mjs';
 import { relatorio } from './desempenho.js';
 
 const Cesium = window.Cesium;
 
-export { NaoSuportado, consultar, identificar, temServico, bancoAtivo, estatisticas, ProvedorTema, buscarPessoas, vinculosDaPessoa, esquecerPessoas };
+export { Cancelado, NaoSuportado, consultar, identificar, temServico, bancoAtivo, estatisticas, ProvedorTema, buscarPessoas, vinculosDaPessoa, esquecerPessoas };
 
 // ------------------------------------------------------------------ workers de dados (passo 4)
 // Consultas e identificações vão para workers (fora da linha da tela). O mesmo bloco vai sempre ao mesmo worker,
 // para aproveitar o cache dele; fila com prioridade (clique 0, visível 1, vizinhança 2), até 3 tarefas por worker.
-const pool = { workers: [], fila: [[], [], []], emCurso: [], seq: 0 };
+const pool = { workers: [], fila: [[], [], []], emCurso: [], seq: 0, nivel: null };
 const PRIORIDADE = { clique: 0, visivel: 1, vizinhanca: 2 };
 const hash = (t) => { let h = 2166136261; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
 
@@ -34,9 +35,10 @@ async function iniciarWorkers() {
     pool.workers = ws;
     pool.emCurso = ws.map(() => 0);
     // Desenho dos temas: feições preparadas no worker e entregues em vetores (passo 6).
-    definirFornecedorDesenho((S, camada, ext, campos) => {
+    definirFornecedorDesenho((S, camada, ext, campos, { sinal, nivel } = {}) => {
       const id = ++pool.seq;
-      return noWorker(`${S}/${camada}/${Math.round(ext[0] * 50)}:${Math.round(ext[1] * 50)}`, 'visivel', (w) => w.feicoesParaDesenho(id, S, camada, ext, campos));
+      return noWorker(`${S}/${camada}/${Math.round(ext[0] * 50)}:${Math.round(ext[1] * 50)}`, 'visivel',
+        (w) => w.feicoesParaDesenho(id, S, camada, ext, campos), { sinal, nivel, id });
     });
   } catch (e) {
     console.warn('Workers do banco indisponíveis; usando a linha principal:', e);
@@ -55,29 +57,42 @@ function despachar() {
     const fila = pool.fila[pr];
     for (let i = 0; i < fila.length;) {
       const t = fila[i];
+      // Passo 7: bloco que saiu da tela (sinal abortado) ou de um nível de zoom 2+ distante do atual: descartado.
+      const longe = pr > 0 && t.nivel != null && pool.nivel != null && Math.abs(t.nivel - pool.nivel) >= 2;
+      if (t.sinal?.aborted || longe) { fila.splice(i, 1); contadores.cancelados++; t.falha(new Cancelado()); continue; }
       if (pool.emCurso[t.w] >= 3) { i++; continue; }
       fila.splice(i, 1);
       pool.emCurso[t.w]++;
-      t.executar(pool.workers[t.w]).then(t.ok, t.falha).finally(() => { pool.emCurso[t.w]--; despachar(); });
+      const w = pool.workers[t.w];
+      const aoAbortar = () => w.cancelar(t.id).catch(() => {});
+      t.sinal?.addEventListener('abort', aoAbortar, { once: true });
+      t.executar(w).then(t.ok, t.falha).finally(() => { t.sinal?.removeEventListener('abort', aoAbortar); pool.emCurso[t.w]--; despachar(); });
     }
   }
 }
 
-function noWorker(rota, prioridade, executar) {
+function noWorker(rota, prioridade, executar, { sinal, nivel, id } = {}) {
   const w = hash(rota) % pool.workers.length;
-  return new Promise((ok, falha) => { pool.fila[PRIORIDADE[prioridade] ?? 1].push({ w, executar, ok, falha }); despachar(); })
-    .then((r) => {
-      if (r && 'ok' in r) return r.ok;
-      if (r?.naoSuportado) throw new NaoSuportado(r.erro);
-      throw new Error(r?.erro || 'erro no worker do banco');
-    });
+  if (nivel != null && prioridade !== 'vizinhanca') pool.nivel = nivel; // nível atual: o do pedido visível mais recente
+  return new Promise((ok, falha) => {
+    if (sinal?.aborted) { falha(new Cancelado()); return; }
+    const t = { w, executar, ok, falha, sinal, nivel, id };
+    pool.fila[PRIORIDADE[prioridade] ?? 1].push(t);
+    sinal?.addEventListener('abort', () => despachar(), { once: true });
+    despachar();
+  }).then((r) => {
+    if (r && 'ok' in r) return r.ok;
+    if (r?.cancelado) { contadores.cancelados++; throw new Cancelado(); }
+    if (r?.naoSuportado) throw new NaoSuportado(r.erro);
+    throw new Error(r?.erro || 'erro no worker do banco');
+  });
 }
 
 /** Consulta no worker (ou direto, sem workers). */
-export function consultarLocal(S, camada, p, prioridade = 'visivel') {
-  if (!pool.workers.length) return consultar(S, camada, p);
+export function consultarLocal(S, camada, p, prioridade = 'visivel', { sinal, nivel } = {}) {
+  if (!pool.workers.length) return consultar(S, camada, sinal ? { ...p, _sinal: sinal } : p);
   const id = ++pool.seq;
-  return noWorker(chaveRota(S, camada, p), prioridade, (w) => w.consultar(id, S, camada, p));
+  return noWorker(chaveRota(S, camada, p), prioridade, (w) => w.consultar(id, S, camada, p), { sinal, nivel, id });
 }
 export function identificarLocal(S, p, prioridade = 'clique') {
   if (!pool.workers.length) return identificar(S, p);
@@ -118,9 +133,9 @@ const comoTexto = (p) => Object.fromEntries(Object.entries(p || {}).filter(([, v
   .map(([k, v]) => [k, typeof v === 'object' ? JSON.stringify(v) : String(v)]));
 const semErro = (d) => { if (d?.error) throw new Error(d.error.message || 'erro na consulta'); return d; };
 
-export async function consultarOuServidor(S, camada, p, { prioridade = 'visivel' } = {}) {
+export async function consultarOuServidor(S, camada, p, { prioridade = 'visivel', sinal, nivel } = {}) {
   if (bancoAtivo() && temServico(S)) {
-    try { return semErro(await consultarLocal(S, +camada, comoTexto({ f: 'json', ...p }), prioridade)); }
+    try { return semErro(await consultarLocal(S, +camada, comoTexto({ f: 'json', ...p }), prioridade, { sinal, nivel })); }
     catch (e) { if (!(e instanceof NaoSuportado) || CFG.bancoSoLocal) throw e; }
   }
   return semErro(await doServidor(`${S}/MapServer/${camada}/query`, p));

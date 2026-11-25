@@ -17,33 +17,58 @@ export class NaoSuportado extends Error {}
 export const estado = { chave: null, manifesto: null, raiz: 'banco/', cache: new Map(), pedidos: new Map(), fetchOriginal: null, servidor: 0, local: 0 };
 
 // ------------------------------------------------------------------ arquivos
-export async function lerArquivo(caminho) {
+/** Pedido cancelado (bloco que saiu da tela): não é erro nem "não suportado". */
+export class Cancelado extends Error { constructor(m = 'cancelado') { super(m); this.name = 'Cancelado'; } }
+const ehAbort = (e) => e?.name === 'AbortError' || e instanceof Cancelado;
+
+/**
+ * Lê um arquivo do banco (com cache). Passo 7: o fetch só é abortado quando TODOS os interessados cancelam
+ * (contador por caminho); quem não passa sinal é interessado permanente.
+ */
+export async function lerArquivo(caminho, sinal) {
   if (estado.cache.has(caminho)) {
     contadores.cacheMemoria++;
     const v = estado.cache.get(caminho);
     estado.cache.delete(caminho); estado.cache.set(caminho, v); // mais recente por último
     return v;
   }
-  if (estado.pedidos.has(caminho)) return estado.pedidos.get(caminho);
-  const p = (async () => {
-    const r = await cronometrar('baixar', () => estado.fetchOriginal(estado.raiz + caminho));
-    if (r.status === 404) return null;
-    if (!r.ok) throw new Error(`banco local: HTTP ${r.status} em ${caminho}`);
-    let bytes = new Uint8Array(await r.arrayBuffer());
-    contadores.pedidos++; contadores.bytes += bytes.length;
-    if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
-      bytes = await cronometrar('descompactar', async () => {
-        const s = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-        return new Uint8Array(await new Response(s).arrayBuffer());
-      });
-    }
-    const d = cronometrarSinc('interpretar', () => JSON.parse(new TextDecoder().decode(bytes)));
-    estado.cache.set(caminho, d);
-    while (estado.cache.size > 800) estado.cache.delete(estado.cache.keys().next().value);
-    return d;
-  })();
-  estado.pedidos.set(caminho, p);
-  try { return await p; } finally { estado.pedidos.delete(caminho); }
+  if (sinal?.aborted) throw new Cancelado();
+  let pedido = estado.pedidos.get(caminho);
+  if (!pedido) {
+    const ac = new AbortController();
+    pedido = { ac, interessados: 0, promessa: null };
+    pedido.promessa = (async () => {
+      const r = await cronometrar('baixar', () => estado.fetchOriginal(estado.raiz + caminho, { signal: ac.signal }));
+      if (r.status === 404) return null;
+      if (!r.ok) throw new Error(`banco local: HTTP ${r.status} em ${caminho}`);
+      let bytes = new Uint8Array(await r.arrayBuffer());
+      contadores.pedidos++; contadores.bytes += bytes.length;
+      if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
+        bytes = await cronometrar('descompactar', async () => {
+          const s = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+          return new Uint8Array(await new Response(s).arrayBuffer());
+        });
+      }
+      const d = cronometrarSinc('interpretar', () => JSON.parse(new TextDecoder().decode(bytes)));
+      estado.cache.set(caminho, d);
+      while (estado.cache.size > 800) estado.cache.delete(estado.cache.keys().next().value);
+      return d;
+    })().finally(() => { if (estado.pedidos.get(caminho) === pedido) estado.pedidos.delete(caminho); });
+    estado.pedidos.set(caminho, pedido);
+  }
+  if (!sinal) { pedido.interessados = Infinity; return pedido.promessa.catch((e) => { throw ehAbort(e) ? new Cancelado() : e; }); }
+  pedido.interessados++;
+  return new Promise((ok, falha) => {
+    let saiu = false;
+    const largar = () => {
+      if (saiu) return; saiu = true;
+      if (--pedido.interessados <= 0) { pedido.ac.abort(); contadores.cancelados++; }
+      falha(new Cancelado());
+    };
+    sinal.addEventListener('abort', largar, { once: true });
+    pedido.promessa.then((v) => { if (!saiu) { saiu = true; sinal.removeEventListener('abort', largar); ok(v); } },
+      (e) => { if (!saiu) { saiu = true; sinal.removeEventListener('abort', largar); falha(ehAbort(e) ? new Cancelado() : e); } });
+  });
 }
 
 // ------------------------------------------------------------------ cofre (dados pessoais cifrados)
@@ -95,8 +120,8 @@ export const chaveAtual = () => estado.chave;
 export const manifestoAtual = () => estado.manifesto;
 
 /** Arquivo de dados + campos pessoais do cofre (arquivo .pess ao lado), quando o cofre está aberto. */
-export async function lerDados(caminho, info) {
-  const a = await lerArquivo(caminho);
+export async function lerDados(caminho, info, sinal) {
+  const a = await lerArquivo(caminho, sinal);
   if (!a || !info.pessoais || !estado.chave || a._p) return a;
   const pess = caminho.replace(/\.json\.gz$/, '.pess');
   try {
@@ -185,16 +210,16 @@ function naCaixaDoArquivo(arquivo, chaveBloco, info, ext) {
 }
 
 /** Como feicoesNaExtensao, mas devolve só as feições cuja caixa toca a extensão (sem varrer o arquivo inteiro). */
-export async function feicoesNaCaixa(info, ext) {
+export async function feicoesNaCaixa(info, ext, sinal) {
   const S = info._s, id = info._id;
-  if (info.z == null) return naCaixaDoArquivo(await lerDados(`dados/${S}/${id}/todos.json.gz`, info), null, info, ext);
+  if (info.z == null) return naCaixaDoArquivo(await lerDados(`dados/${S}/${id}/todos.json.gz`, info, sinal), null, info, ext);
   let blocos, visao = false;
   if (blocosNaExtensao(info, ext, false, true) > 16 && info.zv != null) { blocos = blocosNaExtensao(info, ext, true); visao = true; }
   else { blocos = blocosNaExtensao(info, ext); if (blocos.length > 150) throw new NaoSuportado('muitos blocos'); }
   const pasta = visao ? `v${info.zv}` : info.z;
   const caminho = (b) => (b === 'grandes' ? `dados/${S}/${id}/grandes.json.gz` : `dados/${S}/${id}/${pasta}/${b}.json.gz`);
   const lista = info.grandes ? [...blocos, 'grandes'] : blocos;
-  const partes = await Promise.all(lista.map((b) => lerDados(caminho(b), info).then((a) => naCaixaDoArquivo(a, visao && b !== 'grandes' ? null : b, info, ext))));
+  const partes = await Promise.all(lista.map((b) => lerDados(caminho(b), info, sinal).then((a) => naCaixaDoArquivo(a, visao && b !== 'grandes' ? null : b, info, ext))));
   return partes.flat();
 }
 
@@ -473,7 +498,7 @@ export async function candidatos(info, p) {
     return { lista: await feicoesDosBlocos(info, [...blocos]), q, ids: new Set(ids) };
   }
   if (q) {
-    return { lista: await feicoesNaCaixa(info, q.ext), q };
+    return { lista: await feicoesNaCaixa(info, q.ext, p._sinal), q };
   }
   for (const campo of info.indices || []) {
     const vs = valoresDoIndice(p.where, campo);
@@ -683,10 +708,10 @@ export const legenda = (S) => lerArquivo(`servicos/${S}/legend.json`);
  * -> { geo, n, oids, inicio (1ª parte de cada feição, n+1), partes (fim de cada parte, em pontos), xy (lon, lat),
  *      caixas (4 por feição), valores: [[...] por feição, na ordem de campos] }
  */
-export async function feicoesParaDesenho(S, camada, ext, campos = []) {
+export async function feicoesParaDesenho(S, camada, ext, campos = [], sinal) {
   const info = infoCamada(S, camada);
   if (!info?.geo) return null;
-  const fs = await feicoesNaCaixa(info, ext);
+  const fs = await feicoesNaCaixa(info, ext, sinal);
   const todos = camposDe(info).map((c) => c.toLowerCase());
   const pos = campos.map((c) => todos.indexOf(String(c).toLowerCase()));
   const vistos = new Set(), sel = [];

@@ -98,7 +98,8 @@ export const filaMunicipal = new Fila(4);
 
 async function consultar(camada, parametros, cancelada) {
   return filaMunicipal.rodar(async () => {
-    const d = await consultarOuServidor('Feature_Base', camada, parametros);
+    // Passo 7: sinal e nível vêm do bloco pedido pelo Cesium (pendurados na função "cancelada").
+    const d = await consultarOuServidor('Feature_Base', camada, parametros, { sinal: cancelada?.sinal, nivel: cancelada?.nivel });
     return d.features || [];
   }, cancelada);
 }
@@ -309,12 +310,17 @@ export class ProvedorVetorial extends ProvedorCanvas {
   requestImage(x, y, nivel, request) {
     const ret = this._grade.tileXYToNativeRectangle(x, y, nivel);
     const cancelada = () => request && request.state === Cesium.RequestState.CANCELLED;
+    const ac = new AbortController();
+    cancelada.sinal = ac.signal; cancelada.nivel = nivel;
     let relevo = Promise.resolve(null);
     if (this.modo === 'mapa') {
       relevo = blocoRelevo(x, y, nivel, request);
       if (!relevo) return undefined; // o agendador do Cesium pede de novo depois
     }
-    return Promise.all([relevo, this._dados(ret, nivel, cancelada)]).then(([r, dados]) => this._desenhar(ret, nivel, r, dados));
+    const vigia = setInterval(() => { if (cancelada()) ac.abort(); }, 100);
+    return Promise.all([relevo, this._dados(ret, nivel, cancelada)])
+      .then(([r, dados]) => { if (ac.signal.aborted) throw new Error('cancelado'); return this._desenhar(ret, nivel, r, dados); })
+      .finally(() => clearInterval(vigia));
   }
 
   async _dados(ret, nivel, cancelada) {

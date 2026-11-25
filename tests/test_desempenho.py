@@ -32,6 +32,11 @@ def test_roteiro_de_desempenho(navegador, servidor):  # noqa: F811
     for alt in (3000, 900, 400):
         p.evaluate(f"bussola.globo.camera.setView({{ destination: Cesium.Cartesian3.fromDegrees(-49.2817, -16.7047, {alt}) }})")
         p.wait_for_function("bussola.globo.cena.globe.tilesLoaded", polling=1000, timeout=420_000)
+    # Passo 7: aproximação rápida do nível 12 ao 18; os blocos intermediários devem ser cancelados.
+    for alt in (40000, 20000, 9000, 4000, 1800, 800, 400):
+        p.evaluate(f"bussola.globo.camera.setView({{ destination: Cesium.Cartesian3.fromDegrees(-49.2600, -16.6800, {alt}) }})")
+        p.wait_for_timeout(150)
+    p.wait_for_function("bussola.globo.cena.globe.tilesLoaded", polling=1000, timeout=420_000)
     p.evaluate("bussola.camadas.ligar('uso', true); bussola.camadas.ligar('energia', true)")
     p.wait_for_timeout(3000)
     p.wait_for_function("bussola.globo.cena.globe.tilesLoaded", polling=1000, timeout=420_000)
@@ -50,3 +55,4 @@ def test_roteiro_de_desempenho(navegador, servidor):  # noqa: F811
     # Desde o passo 4 as consultas rodam nos workers: as etapas deles vêm em rel["workers"].
     etapas = set(rel["etapas"]) | {k for w in rel.get("workers", []) for k in w["etapas"]}
     assert rel["contadores"]["pedidos"] > 0 and "filtrar" in etapas, rel
+    assert rel["contadores"]["cancelados"] > 0, rel["contadores"]  # passo 7

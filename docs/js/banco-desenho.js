@@ -1,12 +1,12 @@
 // Desenho dos temas do painel Camadas a partir do banco local (substitui o "export" do servidor).
 // Usa Cesium e canvas da página; os dados vêm do núcleo (banco-nucleo.js).
-import { NaoSuportado, camposDe, compilarWhere, feicoesParaDesenho, infoCamada, metadados, mx, my } from './banco-nucleo.js';
+import { Cancelado, NaoSuportado, camposDe, compilarWhere, feicoesParaDesenho, infoCamada, metadados, mx, my } from './banco-nucleo.js';
 import { cronometrar } from './desempenho.js';
 
 const Cesium = window.Cesium;
 
 // Quem entrega as feições para desenhar: o núcleo direto, ou os workers (definido pela fachada, banco.js).
-let fornecer = (S, camada, ext, campos) => feicoesParaDesenho(S, camada, ext, campos);
+let fornecer = (S, camada, ext, campos, { sinal } = {}) => feicoesParaDesenho(S, camada, ext, campos, sinal);
 export function definirFornecedorDesenho(fn) { fornecer = fn; }
 
 /** Campos que o desenho usa: os do símbolo (renderer) e os citados nos rótulos e nos filtros dos rótulos. */
@@ -146,17 +146,25 @@ export class ProvedorTema {
     return true;
   }
 
-  requestImage(x, y, nivel) {
-    return this._desenhar(x, y, nivel).catch((e) => { console.warn('tema local', this.S, e); return this._tela(); });
+  requestImage(x, y, nivel, request) {
+    // Passo 7: se o Cesium cancelar o bloco (saiu da tela), o pedido é abortado até o worker.
+    const ac = new AbortController();
+    const vigia = setInterval(() => { if (request && request.state === Cesium.RequestState.CANCELLED) ac.abort(); }, 100);
+    return this._desenhar(x, y, nivel, { sinal: ac.signal, nivel })
+      .catch((e) => {
+        if (e instanceof Cancelado || ac.signal.aborted) throw e; // o Cesium pede de novo quando o bloco voltar à tela
+        console.warn('tema local', this.S, e); return this._tela();
+      })
+      .finally(() => clearInterval(vigia));
   }
 
   _tela() { const c = document.createElement('canvas'); c.width = c.height = this._T; return c; }
 
-  async _desenhar(x, y, nivel) {
-    return cronometrar('desenhar', () => this._desenharSemMedida(x, y, nivel));
+  async _desenhar(x, y, nivel, opcoes = {}) {
+    return cronometrar('desenhar', () => this._desenharSemMedida(x, y, nivel, opcoes));
   }
 
-  async _desenharSemMedida(x, y, nivel) {
+  async _desenharSemMedida(x, y, nivel, opcoes = {}) {
     const metas = await this._carregarMetas();
     const ret = this._grade.tileXYToRectangle(x, y, nivel);
     const ext = [ret.west, ret.south, ret.east, ret.north].map((r) => r * 180 / Math.PI);
@@ -175,8 +183,8 @@ export class ProvedorTema {
       if (info.z != null && info.zv == null && nivel < info.z - 4) continue; // camada densa: só de perto
       const campos = camposDoDesenho(meta, info);
       let d;
-      try { d = await fornecer(info._s, info._id, caixa, campos); }
-      catch (e) { if (e instanceof NaoSuportado || /fora do banco|muitos blocos|grande demais/.test(e?.message || '')) continue; throw e; }
+      try { d = await fornecer(info._s, info._id, caixa, campos, opcoes); }
+      catch (e) { if (e instanceof Cancelado) throw e; if (e instanceof NaoSuportado || /fora do banco|muitos blocos|grande demais/.test(e?.message || '')) continue; throw e; }
       if (!d || !d.n) continue;
       const ren = meta.drawingInfo?.renderer;
       const alfa = 1 - (meta.drawingInfo?.transparency || 0) / 100;
