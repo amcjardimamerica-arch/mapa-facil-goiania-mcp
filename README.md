@@ -60,7 +60,7 @@ dados_mapafacil/          catálogo anterior do servidor (mantido)
 
 ## Levantamento do Jardim América e do Nova Suíça
 
-Painel **Bairros** (menu lateral). Dados em `docs/data/levantamento.json`, gerados a partir do KML e da
+Painel **Bairros** (menu lateral). Dados em `scripts/dados/levantamento.json`, gerados a partir do KML e da
 planilha compilados pela Associação:
 
 ```

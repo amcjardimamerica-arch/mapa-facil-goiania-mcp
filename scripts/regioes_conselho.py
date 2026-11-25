@@ -121,7 +121,7 @@ def main(pasta: str, planilha: str | None = None) -> int:
         bairros.append({"id": p.get("id"), "nome": (p.get("nm") or "").strip(), "pop": p.get("pop_total") or 0,
                         "g": g, "partes": partes, "fora": max(0.0, 1 - sum(partes.values())), "ajuste": ""})
 
-    lev = json.loads((RAIZ / "docs/data/levantamento.json").read_text(encoding="utf-8"))
+    lev = json.loads((RAIZ / "scripts/dados/levantamento.json").read_text(encoding="utf-8"))
     L = lev["eleitoral"]["locais"]
     lc_ = {c: i for i, c in enumerate(L["colunas"])}
     pontos_edital = [(x[lc_["Longitude"]], x[lc_["Latitude"]], x[lc_["CT — região"]], x[lc_["Local de votação"]])

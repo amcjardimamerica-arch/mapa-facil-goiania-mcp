@@ -143,7 +143,7 @@ def test_sistema_autossuficiente():
 def test_manifesto():
     m = ler("manifest.json")
     assert m["atualizado_em"].endswith("Z") and m["versao_extrator"]
-    assert set(m["etapas"]) >= {"territorio", "bairros", "edificios", "lugares", "logradouros", "camadas", "satelite"}
+    assert set(m["etapas"]) >= {"territorio", "bairros", "edificios", "lugares", "logradouros", "camadas"} and "satelite" not in m["etapas"]
     assert len(m["etapas"]["territorio"]["vizinhos"]) >= 8
 
 

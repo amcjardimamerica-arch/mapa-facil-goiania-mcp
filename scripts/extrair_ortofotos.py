@@ -92,7 +92,9 @@ def baixar(servico, z, x, y, tentativas=4):
     url = f"{MS}/{servico}/MapServer/export?{q}"
     for t in range(tentativas):
         try:
-            with urllib.request.urlopen(url, timeout=60) as r:
+            # O portal recusa (403) o identificador padrão do Python: pede como um navegador.
+            pedido = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Bussola; extracao das ortofotos)"})
+            with urllib.request.urlopen(pedido, timeout=60) as r:
                 dados = r.read()
             if not dados.startswith(b"\xff\xd8"):
                 raise ValueError("resposta não é JPEG")

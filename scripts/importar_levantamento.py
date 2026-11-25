@@ -1,4 +1,4 @@
-"""Importa o levantamento da Associação (KML + planilha) para docs/data/levantamento.json.
+"""Importa o levantamento da Associação (KML + planilha) para scripts/dados/levantamento.json (fora do site).
 
     python scripts/importar_levantamento.py caminho/compilado.kmz caminho/compilado.xlsx   (aceita .kml ou .kmz)
 
@@ -18,7 +18,7 @@ from pathlib import Path
 
 import openpyxl
 
-SAIDA = Path(__file__).resolve().parent.parent / "docs" / "data" / "levantamento.json"
+SAIDA = Path(__file__).resolve().parent.parent / "scripts" / "dados" / "levantamento.json"
 BAIRROS = ["Jardim América", "Nova Suíça"]
 
 RE_NOME = re.compile(r"<name>(.*?)</name>", re.S)

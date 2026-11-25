@@ -1,4 +1,4 @@
-"""Divide docs/data/levantamento.json em núcleo (o que o painel Associação precisa para abrir) e detalhes.
+"""Divide scripts/dados/levantamento.json em núcleo (o que o painel Associação precisa para abrir) e detalhes.
 
     python scripts/dividir_levantamento.py
 
@@ -33,7 +33,7 @@ def gravar(nome: str, dados) -> int:
 
 
 def main() -> int:
-    d = json.loads((DADOS / "levantamento.json").read_text(encoding="utf-8"))
+    d = json.loads((DADOS.parent.parent / "scripts" / "dados" / "levantamento.json").read_text(encoding="utf-8"))
     nucleo = {k: v for k, v in d.items() if k not in DETALHES and k != "lotes"}
     nucleo["lotes"] = [{k: l.get(k) for k in CAMPOS_LOTE} for l in d["lotes"]]
     ce = d["empresas"]["colunas"]

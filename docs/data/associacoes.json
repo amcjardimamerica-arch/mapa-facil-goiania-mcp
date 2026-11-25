@@ -5,7 +5,7 @@
       "id": "amc-jardim-america",
       "nome": "A.M.C. Jardim América",
       "bairros": ["Jardim América", "Nova Suíça"],
-      "dados": "levantamento.json",
+      "dados": "levantamento-nucleo.json",
       "postes": "postes.json",
       "ve_todas": true,
       "logins": ["admin", "amc.jardimamerica", "visitante"]

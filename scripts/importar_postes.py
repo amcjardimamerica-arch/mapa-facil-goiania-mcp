@@ -2,7 +2,7 @@
 
     python scripts/importar_postes.py caminho/08_-_Postes.kml
 
-Junta cada poste do KML com o ponto de iluminação do cadastro (docs/data/levantamento.json):
+Junta cada poste do KML com o ponto de iluminação do cadastro (scripts/dados/levantamento.json):
 primeiro pela plaqueta (nº do barramento), depois pela distância (até 6 m). Os pontos de iluminação
 sem poste no KML entram também, para nada se perder. Grava docs/data/postes.json.
 """
@@ -76,7 +76,7 @@ def ler_kml(caminho):
 
 
 def main(kml):
-    lev = json.loads((RAIZ / "docs/data/levantamento.json").read_text(encoding="utf-8"))
+    lev = json.loads((RAIZ / "scripts/dados/levantamento.json").read_text(encoding="utf-8"))
     il = lev["iluminacao"]
     C = il["colunas"]
     ix = {c: i for i, c in enumerate(C)}

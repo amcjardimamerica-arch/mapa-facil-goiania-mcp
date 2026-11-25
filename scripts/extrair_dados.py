@@ -16,7 +16,6 @@ Arquivos gerados em ``docs/data``:
 ``lugares.json``        parques e equipamentos de educação e saúde (busca e "Explorar")
 ``logradouros.json``    índice de logradouros por bairro (busca sem acento)
 ``camadas.json``        temas do portal, mapas base, fontes de busca e catálogo
-``satelite.json``       datas anteriores do satélite sobre Goiânia (Esri Wayback)
 ``manifest.json``       data da extração, contagens e fontes
 
 Uso::
@@ -66,12 +65,7 @@ METROS_POR_PAVIMENTO = 3.0
 RAIO_TERRA = 6_378_137.0
 CENTRO_GOIANIA = (-49.2648, -16.6869)  # lon, lat — ponto de teste dos serviços de imagem
 
-ETAPAS = ("territorio", "bairros", "edificios", "lugares", "logradouros", "camadas", "satelite")
-
-# Arquivo de versões do mosaico de satélite da Esri (World Imagery Wayback).
-WAYBACK_CONFIG = "https://s3-us-west-2.amazonaws.com/config.maptiles.arcgis.com/waybackconfig.json"
-# Camada do serviço de metadados que descreve as imagens vistas no nível de zoom 16.
-WAYBACK_CAMADA_META = 7
+ETAPAS = ("territorio", "bairros", "edificios", "lugares", "logradouros", "camadas")
 
 
 # --------------------------------------------------------------------------- rede
@@ -745,90 +739,6 @@ def etapa_camadas(saida: Path) -> dict:
 
 
 # ------------------------------------------------------------------------- 7 satélite
-def _nivel_maximo_bloco(url: str, lon: float, lat: float) -> int:
-    """Maior nível (17–19) em que a versão tem bloco no centro de Goiânia (acima disso o servidor devolve 404)."""
-    melhor = 17
-    for nivel in (18, 19):
-        n = 2 ** nivel
-        x = int((lon + 180) / 360 * n)
-        y = int((1 - math.asinh(math.tan(math.radians(lat))) / math.pi) / 2 * n)
-        try:
-            req = urllib.request.Request(url.format(z=nivel, y=y, x=x), headers=UA)
-            with urllib.request.urlopen(req, timeout=40) as r:
-                if r.status == 200 and (r.headers.get("Content-Type") or "").startswith("image/"):
-                    melhor = nivel
-                    continue
-        except (urllib.error.URLError, TimeoutError, OSError):
-            pass
-        break
-    return melhor
-
-
-def etapa_satelite(saida: Path) -> dict:
-    """Datas anteriores do satélite sobre Goiânia (Esri World Imagery Wayback).
-
-    O arquivo da Esri guarda cada versão publicada do mosaico desde 2014. Muitas
-    versões não mudam nada em Goiânia, então consultamos o serviço de metadados
-    no centro da cidade e ficamos com uma versão por DATA DE CAPTURA diferente.
-    A data é a da imagem no centro (Praça Cívica); outras partes do município
-    podem ter sido fotografadas em outra data.
-    """
-    log("[satelite] lendo o arquivo de versões do World Imagery Wayback…")
-    cfg = baixar_json(WAYBACK_CONFIG)
-    versoes = []
-    for numero, v in cfg.items():
-        publicada = v["itemTitle"].rsplit("Wayback ", 1)[-1].rstrip(")")
-        versoes.append({"versao": int(numero), "publicada": publicada, "meta": v.get("metadataLayerUrl"),
-                        "url": v["itemURL"].replace("{level}", "{z}").replace("{row}", "{y}").replace("{col}", "{x}")})
-    versoes.sort(key=lambda v: v["publicada"])
-    lon, lat = CENTRO_GOIANIA
-    ponto = json.dumps({"spatialReference": {"wkid": 102100}, "x": math.radians(lon) * RAIO_TERRA,
-                        "y": math.log(math.tan(math.pi / 4 + math.radians(lat) / 2)) * RAIO_TERRA})
-
-    def captura(v):
-        if not v["meta"]:
-            return None
-        try:
-            d = baixar_json(f"{v['meta']}/{WAYBACK_CAMADA_META}/query", {
-                "f": "json", "where": "1=1", "outFields": "SRC_DATE2,NICE_DESC,SRC_RES", "geometry": ponto,
-                "geometryType": "esriGeometryPoint", "spatialRel": "esriSpatialRelIntersects",
-                "returnGeometry": "false"}, tentativas=2, timeout=30)
-        except RuntimeError:
-            return None
-        feicoes = d.get("features") or []
-        if not feicoes or not feicoes[0]["attributes"].get("SRC_DATE2"):
-            return None
-        a = feicoes[0]["attributes"]
-        dia = datetime.fromtimestamp(a["SRC_DATE2"] / 1000, tz=timezone.utc).strftime("%Y-%m-%d")
-        return {"captura": dia, "fonte": (a.get("NICE_DESC") or "").strip(), "resolucao_m": a.get("SRC_RES")}
-
-    # O serviço de metadados é lento: 8 consultas simultâneas e no máximo 2 tentativas por versão.
-    # Versões vizinhas repetem a mesma imagem, então perder algumas respostas não tira datas da lista.
-    with ThreadPoolExecutor(max_workers=8) as pool:
-        capturas = list(pool.map(captura, versoes))
-    sem_resposta = sum(1 for c in capturas if c is None)
-    distintas: dict[str, dict] = {}
-    for v, c in zip(versoes, capturas):
-        if c and c["captura"] not in distintas:  # fica a primeira versão em que a imagem apareceu
-            distintas[c["captura"]] = {**c, "versao": v["versao"], "publicada": v["publicada"], "url": v["url"]}
-    lista = sorted(distintas.values(), key=lambda d: d["captura"])
-    if len(lista) < 3:
-        raise RuntimeError(f"só {len(lista)} data(s) de captura encontradas ({sem_resposta} versões sem resposta)")
-    for item in lista:
-        item["nivel_maximo"] = _nivel_maximo_bloco(item["url"], lon, lat)
-    tam = gravar(saida / "satelite.json", {
-        "fonte": "Esri World Imagery Wayback",
-        "config": WAYBACK_CONFIG,
-        "nota": "Uma versão por data de captura no centro de Goiânia (Praça Cívica). "
-                "Outras regiões do município podem ter data diferente na mesma versão.",
-        "ponto_de_referencia": [lon, lat],
-        "versoes": lista})
-    log(f"[satelite] {len(versoes)} versões publicadas, {len(lista)} datas de captura distintas "
-        f"({lista[0]['captura']} a {lista[-1]['captura']}), {sem_resposta} sem resposta, {tam/1024:.0f} KB")
-    return {"versoes_publicadas": len(versoes), "datas_distintas": len(lista), "sem_resposta": sem_resposta,
-            "primeira": lista[0]["captura"], "ultima": lista[-1]["captura"], "bytes": tam}
-
-
 # ------------------------------------------------------------------------------ main
 def main(argv: list[str] | None = None) -> int:
     raiz = Path(__file__).resolve().parent.parent
@@ -845,8 +755,7 @@ def main(argv: list[str] | None = None) -> int:
         pedidas.insert(0, "territorio")
 
     funcoes = {"territorio": etapa_territorio, "bairros": etapa_bairros, "edificios": etapa_edificios,
-               "lugares": etapa_lugares, "logradouros": etapa_logradouros, "camadas": etapa_camadas,
-               "satelite": etapa_satelite}
+               "lugares": etapa_lugares, "logradouros": etapa_logradouros, "camadas": etapa_camadas}
     caminho_manifesto = args.saida / "manifest.json"
     manifesto = {}
     if caminho_manifesto.exists():

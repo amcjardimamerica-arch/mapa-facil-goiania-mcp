@@ -34,7 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from extrair_dados import projecao_local  # noqa: E402
 
 RAIZ = Path(__file__).resolve().parent.parent
-LEVANTAMENTO = RAIZ / "docs" / "data" / "levantamento.json"
+LEVANTAMENTO = RAIZ / "scripts" / "dados" / "levantamento.json"
 SAIDA = RAIZ / "docs" / "data" / "areas_complemento.json"
 BAIRROS = {"000400000015": "Jardim América", "000400000017": "Nova Suíça"}
 SIGLA = {"Jardim América": "JA", "Nova Suíça": "NS"}

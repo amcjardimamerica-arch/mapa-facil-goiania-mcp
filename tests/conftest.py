@@ -14,7 +14,9 @@ sys.path.insert(0, str(RAIZ / "scripts"))
 
 
 def ler(nome: str):
-    return json.loads((DADOS / nome).read_text(encoding="utf-8"))
+    # O levantamento inteiro é fonte dos scripts e fica fora do site (scripts/dados); o site usa núcleo e detalhes.
+    pasta = RAIZ / "scripts" / "dados" if nome == "levantamento.json" else DADOS
+    return json.loads((pasta / nome).read_text(encoding="utf-8"))
 
 
 @pytest.fixture(scope="session")

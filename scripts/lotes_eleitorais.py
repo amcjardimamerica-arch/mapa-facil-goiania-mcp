@@ -2,7 +2,7 @@
 
     python scripts/lotes_eleitorais.py
 
-Lê os pontos eleitorais de docs/data/levantamento.json, acha no Mapa Fácil (Feature_Base, camada 0)
+Lê os pontos eleitorais de scripts/dados/levantamento.json, acha no Mapa Fácil (Feature_Base, camada 0)
 o lote que contém cada ponto (ou o mais próximo, até 40 m, quando o ponto cai na rua) e grava
 docs/data/eleitoral_lotes.json: { "lon,lat": { "aneis": [[[lon, lat], …]], "nm_lot", "ci", "nm_imovel", "distancia_m" } }.
 """
@@ -65,7 +65,7 @@ def lote_do_ponto(lon: float, lat: float) -> dict | None:
 
 
 def main() -> int:
-    lev = json.loads((RAIZ / "docs/data/levantamento.json").read_text(encoding="utf-8"))
+    lev = json.loads((RAIZ / "scripts/dados/levantamento.json").read_text(encoding="utf-8"))
     pontos = sorted({(p["lon"], p["lat"]) for p in lev["eleitoral"]["pontos"]})
     saida, falhas = {}, []
 
