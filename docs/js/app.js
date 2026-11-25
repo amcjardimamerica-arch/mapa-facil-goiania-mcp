@@ -67,14 +67,16 @@ async function iniciar() {
   // Dados do Mapa Fácil guardados no próprio site: o sistema deixa de depender do servidor da Prefeitura.
   const banco = await iniciarBanco();
   estadoAbertura('Carregando o território de Goiânia…');
-  const [geo, catalogo, bairros, lugares, manifesto] = await Promise.all([
+  const [geo, catalogo, bairros, lugares, manifesto, satelite] = await Promise.all([
     pedirJSON(`${CFG.dados}territorio.geojson`),
     pedirJSON(`${CFG.dados}camadas.json`),
     pedirJSON(`${CFG.dados}bairros.json`),
     pedirJSON(`${CFG.dados}lugares.json`),
     pedirJSON(`${CFG.dados}manifest.json`).catch(() => ({})),
+    pedirJSON(`${CFG.dados}satelite.json`).catch(() => ({ versoes: [] })), // datas anteriores do satélite (Esri Wayback)
   ]);
   catalogo.banco = banco;
+  catalogo.satelite = satelite.versoes || [];
   catalogo.bairros = bairros.bairros; // nomes de bairro no mapa desenhado
   const territorio = new Territorio(geo);
   const hash = lerHash();
@@ -151,14 +153,16 @@ async function iniciar() {
   // --------------------------------------------------------- bases e épocas
   const creditoBase = (chave) => {
     const b = bases.find((x) => x.chave === chave);
-    if (b?.tipo === 'satelite' || b?.tipo === 'historico') return `${b.titulo}: ortofoto da Prefeitura de Goiânia (banco local)`;
+    if (chave === 'satelite') return 'Satélite: Esri, Maxar, Earthstar Geographics';
+    if (b?.tipo === 'historico' && b.url) return `${b.titulo}: Esri Wayback${b.fonte ? `, ${b.fonte}` : ''}`;
+    if (b?.tipo === 'foto' || b?.tipo === 'historico') return `${b.titulo}: ortofoto da Prefeitura de Goiânia (banco local)`;
     if (chave === 'mapa') return 'Mapa: Prefeitura de Goiânia, relevo Copernicus DEM';
     return `${(b?.titulo || '').replace(' (cartografia municipal)', '')}: Prefeitura de Goiânia`;
   };
   const seletorData = $('#satelite-data');
   const marcarBase = () => {
     for (const b of $$('#lista-bases button, #epocas button')) b.setAttribute('aria-checked', String(b.dataset.base === globo.chaveBase));
-    seletorData.value = globo.chaveBase.startsWith('sat-') ? globo.chaveBase : '';
+    seletorData.value = bases.find((b) => b.chave === globo.chaveBase)?.tipo === 'historico' ? globo.chaveBase : '';
     $('#rotulo-esq').textContent = bases.find((b) => b.chave === globo.chaveBase)?.curto || '';
     // O mapa desenhado e o Mapa Básico já trazem ruas e nomes: a camada por cima do satélite sai.
     if (globo.camadaRealce) { globo.camadaRealce.show = !['basico', 'mapa'].includes(globo.chaveBase); globo.redesenhar(); }
@@ -170,7 +174,7 @@ async function iniciar() {
     catch (e) { aviso(`Não foi possível carregar essa imagem: ${e.message}`, 'alerta'); }
   };
   app.trocarBase = trocarBase;
-  const descricao = { satelite: 'ortofoto da Prefeitura', vetor: 'sem fotos: quadras, ruas e relevo', mapa: 'cartografia oficial com lotes' };
+  const descricao = { satelite: 'fotografia atual (Esri)', foto: 'ortofoto da Prefeitura', vetor: 'sem fotos: quadras, ruas e relevo', mapa: 'cartografia oficial com lotes' };
   const historicas = bases.filter((b) => b.tipo === 'historico');
   for (const b of bases.filter((x) => x.tipo !== 'historico')) {
     $('#lista-bases').append(el('button', { role: 'radio', dataset: { base: b.chave }, onclick: () => trocarBase(b.chave) },
@@ -179,10 +183,10 @@ async function iniciar() {
   // Ortofotos anteriores da Prefeitura guardadas no banco: uma opção por ano.
   seletorData.append(el('option', { value: '' }, historicas.length ? 'Escolher uma data…' : 'Indisponível'),
     ...historicas.map((b) => el('option', { value: b.chave },
-      `${b.titulo.replace('Foto aérea de ', '')}${b.fonte ? ` · ${b.fonte}` : ''}${b.resolucao ? ` · ${String(b.resolucao).replace('.', ',')} m` : ''}`)));
+      `${b.titulo.replace('Satélite de ', '').replace('Foto aérea de ', 'Ortofoto ')}${b.fonte ? ` · ${b.fonte}` : ''}${b.resolucao ? ` · ${String(b.resolucao).replace('.', ',')} m` : ''}`)));
   seletorData.disabled = !historicas.length;
   seletorData.addEventListener('change', () => trocarBase(seletorData.value || globo.basePadrao));
-  for (const b of bases.filter((x) => ['satelite', 'mapa'].includes(x.chave))) {
+  for (const b of bases.filter((x) => ['satelite', 'foto', 'mapa'].includes(x.chave))) {
     $('#epocas').append(el('button', { role: 'radio', dataset: { base: b.chave }, title: b.titulo, onclick: () => trocarBase(b.chave) }, b.curto));
   }
   marcarBase();
@@ -298,12 +302,18 @@ async function iniciar() {
   $('#nav-inclina-menos').addEventListener('click', () => globo.orbitar({ dInclinacao: rad(-12) }));
   $('#nav-inicio').addEventListener('click', () => globo.irParaInicio(1.6));
   // O pássaro da busca centraliza o mapa em Goiânia e bate a asa.
+  // Logomarca viva (Pássaro Guia): ao clicar, o pássaro salta e bate as asas e o mapa volta a Goiânia; parado,
+  // de tempos em tempos ele ajeita as penas ou pia.
+  const passaro = $('#marca-passaro .amc-bird');
+  const animar = (cls, ms) => { if (!passaro) return; passaro.classList.remove(cls); void passaro.getBoundingClientRect(); passaro.classList.add(cls); setTimeout(() => passaro.classList.remove(cls), ms); };
   $('#marca-passaro').addEventListener('click', (e) => {
     const b = e.currentTarget;
     b.classList.remove('voa'); void b.offsetWidth; b.classList.add('voa');
-    setTimeout(() => b.classList.remove('voa'), 2200); // 4 batidas de asa (8 × 0,26 s)
+    setTimeout(() => b.classList.remove('voa'), 2200);
+    animar('flap', 2080); animar('chirp', 600); // 4 batidas de asa (8 × 0,26 s)
     globo.irParaInicio(1.6);
   });
+  setInterval(() => { if (document.visibilityState === 'visible') animar(Math.random() < 0.5 ? 'ruffle' : 'chirp', 1000); }, 9000);
   $('#nav-foto').addEventListener('click', async () => {
     const blob = await globo.capturar();
     if (blob) baixarArquivo(`bussola-${new Date().toISOString().slice(0, 10)}.png`, blob);

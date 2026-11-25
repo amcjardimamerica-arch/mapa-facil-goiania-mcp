@@ -157,28 +157,47 @@ export class Globo {
 
   // ------------------------------------------------------------------- bases
   basesDisponiveis() {
-    const lista = [];
-    // Fotos aéreas: só as ortofotos da Prefeitura que estão no banco local. A mais recente é a "Foto aérea";
-    // as outras são épocas anteriores (seletor de data e comparação).
+    // Satélite atual da Esri (fundo padrão); depois a foto aérea da Prefeitura (banco local) e o Mapa.
+    const lista = [{ chave: 'satelite', titulo: 'Satélite', curto: 'Satélite', ano: null, tipo: 'satelite' }];
     const fotos = (CFG.ortofotos || []).filter((o) => imagemLocal(o.servico)).sort((a, b) => b.ano - a.ano);
-    if (fotos.length) lista.push({ chave: 'satelite', titulo: `Foto aérea ${fotos[0].ano}`, curto: 'Foto', ano: null, tipo: 'satelite', servico: fotos[0].servico, captura: String(fotos[0].ano) });
+    if (fotos.length) lista.push({ chave: 'foto', titulo: `Foto aérea ${fotos[0].ano} (Prefeitura)`, curto: 'Foto', ano: null, tipo: 'foto', servico: fotos[0].servico, captura: String(fotos[0].ano) });
     lista.push({ chave: 'mapa', titulo: 'Mapa', curto: 'Mapa', ano: null, tipo: 'vetor' });
     for (const b of this.catalogo.bases) if (!b.ano && imagemLocal(b.url.split('/MapServer')[0].split('/').pop())) lista.push({ ...b, titulo: 'Mapa Básico da Prefeitura', curto: 'Básico', tipo: 'mapa' });
+    // Datas anteriores do satélite (Esri World Imagery Wayback), da mais nova para a mais antiga.
+    for (const v of [...(this.catalogo.satelite || [])].reverse()) {
+      const quando = new Date(`${v.captura}T12:00:00Z`);
+      const mes = quando.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+      lista.push({ chave: `sat-${v.captura}`, titulo: `Satélite de ${mes}`, curto: `Sat. ${v.captura.slice(0, 4)}`,
+        ano: null, tipo: 'historico', url: v.url, fonte: v.fonte, resolucao: v.resolucao_m,
+        nivelMaximo: v.nivel_maximo || 17, captura: v.captura });
+    }
+    // Ortofotos anteriores da Prefeitura (banco local).
     for (const o of fotos.slice(1)) {
-      lista.push({ chave: `sat-${o.ano}`, titulo: `Foto aérea de ${o.ano}`, curto: `Foto ${o.ano}`, ano: null, tipo: 'historico',
+      lista.push({ chave: `foto-${o.ano}`, titulo: `Foto aérea de ${o.ano} (Prefeitura)`, curto: `Foto ${o.ano}`, ano: null, tipo: 'historico',
         servico: o.servico, fonte: 'Prefeitura de Goiânia', captura: String(o.ano) });
     }
     return lista;
   }
 
   /** Fundo padrão: a foto aérea mais recente guardada no banco; sem nenhuma, o Mapa. */
-  get basePadrao() { return this.basesDisponiveis().some((b) => b.chave === 'satelite') ? 'satelite' : 'mapa'; }
+  get basePadrao() { return 'satelite'; }
 
   async _provedorBase(chave) {
     if (chave === 'mapa') {
       return new ProvedorVetorial({ modo: 'mapa', bairros: this.catalogo.bairros || [], retangulo: this.ret, territorio: this.territorio });
     }
-    if (chave === 'satelite' || chave.startsWith('sat-')) {
+    if (chave === 'satelite') {
+      const s = CFG.satelite;
+      return new Cesium.UrlTemplateImageryProvider({ url: s.url, maximumLevel: s.nivelMaximo, credit: s.credito, enablePickFeatures: false,
+        tileDiscardPolicy: new Cesium.NeverTileDiscardPolicy() }); // sem conferência pixel a pixel (travava a tela)
+    }
+    if (chave.startsWith('sat-')) {
+      const v = this.basesDisponiveis().find((x) => x.chave === chave);
+      if (!v) throw new Error(`data de satélite desconhecida: ${chave}`);
+      return new Cesium.UrlTemplateImageryProvider({ url: v.url, maximumLevel: v.nivelMaximo, enablePickFeatures: false,
+        credit: `Satélite de ${v.captura}: Esri World Imagery Wayback${v.fonte ? `, ${v.fonte}` : ''}`, tileDiscardPolicy: new Cesium.NeverTileDiscardPolicy() });
+    }
+    if (chave === 'foto' || chave.startsWith('foto-')) {
       const v = this.basesDisponiveis().find((x) => x.chave === chave);
       const local = v && imagemLocal(v.servico);
       if (!local) throw new Error(`foto aérea indisponível no banco local: ${chave}`);

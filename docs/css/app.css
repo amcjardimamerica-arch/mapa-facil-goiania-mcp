@@ -84,9 +84,9 @@ ul, ol { padding: 0; list-style: none; }
 /* --------------------------------------------------------------------- busca */
 /* A busca fica centralizada sobre o mapa (a área à direita do trilho de ferramentas). */
 #topo { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 30; display: flex; align-items: center; gap: 8px; }
-#topo #caixa-busca { width: min(460px, calc(100vw - 2 * 230px)); }
+#topo #caixa-busca { width: min(430px, calc(100vw - 2 * 230px - 210px)); }
 body:has(#ficha:not([hidden])) #topo { left: calc(220px + (100vw - 220px - 432px) / 2); }
-body:has(#ficha:not([hidden])) #topo #caixa-busca { width: min(460px, calc(100vw - 220px - 432px - 24px)); }
+body:has(#ficha:not([hidden])) #topo #caixa-busca { width: min(430px, calc(100vw - 220px - 432px - 24px - 210px)); }
 /* Camadas, Bairros, Medir e Marcar: em linha no canto superior esquerdo, sobre a tela de dados que abrem. */
 #ferramentas { position: fixed; z-index: 30; top: 12px; left: 10px; }
 .topo-grupo { display: flex; gap: 6px; }
@@ -446,3 +446,22 @@ body:has(#ficha:not([hidden])) #gps-cartao { right: 432px; }
 .cadeados dt { color: var(--texto-2); }
 .cadeados dd { min-height: 1em; }
 .unidade-vertical { padding: 6px 0; border-top: 1px solid var(--linha); }
+
+/* ------------------------------------------------ logomarca viva (Pássaro Guia), ao lado da busca (1.25) */
+.marca-amc { flex: none; display: flex; align-items: center; gap: 4px; height: 46px; padding: 3px 14px 3px 8px; border: 1px solid #f0d27a;
+  border-radius: 23px; background: #fff; box-shadow: var(--sombra); cursor: pointer; }
+.marca-amc:hover, .marca-amc:focus-visible { border-color: var(--acento); }
+.marca-amc .amc-bird { width: 46px; height: auto; display: block; overflow: visible; filter: drop-shadow(0 2px 1px rgba(0, 29, 126, .18)); }
+.marca-amc .amc-nome { height: 34px; width: auto; display: block; }
+.amc-bird .amc-wing { transform-box: view-box; transform-origin: 558px 355px; }
+.amc-bird .amc-beak { transform-box: view-box; transform-origin: 940px 330px; }
+@media (prefers-reduced-motion: no-preference) {
+  .amc-bird.flap .amc-wing { animation: amc-flap .26s ease-in-out infinite alternate; }
+  .amc-bird.ruffle .amc-wing { animation: amc-ruffle .9s ease-in-out 1; }
+  .amc-bird.chirp .amc-beak { animation: amc-chirp .5s ease-in-out 1; }
+  .marca-amc.voa .amc-bird { animation: salto .55s cubic-bezier(.3, .7, .4, 1.4) 1; }
+}
+@media (max-width: 760px) { .marca-amc .amc-nome { display: none; } .marca-amc { padding: 3px 6px; } }
+@keyframes amc-flap{0%{transform:rotate(-16deg) scale(1,.92)}100%{transform:rotate(7deg) scale(1,1.01)}}
+@keyframes amc-ruffle{0%,100%{transform:none}30%{transform:rotate(-9deg)}55%{transform:rotate(4deg)}75%{transform:rotate(-3deg)}}
+@keyframes amc-chirp{0%,100%{transform:none}25%,60%{transform:rotate(16deg)}42%{transform:rotate(4deg)}}

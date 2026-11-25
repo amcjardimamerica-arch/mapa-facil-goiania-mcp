@@ -119,7 +119,8 @@ def test_camadas():
 
 
 def test_sistema_autossuficiente():
-    """Nada de fora: CesiumJS, fontes e relevo guardados no site; páginas sem CDN, Esri, Google ou Prefeitura."""
+    """Tudo do próprio site (CesiumJS, fontes, relevo e banco), com UMA exceção decidida pelo titular (1.25): as
+    imagens de satélite da Esri (atual e Wayback). Nada de CDN, Google, Prefeitura ou relevo externo."""
     import re
     import gzip as gz
     raiz = DADOS.parent
@@ -130,14 +131,19 @@ def test_sistema_autossuficiente():
     bruto = gz.decompress((raiz / "relevo/goiania.bin.gz").read_bytes())
     assert len(bruto) == meta["largura"] * meta["altura"] * 2 and 600 < meta["minimo"] < meta["maximo"] < 1100
     assert len(list((raiz / "relevo/sombra").rglob("*.png"))) > 100
-    assert not (DADOS / "satelite.json").exists()
+    esri = {"services.arcgisonline.com", "server.arcgisonline.com", "wayback.maptiles.arcgis.com"}
     for pagina in ("index.html", "sistema.html", "validacao.html"):
         html = (raiz / pagina).read_text(encoding="utf-8")
         externos = set(re.findall(r"https://([a-z0-9.*-]+)", html)) - {"www.w3.org"}
-        assert externos <= {"ipwho.is", "script.google.com", "script.googleusercontent.com"}, (pagina, externos)
-    proibidos = re.compile(r"arcgisonline|arcgis\.com|jsdelivr|googleapis|gstatic|wayback")
+        assert externos <= {"ipwho.is", "script.google.com", "script.googleusercontent.com"} | esri, (pagina, externos)
+    proibidos = re.compile(r"jsdelivr|googleapis|gstatic|elevation3d")  # a Prefeitura só como nome das consultas (a CSP bloqueia)
     for js in (raiz / "js").glob("*.js"):
-        assert not proibidos.search(js.read_text(encoding="utf-8")), js.name
+        texto = js.read_text(encoding="utf-8")
+        if js.name == "config.js":
+            texto = re.sub(r"const REST = '[^']*';", "", texto)  # nome das consultas que o banco local responde
+        assert not proibidos.search(texto), js.name
+    externos_js = set(re.findall(r"https://([a-z0-9.-]+)", (raiz / "js/config.js").read_text(encoding="utf-8")))
+    assert externos_js <= esri | {"portalmapa.goiania.go.gov.br", "ipwho.is", "script.google.com"}, externos_js
 
 
 def test_manifesto():

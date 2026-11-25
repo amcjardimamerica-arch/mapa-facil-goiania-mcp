@@ -234,19 +234,20 @@ def test_medicao_e_kml(mapa):
 
 
 def test_satelite_em_outras_datas(mapa):
-    """As ortofotos anteriores da Prefeitura entram como fundo e voltam à foto aérea mais recente."""
+    """Datas anteriores do satélite (Esri Wayback) e ortofotos antigas da Prefeitura entram como fundo e voltam ao satélite."""
     r = mapa.evaluate("""async () => {
       const datas = bussola.globo.basesDisponiveis().filter((b) => b.tipo === 'historico');
       if (!datas.length) return { total: 0 };
-      const alvo = datas[datas.length - 1].chave;            // a mais antiga
+      const alvo = datas[datas.length - 1].chave;            // a última: ortofoto de 2006 da Prefeitura
+      const wayback = datas.filter((b) => b.chave.startsWith('sat-')).length;
       await bussola.trocarBase(alvo);
       const durante = { base: bussola.globo.chaveBase, seletor: document.querySelector('#satelite-data').value };
       await bussola.trocarBase('satelite');
-      return { total: datas.length, alvo, durante, depois: bussola.globo.chaveBase,
+      return { total: datas.length, wayback, alvo, durante, depois: bussola.globo.chaveBase,
                opcoes: document.querySelectorAll('#satelite-data option').length };
     }""")
-    assert r["total"] >= 2
-    assert r["durante"]["base"] == r["alvo"] == r["durante"]["seletor"] and r["alvo"] == "sat-2006"
+    assert r["total"] >= 2 and r["wayback"] >= 3
+    assert r["durante"]["base"] == r["alvo"] == r["durante"]["seletor"] and r["alvo"] == "foto-2006"
     assert r["depois"] == "satelite" and r["opcoes"] == r["total"] + 1
 
 
@@ -300,7 +301,7 @@ def test_fundos_sem_ortofotos_e_mapa_desenhado(mapa):
                realceModo: bussola.globo.camadaRealce?.imageryProvider.modo };
     }""")
     assert not any(c.startswith("orto") for c in r["chaves"]) and "mapa" in r["chaves"]
-    assert r["barra"] == ["Foto", "Mapa"]
+    assert r["barra"] == ["Satélite", "Foto", "Mapa"]  # satélite Esri (padrão), foto da Prefeitura e mapa
     assert r["durante"] == {"base": "mapa", "modo": "mapa", "realceVisivel": False}
     assert r["bloco"] == [512, 512] and r["realceModo"] == "sobre"
 

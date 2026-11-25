@@ -209,7 +209,15 @@ const grupos = [
     itens.push(['Mapa desenhado: relevo sombreado (próprio)', async () => imagem(CFG.relevo.sombra.replace('{z}', 13).replace('{x}', 2973).replace('{y}', 4480))]);
     return itens;
   } },
-  { titulo: 'Fotos aéreas, relevo e globo (tudo no próprio site)', testes: [
+  { titulo: 'Satélite, fotos aéreas, relevo e globo', testes: [
+    ['Satélite (Esri World Imagery)', async () => imagem(CFG.satelite.url.replace('{z}', 15).replace('{y}', 17924).replace('{x}', 11900))],
+    ['Satélite em outras datas (Esri Wayback)', async () => {
+      const d = await carregar('satelite.json');
+      exigir(d.versoes?.length >= 3, 'menos de 3 datas de captura no arquivo');
+      const v = d.versoes[0];
+      const txt = await imagem(v.url.replace('{z}', 15).replace('{y}', 17924).replace('{x}', 11900));
+      return `${d.versoes.length} datas, de ${v.captura} a ${d.versoes.at(-1).captura}; bloco da mais antiga: ${txt}`;
+    }],
     ['Fotos aéreas (ortofotos da Prefeitura no banco local)', async () => {
       const man = await (await fetch(`banco/manifesto.json?nc=${Date.now()}`, { cache: 'no-store' })).json();
       const tem = (CFG.ortofotos || []).filter((o) => man.imagens?.[o.servico]);

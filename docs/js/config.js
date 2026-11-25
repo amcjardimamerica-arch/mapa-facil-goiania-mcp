@@ -1,5 +1,5 @@
 // Configuração da Bússola. Tudo que depende de endereço externo fica aqui.
-export const VERSAO = '1.24.2';
+export const VERSAO = '1.25.0';
 
 // Endereços do Mapa Fácil: servem só de NOME das consultas, que o banco local responde (banco.js). A política de
 // segurança das páginas (CSP) não deixa o navegador se conectar a eles.
@@ -25,6 +25,12 @@ export const CFG = {
   // Fotos aéreas: só as ortofotos da Prefeitura guardadas no banco local (banco/blocos/<serviço>). Sem
   // nenhuma imagem de fora (Esri e Google foram retirados: os termos deles não permitem guardar as fotos).
   // A primeira da lista que existir no banco é o fundo "Foto aérea"; as demais aparecem como épocas anteriores.
+  // Satélite atual da Esri (World Imagery) e datas anteriores (Wayback, data/satelite.json): o fundo padrão.
+  satelite: {
+    url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    nivelMaximo: 19,
+    credito: 'Imagem de satélite: Esri, Maxar, Earthstar Geographics',
+  },
   ortofotos: [
     { servico: 'Mapa_Ortofoto2016v2', ano: 2016 },
     { servico: 'Mapa_Ortofoto2011v2', ano: 2011 },
