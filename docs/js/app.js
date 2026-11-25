@@ -126,7 +126,7 @@ async function iniciar() {
   // Os locais de votação só aparecem com o projeto Zonas Eleitorais ligado.
   levantamento.opcoes.eleicao = '';
   const localizacao = new Localizacao({ globo, camadas, territorio, botaoGps: $('#nav-local') });
-  Object.assign(app, { globo, camadas, identificar, servicos, edificios, medir, marcadores, poligonos, localizacao, lotes, levantamento, busca, territorio, catalogo, manifesto, sessao });
+  Object.assign(app, { globo, camadas, identificar, servicos, edificios, medir, marcadores, poligonos, localizacao, lotes, levantamento, eleicoes, busca, territorio, catalogo, manifesto, sessao });
 
   const bases = globo.basesDisponiveis();
   const baseInicial = bases.some((b) => b.chave === hash.b) ? hash.b : 'satelite';

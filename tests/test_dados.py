@@ -205,6 +205,29 @@ def test_canteiros_centrais_e_nomes_completos():
     assert len({a["v"][-1] for a in d["areas"]}) == len(d["areas"])
 
 
+def test_conselho_tutelar_regioes_oficiais():
+    """6 Conselhos Tutelares = 2 Regiões da SEPLAM cada (Resolução CMDCA 85/2023), com bairros e locais do edital de 2023."""
+    d = ler("conselho_regioes.geojson")
+    ct = {f["properties"]["regiao"]: f for f in d["features"] if f["properties"]["tipo"] == "conselho"}
+    sub = {f["properties"]["regiao"]: f["properties"]["conselho"] for f in d["features"] if f["properties"]["tipo"] == "regiao_administrativa"}
+    assert set(ct) == {"Centro-Sul", "Oeste", "Noroeste", "Norte", "Leste", "Campinas"} and len(sub) == 12
+    assert sub["Central"] == sub["Sul"] == "Centro-Sul" and sub["Oeste"] == "Campinas" and sub["Sudoeste"] == "Oeste"
+    assert "Resolução CMDCA" in d["nota"]
+    lev = ler("levantamento.json")
+    k = lev["eleitoral"]["conselho"]
+    assert sum(f["properties"]["locais"] for f in ct.values()) == len(k["linhas"])
+    ja = Point(-49.2857, -16.7077)
+    assert shape(ct["Centro-Sul"]["geometry"]).contains(ja)
+    assert any("Jardim Am" in b for b in ct["Centro-Sul"]["properties"]["bairros"])
+    for p in (f["properties"] for f in ct.values()):
+        assert p["bairros_n"] > 40 and p["populacao"] > 100000 and 40 < p["area_km2"] < 120 and p["sede"]
+    # as regiões não se sobrepõem
+    gs = [shape(f["geometry"]) for f in ct.values()]
+    for i in range(len(gs)):
+        for j in range(i + 1, len(gs)):
+            assert gs[i].intersection(gs[j]).area < 1e-6
+
+
 def test_condominios_e_unidades():
     """Condomínio = mais de 5 inscrições de IPTU (ou outro indício); cada unidade tem a sua base e " -- " é a geral."""
     d = ler("levantamento.json")

@@ -776,3 +776,23 @@ def test_canteiros_centrais_e_nomes_completos(mapa):
     assert r["ficha"]["titulo"] == "Canteiro Central - Av. T63 - Jardim América", r["ficha"]
     assert "AP-JA-CC" in r["ficha"]["corpo"] and "estimado" in r["ficha"]["corpo"], r["ficha"]
     assert r["imig"] == "Praça C232" and "Praça do Imigrante Italiano" in r["fichaImig"] and r["semDuplicar"] == 0, r
+
+
+def test_conselho_tutelar_regioes_oficiais(mapa):
+    """Regiões do Conselho Tutelar pela Resolução CMDCA 85/2023 (duas Regiões da SEPLAM cada), com bairros e locais na ficha."""
+    r = mapa.evaluate("""async () => {
+      const e = bussola.eleicoes;
+      await e.definir('conselho');
+      const nomes = e.areas.map((a) => a.props.regiao).sort();
+      const tratou = e.aoClicar({ lon: -49.2857, lat: -16.7077 });   // Jardim América
+      const ficha = { titulo: document.querySelector('#ficha-titulo').textContent, corpo: document.querySelector('#ficha-corpo').textContent };
+      const campinas = e.aoClicar({ lon: -49.2950, lat: -16.6740 }) && document.querySelector('#ficha-titulo').textContent;
+      const tracejadas = e.fonte.entities.values.filter((x) => x.polyline && x.polyline.material instanceof Cesium.PolylineDashMaterialProperty).length;
+      await e.definir(''); bussola.identificar.fechar();
+      return { nomes, tratou, ficha, campinas, tracejadas, sub: (e._subregioes || []).length };
+    }""")
+    assert r["nomes"] == ["Campinas", "Centro-Sul", "Leste", "Noroeste", "Norte", "Oeste"], r
+    assert r["tratou"] and r["ficha"]["titulo"] == "Conselho Tutelar Centro-Sul", r["ficha"]
+    assert "Central + Sul" in r["ficha"]["corpo"] and "Região Sul" in r["ficha"]["corpo"] and "Resolução CMDCA n.º 85/2023" in r["ficha"]["corpo"], r["ficha"]
+    assert "Jardim América" in r["ficha"]["corpo"] and "COLÉGIO ESTADUAL JARDIM AMÉRICA" in r["ficha"]["corpo"].upper(), r["ficha"]["corpo"][:400]
+    assert r["campinas"] == "Conselho Tutelar Campinas" and r["sub"] == 12 and r["tracejadas"] >= 12, r

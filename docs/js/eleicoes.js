@@ -1,7 +1,8 @@
 // Mapas de eleição (painel Camadas, cidade inteira): Zonas Eleitorais e Regiões do Conselho Tutelar.
 //
-// Cada mapa tem a sua finalidade: as zonas são do TSE; as regiões do Conselho Tutelar juntam zonas inteiras ou
-// partes delas. As divisas são duas linhas pretas com uma vermelha (#FF0000) no meio — diferentes das divisas de
+// Cada mapa tem a sua finalidade: as zonas são do TSE; os 6 Conselhos Tutelares juntam, cada um, duas das 12 Regiões
+// da SEPLAM (Resolução CMDCA 85/2023; data/conselho_regioes.geojson, gerado por scripts/regioes_conselho.py).
+// As divisas são duas linhas pretas com uma vermelha (#FF0000) no meio — diferentes das divisas de
 // bairro (preta, amarela, preta) — e cada área tem uma cor clara própria. Com um desses mapas ligado, o clique
 // seleciona a zona/região inteira (ou o colégio de votação), nunca quadra ou lote.
 import { CFG } from './config.js';
@@ -38,10 +39,18 @@ export class Eleicoes {
   async _regioes() {
     if (this._cacheReg) return this._cacheReg;
     const d = await pedirJSON(`${CFG.dados}conselho_regioes.geojson`);
-    this._cacheReg = d.features.map((f, i) => {
-      const polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;
-      return { nome: `Região ${f.properties.regiao}`, aneis: polys.flat(), cor: CORES[(i + 3) % CORES.length],
-        info: { 'Região do Conselho Tutelar': f.properties.regiao, 'Locais de votação no edital': f.properties.locais, Observação: d.nota } };
+    const aneisDe = (f) => (f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates).flat();
+    // Regiões administrativas da SEPLAM (duas por Conselho): só a divisa interna, tracejada.
+    this._subregioes = d.features.filter((f) => f.properties.tipo === 'regiao_administrativa')
+      .map((f) => ({ nome: `Região ${f.properties.regiao}`, conselho: f.properties.conselho, aneis: aneisDe(f) }));
+    this._cacheReg = d.features.filter((f) => (f.properties.tipo || 'conselho') === 'conselho').map((f, i) => {
+      const p = f.properties;
+      const km2 = (v) => (v == null ? null : `${String(v).replace('.', ',')} km²`);
+      return { nome: `Conselho Tutelar ${p.regiao}`, aneis: aneisDe(f), cor: CORES[(i + 3) % CORES.length], props: p,
+        info: { 'Conselho Tutelar': p.regiao, 'Regiões administrativas': (p.regioes_administrativas || []).join(' + '),
+          Área: km2(p.area_km2), 'População (Mapa Fácil)': p.populacao, Bairros: p.bairros_n,
+          'Locais de votação (2023)': p.locais, Urnas: p.urnas, 'Eleitores aptos (2023)': p.eleitores,
+          Sede: p.sede, Telefone: p.telefone, Plantão: p.plantao, Fonte: d.nota } };
     });
     return this._cacheReg;
   }
@@ -68,6 +77,10 @@ export class Eleicoes {
         outlineWidth: 4, style: Cesium.LabelStyle.FILL_AND_OUTLINE, heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
         disableDepthTestDistance: Number.POSITIVE_INFINITY, distanceDisplayCondition: new Cesium.DistanceDisplayCondition(1500, 120000) } });
     }
+    if (modo === 'conselho') for (const r of this._subregioes || []) for (const anel of r.aneis) {
+      this.fonte.entities.add({ polyline: { positions: Cesium.Cartesian3.fromDegreesArray(anel.flat()), clampToGround: true, width: 1.6, zIndex: 2,
+        material: new Cesium.PolylineDashMaterialProperty({ color: Cesium.Color.WHITE.withAlpha(0.9), dashLength: 14 }) } });
+    }
     this.globo.redesenhar();
   }
 
@@ -78,10 +91,18 @@ export class Eleicoes {
     if (!a) return false;
     const id = this.identificar;
     id.limparDestaque();
-    id.abrir({ titulo: a.nome, subtitulo: this.modo === 'zonas' ? 'Zona eleitoral · TSE' : 'Conselho Tutelar · eleição de 2023', ponto });
+    id.abrir({ titulo: a.nome, subtitulo: this.modo === 'zonas' ? 'Zona eleitoral · TSE' : 'Conselho Tutelar · Resolução CMDCA 85/2023', ponto });
     id.destacarLonLat(a.aneis, { fechado: true, cor: Cesium.Color.fromCssColorString(a.cor) });
     id.corpo.append(id.tabela(Object.entries(a.info).filter(([, v]) => v !== null && v !== '' && v !== undefined).map(([k, v]) => [k, typeof v === 'number' ? fmtNum(v) : String(v)])));
-    if (this.modo === 'conselho') id.corpo.append(el('p', { class: 'nota' }, 'Regiões desenhadas a partir dos locais de votação do edital de 2023; o desenho oficial do CMDCA pode diferir.'));
+    if (this.modo === 'conselho' && a.props) {
+      const sub = (this._subregioes || []).find((r) => r.conselho === a.props.regiao && dentro(r.aneis, ponto.lon, ponto.lat));
+      if (sub) id.corpo.append(el('p', {}, `Ponto clicado: ${sub.nome} (SEPLAM).`));
+      const lista = (titulo, itens) => (itens && itens.length
+        ? el('details', { class: 'lv-lista' }, el('summary', {}, `${titulo} (${fmtNum(itens.length)})`), el('p', {}, itens.join('; '))) : null);
+      for (const bloco of [lista('Locais de votação de 2023', a.props.locais_votacao), lista('Bairros', a.props.bairros),
+        lista('Bairros divididos com outro Conselho', a.props.bairros_divididos), lista('Ajustes ao desenho da SEPLAM', a.props.ajustes)]) if (bloco) id.corpo.append(bloco);
+      id.corpo.append(el('p', { class: 'nota' }, 'Delimitação oficial: Resolução CMDCA n.º 85/2023 — cada Conselho atende duas Regiões da SEPLAM (Mapa Fácil). Áreas rurais sem bairro ficam sem cor.'));
+    }
     return true;
   }
 }
