@@ -809,3 +809,33 @@ def test_conselho_tutelar_regioes_oficiais(mapa):
     assert "Jardim América" in r["ficha"]["corpo"] and "COLÉGIO ESTADUAL JARDIM AMÉRICA" in r["ficha"]["corpo"].upper(), r["ficha"]["corpo"][:400]
     # As 12 Regiões ficam só na ficha: nenhuma divisa (linha branca) dentro dos Conselhos.
     assert r["campinas"] == "Conselho Tutelar Campinas" and r["sub"] == 12 and r["tracejadas"] == 0, r
+
+
+def test_mapa_abre_com_a_trava_de_seguranca(navegador, servidor):
+    """Com a política de segurança (CSP) LIGADA, como no navegador de quem usa: o globo carrega e desenha,
+    sem nenhuma violação da CSP nem erro de página (os demais testes rodam com a CSP desligada)."""
+    import time as _t
+    ctx = navegador.new_context(viewport={"width": 1280, "height": 800})
+    ctx.route("**/acesso/usuarios.json", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(USUARIOS_TESTE)))
+    ctx.add_init_script(f"localStorage.setItem('bussola:sessao', JSON.stringify({json.dumps(SESSAO_TESTE)}))")
+    ctx.add_init_script("window.__csp = []; document.addEventListener('securitypolicyviolation', (e) => window.__csp.push(e.violatedDirective + ' ' + e.blockedURI + ' ' + (e.sourceFile || '').split('/').pop() + ':' + e.lineNumber + ':' + e.columnNumber));")
+    p = ctx.new_page()
+    erros = []
+    p.on("pageerror", lambda e: erros.append(str(e)[:200]))
+    p.goto(f"{servidor}/sistema.html#ed=0&r=0&b=mapa", wait_until="domcontentloaded", timeout=120_000)
+    for _ in range(90):  # sem wait_for_function: ele usa eval, que a CSP bloqueia
+        if p.evaluate("!!(window.bussola && bussola.pronto)"):
+            break
+        _t.sleep(2)
+    carregou = False
+    for _ in range(90):
+        if p.evaluate("bussola.globo.cena.globe.tilesLoaded"):
+            carregou = True
+            break
+        _t.sleep(2)
+    r = p.evaluate("({ csp: window.__csp, erros: bussola.erros, camadas: bussola.globo.viewer.imageryLayers.length })")
+    ctx.close()
+    assert carregou, "o globo não terminou de carregar com a CSP ligada"
+    # Única exceção conhecida: a biblioteca protobuf, dentro do Cesium, testa um eval num try/catch e segue sem ele.
+    csp = [v for v in r["csp"] if not v.startswith("script-src eval Cesium.js")]
+    assert not csp and not erros and not r["erros"], (r, erros)
