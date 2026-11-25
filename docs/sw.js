@@ -4,7 +4,7 @@
 // - banco/ e data/: mostra o que já está guardado e atualiza por trás (o banco muda só a cada nova extração).
 // - Páginas, código e estilos: sempre conferidos com o servidor (versão nova aparece na hora).
 // - O login (acesso/) segue direto para a rede.
-const CACHE = 'bussola-dados-v2';
+const CACHE = 'bussola-dados-v2'; // (o nome do cache não muda: os dados guardados continuam valendo)
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil((async () => {
@@ -27,7 +27,9 @@ self.addEventListener('fetch', (e) => {
   e.respondWith((async () => {
     const cache = await caches.open(CACHE);
     const guardado = await cache.match(e.request);
-    const rede = fetch(e.request).then((r) => { if (r.ok) cache.put(e.request, r.clone()); return r; }).catch(() => null);
+    // Rede instável: uma segunda tentativa antes de desistir.
+    const buscar = () => fetch(e.request).catch(() => new Promise((ok) => setTimeout(ok, 500)).then(() => fetch(e.request)));
+    const rede = buscar().then((r) => { if (r.ok) cache.put(e.request, r.clone()); return r; }).catch(() => null);
     if (guardado) { e.waitUntil(rede); return guardado; }
     return (await rede) || new Response('', { status: 504 });
   })());

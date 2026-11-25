@@ -38,7 +38,18 @@ export async function lerArquivo(caminho, sinal) {
     const ac = new AbortController();
     pedido = { ac, interessados: 0, promessa: null };
     pedido.promessa = (async () => {
-      const r = await cronometrar('baixar', () => estado.fetchOriginal(estado.raiz + caminho, { signal: ac.signal }));
+      // Falha de rede passageira ("Failed to fetch") ou erro 5xx do servidor: tenta de novo até 3 vezes.
+      const r = await cronometrar('baixar', async () => {
+        for (let tentativa = 1; ; tentativa++) {
+          try {
+            const resp = await estado.fetchOriginal(estado.raiz + caminho, { signal: ac.signal });
+            if (resp.status < 500 || tentativa >= 3) return resp;
+          } catch (e) {
+            if (ac.signal.aborted || e?.name === 'AbortError' || tentativa >= 3) throw e;
+          }
+          await new Promise((ok) => setTimeout(ok, 400 * tentativa));
+        }
+      });
       if (r.status === 404) return null;
       if (!r.ok) throw new Error(`banco local: HTTP ${r.status} em ${caminho}`);
       let bytes = new Uint8Array(await r.arrayBuffer());

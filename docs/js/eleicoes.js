@@ -52,6 +52,7 @@ export class Eleicoes {
         info: { 'Conselho Tutelar': p.regiao, 'Regiões administrativas': (p.regioes_administrativas || []).join(' + '),
           Área: km2(p.area_km2), 'População (Mapa Fácil)': p.populacao, Bairros: p.bairros_n,
           'Locais de votação (2023)': p.locais, Urnas: p.urnas, 'Eleitores aptos (2023)': p.eleitores,
+          'Divisas nas áreas sem bairro': (p.referencias_divisa || []).join('; ') || null,
           Sede: p.sede, Telefone: p.telefone, Plantão: p.plantao, Fonte: d.nota } };
     });
     return this._cacheReg;
@@ -104,7 +105,7 @@ export class Eleicoes {
         ? el('details', { class: 'lv-lista' }, el('summary', {}, `${titulo} (${fmtNum(itens.length)})`), el('p', {}, itens.join('; '))) : null);
       for (const bloco of [lista('Locais de votação de 2023', a.props.locais_votacao), lista('Bairros', a.props.bairros),
         lista('Bairros divididos com outro Conselho', a.props.bairros_divididos), lista('Ajustes ao desenho da SEPLAM', a.props.ajustes)]) if (bloco) id.corpo.append(bloco);
-      id.corpo.append(el('p', { class: 'nota' }, 'Delimitação oficial: Resolução CMDCA n.º 85/2023 — cada Conselho atende duas Regiões da SEPLAM. As áreas do município sem bairro foram atribuídas ao Conselho mais próximo, até o limite de Goiânia.'));
+      id.corpo.append(el('p', { class: 'nota' }, 'Delimitação oficial: Resolução CMDCA n.º 85/2023 — cada Conselho atende duas Regiões da SEPLAM. As áreas do município sem bairro vão até o limite de Goiânia, com divisas por rodovias, avenidas, estradas e cursos d\'água.'));
     }
     return true;
   }

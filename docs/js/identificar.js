@@ -219,8 +219,11 @@ export class Identificar {
     if (base && base.ids.length) {
       tarefas.push(this._identify(base.tema.url, 'all', base.ids, ponto, 1)
         .then((r) => n === this.pedido && this._mostrarBase(r.results || [], ponto))
+        // Uma nova tentativa automática antes de avisar (rede instável no aparelho).
+        .catch(() => (n === this.pedido ? new Promise((ok) => setTimeout(ok, 800)).then(() => this._identify(base.tema.url, 'all', base.ids, ponto, 1)
+          .then((r) => n === this.pedido && this._mostrarBase(r.results || [], ponto))) : null))
         .catch((e) => n === this.pedido && this.corpo.append(el('p', { class: 'nota erro' },
-          `A base cadastral não respondeu (${e.message}). `,
+          `Não foi possível ler os dados do lote agora (${e.message}). Verifique a internet e tente de novo. `,
           el('button', { class: 'botao-texto', onclick: () => this.emPonto(ponto) }, 'Tentar de novo')))));
     }
     for (const { tema, ids } of this.camadas.ativos()) {
