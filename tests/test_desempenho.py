@@ -33,9 +33,10 @@ def test_roteiro_de_desempenho(navegador, servidor):  # noqa: F811
         p.evaluate(f"bussola.globo.camera.setView({{ destination: Cesium.Cartesian3.fromDegrees(-49.2817, -16.7047, {alt}) }})")
         p.wait_for_function("bussola.globo.cena.globe.tilesLoaded", polling=1000, timeout=420_000)
     # Passo 7: aproximação rápida do nível 12 ao 18; os blocos intermediários devem ser cancelados.
-    for alt in (40000, 20000, 9000, 4000, 1800, 800, 400):
-        p.evaluate(f"bussola.globo.camera.setView({{ destination: Cesium.Cartesian3.fromDegrees(-49.2600, -16.6800, {alt}) }})")
-        p.wait_for_timeout(150)
+    # Área ainda não carregada no roteiro, para os blocos intermediários estarem de fato pendentes.
+    for alt in (40000, 24000, 14000, 8000, 4500, 2500, 1400, 800, 450):
+        p.evaluate(f"bussola.globo.camera.setView({{ destination: Cesium.Cartesian3.fromDegrees(-49.3150, -16.6550, {alt}) }})")
+        p.wait_for_timeout(250)
     p.wait_for_function("bussola.globo.cena.globe.tilesLoaded", polling=1000, timeout=420_000)
     p.evaluate("bussola.camadas.ligar('uso', true); bussola.camadas.ligar('energia', true)")
     p.wait_for_timeout(3000)

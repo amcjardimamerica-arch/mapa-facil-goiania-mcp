@@ -8,6 +8,7 @@ import { CFG } from './config.js';
 import { $$, el, pedirJSON, debounce, semAcento, aviso, fmtNum } from './util.js';
 import { provedorExport } from './globo.js';
 import { temServico, ProvedorTema, imagemLocal } from './banco.js';
+import { idsDaFicha } from './mapavetorial.js';
 
 /** Organização dos projetos. `ids` lista camadas (folhas ou grupos) do serviço; sem `ids`, entra o serviço todo. */
 export const ORGANIZACAO = [
@@ -143,7 +144,9 @@ export class Camadas {
       corpo.append(caixa);
       this.especiais[g.especial](caixa, g);
     }
-    if (g.consulta) {
+    if (g.consulta && g.chave === 'base') {
+      // opções montadas pelo especial "base" (app.js)
+    } else if (g.consulta) {
       corpo.append(el('p', { class: 'nota' }, 'Ficha do local (clique no mapa): marque o que deve aparecer.'));
     } else if (g.proprio) {
       // desenho próprio: sem opacidade nem legenda do servidor
@@ -157,7 +160,8 @@ export class Camadas {
         el('button', { class: 'botao-texto', title: 'Voltar à seleção padrão do portal', onclick: () => this.restaurar(g.chave) }, 'Padrão')), legenda);
       if (g.marcadores) corpo.append(el('p', { class: 'nota' }, 'Os pontos aparecem como marcadores com ícone por tipo; clique em um marcador para ver os dados.'));
     }
-    for (const f of (g.proprio ? [] : g.fontes)) {
+    // Base Cadastral: as camadas são controladas pelas opções do próprio projeto (sem lista repetida).
+    for (const f of (g.proprio || g.chave === 'base' ? [] : g.fontes)) {
       const filhosDe = (pai) => f.tema.camadas.filter((c) => c.pai === pai && f.nos.has(c.id));
       const montar = (pai) => {
         const itens = filhosDe(pai);
@@ -354,7 +358,7 @@ export class Camadas {
 
   /** Camadas da Base Cadastral a consultar em cada clique. */
   consultaBase() {
-    for (const g of this.grupos) for (const f of g.fontes) if (f.tema.somente_consulta) return { tema: f.tema, ids: [...f.sel] };
+    for (const g of this.grupos) for (const f of g.fontes) if (f.tema.somente_consulta) return { tema: f.tema, ids: idsDaFicha() };
     return null;
   }
 

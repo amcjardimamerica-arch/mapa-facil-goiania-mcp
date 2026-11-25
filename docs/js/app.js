@@ -90,7 +90,10 @@ async function iniciar() {
       const op = (k, titulo) => el('label', { class: 'linha-chave' }, el('span', {}, el('strong', {}, titulo)),
         el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', checked: !!BASE[k], onchange: (e) => { BASE[k] = e.target.checked; gravarBase(); app.refazerMapas?.(); } }), el('span', {})));
       caixa.append(op('ruas', 'Nomes das ruas'), op('quadras', 'Quadras'), op('lotes', 'Lotes'), op('divisas', 'Divisas dos bairros'),
-        op('nomesBairros', 'Nomes dos bairros'), op('areas', 'Áreas públicas (verde)'), op('atividades', 'Cadastro de Atividade Econômica'));
+        op('nomesBairros', 'Nomes dos bairros'), op('areas', 'Áreas públicas (verde)'), op('atividades', 'Cadastro de Atividade Econômica'),
+        // Demais camadas da Base Cadastral (as que não repetem as opções acima)
+        op('cadastro', 'Cadastro Imobiliário (na ficha do lote)'), op('npo', 'Número Predial Oficial'), op('setores', 'Setor Cadastral'),
+        op('logradouros', 'Logradouro'), op('logBairro', 'Logradouro por Bairro'));
     },
     baseLigar: (ligado) => { BASE.ligado = ligado; gravarBase(); app.refazerMapas?.(); },
     // Mapas de eleição: Zonas Eleitorais (TSE) e Conselho Tutelar (regiões e locais da eleição de 2023).

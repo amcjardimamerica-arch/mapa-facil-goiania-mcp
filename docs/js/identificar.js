@@ -1,6 +1,7 @@
 // Clique no mapa -> "ficha do local": lote, quadra, bairro, cadastro e o que
 // estiver ligado nos temas do Mapa Fácil. Fora de Goiânia a ficha só indica o
 // território (limítrofe), sem dados.
+import { BASE } from './mapavetorial.js';
 import { CFG, ROTULOS_CAMPOS, CAMPOS_OCULTOS, CAMPOS_SIM_NAO } from './config.js';
 import { $, el, pedirJSON, mercX, mercY, deMercator, paraUTM, fmtNum, fmtGraus, aviso, extensaoDe, nomeBairro } from './util.js';
 import { cofreDisponivel, cofreAberto, abrirCofre, camposPessoais, consultarOuServidor, identificarOuServidor, servicoDe } from './banco.js';
@@ -305,6 +306,7 @@ export class Identificar {
 
   /** Cadastro imobiliário e dados complementares do lote, já abertos na ficha (sem botão). */
   cadastroNaFicha(ci, ponto) {
+    if (BASE.ligado && !BASE.cadastro) return; // opção "Cadastro Imobiliário" desligada na Base Cadastral
     const alvo = this.secao('Cadastro imobiliário e dados complementares', { aberto: true });
     this._cadastro(ci, alvo, ponto);
   }

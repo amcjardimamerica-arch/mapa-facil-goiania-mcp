@@ -711,3 +711,28 @@ def test_senha_do_cofre_na_validacao_e_sem_mapa_facil(navegador, servidor):
     busca = p.evaluate("document.querySelector('#busca').value")
     ctx.close()
     assert tem and busca == "" and not externos, (tem, busca, externos[:3])
+
+
+def test_base_cadastral_opcoes_sem_repeticao_e_funcionando(mapa):
+    r = mapa.evaluate("""async () => {
+      const m = await import('./js/mapavetorial.js');
+      const base = bussola.camadas.grupo('base');
+      if (!base.corpo.dataset.pronto) { bussola.camadas._montarCorpo(base, base.corpo); base.corpo.dataset.pronto = '1'; }
+      const texto = base.corpo.textContent;
+      const repetidos = ['Divisas de Lote', 'Divisas de Quadra', 'Divisas de Bairro', 'Área Pública', 'Segmento de Logradouro'].filter((t) => texto.includes(t));
+      const novos = ['Cadastro Imobiliário', 'Número Predial Oficial', 'Setor Cadastral', 'Logradouro por Bairro'].filter((t) => texto.includes(t));
+      const antes = { ...m.BASE };
+      Object.assign(m.BASE, { ligado: true, npo: true, setores: true, logradouros: true, logBairro: true, areas: true, atividades: true });
+      const ids = bussola.camadas.consultaBase().ids;
+      const prov = new m.ProvedorVetorial({ modo: 'mapa', retangulo: bussola.globo.ret });
+      const g = new Cesium.WebMercatorTilingScheme();
+      const nat = g.tileXYToNativeRectangle(47595, 71698, 17);
+      const d = await prov._dados(nat, 17, () => false);
+      const nat13 = g.tileXYToNativeRectangle(2974, 4481, 13);
+      const d13 = await prov._dados(nat13, 13, () => false);
+      Object.assign(m.BASE, antes);
+      return { repetidos, novos, ids, npo: d.npo.length, logr: d.logradouros.length, logBai: d.logBairro.length, atv: d.atividades.length, areas: d.areas.length, setores: d13.setores.length };
+    }""")
+    assert not r["repetidos"] and len(r["novos"]) == 4, r
+    assert r["ids"] == [0, 1, 2, 4, 5, 6, 8, 9, 10], r
+    assert r["npo"] > 0 and r["logr"] > 0 and r["logBai"] > 0 and r["atv"] > 0 and r["setores"] > 0, r
