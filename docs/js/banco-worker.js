@@ -22,6 +22,7 @@ const api = {
   async consultar(id, S, camada, p) { return executar(id, () => nucleo.consultar(S, camada, p)); },
   async identificar(id, S, p) { return executar(id, () => nucleo.identificar(S, p)); },
   async metadados(S, camada) { return executar(null, () => nucleo.metadados(S, camada)); },
+  async legenda(S) { return executar(null, () => nucleo.legenda(S)); },
   cancelar(id) { cancelados.add(id); },
   limparCache() { nucleo?.limparCache(); },
   async medidas() { return relatorio(); },

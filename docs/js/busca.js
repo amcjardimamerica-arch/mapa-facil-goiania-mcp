@@ -3,7 +3,7 @@
 // Fácil), por isso a busca ignora acentos e maiúsculas e responde na hora; a
 // geometria do item escolhido é pedida ao servidor municipal.
 import { CFG } from './config.js';
-import { cofreAberto, buscarPessoas, vinculosDaPessoa } from './banco.js';
+import { cofreAberto, buscarPessoas, vinculosDaPessoa, consultarOuServidor, identificarOuServidor, servicoDe } from './banco.js';
 import { $, el, pedirJSON, semAcento, debounce, deUTM, extensaoDe, fmtNum, aviso, nomeBairro } from './util.js';
 
 const chave = (s) => semAcento(s).replace(/[-–.]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -233,16 +233,16 @@ export class Busca {
       ['População', b.pop ? `${fmtNum(b.pop)} habitantes (base municipal, ordem de grandeza do Censo 2010)` : 'não informada'],
       ['Condomínio horizontal', b.cond ? 'Sim' : 'Não'],
     ]));
-    const r = await pedirJSON(`${CFG.baseCadastral}/2/query`, { parametros: {
-      f: 'json', where: `id = '${b.id}'`, outFields: 'id', returnGeometry: 'true', outSR: '4326', geometryPrecision: 6 } });
+    const r = await consultarOuServidor('Feature_Base', 2, {
+      f: 'json', where: `id = '${b.id}'`, outFields: 'id', returnGeometry: 'true', outSR: '4326', geometryPrecision: 6 });
     const aneis = r.features?.[0]?.geometry?.rings;
     if (aneis) id.destacarLonLat(aneis, { fechado: true });
     await voo;
   }
 
   async _ir_rua({ dado: r }) {
-    const resp = await pedirJSON(`${CFG.baseCadastral}/10/query`, { parametros: {
-      f: 'json', where: `id = '${r.id}'`, outFields: 'nm,nm_bai', returnGeometry: 'true', outSR: '4326', geometryPrecision: 6 } });
+    const resp = await consultarOuServidor('Feature_Base', 10, {
+      f: 'json', where: `id = '${r.id}'`, outFields: 'nm,nm_bai', returnGeometry: 'true', outSR: '4326', geometryPrecision: 6 });
     const todas = resp.features || [];
     const doBairro = todas.filter((f) => (f.attributes.nm_bai || '').trim() === r.b);
     const linhas = (doBairro.length ? doBairro : todas).flatMap((f) => f.geometry?.paths || []);
@@ -269,8 +269,8 @@ export class Busca {
   }
 
   async _ir_ci(it) {
-    const r = await pedirJSON(`${CFG.baseCadastral}/0/query`, { parametros: {
-      f: 'json', where: `ci = '${it.ci}'`, outFields: 'id,ci', returnGeometry: 'true', outSR: '4326', geometryPrecision: 6 } });
+    const r = await consultarOuServidor('Feature_Base', 0, {
+      f: 'json', where: `ci = '${it.ci}'`, outFields: 'id,ci', returnGeometry: 'true', outSR: '4326', geometryPrecision: 6 });
     const anel = r.features?.[0]?.geometry?.rings?.[0];
     if (!anel) throw new Error('inscrição não encontrada na base de lotes');
     const ext = extensaoDe(anel);

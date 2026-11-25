@@ -26,6 +26,7 @@ const hash = (t) => { let h = 2166136261; for (let i = 0; i < t.length; i++) { h
 
 async function iniciarWorkers() {
   if (!CFG.bancoWorker || typeof Worker === 'undefined') return;
+  try { if (localStorage.getItem('bussola:bancoWorker') === '0') return; } catch { /* sem armazenamento */ }
   const N = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1, (navigator.deviceMemory || 4) <= 2 ? 2 : 4));
   try {
     const ws = Array.from({ length: N }, () => Comlink.wrap(new Worker(new URL('./banco-worker.js', import.meta.url), { type: 'module' })));
@@ -90,10 +91,48 @@ export function zerarWorkers() { for (const w of pool.workers) w.zerarMedidas().
 /** Medidas da linha principal somadas às dos workers (relatório de desempenho). */
 export async function relatorioCompleto() {
   const base = relatorio();
+  base.workersAtivos = pool.workers.length;
   const dos = await Promise.all(pool.workers.map((w) => w.medidas().catch(() => null)));
   base.workers = dos.filter(Boolean).map((r) => ({ etapas: r.etapas, contadores: r.contadores }));
   for (const r of base.workers) for (const [k, v] of Object.entries(r.contadores)) base.contadores[k] = (base.contadores[k] || 0) + v;
   return base;
+}
+
+// ------------------------------------------------------------------ chamadas diretas (passo 5)
+// Os módulos do mapa pedem os dados aqui, como objetos, sem montar e ler texto JSON pelo fetch interceptado.
+// Formato idêntico ao de antes ({ features }, { results }). Fora do banco: servidor só se bancoSoLocal for false.
+async function doServidor(caminho, p) {
+  if (CFG.bancoSoLocal) throw new Error(`Consulta fora do banco local: ${caminho}`);
+  const r = await (estado.fetchOriginal || fetch)(`${CFG.ms}/${caminho}`, { method: 'POST', body: new URLSearchParams({ f: 'json', ...p }),
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+// Mesmos valores que chegariam por URLSearchParams (tudo texto), para o núcleo responder igual ao fetch.
+const comoTexto = (p) => Object.fromEntries(Object.entries(p || {}).filter(([, v]) => v !== undefined && v !== null)
+  .map(([k, v]) => [k, typeof v === 'object' ? JSON.stringify(v) : String(v)]));
+const semErro = (d) => { if (d?.error) throw new Error(d.error.message || 'erro na consulta'); return d; };
+
+export async function consultarOuServidor(S, camada, p, { prioridade = 'visivel' } = {}) {
+  if (bancoAtivo() && temServico(S)) {
+    try { return semErro(await consultarLocal(S, +camada, comoTexto({ f: 'json', ...p }), prioridade)); }
+    catch (e) { if (!(e instanceof NaoSuportado) || CFG.bancoSoLocal) throw e; }
+  }
+  return semErro(await doServidor(`${S}/MapServer/${camada}/query`, p));
+}
+
+export async function identificarOuServidor(S, p, { prioridade = 'clique' } = {}) {
+  if (bancoAtivo() && temServico(S)) {
+    try { return semErro(await identificarLocal(S, comoTexto({ f: 'json', ...p }), prioridade)); }
+    catch (e) { if (!(e instanceof NaoSuportado) || CFG.bancoSoLocal) throw e; }
+  }
+  return semErro(await doServidor(`${S}/MapServer/identify`, p));
+}
+
+/** Serviço e camada a partir de uma URL do MapServer (…/Feature_Base/MapServer/3). */
+export function servicoDe(url) {
+  const m = String(url).match(/\/([^/]+)\/MapServer(?:\/(\d+))?/);
+  return m ? { S: m[1], camada: m[2] != null ? +m[2] : null } : null;
 }
 
 // ------------------------------------------------------------------ cofre (chave guardada por 24 h)

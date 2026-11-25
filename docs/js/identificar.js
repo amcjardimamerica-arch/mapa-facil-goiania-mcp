@@ -3,7 +3,7 @@
 // território (limítrofe), sem dados.
 import { CFG, ROTULOS_CAMPOS, CAMPOS_OCULTOS, CAMPOS_SIM_NAO } from './config.js';
 import { $, el, pedirJSON, mercX, mercY, deMercator, paraUTM, fmtNum, fmtGraus, aviso, extensaoDe, nomeBairro } from './util.js';
-import { cofreDisponivel, cofreAberto, abrirCofre, camposPessoais } from './banco.js';
+import { cofreDisponivel, cofreAberto, abrirCofre, camposPessoais, consultarOuServidor, identificarOuServidor, servicoDe } from './banco.js';
 
 const Cesium = window.Cesium;
 const AMARELO = () => Cesium.Color.fromCssColorString(CFG.cores.destaque);
@@ -183,12 +183,12 @@ export class Identificar {
     const x = mercX(ponto.lon), y = mercY(ponto.lat);
     const mpp = (this.globo.metrosPorPixel() || 1) / Math.cos((ponto.lat * Math.PI) / 180);
     const L = tela.clientWidth, A = tela.clientHeight;
-    return pedirJSON(`${url}/identify`, { parametros: {
+    return identificarOuServidor(servicoDe(url).S, {
       f: 'json', geometry: `${x},${y}`, geometryType: 'esriGeometryPoint', sr: '3857',
       layers: `${modo}:${ids.join(',')}`, tolerance: tolerancia,
       mapExtent: [x - (mpp * L) / 2, y - (mpp * A) / 2, x + (mpp * L) / 2, y + (mpp * A) / 2].join(','),
       imageDisplay: `${L},${A},96`, returnGeometry: 'true', geometryPrecision: 2,
-    } });
+    });
   }
 
   /** Consulta completa de um ponto do mapa. */
@@ -291,8 +291,8 @@ export class Identificar {
   async _anexos(idLote, alvo) {
     if (!idLote) return;
     try {
-      const r = await pedirJSON(`${CFG.baseCadastral}/11/query`, { parametros: {
-        f: 'json', where: `ID_OBJ = '${idLote.replace(/'/g, '')}'`, outFields: '*', returnGeometry: 'false' } });
+      const r = await consultarOuServidor('Feature_Base', 11, {
+        f: 'json', where: `ID_OBJ = '${idLote.replace(/'/g, '')}'`, outFields: '*', returnGeometry: 'false' });
       const fs = (r.features || []).map((f) => f.attributes);
       if (!fs.length) return;
       // Só a lista: o sistema não abre arquivos fora dele.
@@ -333,9 +333,9 @@ export class Identificar {
   /** Proprietário e dados do bem no cadastro tributário (Mapa_Tributario_Web), pelo ponto do lote. */
   async _proprietario(ponto, alvo) {
     try {
-      const r = await pedirJSON(`${CFG.ms}/Mapa_Tributario_Web/MapServer/0/query`, { parametros: {
+      const r = await consultarOuServidor('Mapa_Tributario_Web', 0, {
         f: 'json', geometry: `${ponto.lon},${ponto.lat}`, geometryType: 'esriGeometryPoint', inSR: '4326',
-        spatialRel: 'esriSpatialRelIntersects', outFields: '*', returnGeometry: 'false' } });
+        spatialRel: 'esriSpatialRelIntersects', outFields: '*', returnGeometry: 'false' });
       const fs = r.features || [];
       if (!fs.length) return;
       const corpo = el('div', {});
@@ -347,10 +347,10 @@ export class Identificar {
   async _cadastro(ci, alvo, ponto) {
     alvo.append(el('p', { class: 'nota carregando' }, 'Consultando o Cadastro Imobiliário…'));
     try {
-      const r = await pedirJSON(`${CFG.baseCadastral}/3/query`, { parametros: {
+      const r = await consultarOuServidor('Feature_Base', 3, {
         f: 'json', where: `ci = '${ci.replace(/'/g, '')}'`, returnGeometry: 'false', orderByFields: 'nrinscr',
         outFields: 'nrinscr,tplogradou,nmlogradou,nrimovel,incompl,nrquadra,nrlote,nmbairro,areaterr,areaedif,areattedif,nrpaviment,nmedificio,vlvenal',
-      } });
+      });
       const us = (r.features || []).map((f) => f.attributes);
       alvo.textContent = '';
       if (!us.length) { alvo.append(el('p', { class: 'nota' }, 'Nenhuma inscrição cadastrada para este lote.')); return; }

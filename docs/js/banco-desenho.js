@@ -139,7 +139,7 @@ export class ProvedorTema {
   _tela() { const c = document.createElement('canvas'); c.width = c.height = this._T; return c; }
 
   async _desenhar(x, y, nivel) {
-    return cronometrar('desenhar-tema', () => this._desenharSemMedida(x, y, nivel));
+    return cronometrar('desenhar', () => this._desenharSemMedida(x, y, nivel));
   }
 
   async _desenharSemMedida(x, y, nivel) {

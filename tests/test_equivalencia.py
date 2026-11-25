@@ -22,7 +22,7 @@ MS = "https://portalmapa.goiania.go.gov.br/servicogyn/rest/services/MapaServer"
 GYN = (-49.36, -16.76, -49.20, -16.60)  # retângulo urbano para sortear pontos
 
 
-def _consultas(cis):
+def _consultas(cis, ids):
     rnd = random.Random(20261124)
     ponto = lambda: (rnd.uniform(GYN[0], GYN[2]), rnd.uniform(GYN[1], GYN[3]))
     env = lambda lon, lat, m: f"{lon - m / 107000},{lat - m / 110500},{lon + m / 107000},{lat + m / 110500}"
@@ -44,11 +44,10 @@ def _consultas(cis):
             lon, lat = ponto()
             q.append((f"{srv}/query", {"geometry": env(lon, lat, 150), "geometryType": "esriGeometryEnvelope", "inSR": "4326", "outSR": "4326",
                                        "spatialRel": "esriSpatialRelIntersects", "outFields": "*", "where": "1=1"}))
-    for camada in (2, 7, 10):
-        for _ in range(7 if camada != 10 else 6):
-            lon, lat = ponto()
-            q.append((f"Feature_Base/MapServer/{camada}/query", {"geometry": f"{lon},{lat}", "geometryType": "esriGeometryPoint", "inSR": "4326",
-                                                                "distance": "200", "units": "esriSRUnit_Meter", "outFields": "*", "outSR": "4326", "where": "1=1"}))
+    # 20 consultas por id em Feature_Base/2 (bairros), /7 (logradouros) e /10 (vias), como pede o roteiro.
+    for camada, n in ((2, 7), (7, 7), (10, 6)):
+        for valor in rnd.sample(ids[str(camada)], n):
+            q.append((f"Feature_Base/MapServer/{camada}/query", {"where": f"id = '{valor}'", "outFields": "*", "outSR": "4326"}))
     return q[:200]
 
 
@@ -67,8 +66,12 @@ def _canonica(resp):
     return hashlib.sha256(json.dumps({"n": len(itens), "f": itens, "erro": bool(resp.get("error"))}, sort_keys=True, default=str).encode()).hexdigest()
 
 
-def test_equivalencia_do_banco(navegador, servidor):  # noqa: F811
+@pytest.mark.parametrize("worker", [True, False], ids=["com-workers", "sem-workers"])
+def test_equivalencia_do_banco(navegador, servidor, worker):  # noqa: F811
+    """Mesmas respostas com os workers (passo 4) e na linha principal (bancoWorker desligado)."""
     ctx = _contexto(navegador)
+    if not worker:
+        ctx.add_init_script("localStorage.setItem('bussola:bancoWorker', '0')")
     ctx.route("**/portalmapa.goiania.go.gov.br/**", lambda r: r.abort())
     p = ctx.new_page()
     p.set_default_timeout(180_000)
@@ -80,7 +83,16 @@ def test_equivalencia_do_banco(navegador, servidor):  # noqa: F811
       return [...new Set((r.features || []).map((f) => String(f.attributes.ci)).filter((x) => x && x !== 'null'))].sort().slice(0, 2000);
     }}""")
     assert len(cis) > 100
-    consultas = _consultas(cis)
+    ids = p.evaluate(f"""async () => {{
+      const saida = {{}};
+      for (const c of [2, 7, 10]) {{
+        const r = await (await fetch('{MS}/Feature_Base/MapServer/' + c + '/query', {{ method: 'POST', body: new URLSearchParams({{ f: 'json', where: '1=1',
+          geometry: '-49.32,-16.74,-49.24,-16.66', geometryType: 'esriGeometryEnvelope', inSR: '4326', outFields: 'id', returnGeometry: 'false' }}) }})).json();
+        saida[c] = [...new Set((r.features || []).map((f) => String(f.attributes.id)).filter((x) => x && x !== 'null'))].sort().slice(0, 3000);
+      }}
+      return saida;
+    }}""")
+    consultas = _consultas(cis, ids)
     resps = p.evaluate(f"""async (lista) => {{
       const saida = [];
       for (const [caminho, prm] of lista) {{
@@ -91,9 +103,11 @@ def test_equivalencia_do_banco(navegador, servidor):  # noqa: F811
     }}""", consultas)
     ctx.close()
     atuais = {f"{i:03d} {c[0]} {json.dumps(c[1], sort_keys=True)}": _canonica(r) for i, (c, r) in enumerate(zip(consultas, resps))}
-    if not REF.exists() or os.environ.get("BUSSOLA_REGRAVAR_EQUIVALENCIA") == "1":
+    if worker and (not REF.exists() or os.environ.get("BUSSOLA_REGRAVAR_EQUIVALENCIA") == "1"):
         REF.write_bytes(gzip.compress(json.dumps(atuais, indent=0).encode()))
         pytest.skip("referência de equivalência gravada")
     ref = json.loads(gzip.decompress(REF.read_bytes()))
     diferentes = [k for k in ref if atuais.get(k) != ref[k]]
+    erros = sum(1 for r in resps if isinstance(r, dict) and r.get("error"))
+    assert erros == 0, f"{erros} consultas com erro no banco local"
     assert not diferentes, f"{len(diferentes)} consultas diferentes: {diferentes[:5]}"

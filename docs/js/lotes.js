@@ -1,5 +1,6 @@
 // Lotes por bairro: a pessoa escolhe os bairros e só os lotes deles são buscados
 // no Mapa Fácil e desenhados no mapa. Nada do restante de Goiânia é carregado.
+import { consultarOuServidor } from './banco.js';
 import { CFG } from './config.js';
 import { el, aviso, fmtNum, semAcento } from './util.js';
 import { ProvedorLotes, filaMunicipal } from './mapavetorial.js';
@@ -11,12 +12,7 @@ const MARCAS = ['#ffd54a', '#8ab4f8', '#81d693', '#ff8a80', '#c792ea', '#4fc3f7'
 
 async function consultarLotes(parametros) {
   return filaMunicipal.rodar(async () => {
-    const r = await fetch(`${CFG.baseCadastral}/0/query`, { method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ f: 'json', ...parametros }) });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const d = await r.json();
-    if (d.error) throw new Error(d.error.message || 'erro do servidor');
-    return d;
+    return consultarOuServidor('Feature_Base', 0, parametros);
   });
 }
 
@@ -132,10 +128,8 @@ export class Lotes {
   async _carregar(item) {
     const b = item.bairro;
     const r = await filaMunicipal.rodar(async () => {
-      const resp = await fetch(`${CFG.baseCadastral}/2/query?${new URLSearchParams({ f: 'json', where: `id = '${b.id.replace(/'/g, '')}'`,
-        outFields: 'id', returnGeometry: 'true', outSR: '3857', geometryPrecision: '1' })}`);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      return resp.json();
+      return consultarOuServidor('Feature_Base', 2, { where: `id = '${b.id.replace(/'/g, '')}'`,
+        outFields: 'id', returnGeometry: 'true', outSR: '3857', geometryPrecision: '1' });
     });
     const aneis = r.features?.[0]?.geometry?.rings;
     if (!aneis) throw new Error('limite do bairro não encontrado');

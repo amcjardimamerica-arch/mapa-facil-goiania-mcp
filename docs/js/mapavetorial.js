@@ -7,6 +7,7 @@
 //   e desenhados aqui mesmo, sem pedir o mapa de Goiânia inteira ao servidor.
 import { CFG } from './config.js';
 import { cronometrarSinc } from './desempenho.js';
+import { consultarOuServidor } from './banco.js';
 
 const Cesium = window.Cesium;
 const MUNDO = 20037508.342789244;
@@ -82,12 +83,7 @@ export const filaMunicipal = new Fila(4);
 
 async function consultar(camada, parametros, cancelada) {
   return filaMunicipal.rodar(async () => {
-    const corpo = new URLSearchParams({ f: 'json', ...parametros });
-    const r = await fetch(`${CFG.baseCadastral}/${camada}/query`, { method: 'POST', body: corpo,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const d = await r.json();
-    if (d.error) throw new Error(d.error.message || 'erro do servidor');
+    const d = await consultarOuServidor('Feature_Base', camada, parametros);
     return d.features || [];
   }, cancelada);
 }

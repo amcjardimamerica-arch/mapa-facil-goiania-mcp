@@ -99,7 +99,7 @@ export async function lerDados(caminho, info) {
   if (!a || !info.pessoais || !estado.chave || a._p) return a;
   const pess = caminho.replace(/\.json\.gz$/, '.pess');
   try {
-    const r = await estado.fetchOriginal(estado.raiz + pess);
+    const r = await cronometrar('cofre', () => estado.fetchOriginal(estado.raiz + pess));
     if (r.ok) {
       let bytes = await decifrar(new Uint8Array(await r.arrayBuffer()));
       const s = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
@@ -458,7 +458,7 @@ export async function candidatos(info, p) {
 }
 
 export async function consultar(S, id, p) {
-  return cronometrar('consultar', () => consultarSemMedida(S, id, p));
+  return cronometrar('filtrar', () => consultarSemMedida(S, id, p));
 }
 
 export async function consultarSemMedida(S, id, p) {
@@ -644,8 +644,17 @@ export async function vinculosDaPessoa(vinculos) {
 export function esquecerPessoas() { indicePessoas = null; }
 
 
+/** Legenda do serviço (servicos/S/legend.json). */
+export const legenda = (S) => lerArquivo(`servicos/${S}/legend.json`);
+
+/** Feições de uma camada numa extensão (Web Mercator), para o desenho dos temas (usado a partir do passo 6). */
+export async function feicoesParaDesenho(S, camada, ext) {
+  const info = infoCamada(S, camada);
+  return info ? feicoesNaExtensao(info, ext) : [];
+}
+
 /** Fábrica pedida pelo roteiro: o mesmo núcleo, configurado, com a interface de consulta. */
 export function criarNucleo({ raiz, buscar, manifesto }) {
   configurar({ raiz, buscar, manifesto });
-  return { consultar, identificar, metadados, definirChave, limparCache, buscarPessoas, vinculosDaPessoa };
+  return { consultar, identificar, metadados, legenda, definirChave, limparCache, feicoesParaDesenho, buscarPessoas, vinculosDaPessoa };
 }
