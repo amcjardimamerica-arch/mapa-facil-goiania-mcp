@@ -795,4 +795,5 @@ def test_conselho_tutelar_regioes_oficiais(mapa):
     assert r["tratou"] and r["ficha"]["titulo"] == "Conselho Tutelar Centro-Sul", r["ficha"]
     assert "Central + Sul" in r["ficha"]["corpo"] and "Região Sul" in r["ficha"]["corpo"] and "Resolução CMDCA n.º 85/2023" in r["ficha"]["corpo"], r["ficha"]
     assert "Jardim América" in r["ficha"]["corpo"] and "COLÉGIO ESTADUAL JARDIM AMÉRICA" in r["ficha"]["corpo"].upper(), r["ficha"]["corpo"][:400]
-    assert r["campinas"] == "Conselho Tutelar Campinas" and r["sub"] == 12 and r["tracejadas"] >= 12, r
+    # As 12 Regiões ficam só na ficha: nenhuma divisa (linha branca) dentro dos Conselhos.
+    assert r["campinas"] == "Conselho Tutelar Campinas" and r["sub"] == 12 and r["tracejadas"] == 0, r

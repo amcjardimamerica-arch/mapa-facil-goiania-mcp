@@ -1,7 +1,8 @@
 // Mapas de eleição (painel Camadas, cidade inteira): Zonas Eleitorais e Regiões do Conselho Tutelar.
 //
 // Cada mapa tem a sua finalidade: as zonas são do TSE; os 6 Conselhos Tutelares juntam, cada um, duas das 12 Regiões
-// da SEPLAM (Resolução CMDCA 85/2023; data/conselho_regioes.geojson, gerado por scripts/regioes_conselho.py).
+// da SEPLAM (Resolução CMDCA 85/2023; data/conselho_regioes.geojson, gerado por scripts/regioes_conselho.py e levado
+// até o limite do município por scripts/conselho_ate_limite.py). Dentro de cada Conselho não há divisa desenhada.
 // As divisas são duas linhas pretas com uma vermelha (#FF0000) no meio — diferentes das divisas de
 // bairro (preta, amarela, preta) — e cada área tem uma cor clara própria. Com um desses mapas ligado, o clique
 // seleciona a zona/região inteira (ou o colégio de votação), nunca quadra ou lote.
@@ -46,7 +47,8 @@ export class Eleicoes {
     this._cacheReg = d.features.filter((f) => (f.properties.tipo || 'conselho') === 'conselho').map((f, i) => {
       const p = f.properties;
       const km2 = (v) => (v == null ? null : `${String(v).replace('.', ',')} km²`);
-      return { nome: `Conselho Tutelar ${p.regiao}`, aneis: aneisDe(f), cor: CORES[(i + 3) % CORES.length], props: p,
+      const poligonos = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;
+      return { nome: `Conselho Tutelar ${p.regiao}`, aneis: aneisDe(f), poligonos, cor: CORES[(i + 3) % CORES.length], props: p,
         info: { 'Conselho Tutelar': p.regiao, 'Regiões administrativas': (p.regioes_administrativas || []).join(' + '),
           Área: km2(p.area_km2), 'População (Mapa Fácil)': p.populacao, Bairros: p.bairros_n,
           'Locais de votação (2023)': p.locais, Urnas: p.urnas, 'Eleitores aptos (2023)': p.eleitores,
@@ -62,25 +64,26 @@ export class Eleicoes {
     this.areas = modo === 'zonas' ? await this._zonas() : modo === 'conselho' ? await this._regioes() : [];
     if (this.modo !== modo) return;
     for (const a of this.areas) {
+      // Preenchimento por polígono, com os buracos (enclaves de outro Conselho) de fato vazados.
+      for (const pol of a.poligonos || a.aneis.map((r) => [r])) {
+        const [ext, ...furos] = pol.map((r) => Cesium.Cartesian3.fromDegreesArray(r.flat()));
+        this.fonte.entities.add({ polygon: { hierarchy: new Cesium.PolygonHierarchy(ext, furos.map((f) => new Cesium.PolygonHierarchy(f))),
+          material: Cesium.Color.fromCssColorString(a.cor).withAlpha(0.22), classificationType: Cesium.ClassificationType.TERRAIN } });
+      }
       for (const anel of a.aneis) {
         const pos = Cesium.Cartesian3.fromDegreesArray(anel.flat());
-        this.fonte.entities.add({ polygon: { hierarchy: pos, material: Cesium.Color.fromCssColorString(a.cor).withAlpha(0.22),
-          classificationType: Cesium.ClassificationType.TERRAIN } });
         // Divisa: preta larga por baixo e vermelha no meio = preta, vermelha, preta.
         this.fonte.entities.add({ polyline: { positions: pos, clampToGround: true, width: 7, zIndex: 0, material: Cesium.Color.BLACK } });
         this.fonte.entities.add({ polyline: { positions: pos, clampToGround: true, width: 2.4, zIndex: 1, material: Cesium.Color.fromCssColorString('#FF0000') } });
       }
       const maior = a.aneis.reduce((m, r) => (r.length > m.length ? r : m), a.aneis[0]);
-      const c = maior.reduce((s, p) => [s[0] + p[0] / maior.length, s[1] + p[1] / maior.length], [0, 0]);
+      const c = a.props?.rotulo || maior.reduce((s, p) => [s[0] + p[0] / maior.length, s[1] + p[1] / maior.length], [0, 0]);
       this.fonte.entities.add({ position: Cesium.Cartesian3.fromDegrees(c[0], c[1]), label: { text: a.nome,
         font: '800 15px system-ui, "Segoe UI", Roboto, sans-serif', fillColor: Cesium.Color.WHITE, outlineColor: Cesium.Color.fromCssColorString('#7a0000'),
         outlineWidth: 4, style: Cesium.LabelStyle.FILL_AND_OUTLINE, heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
         disableDepthTestDistance: Number.POSITIVE_INFINITY, distanceDisplayCondition: new Cesium.DistanceDisplayCondition(1500, 120000) } });
     }
-    if (modo === 'conselho') for (const r of this._subregioes || []) for (const anel of r.aneis) {
-      this.fonte.entities.add({ polyline: { positions: Cesium.Cartesian3.fromDegreesArray(anel.flat()), clampToGround: true, width: 1.6, zIndex: 2,
-        material: new Cesium.PolylineDashMaterialProperty({ color: Cesium.Color.WHITE.withAlpha(0.9), dashLength: 14 }) } });
-    }
+    // As 12 Regiões da SEPLAM não são desenhadas: dentro de cada Conselho não há divisa (só a ficha diz a Região).
     this.globo.redesenhar();
   }
 
@@ -101,7 +104,7 @@ export class Eleicoes {
         ? el('details', { class: 'lv-lista' }, el('summary', {}, `${titulo} (${fmtNum(itens.length)})`), el('p', {}, itens.join('; '))) : null);
       for (const bloco of [lista('Locais de votação de 2023', a.props.locais_votacao), lista('Bairros', a.props.bairros),
         lista('Bairros divididos com outro Conselho', a.props.bairros_divididos), lista('Ajustes ao desenho da SEPLAM', a.props.ajustes)]) if (bloco) id.corpo.append(bloco);
-      id.corpo.append(el('p', { class: 'nota' }, 'Delimitação oficial: Resolução CMDCA n.º 85/2023 — cada Conselho atende duas Regiões da SEPLAM (Mapa Fácil). Áreas rurais sem bairro ficam sem cor.'));
+      id.corpo.append(el('p', { class: 'nota' }, 'Delimitação oficial: Resolução CMDCA n.º 85/2023 — cada Conselho atende duas Regiões da SEPLAM. As áreas do município sem bairro foram atribuídas ao Conselho mais próximo, até o limite de Goiânia.'));
     }
     return true;
   }

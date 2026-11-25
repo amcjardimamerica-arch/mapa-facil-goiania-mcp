@@ -220,7 +220,14 @@ def test_conselho_tutelar_regioes_oficiais():
     assert shape(ct["Centro-Sul"]["geometry"]).contains(ja)
     assert any("Jardim Am" in b for b in ct["Centro-Sul"]["properties"]["bairros"])
     for p in (f["properties"] for f in ct.values()):
-        assert p["bairros_n"] > 40 and p["populacao"] > 100000 and 40 < p["area_km2"] < 120 and p["sede"]
+        assert p["bairros_n"] > 40 and p["populacao"] > 100000 and 40 < p["area_km2"] < 260 and p["sede"]
+    # os 6 Conselhos cobrem o município inteiro, até o limite (áreas sem bairro incluídas)
+    ter = ler("territorio.geojson")
+    limite = shape(next(f for f in ter["features"] if f["properties"].get("tipo") == "goiania")["geometry"]).buffer(0)
+    from shapely.ops import unary_union
+    juntos = unary_union([shape(f["geometry"]).buffer(0) for f in ct.values()])
+    assert limite.difference(juntos).area * 11800 < 0.5      # menos de 0,5 km² de fresta (simplificação)
+    assert juntos.difference(limite).area * 11800 < 0.5      # nada fora do município
     # as regiões não se sobrepõem
     gs = [shape(f["geometry"]) for f in ct.values()]
     for i in range(len(gs)):
