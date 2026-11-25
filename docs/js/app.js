@@ -16,7 +16,7 @@ import { Lotes } from './lotes.js';
 import { Levantamento } from './levantamento.js';
 import { Poligonos } from './poligonos.js';
 import { encerrarSessao, sessaoAindaValida } from './acesso.js';
-import { iniciarBanco, cofreDisponivel, cofreAberto, cofreLiberadoAte } from './banco.js';
+import { iniciarBanco, cofreDisponivel, cofreAberto, cofreLiberadoAte, relatorioCompleto, zerarWorkers } from './banco.js';
 import { ALTURA, faixaAltura, BASE, gravarBase } from './mapavetorial.js';
 import { Quadras } from './quadras.js';
 import { Eleicoes } from './eleicoes.js';
@@ -25,8 +25,8 @@ import { relatorio as relatorioDesempenho, zerar as zerarDesempenho } from './de
 const Cesium = window.Cesium;
 const app = (window.bussola = { versao: VERSAO, pronto: false, erros: [] });
 // Medidas de desempenho: bussola.desempenho() no console; bussola.zerarDesempenho() recomeça a contagem.
-app.desempenho = () => relatorioDesempenho();
-app.zerarDesempenho = () => zerarDesempenho();
+app.desempenho = () => relatorioCompleto();
+app.zerarDesempenho = () => { zerarDesempenho(); zerarWorkers(); };
 
 const estadoAbertura = (texto, erro = false) => {
   const no = $('#abertura-estado');

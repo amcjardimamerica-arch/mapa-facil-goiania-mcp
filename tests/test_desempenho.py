@@ -43,4 +43,6 @@ def test_roteiro_de_desempenho(navegador, servidor):  # noqa: F811
     base = json.loads(BASE.read_text(encoding="utf-8")) if BASE.exists() else {}
     base[versao] = rel
     BASE.write_text(json.dumps(base, ensure_ascii=False, indent=1), encoding="utf-8")
-    assert rel["contadores"]["pedidos"] > 0 and "consultar" in rel["etapas"], rel
+    # Desde o passo 4 as consultas rodam nos workers: as etapas deles vêm em rel["workers"].
+    etapas = set(rel["etapas"]) | {k for w in rel.get("workers", []) for k in w["etapas"]}
+    assert rel["contadores"]["pedidos"] > 0 and "consultar" in etapas, rel

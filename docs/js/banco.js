@@ -10,10 +10,91 @@ import {
   derivarChave, definirChave, b64, buscarPessoas, vinculosDaPessoa, esquecerPessoas,
 } from './banco-nucleo.js';
 import { ProvedorTema } from './banco-desenho.js';
+import * as Comlink from './vendor/comlink.mjs';
+import { relatorio } from './desempenho.js';
 
 const Cesium = window.Cesium;
 
 export { NaoSuportado, consultar, identificar, temServico, bancoAtivo, estatisticas, ProvedorTema, buscarPessoas, vinculosDaPessoa, esquecerPessoas };
+
+// ------------------------------------------------------------------ workers de dados (passo 4)
+// Consultas e identificações vão para workers (fora da linha da tela). O mesmo bloco vai sempre ao mesmo worker,
+// para aproveitar o cache dele; fila com prioridade (clique 0, visível 1, vizinhança 2), até 3 tarefas por worker.
+const pool = { workers: [], fila: [[], [], []], emCurso: [], seq: 0 };
+const PRIORIDADE = { clique: 0, visivel: 1, vizinhanca: 2 };
+const hash = (t) => { let h = 2166136261; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+
+async function iniciarWorkers() {
+  if (!CFG.bancoWorker || typeof Worker === 'undefined') return;
+  const N = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1, (navigator.deviceMemory || 4) <= 2 ? 2 : 4));
+  try {
+    const ws = Array.from({ length: N }, () => Comlink.wrap(new Worker(new URL('./banco-worker.js', import.meta.url), { type: 'module' })));
+    await Promise.all(ws.map((w) => w.iniciar({ raiz: estado.raiz, manifesto: estado.manifesto })));
+    pool.workers = ws;
+    pool.emCurso = ws.map(() => 0);
+  } catch (e) {
+    console.warn('Workers do banco indisponíveis; usando a linha principal:', e);
+    pool.workers = [];
+  }
+}
+
+function chaveRota(S, camada, p) {
+  if (p?.where && p.where !== '1=1') return `${S}/${camada}/${p.where}`;
+  const g = String(p?.geometry || '').split(/[,{}":xyminax]+/).filter(Boolean).map(Number).filter(Number.isFinite);
+  return `${S}/${camada}/${g.length ? `${Math.round(g[0] / 2000)}:${Math.round(g[1] / 2000)}` : ''}`;
+}
+
+function despachar() {
+  for (let pr = 0; pr < 3; pr++) {
+    const fila = pool.fila[pr];
+    for (let i = 0; i < fila.length;) {
+      const t = fila[i];
+      if (pool.emCurso[t.w] >= 3) { i++; continue; }
+      fila.splice(i, 1);
+      pool.emCurso[t.w]++;
+      t.executar(pool.workers[t.w]).then(t.ok, t.falha).finally(() => { pool.emCurso[t.w]--; despachar(); });
+    }
+  }
+}
+
+function noWorker(rota, prioridade, executar) {
+  const w = hash(rota) % pool.workers.length;
+  return new Promise((ok, falha) => { pool.fila[PRIORIDADE[prioridade] ?? 1].push({ w, executar, ok, falha }); despachar(); })
+    .then((r) => {
+      if (r && 'ok' in r) return r.ok;
+      if (r?.naoSuportado) throw new NaoSuportado(r.erro);
+      throw new Error(r?.erro || 'erro no worker do banco');
+    });
+}
+
+/** Consulta no worker (ou direto, sem workers). */
+export function consultarLocal(S, camada, p, prioridade = 'visivel') {
+  if (!pool.workers.length) return consultar(S, camada, p);
+  const id = ++pool.seq;
+  return noWorker(chaveRota(S, camada, p), prioridade, (w) => w.consultar(id, S, camada, p));
+}
+export function identificarLocal(S, p, prioridade = 'clique') {
+  if (!pool.workers.length) return identificar(S, p);
+  const id = ++pool.seq;
+  return noWorker(`${S}/identify/${String(p?.geometry || '').slice(0, 14)}`, prioridade, (w) => w.identificar(id, S, p));
+}
+
+async function chaveParaWorkers(chave) {
+  if (!pool.workers.length) return;
+  const bruta = chave ? await crypto.subtle.exportKey('raw', chave) : null;
+  await Promise.all(pool.workers.map(async (w) => { await w.definirChave(bruta ? bruta.slice(0) : null); if (!chave) await w.limparCache(); }));
+}
+
+export function zerarWorkers() { for (const w of pool.workers) w.zerarMedidas().catch(() => {}); }
+
+/** Medidas da linha principal somadas às dos workers (relatório de desempenho). */
+export async function relatorioCompleto() {
+  const base = relatorio();
+  const dos = await Promise.all(pool.workers.map((w) => w.medidas().catch(() => null)));
+  base.workers = dos.filter(Boolean).map((r) => ({ etapas: r.etapas, contadores: r.contadores }));
+  for (const r of base.workers) for (const [k, v] of Object.entries(r.contadores)) base.contadores[k] = (base.contadores[k] || 0) + v;
+  return base;
+}
 
 // ------------------------------------------------------------------ cofre (chave guardada por 24 h)
 export const cofreDisponivel = () => !!estado.manifesto?.cofre;
@@ -24,12 +105,14 @@ const chaveGuardada = () => `bussola:cofre:${window.bussolaSessao?.login || 'ano
 export async function abrirCofre(senha) {
   const chave = await derivarChave(senha);
   await definirChave(chave);
+  await chaveParaWorkers(chave);
   try { localStorage.setItem(chaveGuardada(), JSON.stringify({ k: btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.exportKey('raw', chave)))), ate: Date.now() + 24 * 3600e3 })); } catch { /* sem armazenamento */ }
   return true;
 }
 
 export function fecharCofre() {
   definirChave(null);
+  chaveParaWorkers(null).catch(() => {});
   try { localStorage.removeItem(chaveGuardada()); sessionStorage.removeItem('bussola:cofre'); } catch { /* */ }
 }
 
@@ -64,6 +147,8 @@ async function iniciarBancoUmaVez() {
     if (!r.ok) return null;
     estado.manifesto = await r.json();
     await restaurarCofre();
+    await iniciarWorkers();
+    if (estado.chave) await chaveParaWorkers(estado.chave);
     instalarInterceptador();
     return estado.manifesto;
   } catch (e) {
@@ -104,8 +189,8 @@ async function responderLocal(url, init) {
   const [, S, id, op] = m;
   if (!temServico(S)) throw new NaoSuportado(`${S} fora do banco`);
   const p = parametrosDe(url, init);
-  if (op === 'query' && id != null) return consultar(S, +id, p);
-  if (op === 'identify' && id == null) return identificar(S, p);
+  if (op === 'query' && id != null) return consultarLocal(S, +id, p);
+  if (op === 'identify' && id == null) return identificarLocal(S, p);
   if (op === 'legend' && id == null) { const l = await lerArquivo(`servicos/${S}/legend.json`); if (l) return l; }
   if (!op && id != null) { const l = await metadados(S, id); if (l) return l; }
   if (!op && id == null) { const l = await lerArquivo(`servicos/${S}/MapServer.json`); if (l) return l; }
