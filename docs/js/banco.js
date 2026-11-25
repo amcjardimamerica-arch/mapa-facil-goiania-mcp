@@ -9,7 +9,7 @@ import {
   estado, NaoSuportado, lerArquivo, metadados, consultar, identificar, temServico, bancoAtivo, estatisticas,
   derivarChave, definirChave, b64, buscarPessoas, vinculosDaPessoa, esquecerPessoas,
 } from './banco-nucleo.js';
-import { ProvedorTema } from './banco-desenho.js';
+import { ProvedorTema, definirFornecedorDesenho } from './banco-desenho.js';
 import * as Comlink from './vendor/comlink.mjs';
 import { relatorio } from './desempenho.js';
 
@@ -33,6 +33,11 @@ async function iniciarWorkers() {
     await Promise.all(ws.map((w) => w.iniciar({ raiz: estado.raiz, manifesto: estado.manifesto })));
     pool.workers = ws;
     pool.emCurso = ws.map(() => 0);
+    // Desenho dos temas: feições preparadas no worker e entregues em vetores (passo 6).
+    definirFornecedorDesenho((S, camada, ext, campos) => {
+      const id = ++pool.seq;
+      return noWorker(`${S}/${camada}/${Math.round(ext[0] * 50)}:${Math.round(ext[1] * 50)}`, 'visivel', (w) => w.feicoesParaDesenho(id, S, camada, ext, campos));
+    });
   } catch (e) {
     console.warn('Workers do banco indisponíveis; usando a linha principal:', e);
     pool.workers = [];

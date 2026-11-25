@@ -1,9 +1,23 @@
 // Desenho dos temas do painel Camadas a partir do banco local (substitui o "export" do servidor).
 // Usa Cesium e canvas da página; os dados vêm do núcleo (banco-nucleo.js).
-import { NaoSuportado, camposDe, compilarWhere, feicoesNaExtensao, infoCamada, metadados, mx, my } from './banco-nucleo.js';
+import { NaoSuportado, camposDe, compilarWhere, feicoesParaDesenho, infoCamada, metadados, mx, my } from './banco-nucleo.js';
 import { cronometrar } from './desempenho.js';
 
 const Cesium = window.Cesium;
+
+// Quem entrega as feições para desenhar: o núcleo direto, ou os workers (definido pela fachada, banco.js).
+let fornecer = (S, camada, ext, campos) => feicoesParaDesenho(S, camada, ext, campos);
+export function definirFornecedorDesenho(fn) { fornecer = fn; }
+
+/** Campos que o desenho usa: os do símbolo (renderer) e os citados nos rótulos e nos filtros dos rótulos. */
+function camposDoDesenho(meta, info) {
+  const todos = camposDe(info);
+  const ren = meta.drawingInfo?.renderer || {};
+  const textos = [ren.field1, ren.field2, ren.field3, ren.field,
+    ...(meta.drawingInfo?.labelingInfo || []).flatMap((l) => [l.labelExpression, l.where])].filter(Boolean).join(' ');
+  const fichas = new Set((textos.match(/[A-Za-z_][\w.]*/g) || []).map((t) => t.toLowerCase()));
+  return todos.filter((c) => { const k = c.toLowerCase(); return fichas.has(k) || [...fichas].some((t) => t.endsWith(`.${k}`) || k.endsWith(`.${t}`)); });
+}
 
 // ------------------------------------------------------------------ desenho dos temas (substitui o "export")
 const PT = 96 / 72; // pontos -> pixels
@@ -159,40 +173,44 @@ export class ProvedorTema {
     for (const { info, meta } of metas) {
       if (!this._visivel(meta, nivel) || !info.geo) continue;
       if (info.z != null && info.zv == null && nivel < info.z - 4) continue; // camada densa: só de perto
-      let feats;
-      try { feats = await feicoesNaExtensao(info, caixa); }
-      catch (e) { if (e instanceof NaoSuportado) continue; throw e; }
+      const campos = camposDoDesenho(meta, info);
+      let d;
+      try { d = await fornecer(info._s, info._id, caixa, campos); }
+      catch (e) { if (e instanceof NaoSuportado || /fora do banco|muitos blocos|grande demais/.test(e?.message || '')) continue; throw e; }
+      if (!d || !d.n) continue;
       const ren = meta.drawingInfo?.renderer;
       const alfa = 1 - (meta.drawingInfo?.transparency || 0) / 100;
       const escala = ESCALA_N0 / 2 ** nivel;
       const etiquetas = (meta.drawingInfo?.labelingInfo || []).filter((l) => l.labelExpression && (!l.minScale || escala <= l.minScale) && (!l.maxScale || escala >= l.maxScale))
-        .map((l) => ({ l, filtro: (() => { try { return compilarWhere(l.where, camposDe(info)); } catch { return () => true; } })() }));
-      const vistos = new Set();
-      for (const f of feats) {
-        if (vistos.has(f.oid)) continue;
-        vistos.add(f.oid);
-        const e = f.ext;
-        if (!e || e[2] < caixa[0] || e[0] > caixa[2] || e[3] < caixa[1] || e[1] > caixa[3]) continue;
-        const geo = f.g;
+        .map((l) => ({ l, filtro: (() => { try { return compilarWhere(l.where, campos); } catch { return () => true; } })() }));
+      const { xy, partes, inicio, caixas: cx } = d;
+      const tipo = d.geo;
+      for (let i = 0; i < d.n; i++) {
+        const e0 = cx[i * 4], e1 = cx[i * 4 + 1], e2 = cx[i * 4 + 2], e3 = cx[i * 4 + 3];
+        if (e2 < caixa[0] || e0 > caixa[2] || e3 < caixa[1] || e1 > caixa[3]) continue;
+        const valores = d.valores[i];
+        const p0 = inicio[i], p1 = inicio[i + 1];
+        const ini = (k) => (k === 0 ? 0 : partes[k - 1]);
         for (const { l, filtro } of etiquetas) {
-          if (!filtro(f)) continue;
-          const texto = textoDoRotulo(l.labelExpression, f.valores, camposDe(info));
+          if (!filtro({ valores })) continue;
+          const texto = textoDoRotulo(l.labelExpression, valores, campos);
           if (!texto) continue;
           let px, py;
-          if (geo.tipo === 'ponto') [px, py] = [pxX(geo.pts[0][0]), pxY(geo.pts[0][1])];
-          else if (geo.tipo === 'linha') { const p = geo.partes[0], m = p[Math.floor(p.length / 2)]; [px, py] = [pxX(m[0]), pxY(m[1])]; }
-          else { const e2 = f.ext; [px, py] = [pxX((e2[0] + e2[2]) / 2), pxY((e2[1] + e2[3]) / 2)]; }
-          rotulos.push({ texto, px, py, sim: l.symbol, ponto: geo.tipo === 'ponto' });
+          if (tipo === 'ponto') { const a = ini(p0); [px, py] = [pxX(xy[a * 2]), pxY(xy[a * 2 + 1])]; }
+          else if (tipo === 'linha') { const a = ini(p0), b = partes[p0], m = a + Math.floor((b - a) / 2); [px, py] = [pxX(xy[m * 2]), pxY(xy[m * 2 + 1])]; }
+          else [px, py] = [pxX((e0 + e2) / 2), pxY((e1 + e3) / 2)];
+          rotulos.push({ texto, px, py, sim: l.symbol, ponto: tipo === 'ponto' });
         }
-        const sim = simboloDe(ren, f.valores, camposDe(info));
+        const sim = simboloDe(ren, valores, campos);
         if (!sim) continue;
-        if (geo.tipo === 'ponto') { for (const [lo, la] of geo.pts) desenharMarcador(g, sim, pxX(lo), pxY(la), alfa); continue; }
+        if (tipo === 'ponto') { for (let k = p0; k < p1; k++) for (let a = ini(k); a < partes[k]; a++) desenharMarcador(g, sim, pxX(xy[a * 2]), pxY(xy[a * 2 + 1]), alfa); continue; }
         g.beginPath();
-        for (const p of geo.partes) {
-          p.forEach(([lo, la], i) => (i ? g.lineTo(pxX(lo), pxY(la)) : g.moveTo(pxX(lo), pxY(la))));
-          if (geo.tipo === 'area') g.closePath();
+        for (let k = p0; k < p1; k++) {
+          const a0 = ini(k), a1 = partes[k];
+          for (let a = a0; a < a1; a++) { const X = pxX(xy[a * 2]), Y = pxY(xy[a * 2 + 1]); if (a === a0) g.moveTo(X, Y); else g.lineTo(X, Y); }
+          if (tipo === 'area') g.closePath();
         }
-        if (geo.tipo === 'area') {
+        if (tipo === 'area') {
           if (sim.type === 'esriPFS') {
             const { img } = imagemDe(sim);
             if (img.naturalWidth) { g.save(); g.globalAlpha = alfa; g.fillStyle = g.createPattern(img, 'repeat'); g.fill('evenodd'); g.restore(); }

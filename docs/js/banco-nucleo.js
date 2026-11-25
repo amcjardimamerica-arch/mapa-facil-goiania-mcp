@@ -3,6 +3,7 @@
 // tanto na página quanto num Web Worker. A fachada (banco.js) cuida do navegador (fetch interceptado, armazenamento
 // da chave do cofre, imagens do Cesium) e o desenho dos temas fica em banco-desenho.js.
 import { cronometrar, cronometrarSinc, contadores } from './desempenho.js';
+import Flatbush from './vendor/flatbush.mjs';
 
 export const R = 6378137;
 export const ESCALA = 1e6;
@@ -165,7 +166,36 @@ export function feicoes(arquivo, chaveBloco, info) {
     Object.defineProperty(f, 'ext', { get() { return this._e || (this._e = this.g ? extensaoGeo(this.g) : null); } });
     return f;
   });
+  // Passo 6: índice espacial do arquivo (64 feições ou mais), para achar só as que tocam uma caixa.
+  if (arquivo._f.length >= 64) {
+    const idx = new Flatbush(arquivo._f.length);
+    for (const f of arquivo._f) { const e = f.ext; if (e) idx.add(e[0], e[1], e[2], e[3]); else idx.add(Infinity, Infinity, -Infinity, -Infinity); }
+    idx.finish();
+    arquivo._idx = idx;
+  }
   return arquivo._f;
+}
+
+/** Feições que tocam a caixa: as do arquivo inteiro, filtradas pelo índice espacial quando existe. */
+function naCaixaDoArquivo(arquivo, chaveBloco, info, ext) {
+  const lista = feicoes(arquivo, chaveBloco, info);
+  // Ordem do arquivo preservada: a ordem de desenho (o que fica por cima) não muda.
+  if (arquivo?._idx) return arquivo._idx.search(ext[0], ext[1], ext[2], ext[3]).sort((a, b) => a - b).map((i) => lista[i]);
+  return lista.filter((f) => { const e = f.ext; return e && !(e[2] < ext[0] || e[0] > ext[2] || e[3] < ext[1] || e[1] > ext[3]); });
+}
+
+/** Como feicoesNaExtensao, mas devolve só as feições cuja caixa toca a extensão (sem varrer o arquivo inteiro). */
+export async function feicoesNaCaixa(info, ext) {
+  const S = info._s, id = info._id;
+  if (info.z == null) return naCaixaDoArquivo(await lerDados(`dados/${S}/${id}/todos.json.gz`, info), null, info, ext);
+  let blocos, visao = false;
+  if (blocosNaExtensao(info, ext, false, true) > 16 && info.zv != null) { blocos = blocosNaExtensao(info, ext, true); visao = true; }
+  else { blocos = blocosNaExtensao(info, ext); if (blocos.length > 150) throw new NaoSuportado('muitos blocos'); }
+  const pasta = visao ? `v${info.zv}` : info.z;
+  const caminho = (b) => (b === 'grandes' ? `dados/${S}/${id}/grandes.json.gz` : `dados/${S}/${id}/${pasta}/${b}.json.gz`);
+  const lista = info.grandes ? [...blocos, 'grandes'] : blocos;
+  const partes = await Promise.all(lista.map((b) => lerDados(caminho(b), info).then((a) => naCaixaDoArquivo(a, visao && b !== 'grandes' ? null : b, info, ext))));
+  return partes.flat();
 }
 
 export function dentroAnel(anel, x, y) {
@@ -443,7 +473,7 @@ export async function candidatos(info, p) {
     return { lista: await feicoesDosBlocos(info, [...blocos]), q, ids: new Set(ids) };
   }
   if (q) {
-    return { lista: await feicoesNaExtensao(info, q.ext), q };
+    return { lista: await feicoesNaCaixa(info, q.ext), q };
   }
   for (const campo of info.indices || []) {
     const vs = valoresDoIndice(p.where, campo);
@@ -647,10 +677,44 @@ export function esquecerPessoas() { indicePessoas = null; }
 /** Legenda do serviço (servicos/S/legend.json). */
 export const legenda = (S) => lerArquivo(`servicos/${S}/legend.json`);
 
-/** Feições de uma camada numa extensão (Web Mercator), para o desenho dos temas (usado a partir do passo 6). */
-export async function feicoesParaDesenho(S, camada, ext) {
+/**
+ * Caminho rápido de desenho (passo 6): só o necessário para desenhar um bloco de tela, em vetores transferíveis.
+ * ext em graus [oeste, sul, leste, norte]; campos = nomes dos campos usados pelo símbolo, rótulos e filtros.
+ * -> { geo, n, oids, inicio (1ª parte de cada feição, n+1), partes (fim de cada parte, em pontos), xy (lon, lat),
+ *      caixas (4 por feição), valores: [[...] por feição, na ordem de campos] }
+ */
+export async function feicoesParaDesenho(S, camada, ext, campos = []) {
   const info = infoCamada(S, camada);
-  return info ? feicoesNaExtensao(info, ext) : [];
+  if (!info?.geo) return null;
+  const fs = await feicoesNaCaixa(info, ext);
+  const todos = camposDe(info).map((c) => c.toLowerCase());
+  const pos = campos.map((c) => todos.indexOf(String(c).toLowerCase()));
+  const vistos = new Set(), sel = [];
+  let nPartes = 0, nPts = 0;
+  for (const f of fs) {
+    if (vistos.has(f.oid)) continue;
+    vistos.add(f.oid);
+    const g = f.g;
+    if (!g) continue;
+    const ps = g.tipo === 'ponto' ? [g.pts] : g.partes;
+    sel.push([f, ps]);
+    nPartes += ps.length;
+    for (const p of ps) nPts += p.length;
+  }
+  const n = sel.length;
+  const inicio = new Uint32Array(n + 1), partes = new Uint32Array(nPartes), xy = new Float64Array(nPts * 2), caixas = new Float64Array(n * 4);
+  const oids = new Array(n), valores = new Array(n);
+  let kp = 0, kxy = 0;
+  sel.forEach(([f, ps], i) => {
+    oids[i] = f.oid;
+    valores[i] = pos.map((k) => (k >= 0 ? f.valores[k] : null));
+    inicio[i] = kp;
+    for (const p of ps) { for (const [lo, la] of p) { xy[kxy++] = lo; xy[kxy++] = la; } partes[kp++] = kxy / 2; }
+    const e = f.ext || [0, 0, 0, 0];
+    caixas.set(e, i * 4);
+  });
+  inicio[n] = kp;
+  return { geo: sel[0]?.[0].g.tipo || info.geo, n, oids, inicio, partes, xy, caixas, valores, campos };
 }
 
 /** Fábrica pedida pelo roteiro: o mesmo núcleo, configurado, com a interface de consulta. */

@@ -27,6 +27,21 @@ export const mostraNaAltura = (item, nivel) => ALTURA.camera <= LIMITE_ALTURA[it
  * Filtro de bairros do painel Bairros: com ele ligado, o mapa desenha quadras, lotes e números de quadra só dentro
  * dos bairros marcados (Jardim América e/ou Nova Suíça). `aneis` são anéis em Web Mercator; null = cidade inteira.
  */
+/** Centro exato (centroide de área) de um anel; se a área for nula, a média dos vértices. */
+export function centroDoAnel(anel) {
+  let A = 0, cx = 0, cy = 0;
+  const [x0, y0] = anel[0];
+  for (let i = 0, j = anel.length - 1; i < anel.length; j = i++) {
+    const xi = anel[i][0] - x0, yi = anel[i][1] - y0, xj = anel[j][0] - x0, yj = anel[j][1] - y0;
+    const c = xj * yi - xi * yj;
+    A += c; cx += (xj + xi) * c; cy += (yj + yi) * c;
+  }
+  if (Math.abs(A) < 1e-9) { let sx = 0, sy = 0; for (const [a, b] of anel) { sx += a; sy += b; } return [sx / anel.length, sy / anel.length]; }
+  return [x0 + cx / (3 * A), y0 + cy / (3 * A)];
+}
+/** Tamanho da letra do marcador de quadra (px de tela), pela altura da câmera — o mesmo em quadras.js. */
+export const pxMarcadorQuadra = (h) => (h <= 700 ? 12 : h <= 1500 ? 11 : 10);
+
 export const FILTRO_BAIRROS = { aneis: null, ext: null };
 /**
  * Opções da Base Cadastral (painel Camadas): controlam o desenho cadastral na cidade inteira — nomes de rua,
@@ -444,13 +459,27 @@ export class ProvedorVetorial extends ProvedorCanvas {
     // Número de todos os lotes, por cima da quadra: nenhum é escondido; a fonte se ajusta ao lote.
     if (ver.numeroLote && lotes.length) {
       const max = nivel >= 20 ? 14 : nivel >= 19 ? 12.5 : nivel >= 18 ? 11 : 9.5;
+      // Caixas dos marcadores de quadra (no centro exato de cada quadra): o número de lote que cair embaixo
+      // de um marcador é deslocado um pouco para o lado, para os dois ficarem legíveis.
+      const pxM = pxMarcadorQuadra(ALTURA.camera) * 1.3;
+      const marcas = (BASE.ligado && BASE.quadras ? quadras || [] : []).map((f) => {
+        const a = f.geometry?.rings?.[0], nq = String(f.attributes?.nm_qdr || '').trim();
+        if (!a || !nq) return null;
+        const [cx, cy] = centroDoAnel(a);
+        const w = (nq.length * pxM * 0.62 + pxM) / 2 + 2, h = pxM * 0.75 + 2;
+        return { x: q.x(cx), y: q.y(cy), w, h };
+      }).filter(Boolean);
       for (const f of lotes) {
         const nm = String(f.attributes.nm_lot || '').trim();
         const anel = f.geometry?.rings?.[0];
         if (!nm || !anel) continue;
         let sx = 0, sy = 0, o = Infinity, l = -Infinity, s0 = Infinity, n0 = -Infinity;
         for (const [a, b] of anel) { sx += a; sy += b; o = Math.min(o, a); l = Math.max(l, a); s0 = Math.min(s0, b); n0 = Math.max(n0, b); }
-        numeroNoLote(g, nm, q.x(sx / anel.length), q.y(sy / anel.length), q.x(l) - q.x(o), q.y(s0) - q.y(n0), { cor: e.loteTexto, halo: e.halo, max });
+        let px = q.x(sx / anel.length), py = q.y(sy / anel.length);
+        const meia = (nm.length * max * 0.3) + 2, alt = max * 0.6;
+        const m = marcas.find((c) => Math.abs(px - c.x) < c.w + meia && Math.abs(py - c.y) < c.h + alt);
+        if (m) px = px <= m.x ? m.x - m.w - meia - 1 : m.x + m.w + meia + 1;
+        numeroNoLote(g, nm, px, py, q.x(l) - q.x(o), q.y(s0) - q.y(n0), { cor: e.loteTexto, halo: e.halo, max });
       }
     }
     return tela;

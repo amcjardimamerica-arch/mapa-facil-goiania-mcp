@@ -1,11 +1,11 @@
 // Número das quadras (marcador preto de cantos arredondados, número amarelo #FFFF00).
 //
-// Fica em marcadores de tela, por cima de tudo: nem os lotes nem as construções em 3D o cobrem. Para não tampar
-// os números de lote, quando eles aparecem (2,5 km), o marcador vai para o ponto da quadra mais distante dos
-// números de lote (em geral o encontro dos fundos dos lotes). Quadra que é praça leva o nome da praça
-// (logradouro "Pça" que a contorna); "ÁREA" só fica onde o Mapa Fácil não traz nenhuma referência de praça.
+// Fica em marcadores de tela, por cima de tudo: nem os lotes nem as construções em 3D o cobrem. O marcador fica
+// no centro exato de cada quadra (centroide da área); o número de lote que ficaria embaixo dele é deslocado um
+// pouco para o lado no desenho do mapa (mapavetorial.js). Quadra que é praça leva o nome da praça (logradouro
+// "Pça" que a contorna); "ÁREA" só fica onde os dados não trazem nenhuma referência de praça.
 import { CFG } from './config.js';
-import { ALTURA, LIMITE_ALTURA, passaFiltro, BASE } from './mapavetorial.js';
+import { ALTURA, LIMITE_ALTURA, passaFiltro, BASE, centroDoAnel, pxMarcadorQuadra } from './mapavetorial.js';
 
 const Cesium = window.Cesium;
 const R = 6378137;
@@ -83,7 +83,7 @@ export class Quadras {
     try {
       [quadras, lotes, pracas] = await Promise.all([
         consulta(1, env, { outFields: 'nm_qdr' }),
-        comLotes ? consulta(0, env, { outFields: 'nm_lot' }) : [],
+        [],
         consulta(7, [o - 80, s - 80, l + 80, n + 80], { outFields: 'tp_log,nm', where: "tp_log = 'Pça'" }).catch(() => []),
       ]);
     } catch { return; }
@@ -106,13 +106,13 @@ export class Quadras {
       for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (const c of grade.get(`${gx + dx},${gy + dy}`) || []) m = Math.min(m, Math.hypot(c[0] - x, c[1] - y));
       return m;
     };
-    const px = h <= 700 ? 12 : h <= 1500 ? 11 : 10;
+    const px = pxMarcadorQuadra(h);
     this.marcadores.removeAll();
     for (const f of quadras) {
       const anel = f.geometry?.rings?.[0];
       let nm = String(f.attributes.nm_qdr || '').trim();
       if (!anel || !nm || !passaFiltro(f)) continue;
-      let [cx, cy] = centro(anel);
+      const [cx, cy] = centroDoAnel(anel); // centro exato da quadra
       // Praça: nome do logradouro "Pça" que contorna a quadra.
       if (AREA.test(nm)) {
         let melhor = null;
@@ -122,22 +122,6 @@ export class Quadras {
         }
         let raio = 0; for (const [a, b] of anel) raio = Math.max(raio, Math.hypot(a - cx, b - cy));
         nm = melhor && melhor.d <= raio + 25 ? String(melhor.nome).replace(/^Pça\b/i, 'Pça.') : 'ÁREA';
-      }
-      if (comLotes && centrosLote.length) {
-        // Ponto da quadra mais longe dos números de lote: centro ou um vértice interno de lote.
-        let best = { x: cx, y: cy, d: dentro(anel, cx, cy) ? perto(cx, cy) : -1 };
-        for (const { c, anel: al } of centrosLote) {
-          if (Math.abs(c[0] - cx) > 400 || Math.abs(c[1] - cy) > 400 || !dentro(anel, c[0], c[1])) continue;
-          for (const [vx, vy] of al) {
-            if (!dentro(anel, vx, vy)) continue;
-            let borda = Infinity;
-            for (let i = 1; i < anel.length; i++) borda = Math.min(borda, distSeg(vx, vy, ...anel[i - 1], ...anel[i]));
-            if (borda < 4) continue; // na frente do lote, junto da rua: não
-            const d = perto(vx, vy);
-            if (d > best.d) best = { x: vx, y: vy, d };
-          }
-        }
-        cx = best.x; cy = best.y;
       }
       const img = this._imagem(nm, px);
       this.marcadores.add({ position: Cesium.Cartesian3.fromDegrees(lonDe(cx), latDe(cy)), image: img.tela, width: img.w, height: img.h,

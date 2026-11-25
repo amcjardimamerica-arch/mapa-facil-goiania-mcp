@@ -22,6 +22,11 @@ const api = {
   async consultar(id, S, camada, p) { return executar(id, () => nucleo.consultar(S, camada, p)); },
   async identificar(id, S, p) { return executar(id, () => nucleo.identificar(S, p)); },
   async metadados(S, camada) { return executar(null, () => nucleo.metadados(S, camada)); },
+  async feicoesParaDesenho(id, S, camada, ext, campos) {
+    const r = await executar(id, () => nucleo.feicoesParaDesenho(S, camada, ext, campos));
+    // Vetores transferidos (sem cópia); o worker não guarda estes vetores em cache.
+    return r.ok ? Comlink.transfer(r, [r.ok.xy.buffer, r.ok.inicio.buffer, r.ok.partes.buffer, r.ok.caixas.buffer]) : r;
+  },
   async legenda(S) { return executar(null, () => nucleo.legenda(S)); },
   cancelar(id) { cancelados.add(id); },
   limparCache() { nucleo?.limparCache(); },
