@@ -1,1 +1,0 @@
-Trigger official ArcGIS export for Jardim América and Nova Suíça.

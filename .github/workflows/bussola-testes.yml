@@ -36,9 +36,6 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-dev.txt
       - run: pip install shapely pytest
-      - name: Gerar os dados se ainda não existem (primeira publicação)
-        if: hashFiles('docs/data/territorio.geojson') == ''
-        run: python scripts/extrair_dados.py
       - run: pytest -m "not navegador" -q
 
   navegador:
@@ -54,8 +51,5 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-dev.txt
       - run: pip install -r requirements-dev.txt
-      - name: Gerar os dados se ainda não existem (primeira publicação)
-        if: hashFiles('docs/data/territorio.geojson') == ''
-        run: python scripts/extrair_dados.py
       - run: playwright install --with-deps chromium
       - run: pytest -m navegador -q

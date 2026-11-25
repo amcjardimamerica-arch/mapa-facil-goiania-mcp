@@ -339,3 +339,16 @@ def test_postes_dos_bairros():
     assert sum(x["transformador"] for x in p) > 400 and {x["material"] for x in p} >= {"R", "Q", "M"}
     assert all(-49.4 < x["lon"] < -49.2 and -16.8 < x["lat"] < -16.6 for x in p)
     assert any(x["datas"] for x in p)
+
+
+def test_nenhum_fluxo_automatico_consulta_o_mapa_facil():
+    """O único fluxo do GitHub é o de testes: nada roda sozinho nem consulta o Mapa Fácil ou grava os dados."""
+    from pathlib import Path
+    pasta = Path(__file__).resolve().parent.parent / ".github" / "workflows"
+    fluxos = sorted(p.name for p in pasta.glob("*.y*ml"))
+    assert fluxos == ["bussola-testes.yml"], fluxos
+    texto = (pasta / "bussola-testes.yml").read_text(encoding="utf-8")
+    assert "schedule" not in texto and "cron" not in texto
+    assert "portalmapa" not in texto and "extrair_dados" not in texto and "extrair_mapafacil" not in texto
+    raiz = Path(__file__).resolve().parent.parent
+    assert not (raiz / "TRIGGER_EXPORT.txt").exists() and not (raiz / "TRIGGER_STATS.txt").exists()

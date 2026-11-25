@@ -41,8 +41,7 @@ scripts/extrair_dados.py  extrator (Python + shapely)
 scripts/usuarios.py       cadastro de usuários
 tests/                    pytest: dados, extrator e ponta a ponta no Chromium
 .github/workflows/
-  bussola-testes.yml   testes a cada alteração
-  bussola-dados.yml    atualização semanal dos dados
+  bussola-testes.yml   testes a cada alteração (único fluxo; nenhum consulta o Mapa Fácil)
 dados_mapafacil/          catálogo anterior do servidor (mantido)
 ```
 
@@ -256,9 +255,7 @@ colocar o site atrás de um serviço de autenticação (por exemplo, Cloudflare 
 Não há segredo nem chave no projeto. A cada envio, o fluxo **Bússola — testes** confere os dados
 e abre o mapa em um Chromium; o resultado aparece na aba **Actions**.
 
-A pasta `docs/data` (2,2 MB, 8 arquivos) pode ir pronta ou ficar de fora: ao receber `scripts/extrair_dados.py`, o
-fluxo **Bússola — atualizar dados** roda sozinho, extrai tudo do portal e grava a pasta no
-repositório (de 5 a 12 minutos). Ele também pode ser rodado à mão em Actions → Run workflow.
+Os dados não se atualizam sozinhos. Uma nova extração do Mapa Fácil é feita à mão, conferida e só então implantada.
 
 ## Testar e validar
 
@@ -285,8 +282,8 @@ python scripts/extrair_dados.py                  # tudo (3 a 10 minutos; a etapa
 python scripts/extrair_dados.py --etapas camadas # só uma etapa
 ```
 
-O fluxo **Bússola — atualizar dados** faz isso toda segunda-feira e grava `docs/data` quando
-algo mudou. Se uma etapa falha, os arquivos anteriores são preservados.
+Os dados não se atualizam sozinhos: a extração é feita à mão, conferida e só então implantada (não há fluxo
+automático). Se uma etapa falha, os arquivos anteriores são preservados.
 
 | Arquivo | Conteúdo | Fonte |
 | --- | --- | --- |
