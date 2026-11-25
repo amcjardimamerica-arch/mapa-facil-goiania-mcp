@@ -1,4 +1,4 @@
-// Globo 3D (CesiumJS): fundo de satélite, relevo, máscara de território,
+// Globo 3D (CesiumJS): fundo (fotos aéreas e mapa do banco local), relevo próprio, máscara de território,
 // navegação estilo Earth e os provedores de imagem do Mapa Fácil.
 import { CFG } from './config.js';
 import { ProvedorMascara, rotularVizinhos } from './territorio.js';
@@ -10,7 +10,6 @@ const rad = (graus) => (graus * Math.PI) / 180; // sem tocar no Cesium na carga 
 const NIVEL_MINIMO = 9;
 
 // ---------------------------------------------------------------- provedores
-/** Imagem dinâmica de um MapServer do Mapa Fácil (operação "export"), em blocos. */
 /** Provedor vazio: nada é pedido a lugar nenhum (o sistema não consulta mais o servidor da Prefeitura). */
 class ProvedorVazio {
   constructor(retangulo) { this._g = new Cesium.WebMercatorTilingScheme(); this._r = retangulo; this._e = new Cesium.Event(); }
@@ -23,52 +22,54 @@ class ProvedorVazio {
 }
 
 export function provedorExport(url, opcoes = {}) {
-  // Desligado do Mapa Fácil: nenhuma imagem é pedida ao servidor municipal.
-  if (CFG.bancoSoLocal && /portalmapa\.goiania/.test(url)) return new ProvedorVazio(opcoes.retangulo);
-  return provedorExportServidor(url, opcoes);
+  // O sistema não pede imagem a nenhum servidor: o que não está no banco local fica em branco.
+  return new ProvedorVazio(opcoes.retangulo);
 }
 
-function provedorExportServidor(url, { camadas, formato = 'png32', transparente = true, tamanho = 512,
-  retangulo, nivelMinimo = NIVEL_MINIMO, nivelMaximo = 20, credito } = {}) {
-  const p = new URLSearchParams({
-    bboxSR: '3857', imageSR: '3857', size: `${tamanho},${tamanho}`,
-    format: formato, transparent: String(transparente), f: 'image',
-  });
-  if (camadas) p.set('layers', `show:${camadas.join(',')}`);
-  return new Cesium.UrlTemplateImageryProvider({
-    url: `${url}/export?bbox={westProjected},{southProjected},{eastProjected},{northProjected}&${p}`,
-    tilingScheme: new Cesium.WebMercatorTilingScheme(),
-    tileWidth: tamanho, tileHeight: tamanho,
-    rectangle: retangulo, maximumLevel: nivelMaximo, enablePickFeatures: false, credit: credito,
-    // Com o retângulo de Goiânia, o nível 9 cabe em 4 blocos: evita pedir ao
-    // servidor municipal imagens do mundo inteiro quando a câmera está longe.
-    // (As ortofotos em cache exigem nível maior — ver "nivel_minimo" em camadas.json.)
-    minimumLevel: retangulo ? nivelMinimo : 0,
-  });
+// ------------------------------------------------------------------ relevo próprio
+/**
+ * Relevo de Goiânia guardado no site (relevo/goiania.bin.gz, Copernicus DEM GLO-30, ~30 m): uma grade só,
+ * lida uma vez e amostrada em blocos para o Cesium. Fora da grade repete a borda (o entorno é só território).
+ */
+async function lerGradeRelevo() {
+  const base = CFG.relevo.grade;
+  const meta = await (await fetch(`${base}.json`)).json();
+  const resp = await fetch(`${base}.bin.gz`);
+  if (!resp.ok) throw new Error(`relevo: HTTP ${resp.status}`);
+  const bruto = await new Response(resp.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+  const dif = new Int16Array(bruto);
+  const { largura: L, altura: A, escala } = meta;
+  const alt = new Float32Array(L * A);
+  for (let y = 0; y < A; y++) {
+    let v = 0;
+    for (let x = 0; x < L; x++) { v += dif[y * L + x]; alt[y * L + x] = v * escala; }
+  }
+  return { ...meta, alt };
 }
 
-function provedorSatelite() {
-  const s = CFG.satelite;
-  return new Cesium.UrlTemplateImageryProvider({
-    url: s.url, maximumLevel: s.nivelMaximo, credit: s.credito, enablePickFeatures: false,
-    // Sem a conferência de "bloco faltante" pixel a pixel: ela lia cada imagem do satélite (getImageData) na linha
-    // da tela e era a maior causa de travamento. O nível máximo já evita pedir blocos que não existem.
-    tileDiscardPolicy: new Cesium.NeverTileDiscardPolicy(),
-  });
-}
-
-/** Satélite do Google (Map Tiles API) — só quando CFG.googleMapsApiKey está preenchida. */
-async function provedorGoogle() {
-  const chave = CFG.googleMapsApiKey;
-  const resp = await fetch(`https://tile.googleapis.com/v1/createSession?key=${encodeURIComponent(chave)}`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ mapType: 'satellite', language: 'pt-BR', region: 'BR' }),
-  });
-  if (!resp.ok) throw new Error(`Google Map Tiles: HTTP ${resp.status}`);
-  const { session } = await resp.json();
-  return new Cesium.UrlTemplateImageryProvider({
-    url: `https://tile.googleapis.com/v1/2dtiles/{z}/{x}/{y}?session=${session}&key=${encodeURIComponent(chave)}`,
-    maximumLevel: 21, credit: 'Imagem de satélite: Google', enablePickFeatures: false,
+function provedorRelevoLocal(grade) {
+  const { largura: L, altura: A, oeste, norte, passo, alt } = grade;
+  const amostra = (lon, lat) => {
+    const cx = Math.min(L - 1.001, Math.max(0, (lon - oeste) / passo - 0.5));
+    const cy = Math.min(A - 1.001, Math.max(0, (norte - lat) / passo - 0.5));
+    const x0 = Math.floor(cx), y0 = Math.floor(cy), fx = cx - x0, fy = cy - y0, i = y0 * L + x0;
+    return (alt[i] * (1 - fx) + alt[i + 1] * fx) * (1 - fy) + (alt[i + L] * (1 - fx) + alt[i + L + 1] * fx) * fy;
+  };
+  const N = 32;
+  const esquema = new Cesium.GeographicTilingScheme();
+  return new Cesium.CustomHeightmapTerrainProvider({
+    width: N, height: N, tilingScheme: esquema, credit: CFG.relevo.credito,
+    callback: (x, y, nivel) => {
+      const r = esquema.tileXYToRectangle(x, y, nivel);
+      const o = Cesium.Math.toDegrees(r.west), l = Cesium.Math.toDegrees(r.east);
+      const n = Cesium.Math.toDegrees(r.north), s = Cesium.Math.toDegrees(r.south);
+      const h = new Float32Array(N * N);
+      for (let j = 0; j < N; j++) {
+        const lat = n + ((s - n) * j) / (N - 1);
+        for (let i = 0; i < N; i++) h[j * N + i] = amostra(o + ((l - o) * i) / (N - 1), lat);
+      }
+      return h;
+    },
   });
 }
 
@@ -101,9 +102,6 @@ export class Globo {
     this.centro = [(o + l) / 2, (s + n) / 2];
 
     Cesium.Ion.defaultAccessToken = ''; // nada do Cesium ion é usado
-    // No máximo 4 imagens simultâneas no servidor municipal: não o sobrecarrega e
-    // deixa conexões livres para as consultas de clique e de busca.
-    Cesium.RequestScheduler.requestsByServer[`${new URL(CFG.rest).host}:443`] = 4;
     const viewer = new Cesium.Viewer('globo', {
       baseLayer: false, baseLayerPicker: false, geocoder: false, homeButton: false,
       sceneModePicker: false, navigationHelpButton: false, animation: false, timeline: false,
@@ -159,50 +157,38 @@ export class Globo {
 
   // ------------------------------------------------------------------- bases
   basesDisponiveis() {
-    const lista = [
-      { chave: 'satelite', titulo: 'Satélite', curto: 'Satélite', ano: null, tipo: 'satelite' },
-      { chave: 'mapa', titulo: 'Mapa', curto: 'Mapa', ano: null, tipo: 'vetor' },
-    ];
-    // As ortofotos antigas (2006, 2011, 2016) ficam de fora: o fundo é o satélite ou o mapa.
-    for (const b of this.catalogo.bases) if (!b.ano && (!CFG.bancoSoLocal || imagemLocal(b.url.split('/MapServer')[0].split('/').pop()))) lista.push({ ...b, titulo: 'Mapa Básico da Prefeitura', curto: 'Básico', tipo: 'mapa' });
-    // Datas anteriores do satélite (Esri World Imagery Wayback), da mais nova para a mais antiga.
-    for (const v of [...(this.catalogo.satelite || [])].reverse()) {
-      const quando = new Date(`${v.captura}T12:00:00Z`);
-      const mes = quando.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric', timeZone: 'UTC' });
-      lista.push({ chave: `sat-${v.captura}`, titulo: `Satélite de ${mes}`, curto: `Sat. ${v.captura.slice(0, 4)}`,
-        ano: null, tipo: 'historico', url: v.url, fonte: v.fonte, resolucao: v.resolucao_m,
-        nivelMaximo: v.nivel_maximo || 17, captura: v.captura });
+    const lista = [];
+    // Fotos aéreas: só as ortofotos da Prefeitura que estão no banco local. A mais recente é a "Foto aérea";
+    // as outras são épocas anteriores (seletor de data e comparação).
+    const fotos = (CFG.ortofotos || []).filter((o) => imagemLocal(o.servico)).sort((a, b) => b.ano - a.ano);
+    if (fotos.length) lista.push({ chave: 'satelite', titulo: `Foto aérea ${fotos[0].ano}`, curto: 'Foto', ano: null, tipo: 'satelite', servico: fotos[0].servico, captura: String(fotos[0].ano) });
+    lista.push({ chave: 'mapa', titulo: 'Mapa', curto: 'Mapa', ano: null, tipo: 'vetor' });
+    for (const b of this.catalogo.bases) if (!b.ano && imagemLocal(b.url.split('/MapServer')[0].split('/').pop())) lista.push({ ...b, titulo: 'Mapa Básico da Prefeitura', curto: 'Básico', tipo: 'mapa' });
+    for (const o of fotos.slice(1)) {
+      lista.push({ chave: `sat-${o.ano}`, titulo: `Foto aérea de ${o.ano}`, curto: `Foto ${o.ano}`, ano: null, tipo: 'historico',
+        servico: o.servico, fonte: 'Prefeitura de Goiânia', captura: String(o.ano) });
     }
     return lista;
   }
 
+  /** Fundo padrão: a foto aérea mais recente guardada no banco; sem nenhuma, o Mapa. */
+  get basePadrao() { return this.basesDisponiveis().some((b) => b.chave === 'satelite') ? 'satelite' : 'mapa'; }
+
   async _provedorBase(chave) {
-    if (chave === 'satelite') {
-      if (CFG.googleMapsApiKey) {
-        try { return await provedorGoogle(); } catch (e) { console.warn('Google indisponível, usando Esri:', e); }
-      }
-      return provedorSatelite();
-    }
     if (chave === 'mapa') {
       return new ProvedorVetorial({ modo: 'mapa', bairros: this.catalogo.bairros || [], retangulo: this.ret, territorio: this.territorio });
     }
-    if (chave.startsWith('sat-')) {
+    if (chave === 'satelite' || chave.startsWith('sat-')) {
       const v = this.basesDisponiveis().find((x) => x.chave === chave);
-      if (!v) throw new Error(`data de satélite desconhecida: ${chave}`);
-      return new Cesium.UrlTemplateImageryProvider({
-        url: v.url, maximumLevel: v.nivelMaximo, enablePickFeatures: false,
-        credit: `Satélite de ${v.captura}: Esri World Imagery Wayback${v.fonte ? `, ${v.fonte}` : ''}`,
-      });
+      const local = v && imagemLocal(v.servico);
+      if (!local) throw new Error(`foto aérea indisponível no banco local: ${chave}`);
+      return local;
     }
     const b = this.catalogo.bases.find((x) => x.chave === chave && !x.ano);
     if (!b) throw new Error(`base desconhecida: ${chave}`);
     const local = imagemLocal(b.url.split('/MapServer')[0].split('/').pop());
-    if (local) return local;
-    return provedorExport(b.url, {
-      formato: 'jpg', transparente: false, retangulo: this.ret, nivelMaximo: 21,
-      nivelMinimo: Math.max(NIVEL_MINIMO, b.nivel_minimo || NIVEL_MINIMO),
-      credito: `${b.titulo}: Prefeitura de Goiânia`,
-    });
+    if (!local) throw new Error(`${b.titulo} indisponível no banco local`);
+    return local;
   }
 
   async definirBase(chave) {
@@ -297,7 +283,8 @@ export class Globo {
   async definirRelevo(ligado) {
     try {
       if (ligado && !this.provedorRelevo) {
-        this.provedorRelevo = await Cesium.ArcGISTiledElevationTerrainProvider.fromUrl(CFG.relevo.url);
+        this._grade = this._grade || await lerGradeRelevo();
+        this.provedorRelevo = provedorRelevoLocal(this._grade);
       }
       this.viewer.terrainProvider = ligado ? this.provedorRelevo : new Cesium.EllipsoidTerrainProvider();
       this.relevoAtivo = !!ligado;
@@ -318,17 +305,15 @@ export class Globo {
     this.redesenhar();
   }
 
-  /** Altitude do terreno (m) para uma lista de [lon,lat]; zeros se o relevo estiver desligado. */
+  /** Altitude do terreno (m) para uma lista de [lon,lat]; zeros se o relevo estiver desligado. Lida direto da grade. */
   async altitudes(pontos) {
-    if (!this.relevoAtivo || !this.provedorRelevo) return pontos.map(() => 0);
-    const cartos = pontos.map(([lon, lat]) => Cesium.Cartographic.fromDegrees(lon, lat));
-    for (const nivel of [CFG.relevo.nivelAmostra, CFG.relevo.nivelAmostra - 2]) {
-      try {
-        const res = await Cesium.sampleTerrain(this.provedorRelevo, nivel, cartos);
-        return res.map((c) => (Number.isFinite(c.height) ? c.height : 0));
-      } catch (e) { console.warn(`Amostragem do relevo (nível ${nivel}) falhou:`, e); }
-    }
-    return pontos.map(() => 0);
+    if (!this.relevoAtivo || !this._grade) return pontos.map(() => 0);
+    const { largura: L, altura: A, oeste, norte, passo, alt } = this._grade;
+    return pontos.map(([lon, lat]) => {
+      const cx = Math.min(L - 1.001, Math.max(0, (lon - oeste) / passo - 0.5)), cy = Math.min(A - 1.001, Math.max(0, (norte - lat) / passo - 0.5));
+      const x0 = Math.floor(cx), y0 = Math.floor(cy), fx = cx - x0, fy = cy - y0, i = y0 * L + x0;
+      return (alt[i] * (1 - fx) + alt[i + 1] * fx) * (1 - fy) + (alt[i + L] * (1 - fx) + alt[i + L + 1] * fx) * fy;
+    });
   }
 
   // ------------------------------------------------------------------ câmera

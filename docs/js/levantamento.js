@@ -1,6 +1,7 @@
 // Levantamento da Associação: Jardim América e Nova Suíça.
 // Lotes classificados por finalidade, limites dos bairros, áreas públicas,
-// prédios em 3D e locais de votação, a partir de data/levantamento.json.
+// prédios em 3D e locais de votação, a partir de data/levantamento-nucleo.json (abre o painel) e
+// data/levantamento-detalhes.json (fichas e busca, em segundo plano) — scripts/dividir_levantamento.py.
 import { noChao } from './globo.js';
 import { CFG } from './config.js';
 import { el, aviso, fmtNum, pedirJSON, semAcento, memoria } from './util.js';
@@ -95,6 +96,23 @@ export class Levantamento {
     return this._ass;
   }
 
+  /**
+   * Núcleo do levantamento (levantamento-nucleo.json, ~0,4 MB comprimido): desenho dos lotes, filtros, áreas,
+   * bocas de lobo e locais de votação. É pedido já na abertura do sistema (app.js), antes de o painel abrir.
+   */
+  precarregar() {
+    if (!this._nucleo) {
+      this._nucleo = pedirJSON(`${CFG.dados}levantamento-nucleo.json`, { tempo: 90000 });
+      this._nucleo.catch(() => { this._nucleo = null; });
+    }
+    return this._nucleo;
+  }
+
+  /** Detalhes (fichas, empresas, unidades, busca): chegam em segundo plano. Resolve quando estão prontos. */
+  detalhes() {
+    return this._detalhes || this.carregar().then(() => this._detalhes);
+  }
+
   async carregar() {
     if (this.dados) return this.dados;
     if (this._carregando) return this._carregando;
@@ -104,37 +122,22 @@ export class Levantamento {
     const lotesEleitorais = pedirJSON(`${CFG.dados}eleitoral_lotes.json`, { tempo: 60000 }).catch(() => null);
     // Canteiros centrais estimados das avenidas e nomes completos das praças (scripts/canteiros_centrais.py).
     const complemento = pedirJSON(`${CFG.dados}areas_complemento.json`, { tempo: 60000 }).catch(() => null);
-    this._carregando = pedirJSON(`${CFG.dados}levantamento.json`, { tempo: 90000 }).then(async (d) => {
-      const ix = Object.fromEntries(d.colunas_lote.map((c, i) => [c, i]));
-      this.ix = ix;
-      const porLote = (tabela) => {
-        const m = new Map();
-        for (const r of tabela.linhas) if (Number.isInteger(r.lote)) { if (!m.has(r.lote)) m.set(r.lote, []); m.get(r.lote).push(r.v); }
-        return m;
-      };
-      this.empresasDoLote = porLote(d.empresas);
-      this.googleDoLote = porLote(d.google);
-      this.condominioDoLote = porLote(d.condominios);
-      this.unidadesDoLote = d.unidades?.por_lote || {};
-      const ixe = Object.fromEntries(d.empresas.colunas.map((c, i) => [c, i]));
+    this._carregando = this.precarregar().then(async (d) => {
+      this.ix = Object.fromEntries(d.colunas_lote.map((c, i) => [c, i]));
+      // Até os detalhes chegarem: tabelas vazias e busca só por quadra e lote.
+      this.empresasDoLote = new Map(); this.googleDoLote = new Map(); this.condominioDoLote = new Map(); this.unidadesDoLote = {};
+      this.semLote = [];
+      d.empresas = d.empresas_ensino || { colunas: [], linhas: [] };   // o filtro de escolas usa só as de ensino
       d.lotes.forEach((l, i) => {
-        const v = (c) => l.v[ix[c]];
-        l.end = v('Endereço (cadastro)'); l.edif = v('Edifício / condomínio'); l.ar = v('Área do comércio (principal)');
-        l.emp = String(v('Empresas (nome)') || '').split(';').map((x) => x.trim()).filter(Boolean);
-        l.i = i;
-        const emp = (this.empresasDoLote.get(i) || []).map((e) => [e[ixe['CNPJ']], e[ixe['Razão social']], e[ixe['Nome fantasia']], e[ixe['Telefone']], e[ixe['E-mail']]].join(' '));
-        l.extraBusca = emp.join(' ');
-      });
-      for (const l of d.lotes) {
+        l.i = i; l.emp = [];
         l.aneis = l.g.map(decodificarAnel);
         l.m = l.aneis.map((a) => a.map(([lo, la]) => [mx(lo), my(la)]));
         let o = Infinity, s = Infinity, e = -Infinity, n = -Infinity, cx = 0, cy = 0;
         for (const [x, y] of l.m[0]) { o = Math.min(o, x); e = Math.max(e, x); s = Math.min(s, y); n = Math.max(n, y); cx += x; cy += y; }
         l.ext = [o, s, e, n];
         l.centro = [cx / l.m[0].length, cy / l.m[0].length];
-        const un = (this.unidadesDoLote[l.i] || []).map((u) => `${u[0]} ${u[2] || ''}`).join(' ');
-        l.busca = semAcento([`qd ${l.q} lt ${l.l}`, `quadra ${l.q} lote ${l.l}`, ...l.v.filter((x) => x !== null && x !== ''), l.extraBusca, un].join(' | '));
-      }
+        l.busca = `qd ${semAcento(String(l.q))} lt ${semAcento(String(l.l))} | quadra ${semAcento(String(l.q))} lote ${semAcento(String(l.l))}`;
+      });
       const extra = await complemento;
       if (extra) {
         const nomes = extra.nomes || {};
@@ -150,9 +153,6 @@ export class Levantamento {
       }
       for (const a of d.areas) a.aneis = a.g.map(decodificarAnel);
       for (const lim of d.limites) lim.aneisLL = lim.aneis.map(decodificarAnel);
-      const ixs = d.empresas_sem_lote.colunas;
-      this.semLote = d.empresas_sem_lote.linhas.map((r) => ({ v: r, busca: semAcento(r.filter((x) => x !== null).join(' | ')),
-        nome: r[ixs.indexOf('Nome fantasia')] || r[ixs.indexOf('Razão social')], bairro: r[ixs.indexOf('Bairro')] }));
       this.lotesEleitorais = (await lotesEleitorais)?.lotes || {};
       this.cor = Object.fromEntries(d.finalidades.map((f) => [f.nome, f.cor]));
       // Bases dos prédios (predios.json): a torre de cada lote, nunca o terreno inteiro.
@@ -166,6 +166,8 @@ export class Levantamento {
       this._montarFiltros();
       this.redesenhar();
       this.estado.classList.remove('carregando');
+      this._detalhes = this._carregarDetalhes(d);
+      this._detalhes.catch((e) => aviso(`Fichas do levantamento indisponíveis: ${e.message}`, 'alerta'));
       return d;
     }).catch((e) => {
       this._carregando = null;
@@ -174,6 +176,43 @@ export class Levantamento {
       throw e;
     });
     return this._carregando;
+  }
+
+  /** Junta os detalhes ao núcleo e monta o índice da busca em partes, sem travar a tela. */
+  async _carregarDetalhes(d) {
+    const x = await pedirJSON(`${CFG.dados}levantamento-detalhes.json`, { tempo: 180000 });
+    if (x.gerado_em && d.gerado_em && x.gerado_em !== d.gerado_em) console.warn('Levantamento: detalhes de outra importação', x.gerado_em, d.gerado_em);
+    for (const k of ['empresas', 'empresas_sem_lote', 'google', 'condominios', 'unidades', 'iluminacao', 'conferencia', 'conferencia_condominios']) if (x[k]) d[k] = x[k];
+    Object.assign(d.eleitoral, x.eleitoral_tabelas || {});
+    const ix = this.ix;
+    const porLote = (tabela) => {
+      const m = new Map();
+      for (const r of tabela?.linhas || []) if (Number.isInteger(r.lote)) { if (!m.has(r.lote)) m.set(r.lote, []); m.get(r.lote).push(r.v); }
+      return m;
+    };
+    this.empresasDoLote = porLote(d.empresas);
+    this.googleDoLote = porLote(d.google);
+    this.condominioDoLote = porLote(d.condominios);
+    this.unidadesDoLote = d.unidades?.por_lote || {};
+    const ixe = Object.fromEntries(d.empresas.colunas.map((c, i) => [c, i]));
+    const pausa = () => new Promise((ok) => setTimeout(ok, 0));
+    for (let i = 0; i < d.lotes.length; i++) {
+      const l = d.lotes[i];
+      l.v = x.lotes_v[i];
+      const v = (c) => l.v[ix[c]];
+      l.end = v('Endereço (cadastro)'); l.edif = v('Edifício / condomínio'); l.ar = v('Área do comércio (principal)');
+      l.emp = String(v('Empresas (nome)') || '').split(';').map((t) => t.trim()).filter(Boolean);
+      const emp = (this.empresasDoLote.get(i) || []).map((e) => [e[ixe['CNPJ']], e[ixe['Razão social']], e[ixe['Nome fantasia']], e[ixe['Telefone']], e[ixe['E-mail']]].join(' '));
+      const un = (this.unidadesDoLote[i] || []).map((u) => `${u[0]} ${u[2] || ''}`).join(' ');
+      l.busca = semAcento([`qd ${l.q} lt ${l.l}`, `quadra ${l.q} lote ${l.l}`, ...l.v.filter((t) => t !== null && t !== ''), emp.join(' '), un].join(' | '));
+      if (i % 1500 === 1499) await pausa();
+    }
+    const ixs = d.empresas_sem_lote.colunas;
+    this.semLote = d.empresas_sem_lote.linhas.map((r) => ({ v: r, busca: semAcento(r.filter((t) => t !== null).join(' | ')),
+      nome: r[ixs.indexOf('Nome fantasia')] || r[ixs.indexOf('Razão social')], bairro: r[ixs.indexOf('Bairro')] }));
+    this.detalhesProntos = true;
+    if (this.campo?.value) this._buscar();
+    return d;
   }
 
   _gravar() { memoria.gravar('bussola:levantamento', { opcoes: this.opcoes, ocultas: [...this.ocultas] }); }
@@ -227,7 +266,7 @@ export class Levantamento {
         el('button', { class: 'botao-texto', type: 'button', onclick: (e) => { e.preventDefault(); this.irParaBairro(i); } }, 'Ir')));
     });
     this._montarLegenda();
-    this.estado.textContent = `${fmtNum(d.lotes.length)} lotes, ${fmtNum(d.empresas.linhas.length + d.empresas_sem_lote.linhas.length)} empresas, ` +
+    this.estado.textContent = `${fmtNum(d.lotes.length)} lotes, ${fmtNum(d.contagem?.empresas ?? (d.empresas.linhas.length + (d.empresas_sem_lote?.linhas.length || 0)))} empresas, ` +
       `${fmtNum(d.areas.length)} áreas públicas e ${fmtNum(d.eleitoral.pontos.length)} locais de votação.`;
     this._contarPedidos();
     if (this.caixaEleitoral) this._montarEleitoral();
@@ -365,11 +404,15 @@ export class Levantamento {
   redesenhar() {
     if (!this.dados) return;
     const d = this.dados, camadas = this.globo.viewer.imageryLayers;
-    this.fonte.entities.removeAll();
-    if (this.camadaLotes) { camadas.remove(this.camadaLotes, true); this.camadaLotes = null; }
-
-    if (this.mostrar && this.opcoes.lotes) {
-      const lotes = this._lotesVisiveis().map((l) => ({ aneis: l.m, ext: l.ext, centro: l.centro, nm: l.l, cor: comAlfa(this.cor[l.f] || '#9aa3ad', 0.5) }));
+    // Alternância rápida: divisas, bocas de lobo e áreas são criadas uma vez (this.fixos) e só mudam de
+    // visibilidade; a camada dos lotes só é refeita quando bairros, finalidades ou o fundo mudam.
+    this.fonte.entities.removeAll();                         // só os nomes dos locais de votação, refeitos abaixo
+    const sinal = this.opcoes.bairros.map((b) => (b === false ? 0 : 1)).join('');
+    const assinaturaLotes = this.mostrar && this.opcoes.lotes ? `${sinal}|${[...this.ocultas].sort().join(',')}|${this.numerosNoMapa?.() ? 1 : 0}` : '';
+    if (assinaturaLotes !== this._assinaturaLotes) {
+      this._assinaturaLotes = assinaturaLotes;
+      if (this.camadaLotes) { camadas.remove(this.camadaLotes, true); this.camadaLotes = null; }
+      const lotes = assinaturaLotes ? this._lotesVisiveis().map((l) => ({ aneis: l.m, ext: l.ext, centro: l.centro, nm: l.l, cor: comAlfa(this.cor[l.f] || '#9aa3ad', 0.5) })) : [];
       if (lotes.length) {
         let o = Infinity, s = Infinity, e = -Infinity, n = -Infinity;
         for (const l of lotes) { o = Math.min(o, l.ext[0]); s = Math.min(s, l.ext[1]); e = Math.max(e, l.ext[2]); n = Math.max(n, l.ext[3]); }
@@ -384,56 +427,17 @@ export class Levantamento {
       }
     }
 
-    if (this.mostrar) {
-      d.limites.forEach((lim, i) => {
-        if (this.opcoes.bairros[i] === false) return;
-        const cor = Cesium.Color.fromCssColorString(CORES_LIMITE[i % 2]);
-        // Divisa única do sistema: o limite oficial do Mapa Fácil (todos os lotes do bairro ficam dentro dele), no
-        // mesmo padrão das divisas de todos os bairros — preta, amarela e preta (#000000, #FFFF00, #000000).
-        const oficial = d.limites_oficiais?.[i];
-        const aneis = oficial ? oficial.aneis.map(decodificarAnel) : lim.aneisLL;
-        for (const anel of aneis) {
-          const pos = Cesium.Cartesian3.fromDegreesArray([...anel, anel[0]].flat());
-          this.fonte.entities.add({ polyline: { positions: pos, clampToGround: true, width: 6, zIndex: 0, material: Cesium.Color.fromCssColorString('#000000') } });
-          this.fonte.entities.add({ polyline: { positions: pos, clampToGround: true, width: 2, zIndex: 1, material: Cesium.Color.fromCssColorString('#FFFF00') } });
-        }
-        const pts = lim.aneisLL[0];
-        const c = pts.reduce((a, p) => [a[0] + p[0] / pts.length, a[1] + p[1] / pts.length], [0, 0]);
-        this.fonte.entities.add({ position: noChao(c[0], c[1]), label: {
-          text: d.bairros[i] || lim.nome, font: '700 17px system-ui, "Segoe UI", Roboto, sans-serif',
-          fillColor: cor, outlineColor: Cesium.Color.BLACK, outlineWidth: 4, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
-          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(2500, 60000) } });
-      });
-    }
-
     const nomeBairro = (b) => d.bairros.indexOf(b);
     const bairroVisivel = (b) => { const i = nomeBairro(b); return i < 0 || this.opcoes.bairros[i] !== false; };
-    if (this.mostrar && this.opcoes.bocas) {
-      const cb = d.bocas.colunas, kla = cb.indexOf('Latitude'), klo = cb.indexOf('Longitude'), kb = cb.indexOf('Bairro');
-      for (const b of d.bocas.linhas) {
-        if (!bairroVisivel(b.v[kb])) continue;
-        const ent = this.fonte.entities.add({ position: noChao(b.v[klo], b.v[kla]),
-          billboard: { image: `img/icones/${b.icone}`, width: 30, height: 30,
-            disableDepthTestDistance: Number.POSITIVE_INFINITY, distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 6000) } });
-        ent.levantamento = { tipo: 'boca', dado: b };
-      }
+    this._montarFixos();
+    for (const ent of this.fixos.entities.values) {
+      const f = ent.lvFixo;
+      ent.show = this.mostrar && (f.grupo === 'limite' ? this.opcoes.bairros[f.i] !== false
+        : f.grupo === 'boca' ? !!this.opcoes.bocas && bairroVisivel(f.bairro)
+        : (f.verde ? !!this.opcoes.verdes : !!this.opcoes.imoveis) && (f.i < 0 || this.opcoes.bairros[f.i] !== false));
     }
     // Postes em 3D (haste, bola da tensão, transformador e braço da luminária), só nos bairros visíveis.
     this.postes.mostrar(this.mostrar && !!this.opcoes.postes, bairroVisivel).catch((e) => aviso(`Postes indisponíveis: ${e.message}`, 'alerta'));
-
-    if (this.mostrar && (this.opcoes.imoveis || this.opcoes.verdes)) {
-      for (const a of d.areas) {
-        if (a.bai && d.bairros.indexOf(a.bai) >= 0 && this.opcoes.bairros[d.bairros.indexOf(a.bai)] === false) continue;
-        const verde = ehAreaVerde(a);
-        if (verde ? !this.opcoes.verdes : !this.opcoes.imoveis) continue;
-        for (const anel of a.aneis) {
-          const ent = this.fonte.entities.add({ polygon: { hierarchy: Cesium.Cartesian3.fromDegreesArray(anel.flat()),
-            material: Cesium.Color.fromCssColorString(verde ? '#2e9d57' : '#5c6bc0').withAlpha(0.5), classificationType: Cesium.ClassificationType.TERRAIN } });
-          ent.levantamento = { tipo: 'area', dado: a };
-        }
-      }
-    }
 
     if (this.escolas.itens) this.escolas.mostrar(this.mostrar && !!this.opcoes.escolas, this.opcoes.escolasFiltro, bairroVisivel);
     this._filtroDoMapa();
@@ -441,6 +445,49 @@ export class Levantamento {
     this.globo.organizarPilha();
     this.globo.redesenhar();
     this.aoMudar();
+  }
+
+  /** Divisas dos bairros, bocas de lobo e áreas públicas: criadas uma vez só; redesenhar() só liga e desliga. */
+  _montarFixos() {
+    if (this._fixosProntos) return;
+    const d = this.dados;
+    if (!this.fixos) { this.fixos = new Cesium.CustomDataSource('levantamento-fixos'); this.globo.viewer.dataSources.add(this.fixos); }
+    const add = (lvFixo, def, levantamento) => { const ent = this.fixos.entities.add({ show: false, ...def }); ent.lvFixo = lvFixo; if (levantamento) ent.levantamento = levantamento; };
+    this.fixos.entities.suspendEvents();
+    d.limites.forEach((lim, i) => {
+      const cor = Cesium.Color.fromCssColorString(CORES_LIMITE[i % 2]);
+      // Divisa única do sistema: o limite oficial do Mapa Fácil (todos os lotes do bairro ficam dentro dele), no
+      // mesmo padrão das divisas de todos os bairros — preta, amarela e preta (#000000, #FFFF00, #000000).
+      const oficial = d.limites_oficiais?.[i];
+      const aneis = oficial ? oficial.aneis.map(decodificarAnel) : lim.aneisLL;
+      for (const anel of aneis) {
+        const pos = Cesium.Cartesian3.fromDegreesArray([...anel, anel[0]].flat());
+        add({ grupo: 'limite', i }, { polyline: { positions: pos, clampToGround: true, width: 6, zIndex: 0, material: Cesium.Color.fromCssColorString('#000000') } });
+        add({ grupo: 'limite', i }, { polyline: { positions: pos, clampToGround: true, width: 2, zIndex: 1, material: Cesium.Color.fromCssColorString('#FFFF00') } });
+      }
+      const pts = lim.aneisLL[0];
+      const c = pts.reduce((a, p) => [a[0] + p[0] / pts.length, a[1] + p[1] / pts.length], [0, 0]);
+      add({ grupo: 'limite', i }, { position: noChao(c[0], c[1]), label: {
+        text: d.bairros[i] || lim.nome, font: '700 17px system-ui, "Segoe UI", Roboto, sans-serif',
+        fillColor: cor, outlineColor: Cesium.Color.BLACK, outlineWidth: 4, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(2500, 60000) } });
+    });
+    const cb = d.bocas.colunas, kla = cb.indexOf('Latitude'), klo = cb.indexOf('Longitude'), kb = cb.indexOf('Bairro');
+    for (const b of d.bocas.linhas) {
+      add({ grupo: 'boca', bairro: b.v[kb] }, { position: noChao(b.v[klo], b.v[kla]),
+        billboard: { image: `img/icones/${b.icone}`, width: 30, height: 30,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY, distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 6000) } }, { tipo: 'boca', dado: b });
+    }
+    for (const a of d.areas) {
+      const verde = ehAreaVerde(a), i = a.bai ? d.bairros.indexOf(a.bai) : -1;
+      for (const anel of a.aneis) {
+        add({ grupo: 'area', verde, i }, { polygon: { hierarchy: Cesium.Cartesian3.fromDegreesArray(anel.flat()),
+          material: Cesium.Color.fromCssColorString(verde ? '#2e9d57' : '#5c6bc0').withAlpha(0.5), classificationType: Cesium.ClassificationType.TERRAIN } }, { tipo: 'area', dado: a });
+      }
+    }
+    this.fixos.entities.resumeEvents();
+    this._fixosProntos = true;
   }
 
   // --------------------------------------------------------------- eleitoral
@@ -572,6 +619,11 @@ export class Levantamento {
     const q = semAcento(this.campo.value);
     this.resultados.textContent = '';
     if (!this.dados || q.length < 2) return;
+    if (!this.detalhesProntos) {
+      this.resultados.append(el('li', { class: 'nota' }, 'Carregando os dados da busca…'));
+      this.detalhes().then(() => this._buscar()).catch(() => {});
+      return;
+    }
     const termos = q.split(/\s+/);
     const achados = this._lotesVisiveis().filter((l) => termos.every((t) => l.busca.includes(t))).slice(0, 40);
     const cod = this.campo.value.trim().toUpperCase();
@@ -657,6 +709,7 @@ export class Levantamento {
   }
 
   abrirLote(l, voar = false) {
+    if (!this.detalhesProntos) { this._esperarFicha(() => this.abrirLote(l, voar)); return; }
     const d = this.dados, id = this.identificar;
     const c = l.aneis[0].reduce((a, p) => [a[0] + p[0] / l.aneis[0].length, a[1] + p[1] / l.aneis[0].length], [0, 0]);
     const ponto = { lon: c[0], lat: c[1], alt: NaN };
@@ -772,6 +825,7 @@ export class Levantamento {
   }
 
   abrirPoste(p) {
+    if (!this.detalhesProntos) { this._esperarFicha(() => this.abrirPoste(p)); return; }
     const id = this.identificar, c = this.dados.iluminacao.colunas;
     const lat = p.v[c.indexOf('Latitude')], lon = p.v[c.indexOf('Longitude')], codigo = p.v[c.indexOf('Código para manutenção')];
     id.limparDestaque();
@@ -784,6 +838,12 @@ export class Levantamento {
     id.limparDestaque();
     id.abrir({ titulo: e.nome || 'Empresa', subtitulo: `${e.bairro || ''} · sem lote identificado` });
     id.corpo.append(this._tudo(ce, e.v));
+  }
+
+  /** Ficha pedida antes de os detalhes chegarem: avisa e abre assim que estiverem prontos. */
+  _esperarFicha(abrir) {
+    this.identificar.abrir({ titulo: 'Carregando a ficha…', subtitulo: 'Levantamento da Associação' });
+    this.detalhes().then(abrir).catch((e) => aviso(`Ficha indisponível: ${e.message}`, 'alerta'));
   }
 
   abrirArea(a) {
@@ -809,6 +869,7 @@ export class Levantamento {
   }
 
   abrirPonto(p) {
+    if (!this.detalhesProntos) { this._esperarFicha(() => this.abrirPonto(p)); return; }
     const id = this.identificar, E = this.dados.eleitoral;
     id.limparDestaque();
     const lote = this._loteDoLocal(p);

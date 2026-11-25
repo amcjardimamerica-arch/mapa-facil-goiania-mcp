@@ -318,6 +318,9 @@ def main(kml_path: str, xlsx_path: str) -> int:
         "resumo": {"colunas": resumo_cab, "linhas": resumo},
     }
     SAIDA.write_text(json.dumps(dados, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    # Núcleo (abre o painel Associação) e detalhes (fichas e busca), lidos pelo sistema.
+    import dividir_levantamento
+    dividir_levantamento.main()
     ligadas = sum(1 for e in empresas["linhas"] if e["lote"] is not None)
     print(f"{len(lotes)} lotes ({sem_geo} sem geometria), {len(empresas['linhas'])} empresas ({ligadas} ligadas a lote), "
           f"{len(sem_lote)} empresas sem lote, {len(google['linhas'])} Google Maps, {len(condominios['linhas'])} condomínios, "

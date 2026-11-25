@@ -67,15 +67,13 @@ async function iniciar() {
   // Dados do Mapa Fácil guardados no próprio site: o sistema deixa de depender do servidor da Prefeitura.
   const banco = await iniciarBanco();
   estadoAbertura('Carregando o território de Goiânia…');
-  const [geo, catalogo, bairros, lugares, manifesto, satelite] = await Promise.all([
+  const [geo, catalogo, bairros, lugares, manifesto] = await Promise.all([
     pedirJSON(`${CFG.dados}territorio.geojson`),
     pedirJSON(`${CFG.dados}camadas.json`),
     pedirJSON(`${CFG.dados}bairros.json`),
     pedirJSON(`${CFG.dados}lugares.json`),
     pedirJSON(`${CFG.dados}manifest.json`).catch(() => ({})),
-    pedirJSON(`${CFG.dados}satelite.json`).catch(() => ({ versoes: [] })), // opcional: sem ele, só não há datas antigas
   ]);
-  catalogo.satelite = satelite.versoes || [];
   catalogo.banco = banco;
   catalogo.bairros = bairros.bairros; // nomes de bairro no mapa desenhado
   const territorio = new Territorio(geo);
@@ -129,7 +127,7 @@ async function iniciar() {
   Object.assign(app, { globo, camadas, identificar, servicos, edificios, medir, marcadores, poligonos, localizacao, lotes, levantamento, eleicoes, busca, territorio, catalogo, manifesto, sessao });
 
   const bases = globo.basesDisponiveis();
-  const baseInicial = bases.some((b) => b.chave === hash.b) ? hash.b : 'satelite';
+  const baseInicial = bases.some((b) => b.chave === hash.b) ? hash.b : globo.basePadrao;
   await globo.definirBase(baseInicial);
 
   // -------------------------------------------------------------- painéis
@@ -153,9 +151,8 @@ async function iniciar() {
   // --------------------------------------------------------- bases e épocas
   const creditoBase = (chave) => {
     const b = bases.find((x) => x.chave === chave);
-    if (chave === 'satelite') return CFG.googleMapsApiKey ? 'Satélite: Google' : 'Satélite: Esri, Maxar';
-    if (b?.tipo === 'historico') return `${b.titulo}: Esri Wayback${b.fonte ? `, ${b.fonte}` : ''}`;
-    if (chave === 'mapa') return 'Mapa: Prefeitura de Goiânia, relevo Esri';
+    if (b?.tipo === 'satelite' || b?.tipo === 'historico') return `${b.titulo}: ortofoto da Prefeitura de Goiânia (banco local)`;
+    if (chave === 'mapa') return 'Mapa: Prefeitura de Goiânia, relevo Copernicus DEM';
     return `${(b?.titulo || '').replace(' (cartografia municipal)', '')}: Prefeitura de Goiânia`;
   };
   const seletorData = $('#satelite-data');
@@ -173,18 +170,18 @@ async function iniciar() {
     catch (e) { aviso(`Não foi possível carregar essa imagem: ${e.message}`, 'alerta'); }
   };
   app.trocarBase = trocarBase;
-  const descricao = { satelite: 'fotografia atual', vetor: 'sem fotos: quadras, ruas e relevo', mapa: 'cartografia oficial com lotes' };
+  const descricao = { satelite: 'ortofoto da Prefeitura', vetor: 'sem fotos: quadras, ruas e relevo', mapa: 'cartografia oficial com lotes' };
   const historicas = bases.filter((b) => b.tipo === 'historico');
   for (const b of bases.filter((x) => x.tipo !== 'historico')) {
     $('#lista-bases').append(el('button', { role: 'radio', dataset: { base: b.chave }, onclick: () => trocarBase(b.chave) },
       el('strong', {}, b.titulo.replace(' (cartografia municipal)', '')), el('small', {}, descricao[b.tipo])));
   }
-  // Datas anteriores do satélite: uma opção por data de captura no centro de Goiânia.
+  // Ortofotos anteriores da Prefeitura guardadas no banco: uma opção por ano.
   seletorData.append(el('option', { value: '' }, historicas.length ? 'Escolher uma data…' : 'Indisponível'),
     ...historicas.map((b) => el('option', { value: b.chave },
-      `${b.titulo.replace('Satélite de ', '')}${b.fonte ? ` · ${b.fonte}` : ''}${b.resolucao ? ` · ${String(b.resolucao).replace('.', ',')} m` : ''}`)));
+      `${b.titulo.replace('Foto aérea de ', '')}${b.fonte ? ` · ${b.fonte}` : ''}${b.resolucao ? ` · ${String(b.resolucao).replace('.', ',')} m` : ''}`)));
   seletorData.disabled = !historicas.length;
-  seletorData.addEventListener('change', () => trocarBase(seletorData.value || 'satelite'));
+  seletorData.addEventListener('change', () => trocarBase(seletorData.value || globo.basePadrao));
   for (const b of bases.filter((x) => ['satelite', 'mapa'].includes(x.chave))) {
     $('#epocas').append(el('button', { role: 'radio', dataset: { base: b.chave }, title: b.titulo, onclick: () => trocarBase(b.chave) }, b.curto));
   }
@@ -193,7 +190,7 @@ async function iniciar() {
   const seletor = $('#comparar');
   seletor.append(el('option', { value: '' }, 'Sem comparação'),
     ...bases.filter((b) => b.tipo !== 'historico').map((b) => el('option', { value: b.chave }, b.titulo)),
-    historicas.length ? el('optgroup', { label: 'Satélite em outras datas' },
+    historicas.length ? el('optgroup', { label: 'Fotos aéreas de outros anos' },
       historicas.map((b) => el('option', { value: b.chave }, b.titulo))) : null);
   const divisor = $('#divisor');
   const moverDivisor = (fracao) => {
@@ -407,7 +404,7 @@ async function iniciar() {
     if (!app.pronto) return;
     const p = new URLSearchParams();
     p.set('v', globo.visao());
-    if (globo.chaveBase !== 'satelite') p.set('b', globo.chaveBase);
+    if (globo.chaveBase !== globo.basePadrao) p.set('b', globo.chaveBase);
     const t = camadas.serializar();
     if (t) p.set('t', t);
     if (edificios.cidade) p.set('ed', '1');
@@ -445,6 +442,9 @@ async function iniciar() {
   });
 
   // ------------------------------------------------------------- abertura
+  // Filtros da Associação: o núcleo do levantamento começa a baixar durante o voo de chegada e é montado
+  // assim que o globo fica livre, para o painel abrir pronto (os detalhes das fichas vêm depois, por trás).
+  levantamento.associacaoDoAcesso().then((a) => { if (a) levantamento.precarregar(); }).catch(() => {});
   estadoAbertura('Pronto. Voando até Goiânia…');
   $('#abertura').classList.add('sai');
   setTimeout(() => $('#abertura').remove(), 900);
@@ -452,6 +452,9 @@ async function iniciar() {
   else { await globo.chegada(); globo.liberarLimites(); }
   app.pronto = true;
   aoParar();
+  (window.requestIdleCallback || ((f) => setTimeout(f, 1200)))(() => {
+    levantamento.associacaoDoAcesso().then((a) => a && levantamento.carregar()).catch(() => {});
+  }, { timeout: 4000 });
 
   // Relevo e edifícios entram depois do primeiro quadro, para o globo abrir rápido.
   if (hash.r !== '0') await ligarRelevo(true);

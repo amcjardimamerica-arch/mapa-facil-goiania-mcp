@@ -270,11 +270,11 @@ class ProvedorCanvas {
   }
 }
 
-/** Relevo sombreado (Esri World Hillshade): bloco do mesmo nível, ou do ancestral recortado. */
+/** Relevo sombreado próprio (relevo/sombra, Copernicus DEM): bloco do mesmo nível, ou do ancestral recortado. */
 function blocoRelevo(x, y, nivel, request) {
-  const z = Math.min(nivel, 16), d = nivel - z;
+  const z = Math.min(nivel, CFG.relevo.sombraNivelMaximo), d = nivel - z;
   const ax = x >> d, ay = y >> d;
-  const url = `https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer/tile/${z}/${ay}/${ax}`;
+  const url = CFG.relevo.sombra.replace('{z}', z).replace('{x}', ax).replace('{y}', ay);
   const pedido = new Cesium.Resource({ url, request }).fetchImage({ preferImageBitmap: true });
   if (!pedido) return undefined;
   const lado = 256 >> d;
@@ -284,7 +284,7 @@ function blocoRelevo(x, y, nivel, request) {
 export class ProvedorVetorial extends ProvedorCanvas {
   /** modo: 'mapa' (fundo abstrato) ou 'sobre' (nomes e traçados por cima do satélite). */
   constructor({ modo = 'mapa', bairros = [], retangulo, territorio }) {
-    super({ retangulo, credito: modo === 'mapa' ? 'Mapa: Prefeitura de Goiânia (Mapa Fácil) · Relevo: Esri' : 'Nomes: Prefeitura de Goiânia' });
+    super({ retangulo, credito: modo === 'mapa' ? 'Mapa: Prefeitura de Goiânia (Mapa Fácil) · Relevo: Copernicus DEM' : 'Nomes: Prefeitura de Goiânia' });
     this.modo = modo;
     this.estilo = ESTILO[modo];
     this.territorio = territorio;

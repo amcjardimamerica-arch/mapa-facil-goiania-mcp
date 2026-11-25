@@ -200,34 +200,33 @@ const grupos = [
       return `${r.features.length} trechos de rua`;
     }]);
     itens.push(['Levantamento da Associação (Jardim América e Nova Suíça)', async () => {
-      const d = await carregar('levantamento.json');
-      exigir(d.lotes?.length > 8000 && d.limites?.length === 2, 'levantamento incompleto');
-      return `${d.lotes.length} lotes, ${d.empresas.linhas.length + d.empresas_sem_lote.linhas.length} empresas, ${d.areas.length} áreas públicas, ${d.eleitoral.pontos.length} locais de votação`;
+      const d = await carregar('levantamento-nucleo.json');
+      const x = await carregar('levantamento-detalhes.json');
+      exigir(d.lotes?.length > 8000 && d.limites?.length === 2, 'núcleo do levantamento incompleto');
+      exigir(x.lotes_v?.length === d.lotes.length && x.gerado_em === d.gerado_em, 'detalhes de outra importação ou incompletos');
+      return `${d.lotes.length} lotes, ${x.empresas.linhas.length + x.empresas_sem_lote.linhas.length} empresas, ${d.areas.length} áreas públicas, ${d.eleitoral.pontos.length} locais de votação`;
     }]);
-    itens.push(['Mapa desenhado: relevo sombreado (Esri)', async () => imagem('https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer/tile/14/8962/5949')]);
+    itens.push(['Mapa desenhado: relevo sombreado (próprio)', async () => imagem(CFG.relevo.sombra.replace('{z}', 13).replace('{x}', 2973).replace('{y}', 4480))]);
     return itens;
   } },
-  { titulo: 'Fundo de satélite, relevo e globo', testes: [
-    ['Satélite (Esri World Imagery)', async () => imagem(CFG.satelite.url.replace('{z}', 15).replace('{y}', 17924).replace('{x}', 11900))],
-    ['Satélite em outras datas (Esri Wayback)', async () => {
-      const d = await carregar('satelite.json');
-      exigir(d.versoes?.length >= 3, 'menos de 3 datas de captura no arquivo');
-      const v = d.versoes[0];
-      const txt = await imagem(v.url.replace('{z}', 15).replace('{y}', 17924).replace('{x}', 11900));
-      return `${d.versoes.length} datas, de ${v.captura} a ${d.versoes.at(-1).captura}; bloco da mais antiga: ${txt}`;
+  { titulo: 'Fotos aéreas, relevo e globo (tudo no próprio site)', testes: [
+    ['Fotos aéreas (ortofotos da Prefeitura no banco local)', async () => {
+      const man = await (await fetch(`banco/manifesto.json?nc=${Date.now()}`, { cache: 'no-store' })).json();
+      const tem = (CFG.ortofotos || []).filter((o) => man.imagens?.[o.servico]);
+      if (!tem.length) return { alerta: 'nenhuma ortofoto extraída ainda: o fundo padrão é o Mapa (ver ORIENTACOES da 1.24)' };
+      return tem.map((o) => `${o.ano}: ${man.imagens[o.servico].blocos} blocos, níveis ${man.imagens[o.servico].min} a ${man.imagens[o.servico].max}`).join('; ');
     }],
-    ['Relevo (Esri Terrain 3D)', async () => {
-      const r = await pedirJSON(CFG.relevo.url, { parametros: { f: 'json' } });
-      exigir(r.tileInfo || r.name, 'resposta inesperada');
-      return `serviço ${r.name || 'Terrain3D'} disponível`;
+    ['Relevo próprio (Copernicus DEM)', async () => {
+      const m = await (await fetch(`${CFG.relevo.grade}.json`)).json();
+      const r = await fetch(`${CFG.relevo.grade}.bin.gz`, { method: 'HEAD' });
+      exigir(r.ok && m.largura > 1000, 'grade de relevo ausente');
+      return `grade ${m.largura}×${m.altura}, de ${Math.round(m.minimo)} a ${Math.round(m.maximo)} m`;
     }],
-    ['Biblioteca do globo (CesiumJS)', async () => {
-      const html = await (await fetch('sistema.html')).text();
-      const m = html.match(/cesium@([\d.]+)\/Build\/Cesium\/Cesium\.js/);
-      exigir(m, 'sistema.html não referencia o CesiumJS');
-      const r = await fetch(`https://cdn.jsdelivr.net/npm/cesium@${m[1]}/package.json`);
-      exigir(r.ok, `CDN respondeu HTTP ${r.status}`);
-      return `versão ${m[1]} disponível na CDN`;
+    ['Biblioteca do globo (CesiumJS no próprio site)', async () => {
+      const v = await (await fetch('vendor/cesium/versao.json')).json();
+      const r = await fetch('vendor/cesium/Cesium.js', { method: 'HEAD' });
+      exigir(r.ok, `vendor/cesium/Cesium.js: HTTP ${r.status}`);
+      return `CesiumJS ${v.versao} guardado em vendor/cesium`;
     }],
     ['WebGL neste navegador', async () => {
       const gl = document.createElement('canvas').getContext('webgl2') || document.createElement('canvas').getContext('webgl');

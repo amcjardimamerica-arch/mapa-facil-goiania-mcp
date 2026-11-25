@@ -1,6 +1,8 @@
 // Configuração da Bússola. Tudo que depende de endereço externo fica aqui.
-export const VERSAO = '1.23.6';
+export const VERSAO = '1.24.0';
 
+// Endereços do Mapa Fácil: servem só de NOME das consultas, que o banco local responde (banco.js). A política de
+// segurança das páginas (CSP) não deixa o navegador se conectar a eles.
 const REST = 'https://portalmapa.goiania.go.gov.br/servicogyn/rest/services';
 
 export const CFG = {
@@ -20,23 +22,22 @@ export const CFG = {
   // Vazio = registro desligado.
   registro: { url: '' },
 
-  // Fundo "Earth": mosaico de satélite mundial (sem chave). Nível 19 só existe
-  // na área urbana; onde falta, o descarte de blocos usa o nível anterior.
-  satelite: {
-    url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    nivelMaximo: 19,
-    blocoAusente: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/23/4578405/3046311',
-    credito: 'Imagem de satélite: Esri, Maxar, Earthstar Geographics',
-  },
+  // Fotos aéreas: só as ortofotos da Prefeitura guardadas no banco local (banco/blocos/<serviço>). Sem
+  // nenhuma imagem de fora (Esri e Google foram retirados: os termos deles não permitem guardar as fotos).
+  // A primeira da lista que existir no banco é o fundo "Foto aérea"; as demais aparecem como épocas anteriores.
+  ortofotos: [
+    { servico: 'Mapa_Ortofoto2016v2', ano: 2016 },
+    { servico: 'Mapa_Ortofoto2011v2', ano: 2011 },
+    { servico: 'Mapa_Ortofoto2006v2', ano: 2006 },
+  ],
 
-  // Opcional: chave da Google Map Tiles API. Preenchida, o fundo padrão passa a
-  // ser o satélite do Google (é o mesmo acervo do Google Earth). Requer conta
-  // de faturamento no Google Cloud. Vazio = satélite Esri acima.
-  googleMapsApiKey: '',
-
+  // Relevo próprio (scripts/relevo_local.py, Copernicus DEM GLO-30): grade de altitudes de Goiânia e o
+  // relevo sombreado do Mapa sem fotos, tudo em relevo/.
   relevo: {
-    url: 'https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer',
-    nivelAmostra: 12,
+    grade: 'relevo/goiania',
+    sombra: 'relevo/sombra/{z}/{x}/{y}.png',
+    sombraNivelMaximo: 13,
+    credito: 'Relevo: Copernicus DEM GLO-30 (ESA/União Europeia)',
   },
 
   cores: {

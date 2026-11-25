@@ -1,0 +1,12 @@
+{
+ "fonte": "Relevo: Copernicus DEM GLO-30 (ESA/União Europeia)",
+ "largura": 1495,
+ "altura": 1532,
+ "oeste": -49.47,
+ "norte": -16.42972222222222,
+ "passo": 0.0002777777777777778,
+ "escala": 0.25,
+ "codificacao": "int16 little-endian, linha a linha do norte para o sul; cada valor é a diferença para a célula à esquerda (a primeira da linha é absoluta), em 1/4 de metro",
+ "minimo": 653.5,
+ "maximo": 1044.5706787109375
+}

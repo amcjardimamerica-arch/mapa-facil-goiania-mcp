@@ -111,8 +111,10 @@ def test_temas_e_mapa_basico_do_banco(navegador, servidor):
       const y = Math.floor((0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)) * n);
       const zona = new ProvedorTema({ servico: 'Mapa_ModeloEspacial', camadas: [1, 2, 3, 4, 5, 7, 8, 9, 10] });
       const postes = new ProvedorTema({ servico: 'Mapa_Energia', camadas: [4] });
-      const t1 = await zona.requestImage(x, y, 14);
-      const t2 = await postes.requestImage(x * 8, y * 8, 17);
+      // Desenho direto (sem o nível do pedido): a fila descarta blocos 2+ níveis longe da câmera, e aqui a
+      // câmera está na cidade inteira — o que se confere é o desenho a partir do banco, não a fila.
+      const t1 = await zona._desenhar(x, y, 14, {});
+      const t2 = await postes._desenhar(x * 8, y * 8, 17, {});
       const basico = imagemLocal('Mapa_Basico3');
       const url = basico ? basico.url : '';
       return { zona: preenchidos(t1), postes: preenchidos(t2), basico: !!basico, url };

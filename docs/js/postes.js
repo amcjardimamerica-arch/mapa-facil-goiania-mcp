@@ -57,13 +57,17 @@ export class Postes {
     this.ligado = false;
   }
 
-  async carregar() {
-    if (!this.dados) {
-      const d = await pedirJSON(`${CFG.dados}postes.json`, { tempo: 60000 });
-      d.postes.forEach((p, i) => { p.i = i; });
-      this.dados = d;
+  /** Baixa postes.json uma vez só, mesmo com vários pedidos ao mesmo tempo (antes baixava duas vezes). */
+  carregar() {
+    if (!this._carregando) {
+      this._carregando = pedirJSON(`${CFG.dados}postes.json`, { tempo: 60000 }).then((d) => {
+        d.postes.forEach((p, i) => { p.i = i; });
+        this.dados = d;
+        return d;
+      });
+      this._carregando.catch(() => { this._carregando = null; });
     }
-    return this.dados;
+    return this._carregando;
   }
 
   /** Desenha (ou tira) os postes dos bairros visíveis. */

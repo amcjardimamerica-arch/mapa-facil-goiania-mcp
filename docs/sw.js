@@ -18,7 +18,7 @@ self.addEventListener('fetch', (e) => {
   const caminho = url.pathname.slice(new URL(self.registration.scope).pathname.length);
   // Páginas, código e estilos: sempre confere com o servidor se há versão nova (sem esperar o cache de 10 min
   // do GitHub Pages expirar). O login (acesso/) segue direto.
-  if (!/^(banco|data)\//.test(caminho)) {
+  if (!/^(banco|data|vendor|relevo)\//.test(caminho)) {
     if (/^acesso\//.test(caminho)) return;
     e.respondWith(fetch(e.request, { cache: 'no-cache' }).catch(() => caches.match(e.request).then((r) => r || Response.error())));
     return;

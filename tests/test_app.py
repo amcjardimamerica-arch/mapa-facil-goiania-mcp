@@ -64,6 +64,18 @@ def _contexto(navegador, logado=True, **extra):
     ctx.route("**/data/associacoes.json", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(ass)))
     if logado:
         ctx.add_init_script(f"localStorage.setItem('bussola:sessao', JSON.stringify({json.dumps(SESSAO_TESTE)}))")
+    # Ortofotos simuladas: o banco do repositório ainda não tem as fotos aéreas (extração à parte). Para os testes
+    # cobrirem o fundo "Foto aérea" e as épocas, o manifesto ganha 2016, 2011 e 2006 servidos com os blocos do Mapa Básico.
+    man = json.loads((DOCS / "banco" / "manifesto.json").read_text(encoding="utf-8"))
+    imagens = man.setdefault("imagens", {})
+    if "Mapa_Basico3" in imagens:
+        for s in ("Mapa_Ortofoto2016v2", "Mapa_Ortofoto2011v2", "Mapa_Ortofoto2006v2"):
+            imagens.setdefault(s, dict(imagens["Mapa_Basico3"]))
+    ctx.route("**/banco/manifesto.json*", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(man)))
+    def bloco_basico(r):
+        arq = DOCS / "banco" / "blocos" / "Mapa_Basico3" / "/".join(r.request.url.split("?")[0].split("/blocos/")[1].split("/")[1:])
+        r.fulfill(path=str(arq)) if arq.is_file() else r.fulfill(status=404, body="")
+    ctx.route("**/banco/blocos/Mapa_Ortofoto*/**", bloco_basico)
     return ctx
 
 
@@ -221,7 +233,7 @@ def test_medicao_e_kml(mapa):
 
 
 def test_satelite_em_outras_datas(mapa):
-    """As datas antigas do satélite entram como fundo e voltam ao satélite atual."""
+    """As ortofotos anteriores da Prefeitura entram como fundo e voltam à foto aérea mais recente."""
     r = mapa.evaluate("""async () => {
       const datas = bussola.globo.basesDisponiveis().filter((b) => b.tipo === 'historico');
       if (!datas.length) return { total: 0 };
@@ -232,8 +244,8 @@ def test_satelite_em_outras_datas(mapa):
       return { total: datas.length, alvo, durante, depois: bussola.globo.chaveBase,
                opcoes: document.querySelectorAll('#satelite-data option').length };
     }""")
-    assert r["total"] >= 3
-    assert r["durante"]["base"] == r["alvo"] == r["durante"]["seletor"] and r["alvo"].startswith("sat-20")
+    assert r["total"] >= 2
+    assert r["durante"]["base"] == r["alvo"] == r["durante"]["seletor"] and r["alvo"] == "sat-2006"
     assert r["depois"] == "satelite" and r["opcoes"] == r["total"] + 1
 
 
@@ -287,7 +299,7 @@ def test_fundos_sem_ortofotos_e_mapa_desenhado(mapa):
                realceModo: bussola.globo.camadaRealce?.imageryProvider.modo };
     }""")
     assert not any(c.startswith("orto") for c in r["chaves"]) and "mapa" in r["chaves"]
-    assert r["barra"] == ["Satélite", "Mapa"]
+    assert r["barra"] == ["Foto", "Mapa"]
     assert r["durante"] == {"base": "mapa", "modo": "mapa", "realceVisivel": False}
     assert r["bloco"] == [512, 512] and r["realceModo"] == "sobre"
 
@@ -321,9 +333,9 @@ def test_lotes_so_do_bairro_escolhido(mapa):
 def test_levantamento_lotes_limites_e_ficha(mapa):
     r = mapa.evaluate("""async () => {
       const lv = bussola.levantamento;
-      await lv.mostrarBairros();
+      await lv.mostrarBairros(); await lv.detalhes();
       const antes = { lotes: lv.dados.lotes.length, limites: lv.dados.limites.length, camada: !!lv.camadaLotes,
-                      bordas: lv.fonte.entities.values.filter((e) => e.polyline).length };
+                      bordas: lv.fixos.entities.values.filter((e) => e.show && e.polyline).length };
       const tratou = lv.aoClicar(null, { lon: -49.2857, lat: -16.7077 });
       const titulo = document.querySelector('#ficha-titulo').textContent;
       lv.ocultas.add('Residencial'); lv.redesenhar();
@@ -369,7 +381,7 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
       lv.opcoes.eleicao = ''; lv.opcoes.bocas = true; lv.opcoes.postes = true; lv.redesenhar();
       await lv.postes.mostrar(true, () => true);
       await new Promise((ok) => { const t = setInterval(() => { if (lv.postes.primitiva?.ready) { clearInterval(t); ok(); } }, 200); setTimeout(ok, 60000); });
-      const infra = { bocas: lv.fonte.entities.values.filter((e) => e.levantamento?.tipo === 'boca').length,
+      const infra = { bocas: lv.fixos.entities.values.filter((e) => e.show && e.levantamento?.tipo === 'boca').length,
                       postes: lv.postes._ids ? lv.postes._ids.size / 2 : 0 };
       // Seleção do poste: sem marcador, haste mais clara; manutenção: o botão liga e desliga o pedido.
       const p0 = lv.postes.dados.postes.find((p) => p.transformador);
@@ -758,11 +770,11 @@ def test_canteiros_centrais_e_nomes_completos(mapa):
     """Canteiros centrais estimados (areas_complemento.json) aparecem como áreas verdes, com ficha; nomes completos do Google."""
     r = mapa.evaluate("""async () => {
       const lv = bussola.levantamento;
-      await lv.mostrarBairros();
+      await lv.mostrarBairros(); await lv.detalhes();
       const cant = lv.dados.areas.filter((a) => a.estimado);
       const imig = lv.dados.areas.find((a) => a.nome === 'Praça C232 - Praça do Imigrante Italiano');
       lv.opcoes.verdes = true; lv.redesenhar();
-      const desenhados = lv.fonte.entities.values.filter((e) => e.levantamento?.dado?.estimado).length;
+      const desenhados = lv.fixos.entities.values.filter((e) => e.show && e.levantamento?.dado?.estimado).length;
       const t63 = cant.find((a) => a.nome === 'Canteiro Central - Av. T63 - Jardim América');
       lv.abrirArea(t63);
       const ficha = { titulo: document.querySelector('#ficha-titulo').textContent, corpo: document.querySelector('#ficha-corpo').textContent };

@@ -15,7 +15,7 @@ VIZINHOS_COM_DIVISA = {"Abadia de Goiás", "Aparecida de Goiânia", "Goianira", 
 
 def test_arquivos_existem():
     for nome in ("territorio.geojson", "bairros.json", "edificios.json", "lugares.json",
-                 "logradouros.json", "camadas.json", "satelite.json", "manifest.json"):
+                 "logradouros.json", "camadas.json", "manifest.json"):
         assert (DADOS / nome).stat().st_size > 500, nome
 
 
@@ -118,16 +118,26 @@ def test_camadas():
     assert len(c["catalogo_servidor"]) >= 40
 
 
-def test_satelite_historico():
-    d = ler("satelite.json")
-    versoes = d["versoes"]
-    assert len(versoes) >= 3, "poucas datas de captura"
-    datas = [v["captura"] for v in versoes]
-    assert datas == sorted(datas) and len(set(datas)) == len(datas), "datas fora de ordem ou repetidas"
-    for v in versoes:
-        assert v["url"].startswith("https://wayback.maptiles.arcgis.com/") and v["url"].endswith("/{z}/{y}/{x}")
-        assert 17 <= v["nivel_maximo"] <= 19 and v["versao"] > 0
-        assert "2010-01-01" < v["captura"] <= v["publicada"], "a captura não pode ser posterior à publicação"
+def test_sistema_autossuficiente():
+    """Nada de fora: CesiumJS, fontes e relevo guardados no site; páginas sem CDN, Esri, Google ou Prefeitura."""
+    import re
+    import gzip as gz
+    raiz = DADOS.parent
+    assert (raiz / "vendor/cesium/Cesium.js").stat().st_size > 3_000_000
+    assert (raiz / "vendor/cesium/Workers").is_dir() and (raiz / "vendor/cesium/Assets/approximateTerrainHeights.json").is_file()
+    assert json.loads((raiz / "vendor/cesium/versao.json").read_text())["versao"] == "1.132.0"
+    meta = json.loads((raiz / "relevo/goiania.json").read_text(encoding="utf-8"))
+    bruto = gz.decompress((raiz / "relevo/goiania.bin.gz").read_bytes())
+    assert len(bruto) == meta["largura"] * meta["altura"] * 2 and 600 < meta["minimo"] < meta["maximo"] < 1100
+    assert len(list((raiz / "relevo/sombra").rglob("*.png"))) > 100
+    assert not (DADOS / "satelite.json").exists()
+    for pagina in ("index.html", "sistema.html", "validacao.html"):
+        html = (raiz / pagina).read_text(encoding="utf-8")
+        externos = set(re.findall(r"https://([a-z0-9.*-]+)", html)) - {"www.w3.org"}
+        assert externos <= {"ipwho.is", "script.google.com", "script.googleusercontent.com"}, (pagina, externos)
+    proibidos = re.compile(r"arcgisonline|arcgis\.com|jsdelivr|googleapis|gstatic|wayback")
+    for js in (raiz / "js").glob("*.js"):
+        assert not proibidos.search(js.read_text(encoding="utf-8")), js.name
 
 
 def test_manifesto():
