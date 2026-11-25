@@ -182,6 +182,29 @@ def test_levantamento_da_associacao():
     assert len(e["locais"]["linhas"]) > 300 and len(e["conselho"]["linhas"]) > 100
 
 
+def test_canteiros_centrais_e_nomes_completos():
+    """Canteiros centrais estimados só no Jardim América e na Nova Suíça, no formato das áreas do levantamento."""
+    d = ler("areas_complemento.json")
+    lev = ler("levantamento.json")
+    assert d["nomes"]["Praça C232"] == "Praça C232 - Praça do Imigrante Italiano"
+    assert d["nomes"]["Praça C246"] == "Praça C246 - Praça José Rodrigues Naves Júnior"
+    nomes_lev = {a["nome"] for a in lev["areas"]}
+    assert set(d["nomes"]) <= nomes_lev
+    assert len(d["areas"]) >= 10
+    for a in d["areas"]:
+        assert a["cat"] == "Canteiros Centrais e Áreas Remanescentes" and a["nome"].startswith("Canteiro Central - Av. ")
+        assert a["bai"] in lev["bairros"] and a["nome"].endswith(a["bai"]) and a["estimado"] is True
+        assert len(a["v"]) == len(lev["colunas_area"]) and a["v"][-1].startswith(("AP-JA-CC", "AP-NS-CC"))
+        assert a["g"] and all(len(anel) >= 6 for anel in a["g"])
+        x = y = 0
+        for i in range(0, len(a["g"][0]), 2):
+            x += a["g"][0][i]
+            y += a["g"][0][i + 1]
+            assert -49.31 < x / 1e6 < -49.25 and -16.73 < y / 1e6 < -16.68
+    assert any("T63" in a["nome"] for a in d["areas"]) and any("T9 " in a["nome"] for a in d["areas"])
+    assert len({a["v"][-1] for a in d["areas"]}) == len(d["areas"])
+
+
 def test_condominios_e_unidades():
     """Condomínio = mais de 5 inscrições de IPTU (ou outro indício); cada unidade tem a sua base e " -- " é a geral."""
     d = ler("levantamento.json")

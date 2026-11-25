@@ -745,3 +745,27 @@ def test_base_cadastral_opcoes_sem_repeticao_e_funcionando(mapa):
     assert r["ids"] == [0, 1, 2, 4, 5, 6, 8, 9, 10], r
     assert r["npo"] > 0 and r["logr"] > 0 and r["logBai"] > 0 and r["atv"] > 0 and r["setores"] > 0, r
     assert all(r["certo"].values()), r["certo"]
+
+
+def test_canteiros_centrais_e_nomes_completos(mapa):
+    """Canteiros centrais estimados (areas_complemento.json) aparecem como áreas verdes, com ficha; nomes completos do Google."""
+    r = mapa.evaluate("""async () => {
+      const lv = bussola.levantamento;
+      await lv.mostrarBairros();
+      const cant = lv.dados.areas.filter((a) => a.estimado);
+      const imig = lv.dados.areas.find((a) => a.nome === 'Praça C232 - Praça do Imigrante Italiano');
+      lv.opcoes.verdes = true; lv.redesenhar();
+      const desenhados = lv.fonte.entities.values.filter((e) => e.levantamento?.dado?.estimado).length;
+      const t63 = cant.find((a) => a.nome === 'Canteiro Central - Av. T63 - Jardim América');
+      lv.abrirArea(t63);
+      const ficha = { titulo: document.querySelector('#ficha-titulo').textContent, corpo: document.querySelector('#ficha-corpo').textContent };
+      lv.abrirArea(imig);
+      const fichaImig = document.querySelector('#ficha-corpo').textContent;
+      lv.opcoes.verdes = false; lv.redesenhar(); bussola.identificar.fechar();
+      return { n: cant.length, aneis: cant.every((a) => a.aneis.length === a.g.length), desenhados, ficha,
+               imig: imig && imig.tambem, fichaImig, semDuplicar: lv.dados.areas.filter((a) => a.nome === 'Praça C232').length };
+    }""")
+    assert r["n"] >= 10 and r["aneis"] and r["desenhados"] >= r["n"], r
+    assert r["ficha"]["titulo"] == "Canteiro Central - Av. T63 - Jardim América", r["ficha"]
+    assert "AP-JA-CC" in r["ficha"]["corpo"] and "estimado" in r["ficha"]["corpo"], r["ficha"]
+    assert r["imig"] == "Praça C232" and "Praça do Imigrante Italiano" in r["fichaImig"] and r["semDuplicar"] == 0, r

@@ -101,6 +101,8 @@ export class Levantamento {
     this.estado.classList.add('carregando');
     const predios = pedirJSON(`${CFG.dados}predios.json`, { tempo: 60000 }).catch(() => null);
     const lotesEleitorais = pedirJSON(`${CFG.dados}eleitoral_lotes.json`, { tempo: 60000 }).catch(() => null);
+    // Canteiros centrais estimados das avenidas e nomes completos das praças (scripts/canteiros_centrais.py).
+    const complemento = pedirJSON(`${CFG.dados}areas_complemento.json`, { tempo: 60000 }).catch(() => null);
     this._carregando = pedirJSON(`${CFG.dados}levantamento.json`, { tempo: 90000 }).then(async (d) => {
       const ix = Object.fromEntries(d.colunas_lote.map((c, i) => [c, i]));
       this.ix = ix;
@@ -131,6 +133,19 @@ export class Levantamento {
         l.centro = [cx / l.m[0].length, cy / l.m[0].length];
         const un = (this.unidadesDoLote[l.i] || []).map((u) => `${u[0]} ${u[2] || ''}`).join(' ');
         l.busca = semAcento([`qd ${l.q} lt ${l.l}`, `quadra ${l.q} lote ${l.l}`, ...l.v.filter((x) => x !== null && x !== ''), l.extraBusca, un].join(' | '));
+      }
+      const extra = await complemento;
+      if (extra) {
+        const nomes = extra.nomes || {};
+        const kNome = d.colunas_area.indexOf('Nome / identificação');
+        for (const a of d.areas) {
+          const novo = nomes[a.nome];
+          if (!novo) continue;
+          a.tambem = a.nome;
+          a.nome = novo;
+          if (a.v && kNome >= 0) { a.v = [...a.v]; a.v[kNome] = novo; }
+        }
+        d.areas.push(...(extra.areas || []));
       }
       for (const a of d.areas) a.aneis = a.g.map(decodificarAnel);
       for (const lim of d.limites) lim.aneisLL = lim.aneis.map(decodificarAnel);
