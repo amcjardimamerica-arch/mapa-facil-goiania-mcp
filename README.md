@@ -192,8 +192,8 @@ e retoma de onde parou.
 - Clique: acima de 5 km seleciona o bairro; de 5 a 2,5 km, a quadra; abaixo de 2,5 km, o lote.
 - **Zonas Eleitorais** e **Conselho Tutelar** são mapas próprios (`docs/js/eleicoes.js`), um de cada vez, com divisa
   preta-vermelha-preta e cor clara por área; o clique seleciona a zona/região inteira ou o colégio. As regiões do
-  Conselho Tutelar (`docs/data/conselho_regioes.geojson`, `scripts/regioes_conselho.py`) são aproximadas pelos
-  locais de votação do edital de 2023.
+  Conselho Tutelar (`docs/data/conselho_regioes.geojson`, `scripts/regioes_conselho.py`) seguem a Resolução
+  CMDCA 85/2023: cada Conselho junta duas das 12 Regiões da SEPLAM (divisas internas em branco tracejado).
 - **Associação**: `docs/data/associacoes.json` liga cada login à sua associação; a A.M.C. Jardim América (`ve_todas`)
   vê todas. Como o site é estático, a separação é de tela: os arquivos de dados continuam acessíveis pelo endereço.
 - Abertura: a câmera começa de cima, com o mapa plano, e desce dando uma volta em torno de Goiânia.

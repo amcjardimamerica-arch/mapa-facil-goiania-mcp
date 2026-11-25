@@ -21,7 +21,7 @@
 
 ## Funções do sistema
 
-- Regiões do Conselho Tutelar: aproximadas pelos locais de votação; trocar pelo mapa oficial do CMDCA quando houver.
+- Regiões do Conselho Tutelar: feito na 1.23.4 (Resolução CMDCA 85/2023 sobre as 12 Regiões da SEPLAM).
 - Logs de acesso: falta o endereço /exec do Apps Script (registro-acessos.gs) para ligar.
 - Associações: só a A.M.C. Jardim América cadastrada; cada nova precisa de nome, bairros, logins e levantamento. A separação entre associações é só de tela (site estático).
 - Busca de pessoas no cofre: não testada com a senha real.
