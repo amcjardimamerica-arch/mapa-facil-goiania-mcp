@@ -356,11 +356,11 @@ export class ProvedorVetorial extends ProvedorCanvas {
       ver.lotes ? consultar(0, { ...comum, outFields: ver.numeroLote ? 'nm_lot' : 'OBJECTID', where: '1=1',
         maxAllowableOffset: String(Math.max(0.15, q.mpp * 0.5)) }, cancelada).catch(() => []) : [],
       ver.areas ? consultar(4, { ...comum, outFields: 'nm_destin', where: '1=1' }, cancelada).catch(() => []) : [],
+      ver.atividades ? consultar(9, { ...comum, outFields: 'OBJECTID', where: '1=1' }, cancelada).catch(() => []) : [],
       ver.npo ? consultar(5, { ...comum, outFields: 'nm_npo', where: '1=1' }, cancelada).catch(() => []) : [],
       ver.setores ? consultar(6, { ...comum, outFields: 'nm_scd,ci_scd', where: '1=1', maxAllowableOffset: String(Math.max(1, q.mpp)) }, cancelada).catch(() => []) : [],
       ver.logradouros ? consultar(8, { ...comum, outFields: 'nm', where: '1=1' }, cancelada).catch(() => []) : [],
       ver.logBairro ? consultar(10, { ...comum, outFields: 'nm', where: '1=1' }, cancelada).catch(() => []) : [],
-      ver.atividades ? consultar(9, { ...comum, outFields: 'OBJECTID', where: '1=1' }, cancelada).catch(() => []) : [],
     ]);
     // Painel Bairros com bairros marcados: quadras e lotes só deles.
     return { limites, quadras: quadras.filter(passaFiltro), vias, lotes: lotes.filter(passaFiltro), areas: areas.filter(passaFiltro), atividades, npo, setores, logradouros, logBairro, ver };

@@ -346,6 +346,7 @@ export class Globo {
   }
 
   irParaInicio(duracao = 2.2) {
+    this._chegando = false; // interrompe a animação de chegada
     const v = CFG.visaoInicial;
     const alvo = Cesium.Cartesian3.fromDegrees(this.centro[0], this.centro[1], 760);
     return new Promise((ok) => this.camera.flyToBoundingSphere(new Cesium.BoundingSphere(alvo, 1), {
@@ -364,9 +365,15 @@ export class Globo {
     const alvo = Cesium.Cartesian3.fromDegrees(this.centro[0], this.centro[1], 760);
     const ini = { dist: 260000, pitch: -89.9, rumo: v.rumo + 180 }, fim = { dist: 14000, pitch: -52, rumo: v.rumo };
     const suave = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    // Qualquer gesto da pessoa ou outra mudança de vista (busca, link, botão) interrompe a chegada.
+    this._chegando = true;
+    const parar = () => { this._chegando = false; };
+    const tela = this.cena.canvas;
+    for (const ev of ['pointerdown', 'wheel', 'touchstart', 'keydown']) tela.addEventListener(ev, parar, { once: true, passive: true });
     return new Promise((ok) => {
       const t0 = performance.now();
       const passo = (agora) => {
+        if (!this._chegando) { this.camera.lookAtTransform(Cesium.Matrix4.IDENTITY); ok(); return; }
         const t = Math.min(1, (agora - t0) / (duracao * 1000)), e = suave(t);
         const dist = Math.exp(Math.log(ini.dist) + (Math.log(fim.dist) - Math.log(ini.dist)) * e);
         const pitch = ini.pitch + (fim.pitch - ini.pitch) * Math.min(1, e * 1.15);
@@ -374,7 +381,7 @@ export class Globo {
         this.camera.lookAt(alvo, new Cesium.HeadingPitchRange(rad(rumo), rad(pitch), dist));
         this.redesenhar();
         if (t < 1) requestAnimationFrame(passo);
-        else { this.camera.lookAtTransform(Cesium.Matrix4.IDENTITY); ok(); }
+        else { this._chegando = false; this.camera.lookAtTransform(Cesium.Matrix4.IDENTITY); ok(); }
       };
       requestAnimationFrame(passo);
     });
@@ -382,6 +389,7 @@ export class Globo {
 
   /** Voa até um ponto ou extensão, mantendo o rumo atual. */
   voarPara({ lon, lat, extensao, distancia, inclinacao = -50, duracao = 1.8 }) {
+    this._chegando = false; // interrompe a animação de chegada
     let alvo, alcance = distancia;
     if (extensao) {
       const [o, s, l, n] = extensao;
@@ -431,6 +439,7 @@ export class Globo {
   }
 
   aplicarVisao(texto) {
+    this._chegando = false; // interrompe a animação de chegada
     const [lon, lat, alt, rumo, incl] = String(texto).split(',').map(Number);
     if (![lon, lat, alt].every(Number.isFinite)) return false;
     this.camera.setView({

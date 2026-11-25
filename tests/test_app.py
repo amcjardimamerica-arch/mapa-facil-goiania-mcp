@@ -631,6 +631,10 @@ def test_mapa_filtra_bairros_do_painel(mapa):
 
 
 def test_marcadores_de_quadra_e_pracas(mapa):
+    # Estado limpo: painel Bairros/Associação fechado (sem filtro de bairros) e Base Cadastral com quadras.
+    mapa.evaluate("""async () => { const m = await import('./js/mapavetorial.js');
+      const lv = bussola.levantamento; if (lv) { lv.mostrar = false; lv._atualizarFiltroMapa?.(); }
+      Object.assign(m.BASE, { ligado: true, quadras: true }); }""")
     mapa.evaluate("bussola.globo.aplicarVisao('-49.2857,-16.7077,1700,0,-90')")
     mapa.wait_for_timeout(1500)
     r = mapa.evaluate("""async () => { await bussola.quadras.atualizar();
@@ -731,8 +735,13 @@ def test_base_cadastral_opcoes_sem_repeticao_e_funcionando(mapa):
       const nat13 = g.tileXYToNativeRectangle(2974, 4481, 13);
       const d13 = await prov._dados(nat13, 13, () => false);
       Object.assign(m.BASE, antes);
-      return { repetidos, novos, ids, npo: d.npo.length, logr: d.logradouros.length, logBai: d.logBairro.length, atv: d.atividades.length, areas: d.areas.length, setores: d13.setores.length };
+      // Cada resultado veio da camada certa (a ordem das consultas casa com a dos resultados).
+      const tipo = (lista, t) => lista.length > 0 && lista.every((f) => t === 'ponto' ? f.geometry?.x != null : t === 'linha' ? !!f.geometry?.paths : !!f.geometry?.rings);
+      const certo = { npo: tipo(d.npo, 'area') && d.npo.every((f) => 'nm_npo' in f.attributes), atv: tipo(d.atividades, 'ponto'),
+        logr: tipo(d.logradouros, 'linha'), logBai: tipo(d.logBairro, 'linha'), set: tipo(d13.setores, 'area'), areas: tipo(d.areas, 'area') };
+      return { certo, repetidos, novos, ids, npo: d.npo.length, logr: d.logradouros.length, logBai: d.logBairro.length, atv: d.atividades.length, areas: d.areas.length, setores: d13.setores.length };
     }""")
     assert not r["repetidos"] and len(r["novos"]) == 4, r
     assert r["ids"] == [0, 1, 2, 4, 5, 6, 8, 9, 10], r
     assert r["npo"] > 0 and r["logr"] > 0 and r["logBai"] > 0 and r["atv"] > 0 and r["setores"] > 0, r
+    assert all(r["certo"].values()), r["certo"]
