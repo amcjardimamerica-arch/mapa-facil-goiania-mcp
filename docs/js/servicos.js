@@ -1,6 +1,7 @@
 // Acessibilidade e Serviços: os pontos do Mapa Fácil viram marcadores fixos no mapa,
 // como os marcadores do Google Earth: ícone temático por tipo, nome ao lado (branco
 // sobre o satélite, preto sobre o mapa sem fotos) e ficha com os dados ao clicar.
+import { noChao } from './globo.js';
 import { el, pedirJSON, aviso } from './util.js';
 
 const Cesium = window.Cesium;
@@ -137,14 +138,14 @@ export class Servicos {
       const campo = Object.keys(f.attributes).find((k) => CAMPO_NOME.test(k));
       const nome = String((campo && f.attributes[campo]) || '').trim();
       const ent = this.fonte.entities.add({
-        position: Cesium.Cartesian3.fromDegrees(f.geometry.x, f.geometry.y),
+        position: noChao(f.geometry.x, f.geometry.y),
         billboard: { image: imagem, width: 28, height: 36, verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
           distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, muitos ? 5000 : 30000) },
         label: nome ? { text: nome, font: '600 12.5px system-ui, "Segoe UI", Roboto, sans-serif', ...this._coresRotulo(),
           style: Cesium.LabelStyle.FILL_AND_OUTLINE, outlineWidth: 3, horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
           verticalOrigin: Cesium.VerticalOrigin.CENTER, pixelOffset: new Cesium.Cartesian2(16, -20),
-          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
           distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, muitos ? 900 : 4000) } : undefined,
         show: false,
       });

@@ -51,12 +51,9 @@ function provedorSatelite() {
   const s = CFG.satelite;
   return new Cesium.UrlTemplateImageryProvider({
     url: s.url, maximumLevel: s.nivelMaximo, credit: s.credito, enablePickFeatures: false,
-    tileDiscardPolicy: new Cesium.DiscardMissingTileImagePolicy({
-      missingImageUrl: s.blocoAusente,
-      pixelsToCheck: [new Cesium.Cartesian2(0, 0), new Cesium.Cartesian2(120, 140),
-        new Cesium.Cartesian2(130, 130), new Cesium.Cartesian2(200, 200), new Cesium.Cartesian2(255, 255)],
-      disableCheckIfAllPixelsAreTransparent: true,
-    }),
+    // Sem a conferência de "bloco faltante" pixel a pixel: ela lia cada imagem do satélite (getImageData) na linha
+    // da tela e era a maior causa de travamento. O nível máximo já evita pedir blocos que não existem.
+    tileDiscardPolicy: new Cesium.NeverTileDiscardPolicy(),
   });
 }
 
@@ -74,6 +71,25 @@ async function provedorGoogle() {
     maximumLevel: 21, credit: 'Imagem de satélite: Google', enablePickFeatures: false,
   });
 }
+
+// --------------------------------------------------------------------- altura do chão
+// Marcadores "grudados no chão" (CLAMP_TO_GROUND) fazem o Cesium recalcular a altura de cada um a cada bloco de
+// relevo que chega (raio contra os triângulos do terreno): com centenas de marcadores isso travava a tela.
+// Agora a altura é lida uma vez, na criação, e o marcador fica sempre visível (sem teste de profundidade).
+let cenaAtual = null;
+const ALTURA_GOIANIA = 760;
+const alturas = new Map(); // altura por quadradinho de ~550 m: uma leitura do terreno serve a todos os marcadores dele
+export function alturaChao(lon, lat) {
+  const k = `${Math.round(lon * 200)}:${Math.round(lat * 200)}`;
+  if (alturas.has(k)) return alturas.get(k);
+  let h = null;
+  try { h = cenaAtual?.globe.getHeight(Cesium.Cartographic.fromDegrees(lon, lat)); } catch { /* sem relevo carregado */ }
+  if (!Number.isFinite(h)) return ALTURA_GOIANIA; // não guarda: tenta de novo quando o relevo chegar
+  alturas.set(k, h + 1.5);
+  if (alturas.size > 20000) alturas.clear();
+  return h + 1.5;
+}
+export const noChao = (lon, lat) => Cesium.Cartesian3.fromDegrees(lon, lat, alturaChao(lon, lat));
 
 // --------------------------------------------------------------------- globo
 export class Globo {
@@ -97,6 +113,7 @@ export class Globo {
       contextOptions: { webgl: { preserveDrawingBuffer: true } }, // permite "Salvar imagem"
     });
     this.viewer = viewer;
+    cenaAtual = viewer.scene;
     const cena = viewer.scene;
     cena.globe.baseColor = Cesium.Color.fromCssColorString(CFG.cores.fora);
     cena.globe.depthTestAgainstTerrain = true;

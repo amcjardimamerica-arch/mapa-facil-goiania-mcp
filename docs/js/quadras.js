@@ -5,6 +5,7 @@
 // pouco para o lado no desenho do mapa (mapavetorial.js). Quadra que é praça leva o nome da praça (logradouro
 // "Pça" que a contorna); "ÁREA" só fica onde os dados não trazem nenhuma referência de praça.
 import { CFG } from './config.js';
+import { noChao } from './globo.js';
 import { ALTURA, LIMITE_ALTURA, passaFiltro, BASE, centroDoAnel, pxMarcadorQuadra } from './mapavetorial.js';
 
 const Cesium = window.Cesium;
@@ -124,8 +125,8 @@ export class Quadras {
         nm = melhor && melhor.d <= raio + 25 ? String(melhor.nome).replace(/^Pça\b/i, 'Pça.') : 'ÁREA';
       }
       const img = this._imagem(nm, px);
-      this.marcadores.add({ position: Cesium.Cartesian3.fromDegrees(lonDe(cx), latDe(cy)), image: img.tela, width: img.w, height: img.h,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, disableDepthTestDistance: Number.POSITIVE_INFINITY,
+      this.marcadores.add({ position: noChao(lonDe(cx), latDe(cy)), image: img.tela, width: img.w, height: img.h,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
         distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, LIMITE_ALTURA.numeroQuadra * 2.5) });
     }
     this.globo.redesenhar();

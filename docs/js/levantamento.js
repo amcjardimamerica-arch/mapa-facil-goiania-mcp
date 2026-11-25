@@ -1,6 +1,7 @@
 // Levantamento da Associação: Jardim América e Nova Suíça.
 // Lotes classificados por finalidade, limites dos bairros, áreas públicas,
 // prédios em 3D e locais de votação, a partir de data/levantamento.json.
+import { noChao } from './globo.js';
 import { CFG } from './config.js';
 import { el, aviso, fmtNum, pedirJSON, semAcento, memoria } from './util.js';
 import { ProvedorLotes, ProvedorDesenho, FILTRO_BAIRROS } from './mapavetorial.js';
@@ -398,10 +399,10 @@ export class Levantamento {
         }
         const pts = lim.aneisLL[0];
         const c = pts.reduce((a, p) => [a[0] + p[0] / pts.length, a[1] + p[1] / pts.length], [0, 0]);
-        this.fonte.entities.add({ position: Cesium.Cartesian3.fromDegrees(c[0], c[1]), label: {
+        this.fonte.entities.add({ position: noChao(c[0], c[1]), label: {
           text: d.bairros[i] || lim.nome, font: '700 17px system-ui, "Segoe UI", Roboto, sans-serif',
           fillColor: cor, outlineColor: Cesium.Color.BLACK, outlineWidth: 4, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
           distanceDisplayCondition: new Cesium.DistanceDisplayCondition(2500, 60000) } });
       });
     }
@@ -412,8 +413,8 @@ export class Levantamento {
       const cb = d.bocas.colunas, kla = cb.indexOf('Latitude'), klo = cb.indexOf('Longitude'), kb = cb.indexOf('Bairro');
       for (const b of d.bocas.linhas) {
         if (!bairroVisivel(b.v[kb])) continue;
-        const ent = this.fonte.entities.add({ position: Cesium.Cartesian3.fromDegrees(b.v[klo], b.v[kla]),
-          billboard: { image: `img/icones/${b.icone}`, width: 30, height: 30, heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+        const ent = this.fonte.entities.add({ position: noChao(b.v[klo], b.v[kla]),
+          billboard: { image: `img/icones/${b.icone}`, width: 30, height: 30,
             disableDepthTestDistance: Number.POSITIVE_INFINITY, distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 6000) } });
         ent.levantamento = { tipo: 'boca', dado: b };
       }

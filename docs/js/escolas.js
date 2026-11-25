@@ -4,6 +4,7 @@
 //
 // Fontes no levantamento: áreas públicas de Educação (escolas públicas) e empresas pelo CNAE (Receita Federal),
 // ligadas ao lote. As empresas do mesmo lote e da mesma categoria formam um marcador.
+import { noChao } from './globo.js';
 import { el, fmtNum, semAcento } from './util.js';
 import { iconeServico } from './servicos.js';
 
@@ -103,14 +104,14 @@ export class Escolas {
       const nivel = i.tipo === 'aulas' ? AULAS : NIVEIS.find((n) => i.niveis.includes(n.id) && filtros[n.id] !== false);
       if (!nivel) continue;
       const borda = i.tipo === 'publica' ? BORDA.publica : BORDA.particular;
-      const ent = this.fonte.entities.add({ position: Cesium.Cartesian3.fromDegrees(i.lon, i.lat),
+      const ent = this.fonte.entities.add({ position: noChao(i.lon, i.lat),
         billboard: { image: iconeServico('escola', corEscola(i.tipo, nivel), borda, i.tipo === 'publica' ? '#ffffff' : SIMBOLO_ESCURO), width: 30, height: 39, verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
           distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 9000) },
         label: { text: i.nome, font: '600 12px system-ui, "Segoe UI", Roboto, sans-serif', fillColor: Cesium.Color.WHITE,
           outlineColor: Cesium.Color.fromCssColorString('#111418'), outlineWidth: 3, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
           horizontalOrigin: Cesium.HorizontalOrigin.LEFT, pixelOffset: new Cesium.Cartesian2(16, -22),
-          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
           distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 1500) } });
       ent.escola = i;
     }
