@@ -1,4 +1,4 @@
-"""Divisas dos Conselhos Tutelares por referências reais (1.25.1).
+"""Divisas dos Conselhos Tutelares por referências reais (1.25.1; regras da 1.26.0 no fim deste texto).
 
     python scripts/conselho_divisas.py
 
@@ -13,6 +13,14 @@ entre Conselhos corre por uma dessas referências:
      (e não há local de votação nele).
 Entradas: docs/data/conselho_regioes.geojson (atual), scripts/dados/{referencias_conselho.geojson,
 bairros_poligonos.json}, scripts/dados/levantamento.json (locais de votação). Grava docs/data/conselho_regioes.geojson.
+
+1.26.0 (pedido da A.M.C.):
+  - Rio Meia Ponte e demais cursos d'água só valem como divisa onde não há bairro: dentro da área dos bairros a divisa
+    segue a divisa dos bairros que passam em cima do rio (com as curvas dessas divisas);
+  - nenhum Conselho tem pedaço solto nem área dentro de outro (enclave): pedaço sem local de votação vai para o
+    Conselho que o cerca;
+  - relatório das referências de cada divisa (ruas, avenidas, rodovias, rios e divisas de bairro) em
+    docs/data/conselho_divisas.json, para a ficha.
 """
 import json
 from pathlib import Path
@@ -59,7 +67,12 @@ def main():
     geos = [shape(f["geometry"]).buffer(0) for f in cons]
 
     # Referências: barreiras (avenidas, rodovias, cursos d'água) e divisas de bairro.
-    barreiras = unary_union([borda(shape(f["geometry"])) for f in refs["features"]]).intersection(limite.buffer(0.0005))
+    area_bairros = unary_union([Polygon(r).buffer(0) for b in bairros for r in (b["rings"] or []) if len(r) >= 4])
+    vias = unary_union([borda(shape(f["geometry"])) for f in refs["features"] if f["properties"].get("tipo") != "hidrografia"])
+    # Cursos d'água (Rio Meia Ponte inclusive) só fora da área dos bairros: dentro dela vale a divisa dos bairros.
+    agua = unary_union([borda(shape(f["geometry"])) for f in refs["features"] if f["properties"].get("tipo") == "hidrografia"])
+    agua = agua.difference(area_bairros.buffer(0.0002))
+    barreiras = unary_union([vias, agua]).intersection(limite.buffer(0.0005))
     divisas_bairro = unary_union([Polygon(r).boundary for b in bairros for r in (b["rings"] or []) if len(r) >= 4])
     rede = unary_union([limite.boundary, barreiras, divisas_bairro])
     faces = [f for f in polygonize(rede) if f.area > 2e-10 and limite.contains(f.representative_point())]
@@ -133,18 +146,35 @@ def main():
     # Os pedaços já cobrem o município sem sobreposição: cada Conselho é a junção dos seus.
     novos = [so_areas(juntar([faces[k] for k in range(len(faces)) if dono[k] == i])) for i in range(len(geos))]
     print("Conselhos montados", flush=True)
-    # Limpeza: buraquinhos e pedacinhos (< 0,05 km²) que sobram entre pedaços viravam "divisas" soltas no mapa.
-    MIN = 0.05 / KM2
-    novos = [so_areas(unary_union([Polygon(q.exterior, [h for h in q.interiors if Polygon(h).area >= MIN])
-                                   for q in getattr(g, "geoms", [g])])) for g in novos]
-    for i in range(len(novos)):
-        partes = list(getattr(novos[i], "geoms", [novos[i]]))
-        grandes = [q for q in partes if q.area >= MIN] or [max(partes, key=lambda q: q.area)]
-        for q in partes:
-            if q not in grandes:
-                j = max((k for k in range(len(novos)) if k != i), key=lambda k: novos[k].buffer(1e-6).intersection(q.buffer(1e-6)).area)
-                novos[j] = so_areas(unary_union([novos[j], q]))
-        novos[i] = so_areas(unary_union(grandes))
+    # Limpeza (1.26.0): nenhum buraco e nenhum pedaço solto. Buraco (área de outro Conselho cercada) e pedaço solto
+    # sem local de votação vão para o Conselho que os cerca (o de maior divisa comum).
+    tem_local = lambda geom: any(geom.buffer(1e-6).contains(pt) for pt, _ in locais)
+    for rodada in range(4):
+        mudou = 0
+        for i in range(len(novos)):
+            partes = list(getattr(novos[i], "geoms", [novos[i]]))
+            maior = max(partes, key=lambda q: q.area)
+            for q in partes:
+                if q is maior or tem_local(q):
+                    continue
+                viz = [k for k in range(len(novos)) if k != i]
+                j = max(viz, key=lambda k: novos[k].buffer(2e-5).intersection(q.exterior.buffer(2e-5)).area)
+                novos[j] = so_areas(unary_union([novos[j], q])); mudou += 1
+            restantes = [q for q in partes if q is maior or tem_local(q)]
+            novos[i] = so_areas(unary_union([Polygon(q.exterior) for q in restantes]))  # sem buracos
+        # o que era buraco de um passou a ser dele: tira dos demais
+        for i in range(len(novos)):
+            for k in range(len(novos)):
+                if k != i and novos[i].intersects(novos[k]) and novos[i].intersection(novos[k]).area > 1e-12:
+                    # quem tem local de votação no trecho disputado fica com ele; senão, o que o cerca
+                    disputa = novos[i].intersection(novos[k])
+                    if tem_local(so_areas(disputa)) and any(novos[k].buffer(1e-6).contains(pt) and disputa.buffer(1e-6).contains(pt) for pt, reg in locais if reg == nomes[k]):
+                        novos[i] = so_areas(novos[i].difference(novos[k]))
+                    else:
+                        novos[k] = so_areas(novos[k].difference(novos[i]))
+        print("limpeza", rodada, "pedaços soltos passados:", mudou, flush=True)
+        if not mudou:
+            break
     for i in range(1, len(novos)):
         novos[i] = so_areas(novos[i].difference(unary_union(novos[:i])).buffer(1e-7).buffer(-1e-7))
 
@@ -167,7 +197,73 @@ def main():
     # conferência: todo local de votação no Conselho certo
     erros = [(reg) for pt, reg in locais if reg in nomes and not novos[nomes.index(reg)].buffer(1e-6).contains(pt)]
     print("locais fora do seu Conselho:", len(erros), "de", len(locais))
+    for pt, reg in locais:
+        if reg in nomes and not novos[nomes.index(reg)].buffer(1e-6).contains(pt):
+            print("  fora:", reg, pt.x, pt.y)
+    relatorio_divisas(novos, nomes, refs, bairros, limite)
     (RAIZ / "docs/data/conselho_regioes.geojson").write_text(json.dumps(atual, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
+
+def relatorio_divisas(novos, nomes, refs, bairros, limite):
+    """Para cada par de Conselhos vizinhos: extensão da divisa e as referências que ela segue (ruas e avenidas pelo
+    nome, rodovias, cursos d'água e divisas de bairro), em docs/data/conselho_divisas.json."""
+    import gzip, glob
+    M = 111320 * 0.958
+    linhas_rua = []
+    base = RAIZ / "docs/banco/dados/Feature_Base/7"
+    vistos = set()
+    for a in glob.glob(str(base / "*" / "*.json.gz")):
+        if "/indice-" in a:
+            continue
+        d = json.load(gzip.open(a)); kn = d["c"].index("nm")
+        for item in d["f"]:
+            if item[0] in vistos or len(item) < 3:
+                continue
+            vistos.add(item[0])
+            for p in item[2] or []:
+                x = y = 0; pts = []
+                for i in range(0, len(p) - 1, 2):
+                    x += p[i]; y += p[i + 1]; pts.append((x / 1e6, y / 1e6))
+                if len(pts) >= 2:
+                    from shapely.geometry import LineString
+                    linhas_rua.append((str(item[1][kn] or "").strip(), LineString(pts)))
+    arv = STRtree([g for _, g in linhas_rua])
+    agua = [(f["properties"].get("nome") or "Curso d'água").strip() or "Curso d'água" for f in refs["features"]]
+    agua_g = [borda(shape(f["geometry"])) for f in refs["features"]]
+    arv_ref = STRtree(agua_g)
+    bairro_g = [(b["nm"], unary_union([Polygon(r).buffer(0) for r in (b["rings"] or []) if len(r) >= 4])) for b in bairros]
+    arv_b = STRtree([g for _, g in bairro_g])
+    saida = []
+    for i in range(len(novos)):
+        for k in range(i + 1, len(novos)):
+            comum = novos[i].buffer(1e-6).intersection(novos[k].buffer(1e-6))
+            if comum.is_empty:
+                continue
+            linha = novos[i].boundary.intersection(novos[k].buffer(2e-5))
+            total = linha.length * M
+            if total < 50:
+                continue
+            faixa = linha.buffer(0.00012)  # ~13 m
+            refs_par = {}
+            for j in arv.query(faixa):
+                nm, g = linhas_rua[j]
+                ext = g.intersection(faixa).length * M
+                if nm and ext > 40:
+                    refs_par[nm] = refs_par.get(nm, 0) + ext
+            for j in arv_ref.query(faixa):
+                ext = agua_g[j].intersection(faixa).length * M
+                if ext > 60:
+                    refs_par[agua[j]] = refs_par.get(agua[j], 0) + ext
+            lados = set()
+            for j in arv_b.query(faixa):
+                nm, g = bairro_g[j]
+                if g.boundary.intersection(faixa).length * M > 60:
+                    lados.add(nm)
+            saida.append({"conselhos": [nomes[i], nomes[k]], "extensao_m": round(total),
+                          "referencias": [{"nome": n, "m": round(m)} for n, m in sorted(refs_par.items(), key=lambda x: -x[1]) if m >= 80][:40],
+                          "bairros_na_divisa": sorted(lados)})
+            print(nomes[i], "x", nomes[k], round(total / 1000, 1), "km:", ", ".join(n for n, _ in sorted(refs_par.items(), key=lambda x: -x[1])[:8]))
+    (RAIZ / "docs/data/conselho_divisas.json").write_text(json.dumps({"divisas": saida}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
 
 if __name__ == "__main__":

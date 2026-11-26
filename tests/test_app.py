@@ -141,12 +141,35 @@ def test_busca_sem_acento(mapa):
 
 
 def test_identificar_lote(mapa):
+    mapa.evaluate("bussola.globo.camera.setView({ destination: Cesium.Cartesian3.fromDegrees(-49.27162, -16.68505, 1500) })")
     mapa.evaluate("bussola.identificar.emPonto({lon: -49.27162, lat: -16.68505, alt: NaN})")
     mapa.wait_for_function("!document.querySelector('#ficha-corpo .carregando')", timeout=60_000)
     titulo, corpo = mapa.text_content("#ficha-titulo"), mapa.text_content("#ficha-corpo")
     assert "Consultando" not in titulo
     assert "Bairro" in corpo and "Oeste" in corpo and "S Oeste" not in corpo, corpo[:300]
     mapa.evaluate("bussola.identificar.fechar()")
+
+
+def test_selecao_pela_altura_bairro_e_quadra(mapa):
+    """Acima de 5 km o clique seleciona o bairro inteiro (nome do bairro e o levantamento dele, sem "Marcar");
+    de 5 km a 2,5 km, a quadra."""
+    r = mapa.evaluate("""async () => {
+      const id = bussola.identificar, cam = bussola.globo.camera, txt = (s) => document.querySelector(s).textContent;
+      const espera = () => new Promise((ok) => { const f = () => (document.querySelector('#ficha-corpo .carregando') || txt('#ficha-titulo') === 'Consultando…' ? setTimeout(f, 200) : ok()); setTimeout(f, 300); });
+      cam.setView({ destination: Cesium.Cartesian3.fromDegrees(-49.2856, -16.7077, 7000) });
+      await id.emPonto({ lon: -49.2856, lat: -16.7077, alt: NaN }); await espera();
+      const bairro = { titulo: txt('#ficha-titulo'), corpo: txt('#ficha-corpo'), marcar: [...document.querySelectorAll('#ficha-corpo button')].some((b) => b.textContent === 'Marcar') };
+      cam.setView({ destination: Cesium.Cartesian3.fromDegrees(-49.2856, -16.7077, 3500) });
+      await id.emPonto({ lon: -49.2856, lat: -16.7077, alt: NaN }); await espera();
+      const quadra = txt('#ficha-titulo');
+      id.fechar();
+      return { bairro, quadra };
+    }""")
+    b = r["bairro"]
+    assert b["titulo"] == "Jardim América" and not b["marcar"], b["titulo"]
+    for item in ("Quadras", "Lotes", "Praças", "Escolas", "Igrejas", "Supermercados", "Condomínios"):
+        assert item in b["corpo"], (item, b["corpo"][:400])
+    assert r["quadra"].startswith("Quadra "), r
 
 
 def test_temas_e_link(mapa):
@@ -335,6 +358,8 @@ def test_lotes_so_do_bairro_escolhido(mapa):
 def test_levantamento_lotes_limites_e_ficha(mapa):
     r = mapa.evaluate("""async () => {
       const lv = bussola.levantamento;
+      // Lote só se seleciona com a câmera a 2,5 km ou menos (acima: quadra até 5 km, bairro acima de 5 km).
+      bussola.globo.camera.setView({ destination: Cesium.Cartesian3.fromDegrees(-49.2857, -16.7077, 1500) });
       await lv.mostrarBairros(); await lv.detalhes();
       const antes = { lotes: lv.dados.lotes.length, limites: lv.dados.limites.length, camada: !!lv.camadaLotes,
                       bordas: lv.fixos.entities.values.filter((e) => e.show && e.polyline).length };
@@ -447,7 +472,7 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
     assert r["infra"]["escalas"] == [1, 1, 4.25, 6], r["infra"]["escalas"]
     assert r["infra"]["corPedido"] == "#ff00ff", r["infra"]
     assert r["infra"]["altura"] == 13.5 and r["infra"]["cores"] == {"quadrado": "#9e9e9e", "madeira": "#8d6e63", "trafo": "#ff0000"}, r["infra"]
-    assert r["infra"]["grupos"] == ["Residencial", "Comercial", "Misto", "Público", "Religioso", "Lote vago", "Não identificado"], r["infra"]["grupos"]
+    assert r["infra"]["grupos"] == ["Residencial", "Comercial", "Misto", "Público", "Religioso", "Lote vago", "Não identificado", "Escolas e cursos"], r["infra"]["grupos"]
     assert "Pedir manutenção (LT-" in r["ficha"], r["ficha"][:200]
     assert r["hash"], r
 

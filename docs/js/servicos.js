@@ -149,6 +149,7 @@ export class Servicos {
           distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, muitos ? 900 : 4000) } : undefined,
         show: false,
       });
+      ent.ll = [f.geometry.x, f.geometry.y]; // reassentado no chão quando o relevo muda (app.js)
       ent.servico = { tema: t, camada, nome, atributos: f.attributes, campos: info.campos, lon: f.geometry.x, lat: f.geometry.y, cor };
       return ent;
     });

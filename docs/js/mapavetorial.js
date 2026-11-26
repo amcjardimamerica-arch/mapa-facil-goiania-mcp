@@ -42,7 +42,17 @@ export function centroDoAnel(anel) {
 /** Tamanho da letra do marcador de quadra (px de tela), pela altura da câmera — o mesmo em quadras.js. */
 export const pxMarcadorQuadra = (h) => (h <= 700 ? 12 : h <= 1500 ? 11 : 10);
 
-export const FILTRO_BAIRROS = { aneis: null, ext: null };
+export const FILTRO_BAIRROS = { aneis: null, ext: null, semNumeroDeLote: false };
+/** Caixas (em Web Mercator) dos marcadores de número de quadra: o número do lote que cairia embaixo é deslocado. */
+function marcasDeQuadra(quadras, q, pxM) {
+  return quadras.map((f) => {
+    const a = f.geometry?.rings?.[0], nq = String(f.attributes?.nm_qdr || '').trim();
+    if (!a || !nq) return null;
+    const [cx, cy] = centroDoAnel(a);
+    const w = (nq.length * pxM * 0.62 + pxM) / 2 + 2, h = pxM * 0.75 + 2;
+    return { x: q.x(cx), y: q.y(cy), w, h };
+  }).filter(Boolean);
+}
 /**
  * Camadas da Base Cadastral (Feature_Base) controladas por cada opção — também entram na ficha do clique.
  * Lote (0), quadra (1) e bairro (2) entram sempre na ficha, para o clique selecionar o que aparece no mapa.
@@ -60,7 +70,7 @@ export function idsDaFicha() {
  * quadras, lotes, divisas e nomes de bairro, áreas públicas (verde #00FF00, contorno branco) e atividades econômicas.
  */
 export const BASE = Object.assign({ ligado: true, ruas: true, quadras: true, lotes: true, divisas: true, nomesBairros: true, areasVerdes: false, imoveisPublicos: false, atividades: false,
-  cadastro: true, npo: false },
+  cadastro: true, npo: false, avenidas: true },
   (() => { try { return JSON.parse(localStorage.getItem('bussola:base') || '{}'); } catch { return {}; } })());
 export const gravarBase = () => { try { localStorage.setItem('bussola:base', JSON.stringify(BASE)); } catch { /* nada */ } };
 const baseVe = (k) => BASE.ligado && BASE[k];
@@ -140,6 +150,7 @@ const ESTILO = {
   sobre: {
     quadraBorda: 'rgba(255,255,255,.42)',
     via: { local: [null, 'rgba(255,255,255,.30)'], coletora: [null, 'rgba(255,255,255,.45)'], arterial: ['rgba(0,0,0,.25)', 'rgba(255,214,90,.6)'], expressa: ['rgba(0,0,0,.25)', 'rgba(255,185,70,.7)'] },
+    viaSemDestaque: { arterial: [null, 'rgba(255,255,255,.5)'], expressa: [null, 'rgba(255,255,255,.55)'] },
     texto: '#ffffff', halo: 'rgba(0,0,0,.85)', bairro: '#ffe9a8', quadraTexto: '#ffffff', divisa: 'rgba(255,233,168,.85)',
     loteBorda: 'rgba(255,255,255,.62)', loteTexto: 'rgba(255,255,255,.92)',
   },
@@ -347,7 +358,9 @@ export class ProvedorVetorial extends ProvedorCanvas {
     const noFiltro = blocoNoFiltro(ret);
     const ver = { quadras: baseVe('quadras') && noFiltro && mostraNaAltura('quadras', nivel), lotes: baseVe('lotes') && noFiltro && mostraNaAltura('lotes', nivel),
       numeroQuadra: mostraNaAltura('numeroQuadra', nivel), numeroLote: baseVe('lotes') && mostraNaAltura('numeroLote', nivel),
-      ruas: !BASE.ligado || BASE.ruas, nomesBairros: baseVe('nomesBairros'), areas: (baseVe('areasVerdes') || baseVe('imoveisPublicos')) && nivel >= 13, atividades: baseVe('atividades') && nivel >= 15,
+      ruas: !BASE.ligado || BASE.ruas, nomesBairros: baseVe('nomesBairros'), areas: (baseVe('areasVerdes') || baseVe('imoveisPublicos')) && nivel >= 12,
+      // Cadastro de Atividade Econômica: a partir de 5 km de altura (como quadras e lotes).
+      atividades: baseVe('atividades') && ALTURA.camera <= 5000 && nivel >= 13,
       npo: baseVe('npo') && nivel >= 17 };
     const filtroVias = nivel >= (sobre ? 15 : 14) ? '1=1' : nivel >= 12 ? 'in_hie >= 21' : 'in_hie >= 40';
     const [limites, quadras, vias, lotes, areas, atividades, npo] = await Promise.all([
@@ -361,8 +374,9 @@ export class ProvedorVetorial extends ProvedorCanvas {
       ver.atividades ? consultar(9, { ...comum, outFields: 'OBJECTID', where: '1=1' }, cancelada).catch(() => []) : [],
       ver.npo ? consultar(5, { ...comum, outFields: 'nm_npo', where: '1=1' }, cancelada).catch(() => []) : [],
     ]);
-    // Painel Bairros com bairros marcados: quadras e lotes só deles.
-    return { limites, quadras: quadras.filter(passaFiltro), vias, lotes: lotes.filter(passaFiltro), areas: areas.filter(passaFiltro), atividades, npo, ver };
+    // Painel Associação com bairros marcados: quadras e lotes só deles. Áreas verdes, praças e imóveis públicos
+    // (opções da Base Cadastral) valem para Goiânia inteira, com ou sem o painel aberto.
+    return { limites, quadras: quadras.filter(passaFiltro), vias, lotes: lotes.filter(passaFiltro), areas, atividades, npo, ver };
   }
 
   _desenhar(ret, nivel, relevo, dados) {
@@ -413,7 +427,8 @@ export class ProvedorVetorial extends ProvedorCanvas {
     g.lineCap = 'round'; g.lineJoin = 'round';
     for (const etapa of [0, 1]) {
       for (const c of ORDEM) {
-        const [contorno, miolo] = e.via[c];
+        // Avenidas e vias principais em amarelo só com a opção "Avenidas principais em destaque" (Sistema Viário).
+        const [contorno, miolo] = !mapa && !BASE.avenidas && (c === 'arterial' || c === 'expressa') ? e.viaSemDestaque[c] : e.via[c];
         const cor = etapa === 0 ? contorno : miolo;
         if (!cor || !porClasse[c].length) continue;
         const w = mapa ? largura(c) : Math.min(4, largura(c) * 0.28);
@@ -498,18 +513,13 @@ export class ProvedorVetorial extends ProvedorCanvas {
     }
     // Número da quadra: camada própria por cima de tudo (ProvedorQuadras), com marcador preto e número amarelo.
     // Número de todos os lotes, por cima da quadra: nenhum é escondido; a fonte se ajusta ao lote.
-    if (ver.numeroLote && lotes.length) {
+    // Dentro dos bairros da Associação (painel aberto com "Lotes por finalidade"), o número do lote sai só do levantamento.
+    if (ver.numeroLote && lotes.length && !FILTRO_BAIRROS.semNumeroDeLote) {
       const max = nivel >= 20 ? 14 : nivel >= 19 ? 12.5 : nivel >= 18 ? 11 : 9.5;
       // Caixas dos marcadores de quadra (no centro exato de cada quadra): o número de lote que cair embaixo
       // de um marcador é deslocado um pouco para o lado, para os dois ficarem legíveis.
       const pxM = pxMarcadorQuadra(ALTURA.camera) * 1.3;
-      const marcas = (BASE.ligado && BASE.quadras ? quadras || [] : []).map((f) => {
-        const a = f.geometry?.rings?.[0], nq = String(f.attributes?.nm_qdr || '').trim();
-        if (!a || !nq) return null;
-        const [cx, cy] = centroDoAnel(a);
-        const w = (nq.length * pxM * 0.62 + pxM) / 2 + 2, h = pxM * 0.75 + 2;
-        return { x: q.x(cx), y: q.y(cy), w, h };
-      }).filter(Boolean);
+      const marcas = marcasDeQuadra(BASE.ligado && BASE.quadras ? quadras || [] : [], q, pxM);
       for (const f of lotes) {
         const nm = String(f.attributes.nm_lot || '').trim();
         const anel = f.geometry?.rings?.[0];
@@ -529,19 +539,20 @@ export class ProvedorVetorial extends ProvedorCanvas {
 
 // ------------------------------------------------------------------- lotes
 export class ProvedorLotes extends ProvedorCanvas {
-  constructor({ lotes, retangulo, borda = '#ffd54a', credito = 'Lotes: Prefeitura de Goiânia', nivelMinimo = 12, rotulos = () => true }) {
+  constructor({ lotes, retangulo, borda = '#ffd54a', credito = 'Lotes: Prefeitura de Goiânia', nivelMinimo = 12, rotulos = () => true, estiloRotulo = () => 'mapa' }) {
     super({ retangulo, credito, nivelMinimo });
     this.rotulos = rotulos; // false quando o mapa de baixo já escreve o número do lote (evita número duplicado)
+    this.estiloRotulo = estiloRotulo; // 'sobre' (número branco sobre a foto) ou 'mapa' (número escuro)
     this.lotes = lotes; // [{ aneis: [[[x,y]…]], ext: [o,s,l,n], nm, cor }]
     this.borda = borda; // cor da divisa, ou null para usar a cor de cada lote
   }
-  requestImage(x, y, nivel) {
+  async requestImage(x, y, nivel) {
     const ret = this._grade.tileXYToNativeRectangle(x, y, nivel);
     const T = this._T, q = new Quadro(ret, T);
     const tela = this._tela(), g = tela.getContext('2d');
-    if (!mostraNaAltura('lotes', nivel)) return Promise.resolve(tela); // lotes a partir de 5 km de altura
+    if (!mostraNaAltura('lotes', nivel)) return tela; // lotes a partir de 5 km de altura
     const dentro = this.lotes.filter((l) => l.ext[0] < ret.east && l.ext[2] > ret.west && l.ext[1] < ret.north && l.ext[3] > ret.south);
-    if (!dentro.length) return Promise.resolve(tela);
+    if (!dentro.length) return tela;
     for (const l of dentro) {
       g.beginPath(); q.caminho(g, l.aneis);
       g.fillStyle = l.cor; g.fill('evenodd');
@@ -553,13 +564,31 @@ export class ProvedorLotes extends ProvedorCanvas {
     if (this.borda) { g.strokeStyle = this.borda; g.lineWidth = nivel >= 17 ? 1.3 : 0.8; g.stroke(); }
     if (mostraNaAltura('numeroLote', nivel) && this.rotulos()) {
       const max = nivel >= 20 ? 14 : nivel >= 19 ? 12.5 : nivel >= 18 ? 11 : 9.5;
+      // Marcadores de número da quadra (no centro exato de cada quadra): o número de lote que cair embaixo de um
+      // deles vai um pouco para o lado — os dois ficam legíveis, sem sobreposição.
+      let marcas = [];
+      if (BASE.ligado && BASE.quadras) {
+        const folga = (ret.east - ret.west) * 0.15;
+        try {
+          const qs = await consultar(1, { geometry: [ret.west - folga, ret.south - folga, ret.east + folga, ret.north + folga].join(','),
+            geometryType: 'esriGeometryEnvelope', inSR: '3857', outSR: '3857', spatialRel: 'esriSpatialRelIntersects', returnGeometry: 'true',
+            geometryPrecision: '1', outFields: 'nm_qdr', where: '1=1', maxAllowableOffset: String(Math.max(0.3, q.mpp * 0.7)) });
+          marcas = marcasDeQuadra(qs.filter(passaFiltro), q, pxMarcadorQuadra(ALTURA.camera) * 1.3);
+        } catch { marcas = []; }
+      }
+      const sobre = this.estiloRotulo() === 'sobre';
+      const estilo = sobre ? { cor: 'rgba(255,255,255,.95)', halo: 'rgba(0,0,0,.85)', max } : { cor: '#1f2226', halo: 'rgba(255,255,255,.9)', max };
       for (const l of dentro) {
         if (!l.nm) continue;
-        numeroNoLote(g, l.nm, q.x(l.centro[0]), q.y(l.centro[1]), q.x(l.ext[2]) - q.x(l.ext[0]), q.y(l.ext[1]) - q.y(l.ext[3]),
-          { cor: '#1f2226', halo: 'rgba(255,255,255,.9)', max });
+        let px = q.x(l.centro[0]);
+        const py = q.y(l.centro[1]);
+        const meia = (String(l.nm).length * max * 0.3) + 2, alt = max * 0.6;
+        const m = marcas.find((c) => Math.abs(px - c.x) < c.w + meia && Math.abs(py - c.y) < c.h + alt);
+        if (m) px = px <= m.x ? m.x - m.w - meia - 1 : m.x + m.w + meia + 1;
+        numeroNoLote(g, String(l.nm), px, py, q.x(l.ext[2]) - q.x(l.ext[0]), q.y(l.ext[1]) - q.y(l.ext[3]), estilo);
       }
     }
-    return Promise.resolve(tela);
+    return tela;
   }
 }
 
@@ -569,10 +598,17 @@ export class ProvedorLotes extends ProvedorCanvas {
  * desde a vista da cidade: polígono pequeno demais vira um quadrado de 7 px.
  */
 export class ProvedorDesenho extends ProvedorCanvas {
-  constructor({ poligonos = [], linhas = [], retangulo, credito = 'Levantamento da Associação', nivelMinimo = 10 }) {
+  constructor({ poligonos = [], linhas = [], divisas = [], retangulo, credito = 'Levantamento da Associação', nivelMinimo = 10 }) {
     super({ retangulo, credito, nivelMinimo });
     this.poligonos = poligonos; // [{ aneis (mercator), ext, cor, borda, largura }]
     this.linhas = linhas;       // [{ de: [x,y], para: [x,y], cor, contorno, largura, tracejado }]
+    // Divisas em três faixas da mesma largura — preta, vermelha e preta (#000000, #FF0000, #000000) —, desenhadas por
+    // caminho inteiro: primeiro todo o preto, depois todo o vermelho (sem o preto de um trecho cobrir o vermelho do outro).
+    this.divisas = divisas.map((d) => {
+      let o = Infinity, s = Infinity, l = -Infinity, n = -Infinity;
+      for (const [x, y] of d.pontos) { o = Math.min(o, x); l = Math.max(l, x); s = Math.min(s, y); n = Math.max(n, y); }
+      return { ...d, ext: [o, s, l, n] };
+    });
   }
   requestImage(x, y, nivel) {
     const ret = this._grade.tileXYToNativeRectangle(x, y, nivel);
@@ -592,6 +628,14 @@ export class ProvedorDesenho extends ProvedorCanvas {
       g.strokeStyle = ln.cor; g.lineWidth = w; g.stroke();
     }
     g.setLineDash([]);
+    const divisas = this.divisas.filter((d) => toca(...d.ext));
+    if (divisas.length) {
+      const w = (nivel >= 16 ? 3.6 : nivel >= 11 ? 3.2 : 2.4);
+      g.beginPath();
+      for (const d of divisas) q.caminho(g, [d.pontos]);
+      g.strokeStyle = '#000000'; g.lineWidth = w * 3; g.stroke();
+      g.strokeStyle = '#FF0000'; g.lineWidth = w; g.stroke();
+    }
     for (const p of this.poligonos) {
       if (!toca(...p.ext)) continue;
       const lado = Math.max(q.x(p.ext[2]) - q.x(p.ext[0]), q.y(p.ext[1]) - q.y(p.ext[3]));

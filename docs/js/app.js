@@ -2,7 +2,7 @@
 import { CFG, VERSAO } from './config.js';
 import { $, $$, el, pedirJSON, debounce, aviso, baixarArquivo, fmtNum, fmtGraus, fmtDistancia, paraUTM, memoria } from './util.js';
 import { Territorio } from './territorio.js';
-import { Globo } from './globo.js';
+import { Globo, noChao } from './globo.js';
 import { Camadas } from './camadas.js';
 import { Identificar } from './identificar.js';
 import { Busca } from './busca.js';
@@ -95,6 +95,11 @@ async function iniciar() {
         op('cadastro', 'Cadastro Imobiliário (na ficha do lote)'), op('npo', 'Número Predial Oficial'));
     },
     baseLigar: (ligado) => { BASE.ligado = ligado; gravarBase(); app.refazerMapas?.(); },
+    // Sistema Viário: destaque amarelo das avenidas e vias principais sobre o satélite (desligável).
+    viario: (caixa) => caixa.append(el('label', { class: 'linha-chave' },
+      el('span', {}, el('strong', {}, 'Avenidas principais em destaque (amarelo)'), el('small', {}, 'Avenidas, rodovias e vias arteriais pintadas sobre a foto; desligue para deixá-las brancas como as demais ruas')),
+      el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', id: 'base-avenidas', checked: BASE.avenidas !== false,
+        onchange: (e) => { BASE.avenidas = e.target.checked; gravarBase(); app.refazerMapas?.(); } }), el('span', {})))),
     // Mapas de eleição: Zonas Eleitorais (TSE) e Conselho Tutelar (regiões e locais da eleição de 2023).
     eleitoral: (caixa) => caixa.append(el('p', { class: 'nota' }, 'Zonas eleitorais do TSE e os colégios de votação. O clique seleciona a zona inteira ou o colégio.')),
     eleitoralLigar: (ligado) => { eleicoes.definir(ligado ? 'zonas' : '').catch(() => {}); levantamento.definirEleicao(ligado ? 'geral' : '').catch(() => {}); },
@@ -119,8 +124,6 @@ async function iniciar() {
   const lotes = new Lotes({ globo, bairros: bairros.bairros, raiz: $('#painel-lotes') });
   const levantamento = new Levantamento({ globo, identificar, raiz: $('#painel-levantamento'), sessao });
   lotes.edificios = edificios;
-  // O número do lote sai uma vez só: se o mapa de baixo (fundo Mapa ou "Ruas e quadras") já o escreve, o levantamento não repete.
-  levantamento.numerosNoMapa = () => globo.chaveBase === 'mapa' || !!globo.camadaRealce?.show;
   levantamento.aoEdificacoes = (id, nome, ligado, aneis) => edificios.definirBairro(id, nome, ligado, aneis).then(() => lotes._desenharChips());
   // Os locais de votação só aparecem com o projeto Zonas Eleitorais ligado.
   levantamento.opcoes.eleicao = '';
@@ -241,6 +244,14 @@ async function iniciar() {
   app.quadras = quadras;
   const novasQuadras = () => quadras.atualizar();
   novasQuadras();
+  // Relevo ligado/desligado ou exagero mudado: marcadores de tela voltam a ficar em cima do chão desenhado.
+  globo.aoMudarRelevo(() => {
+    novasQuadras();
+    for (let i = 0; i < globo.viewer.dataSources.length; i++) {
+      for (const ent of globo.viewer.dataSources.get(i).entities.values) if (ent.ll) ent.position = noChao(ent.ll[0], ent.ll[1]);
+    }
+    globo.redesenhar();
+  });
   // Refaz os mapas desenhados (fundo Mapa, Ruas e quadras, números das quadras e lotes por bairro).
   const refazerVetoriais = app.refazerMapas = () => {
     novasQuadras();
@@ -249,6 +260,7 @@ async function iniciar() {
     lotes._atualizarCamada?.();
   };
   levantamento.aoMudarFiltroMapa = refazerVetoriais;
+  levantamento.aoMudarNumeros = refazerVetoriais; // número do lote sai do levantamento dentro dos bairros da Associação
   globo.cena.postRender.addEventListener(() => {
     ALTURA.camera = globo.camera.positionCartographic.height;
     const f = faixaAltura(ALTURA.camera);
@@ -301,8 +313,8 @@ async function iniciar() {
   $('#nav-inclina-mais').addEventListener('click', () => globo.orbitar({ dInclinacao: rad(12) }));
   $('#nav-inclina-menos').addEventListener('click', () => globo.orbitar({ dInclinacao: rad(-12) }));
   $('#nav-inicio').addEventListener('click', () => globo.irParaInicio(1.6));
-  // O pássaro da busca centraliza o mapa em Goiânia e bate a asa.
-  // Logomarca viva (Pássaro Guia): ao clicar, o pássaro salta e bate as asas e o mapa volta a Goiânia; parado,
+  // Logomarca viva (Pássaro Guia), dentro da caixa da busca: ao clicar, o pássaro salta e bate as asas e o mapa
+  // centraliza o Jardim América inteiro, de cima e com o norte para cima; parado,
   // de tempos em tempos ele ajeita as penas ou pia.
   const passaro = $('#marca-passaro .amc-bird');
   const animar = (cls, ms) => { if (!passaro) return; passaro.classList.remove(cls); void passaro.getBoundingClientRect(); passaro.classList.add(cls); setTimeout(() => passaro.classList.remove(cls), ms); };
@@ -311,7 +323,9 @@ async function iniciar() {
     b.classList.remove('voa'); void b.offsetWidth; b.classList.add('voa');
     setTimeout(() => b.classList.remove('voa'), 2200);
     animar('flap', 2080); animar('chirp', 600); // 4 batidas de asa (8 × 0,26 s)
-    globo.irParaInicio(1.6);
+    const ja = bairros.bairros.find((x) => x.id === '000400000015');
+    if (ja?.e) globo.voarPara({ extensao: ja.e, inclinacao: -90, rumo: 0, distancia: 3800, duracao: 1.6 });
+    else globo.irParaInicio(1.6);
   });
   setInterval(() => { if (document.visibilityState === 'visible') animar(Math.random() < 0.5 ? 'ruffle' : 'chirp', 1000); }, 9000);
   $('#nav-foto').addEventListener('click', async () => {

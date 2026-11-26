@@ -18,7 +18,7 @@ export const ORGANIZACAO = [
   { chave: 'conselho', titulo: 'Conselho Tutelar', especial: 'conselho', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
   { chave: 'energia', titulo: 'Energia', fontes: [{ tema: 'Mapa_Energia' }] },
   { chave: 'saneamento', titulo: 'Saneamento', fontes: [{ tema: 'Mapa_Sanemanento' }] },
-  { chave: 'viario', titulo: 'Sistema Viário', fontes: [{ tema: 'Mapa_RedeViaria' }] },
+  { chave: 'viario', titulo: 'Sistema Viário', especial: 'viario', fontes: [{ tema: 'Mapa_RedeViaria' }] },
   { chave: 'edificacoes', titulo: 'Edificações', especial: 'edificacoes', fontes: [
     { tema: 'Mapa_Edificios' },
     { tema: 'Mapa_PontosNotaveis', ids: [0, 1, 2, 3], sub: 'Equipamentos públicos e patrimônio' },

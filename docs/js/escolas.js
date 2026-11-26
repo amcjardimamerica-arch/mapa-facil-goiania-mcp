@@ -6,7 +6,6 @@
 // ligadas ao lote. As empresas do mesmo lote e da mesma categoria formam um marcador.
 import { noChao } from './globo.js';
 import { el, fmtNum, semAcento } from './util.js';
-import { iconeServico } from './servicos.js';
 
 const Cesium = window.Cesium;
 
@@ -21,7 +20,6 @@ export const NIVEIS = [
 export const AULAS = { id: 'aulas', nome: 'Aulas diversas', cor: '#e3fce8' };
 /** Cor do marcador: verde claro nas particulares e aulas; verde escuro nas públicas; um tom por nível. */
 export const corEscola = (tipo, nivel) => (tipo === 'aulas' ? AULAS.cor : tipo === 'publica' ? nivel.corPublica : nivel.cor);
-const SIMBOLO_ESCURO = '#1b3d22';
 const BORDA = { publica: '#ffffff', particular: '#1f2226' };
 
 /** Nível (ou "aulas") pelo CNAE da empresa. */
@@ -94,27 +92,50 @@ export class Escolas {
     return c;
   }
 
-  /** Desenha os marcadores conforme os filtros. */
-  mostrar(ligado, filtros, bairroVisivel = () => true) {
-    this.fonte.entities.removeAll();
-    if (!ligado || !this.itens) { this.globo.redesenhar(); return; }
-    for (const i of this.itens) {
+  /** Itens visíveis com os filtros (bairros marcados, pública/particular, níveis e cursos), com a cor de cada um. */
+  visiveis(filtros, bairroVisivel = () => true) {
+    const out = [];
+    for (const i of this.itens || []) {
       if (!bairroVisivel(i.bairro)) continue;
       if (i.tipo === 'aulas' ? !filtros.aulas : !filtros[i.tipo]) continue;
       const nivel = i.tipo === 'aulas' ? AULAS : NIVEIS.find((n) => i.niveis.includes(n.id) && filtros[n.id] !== false);
       if (!nivel) continue;
-      const borda = i.tipo === 'publica' ? BORDA.publica : BORDA.particular;
+      out.push({ i, cor: corEscola(i.tipo, nivel) });
+    }
+    return out;
+  }
+
+  /** "Infantil - Público - Nome", "Fundamental/Médio - Público - Nome", "Curso - Privado - Nome". */
+  static rotulo(i) {
+    const CURTO = { infantil: 'Infantil', fundamental: 'Fundamental', medio: 'Médio', superior: 'Superior' };
+    const nivel = i.tipo === 'aulas' ? 'Curso' : i.niveis.map((n) => CURTO[n] || n).join('/');
+    const tipo = i.tipo === 'publica' ? 'Público' : 'Privado';
+    return `${nivel} - ${tipo} - ${i.nome}`;
+  }
+
+  /**
+   * Marcadores pequenos: um ponto na cor do nível (borda branca nas públicas, escura nas particulares e cursos) e o
+   * nome em cima — "Nível - Público/Privado - Nome". O lote (ou a área pública) da escola é pintado na camada dos
+   * lotes, como as demais finalidades (levantamento.js).
+   */
+  mostrar(ligado, filtros, bairroVisivel = () => true) {
+    this.fonte.entities.removeAll();
+    if (!ligado || !this.itens) { this.globo.redesenhar(); return; }
+    this.fonte.entities.suspendEvents();
+    for (const { i, cor } of this.visiveis(filtros, bairroVisivel)) {
       const ent = this.fonte.entities.add({ position: noChao(i.lon, i.lat),
-        billboard: { image: iconeServico('escola', corEscola(i.tipo, nivel), borda, i.tipo === 'publica' ? '#ffffff' : SIMBOLO_ESCURO), width: 30, height: 39, verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
-          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 9000) },
-        label: { text: i.nome, font: '600 12px system-ui, "Segoe UI", Roboto, sans-serif', fillColor: Cesium.Color.WHITE,
+        point: { pixelSize: 8, color: Cesium.Color.fromCssColorString(cor), outlineColor: Cesium.Color.fromCssColorString(i.tipo === 'publica' ? BORDA.publica : BORDA.particular),
+          outlineWidth: 2, disableDepthTestDistance: Number.POSITIVE_INFINITY, distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 6000),
+          scaleByDistance: new Cesium.NearFarScalar(300, 1.3, 4000, 0.8) },
+        label: { text: Escolas.rotulo(i), font: '600 11.5px system-ui, "Segoe UI", Roboto, sans-serif', fillColor: Cesium.Color.WHITE,
           outlineColor: Cesium.Color.fromCssColorString('#111418'), outlineWidth: 3, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-          horizontalOrigin: Cesium.HorizontalOrigin.LEFT, pixelOffset: new Cesium.Cartesian2(16, -22),
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM, pixelOffset: new Cesium.Cartesian2(0, -8),
           disableDepthTestDistance: Number.POSITIVE_INFINITY,
-          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 1500) } });
+          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 900) } });
+      ent.ll = [i.lon, i.lat];
       ent.escola = i;
     }
+    this.fonte.entities.resumeEvents();
     this.globo.redesenhar();
   }
 
@@ -134,8 +155,8 @@ export class Escolas {
       }
       id.corpo.append(el('button', { class: 'botao', onclick: () => abrirLote(i.lote) }, `Ver o lote (Quadra ${i.lote.q} · Lote ${i.lote.l})`));
     }
-    ent.billboard.scale = 1.45;
-    id.selecionar(() => { ent.billboard.scale = 1; this.globo.redesenhar(); });
+    ent.point.pixelSize = 13;
+    id.selecionar(() => { ent.point.pixelSize = 8; this.globo.redesenhar(); });
     this.globo.redesenhar();
     return true;
   }

@@ -50,11 +50,12 @@ export class Levantamento {
     this.camadaLotes = null;
     this.fonte = new Cesium.CustomDataSource('levantamento');
     this.ruas = new Ruas({ globo, identificar });
+    this.ruas.loteMaisProximo = (lon, lat) => this._loteMaisProximo(lon, lat);
     this.postes = new Postes({ globo, identificar });
     this.escolas = new Escolas({ globo, identificar });
     globo.viewer.dataSources.add(this.fonte);
     const salvo = memoria.ler('bussola:levantamento', {});
-    this.opcoes = { limites: true, oficiais: false, lotes: true, imoveis: false, verdes: false, escolas: false, edificacoes: false, eleicao: '', grupos: {}, bocas: false, postes: false, bairros: [true, true], ...salvo.opcoes };
+    this.opcoes = { limites: true, oficiais: false, lotes: true, imoveis: false, verdes: false, escolas: false, ruas: false, edificacoes: false, eleicao: '', grupos: {}, bocas: false, postes: false, bairros: [true, true], ...salvo.opcoes };
     this.ocultas = new Set(salvo.ocultas || []);
     this.aoMudar = () => {};
     this._montar();
@@ -239,10 +240,9 @@ export class Levantamento {
       this.caixaBairros,
       chave('lotes', 'Lotes por finalidade'),
       this.legenda,
+      chave('ruas', 'Ruas e avenidas', 'cinza, cada rua com extensão, início e fim'),
       chave('imoveis', 'Imóveis públicos'),
       chave('verdes', 'Praças e áreas verdes'),
-      chave('escolas', 'Escolas e cursos'),
-      this.caixaEscolas = el('div', { class: 'lv-escolas' }),
       chave('bocas', 'Bocas de lobo'),
       chave('postes', 'Postes'),
       this._chaveEdificacoes = chave('edificacoes', 'Edificações em 3D nestes bairros'),
@@ -273,7 +273,6 @@ export class Levantamento {
     this._contarPedidos();
     if (this.caixaEleitoral) this._montarEleitoral();
     if (this.opcoes.edificacoes) this._edificacoes();
-    this._montarEscolas();
   }
 
   /**
@@ -308,24 +307,33 @@ export class Levantamento {
       }
       this.legenda.append(li);
     }
+    this._legendaEscolas(alternar);
   }
 
-  /** Filtros das escolas: públicas e particulares, níveis de ensino e aulas diversas. */
-  _montarEscolas() {
+  /**
+   * Escolas e cursos dentro de "Lotes por finalidade": o lote (ou a área pública) da escola é pintado como as demais
+   * finalidades, com um marcador pequeno e o nome em cima ("Infantil - Público - Nome"). Subitens: públicas,
+   * particulares, cada nível de ensino e os cursos.
+   */
+  _legendaEscolas() {
     this.escolas.preparar(this);
     const f = (this.opcoes.escolasFiltro ||= { publica: true, particular: true, infantil: true, fundamental: true, medio: true, superior: true, aulas: true });
     const conta = this.escolas.contagem();
     const porNivel = (id) => this.escolas.itens.filter((i) => i.tipo !== 'aulas' && i.niveis.includes(id)).length;
-    const item = (id, nome, cor, n, borda, cor2) => el('li', {}, el('label', {},
-      el('input', { type: 'checkbox', checked: f[id] !== false, onchange: (e) => { f[id] = e.target.checked; this._gravar(); this.redesenhar(); } }),
-      el('span', { class: 'lv-cores' }, el('span', { class: 'lv-cor', style: `background:${cor}${borda ? `;border:2px solid ${borda}` : ''}` }),
-        cor2 ? el('span', { class: 'lv-cor', style: `background:${cor2}` }) : null), el('span', {}, nome), el('small', {}, fmtNum(n))));
-    this.caixaEscolas.textContent = '';
-    this.caixaEscolas.append(el('ul', { class: 'lv-legenda' },
-      item('publica', 'Escolas públicas (verde escuro)', '#2e7d32', conta.publica, '#ffffff'),
-      item('particular', 'Escolas particulares (verde claro)', '#8de0a0', conta.particular, '#1f2226'),
-      ...NIVEIS.map((n) => item(n.id, n.nome, n.cor, porNivel(n.id), null, n.corPublica)),
-      item('aulas', `${AULAS.nome} (idiomas, lutas, dança, música, cursos)`, AULAS.cor, conta.aulas)));
+    const mudar = () => { this._gravar(); this.redesenhar(); };
+    const sub = (id, nome, cor, n, cor2) => el('li', {}, el('label', {},
+      el('input', { type: 'checkbox', checked: f[id] !== false, onchange: (e) => { f[id] = e.target.checked; mudar(); } }),
+      el('span', { class: 'lv-cores' }, el('span', { class: 'lv-cor', style: `background:${cor}` }), cor2 ? el('span', { class: 'lv-cor', style: `background:${cor2}` }) : null),
+      el('span', {}, nome), el('small', {}, fmtNum(n))));
+    const caixa = el('input', { type: 'checkbox', id: 'lv-escolas', checked: !!this.opcoes.escolas, onchange: (e) => { this.opcoes.escolas = e.target.checked; mudar(); } });
+    this.legenda.append(el('li', { class: 'lv-grupo-fin' }, el('label', {}, caixa,
+      el('span', { class: 'lv-cor', style: 'background:#2e7d32' }), el('span', {}, el('strong', {}, 'Escolas e cursos')),
+      el('small', {}, fmtNum(this.escolas.itens.length))),
+    el('ul', { class: 'lv-sub' },
+      sub('publica', 'Públicas (verde escuro)', '#2e7d32', conta.publica),
+      sub('particular', 'Particulares (verde claro)', '#8de0a0', conta.particular),
+      ...NIVEIS.map((n) => sub(n.id, n.nome, n.cor, porNivel(n.id), n.corPublica)),
+      sub('aulas', `Cursos (idiomas, lutas, dança, música e outros)`, AULAS.cor, conta.aulas))));
   }
 
   /** Liga/desliga as edificações em 3D só nos dois bairros (mesmo motor das Edificações da cidade). */
@@ -398,6 +406,19 @@ export class Levantamento {
     this.globo.voarPara({ extensao: [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)], inclinacao: -60 });
   }
 
+  /** Lote do levantamento mais próximo de um ponto (referência de início e fim das ruas). */
+  _loteMaisProximo(lon, lat) {
+    if (!this.dados) return null;
+    const x = mx(lon), y = my(lat);
+    let melhor = null, dm = Infinity;
+    for (const l of this.dados.lotes) {
+      if (x < l.ext[0] - 80 || x > l.ext[2] + 80 || y < l.ext[1] - 80 || y > l.ext[3] + 80) continue;
+      const d = Math.hypot(l.centro[0] - x, l.centro[1] - y);
+      if (d < dm) { dm = d; melhor = l; }
+    }
+    return melhor;
+  }
+
   _lotesVisiveis() {
     return this.dados.lotes.filter((l) => this.opcoes.bairros[l.b] !== false && !this.ocultas.has(l.f));
   }
@@ -409,28 +430,50 @@ export class Levantamento {
     // Alternância rápida: divisas, bocas de lobo e áreas são criadas uma vez (this.fixos) e só mudam de
     // visibilidade; a camada dos lotes só é refeita quando bairros, finalidades ou o fundo mudam.
     this.fonte.entities.removeAll();                         // só os nomes dos locais de votação, refeitos abaixo
+    const nomeBairro = (b) => d.bairros.indexOf(b);
+    const bairroVisivel = (b) => { const i = nomeBairro(b); return i < 0 || this.opcoes.bairros[i] !== false; };
+    // Escolas e cursos (em "Lotes por finalidade"): o lote da escola particular ou do curso e a área pública da
+    // escola pública são pintados na camada dos lotes, na cor do nível.
+    const escolas = this.mostrar && this.opcoes.escolas && this.escolas.itens ? this.escolas.visiveis(this.opcoes.escolasFiltro || {}, bairroVisivel) : [];
     const sinal = this.opcoes.bairros.map((b) => (b === false ? 0 : 1)).join('');
-    const assinaturaLotes = this.mostrar && this.opcoes.lotes ? `${sinal}|${[...this.ocultas].sort().join(',')}|${this.numerosNoMapa?.() ? 1 : 0}` : '';
+    const assinaturaLotes = this.mostrar && (this.opcoes.lotes || escolas.length)
+      ? `${sinal}|${this.globo.chaveBase === 'mapa' ? 'm' : 's'}|${this.opcoes.lotes ? [...this.ocultas].sort().join(',') : '-'}|${escolas.map((e) => `${e.i.lote?.i ?? e.i.nome}:${e.cor}`).join(',')}` : '';
     if (assinaturaLotes !== this._assinaturaLotes) {
       this._assinaturaLotes = assinaturaLotes;
       if (this.camadaLotes) { camadas.remove(this.camadaLotes, true); this.camadaLotes = null; }
-      const lotes = assinaturaLotes ? this._lotesVisiveis().map((l) => ({ aneis: l.m, ext: l.ext, centro: l.centro, nm: l.l, cor: comAlfa(this.cor[l.f] || '#9aa3ad', 0.5) })) : [];
+      const corEscola = new Map(escolas.filter((e) => e.i.lote).map((e) => [e.i.lote.i, e.cor]));
+      const base = assinaturaLotes && this.opcoes.lotes ? this._lotesVisiveis() : [];
+      const lotes = base.map((l) => ({ aneis: l.m, ext: l.ext, centro: l.centro, nm: l.l, q: l.q, cor: comAlfa(corEscola.get(l.i) || this.cor[l.f] || '#9aa3ad', corEscola.has(l.i) ? 0.75 : 0.5) }));
+      const vistos = new Set(base.map((l) => l.i));
+      for (const e of escolas) {
+        if (e.i.lote && !vistos.has(e.i.lote.i)) {          // lote da escola com "Lotes por finalidade" desligado
+          const l = e.i.lote; vistos.add(l.i);
+          lotes.push({ aneis: l.m, ext: l.ext, centro: l.centro, nm: l.l, q: l.q, cor: comAlfa(e.cor, 0.75) });
+        } else if (e.i.area) {                                // escola pública: a área pública inteira
+          const m = e.i.area.aneis.map((a) => a.map(([lo, la]) => [mx(lo), my(la)]));
+          let o = Infinity, s0 = Infinity, ee = -Infinity, n = -Infinity;
+          for (const [x, y] of m[0]) { o = Math.min(o, x); ee = Math.max(ee, x); s0 = Math.min(s0, y); n = Math.max(n, y); }
+          lotes.push({ aneis: m, ext: [o, s0, ee, n], centro: [(o + ee) / 2, (s0 + n) / 2], nm: '', cor: comAlfa(e.cor, 0.75) });
+        }
+      }
       if (lotes.length) {
         let o = Infinity, s = Infinity, e = -Infinity, n = -Infinity;
         for (const l of lotes) { o = Math.min(o, l.ext[0]); s = Math.min(s, l.ext[1]); e = Math.max(e, l.ext[2]); n = Math.max(n, l.ext[3]); }
         const g = (x, y) => [Cesium.Math.toDegrees(x / R), Cesium.Math.toDegrees(2 * Math.atan(Math.exp(y / R)) - Math.PI / 2)];
         const [ow, ss] = g(o, s), [le, nn] = g(e, n);
         const ret = Cesium.Rectangle.fromDegrees(ow, ss, le, nn);
+        // Número do lote: só este (o do levantamento); o desenho cadastral de baixo não escreve número dentro dos
+        // bairros da Associação, para não sair dois números (ou "2,3" ao lado de "2" e "3") no mesmo lote.
         this.camadaLotes = new Cesium.ImageryLayer(new ProvedorLotes({ lotes, retangulo: ret, borda: 'rgba(255,255,255,.55)',
-          rotulos: () => !this.numerosNoMapa?.(),
+          rotulos: () => true, estiloRotulo: () => (this.globo.chaveBase === 'mapa' ? 'mapa' : 'sobre'),
           credito: 'Levantamento da Associação', nivelMinimo: 11 }), { rectangle: ret });
         camadas.add(this.camadaLotes);
         this.globo.organizarPilha();
       }
+      const sem = !!(this.mostrar && this.opcoes.lotes);
+      if (sem !== !!FILTRO_BAIRROS.semNumeroDeLote) { FILTRO_BAIRROS.semNumeroDeLote = sem; this.aoMudarNumeros?.(); }
     }
 
-    const nomeBairro = (b) => d.bairros.indexOf(b);
-    const bairroVisivel = (b) => { const i = nomeBairro(b); return i < 0 || this.opcoes.bairros[i] !== false; };
     this._montarFixos();
     for (const ent of this.fixos.entities.values) {
       const f = ent.lvFixo;
@@ -445,10 +488,10 @@ export class Levantamento {
     this._filtroDoMapa();
     this._desenharEleitoral();
     // Ruas do bairro: cada uma é um marcador próprio, em toda a extensão dentro do bairro (ruas.js).
-    const bairrosRuas = this.mostrar ? d.limites.map((lim, i) => (this.opcoes.bairros[i] === false ? null
+    const bairrosRuas = this.mostrar && this.opcoes.ruas ? d.limites.map((lim, i) => (this.opcoes.bairros[i] === false ? null
       : { nome: d.bairros[i] || lim.nome || `Bairro ${i + 1}`, aneis: d.limites_oficiais?.[i]?.aneis.map(decodificarAnel) || lim.aneisLL })).filter(Boolean) : [];
     const chaveRuas = bairrosRuas.map((b) => b.nome).join('|');
-    if (chaveRuas !== this._chaveRuas) { this._chaveRuas = chaveRuas; this.ruas.mostrar(this.mostrar, bairrosRuas).catch(() => {}); }
+    if (chaveRuas !== this._chaveRuas) { this._chaveRuas = chaveRuas; this.ruas.mostrar(bairrosRuas.length > 0, bairrosRuas).catch(() => {}); }
     this.globo.organizarPilha();
     this.globo.redesenhar();
     this.aoMudar();
@@ -459,7 +502,10 @@ export class Levantamento {
     if (this._fixosProntos) return;
     const d = this.dados;
     if (!this.fixos) { this.fixos = new Cesium.CustomDataSource('levantamento-fixos'); this.globo.viewer.dataSources.add(this.fixos); }
-    const add = (lvFixo, def, levantamento) => { const ent = this.fixos.entities.add({ show: false, ...def }); ent.lvFixo = lvFixo; if (levantamento) ent.levantamento = levantamento; };
+    const add = (lvFixo, def, levantamento) => {
+      const ent = this.fixos.entities.add({ show: false, ...def }); ent.lvFixo = lvFixo; if (lvFixo.ll) ent.ll = lvFixo.ll;
+      if (levantamento) ent.levantamento = levantamento;
+    };
     this.fixos.entities.suspendEvents();
     d.limites.forEach((lim, i) => {
       const cor = Cesium.Color.fromCssColorString(CORES_LIMITE[i % 2]);
@@ -474,17 +520,24 @@ export class Levantamento {
       }
       const pts = lim.aneisLL[0];
       const c = pts.reduce((a, p) => [a[0] + p[0] / pts.length, a[1] + p[1] / pts.length], [0, 0]);
-      add({ grupo: 'limite', i }, { position: noChao(c[0], c[1]), label: {
+      add({ grupo: 'limite', i, ll: [c[0], c[1]] }, { position: noChao(c[0], c[1]), label: {
         text: d.bairros[i] || lim.nome, font: '700 17px system-ui, "Segoe UI", Roboto, sans-serif',
         fillColor: cor, outlineColor: Cesium.Color.BLACK, outlineWidth: 4, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
         distanceDisplayCondition: new Cesium.DistanceDisplayCondition(2500, 60000) } });
     });
     const cb = d.bocas.colunas, kla = cb.indexOf('Latitude'), klo = cb.indexOf('Longitude'), kb = cb.indexOf('Bairro');
+    const kc = cb.indexOf('Código para manutenção'), kn = cb.indexOf('Unidades em sequência');
     for (const b of d.bocas.linhas) {
-      add({ grupo: 'boca', bairro: b.v[kb] }, { position: noChao(b.v[klo], b.v[kla]),
-        billboard: { image: `img/icones/${b.icone}`, width: 30, height: 30,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY, distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 6000) } }, { tipo: 'boca', dado: b });
+      const codigo = b.v[kc];
+      const ent = this.fixos.entities.add({ show: false, position: noChao(b.v[klo], b.v[kla]),
+        billboard: { image: this._iconeBoca(b.v[kn], manutencao.tem(codigo), /alerta/.test(b.icone || '')), width: 30, height: 30,
+          // Cresce ao aproximar e diminui ao afastar a câmera, como os demais marcadores do mapa.
+          scaleByDistance: new Cesium.NearFarScalar(120, 1.5, 2500, 0.3),
+          disableDepthTestDistance: Number.POSITIVE_INFINITY, distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 6000) } });
+      ent.lvFixo = { grupo: 'boca', bairro: b.v[kb], codigo, n: b.v[kn], alerta: /alerta/.test(b.icone || '') };
+      ent.levantamento = { tipo: 'boca', dado: b };
+      ent.ll = [b.v[klo], b.v[kla]];
     }
     for (const a of d.areas) {
       const verde = ehAreaVerde(a), i = a.bai ? d.bairros.indexOf(a.bai) : -1;
@@ -495,6 +548,48 @@ export class Levantamento {
     }
     this.fixos.entities.resumeEvents();
     this._fixosProntos = true;
+  }
+
+  /**
+   * Ícone da boca de lobo: grelha escura com contorno branco e o número de unidades num mostrador branco. Com pedido
+   * de manutenção, contorno e mostrador ficam vermelhos (laranja: observação do levantamento).
+   */
+  _iconeBoca(n, pedido, alerta) {
+    const chave = `${n}|${pedido ? 1 : 0}|${alerta ? 1 : 0}`;
+    this._icones ||= new Map();
+    if (this._icones.has(chave)) return this._icones.get(chave);
+    const T = 64, c = document.createElement('canvas'); c.width = c.height = T;
+    const g = c.getContext('2d');
+    const borda = pedido ? '#e53935' : alerta ? '#ff9800' : '#ffffff';
+    g.lineJoin = 'round';
+    // grelha
+    const x0 = 6, y0 = 16, w = 44, h = 38;
+    g.fillStyle = '#23272c'; g.strokeStyle = '#000000'; g.lineWidth = 7;
+    g.beginPath(); g.roundRect ? g.roundRect(x0, y0, w, h, 6) : g.rect(x0, y0, w, h); g.stroke();
+    g.strokeStyle = borda; g.lineWidth = 4; g.stroke(); g.fill();
+    g.fillStyle = '#c9cfd6';
+    for (let i = 0; i < 5; i++) g.fillRect(x0 + 6 + i * 7.6, y0 + 9, 3.6, h - 15);
+    g.fillRect(x0 + 4, y0 + 4, w - 8, 3);
+    // mostrador com o número de unidades
+    const r = 13, cx = T - r - 2, cy = r + 2;
+    g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2);
+    g.fillStyle = pedido ? '#e53935' : '#ffffff'; g.fill();
+    g.lineWidth = 2.5; g.strokeStyle = '#000000'; g.stroke();
+    g.fillStyle = pedido ? '#ffffff' : '#111418';
+    g.font = '800 17px system-ui, "Segoe UI", Roboto, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(String(n || 1), cx, cy + 1);
+    this._icones.set(chave, c);
+    return c;
+  }
+
+  /** Depois de pedir (ou retirar) manutenção: bocas de lobo com o pedido ficam vermelhas. */
+  _atualizarBocas() {
+    if (!this.fixos) return;
+    for (const ent of this.fixos.entities.values) {
+      const f = ent.lvFixo;
+      if (f?.grupo === 'boca') ent.billboard.image = this._iconeBoca(f.n, manutencao.tem(f.codigo), f.alerta);
+    }
+    this.globo.redesenhar();
   }
 
   // --------------------------------------------------------------- eleitoral
@@ -688,6 +783,8 @@ export class Levantamento {
     const local = this.opcoes.eleicao ? this._localNoPonto(x, y) : null;
     if (local) { this.abrirPonto(local); return true; }
     if (!this.mostrar || !this.opcoes.lotes) return false;
+    // Lote só com a câmera a 2,5 km ou menos; acima disso o clique seleciona a quadra (até 5 km) ou o bairro.
+    if (this.globo.camera.positionCartographic.height > 2500) return false;
     const l = this._lotesVisiveis().find((t) => x >= t.ext[0] && x <= t.ext[2] && y >= t.ext[1] && y <= t.ext[3] && dentro(t.m, x, y));
     if (!l) return false;
     this.abrirLote(l);
@@ -814,7 +911,7 @@ export class Levantamento {
     const sigla = String(codigo).split('-')[0];
     const bairro = { JA: 'Jardim América', NS: 'Nova Suíça' }[String(codigo).split('-')[1]] || '';
     return botaoManutencao({ codigo, tipo: TIPOS[sigla] || 'Outro', titulo: extra.titulo || codigo, bairro: extra.bairro || bairro,
-      local: extra.local || '', lon: extra.lon ?? '', lat: extra.lat ?? '' }, { aoMudar: () => this._contarPedidos() });
+      local: extra.local || '', lon: extra.lon ?? '', lat: extra.lat ?? '' }, { aoMudar: () => { this._contarPedidos(); if (sigla === 'BL') this._atualizarBocas(); } });
   }
 
   _contarPedidos() {

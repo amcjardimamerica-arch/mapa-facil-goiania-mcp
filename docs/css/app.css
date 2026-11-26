@@ -465,3 +465,11 @@ body:has(#ficha:not([hidden])) #gps-cartao { right: 432px; }
 @keyframes amc-flap{0%{transform:rotate(-16deg) scale(1,.92)}100%{transform:rotate(7deg) scale(1,1.01)}}
 @keyframes amc-ruffle{0%,100%{transform:none}30%{transform:rotate(-9deg)}55%{transform:rotate(4deg)}75%{transform:rotate(-3deg)}}
 @keyframes amc-chirp{0%,100%{transform:none}25%,60%{transform:rotate(16deg)}42%{transform:rotate(4deg)}}
+
+/* 1.26.0: logomarca dentro da caixa da busca (à esquerda do campo), sem caixa própria. */
+#caixa-busca .marca-amc { height: 38px; padding: 2px 10px 2px 4px; border: 0; border-radius: 19px; box-shadow: none; gap: 2px; }
+#caixa-busca .marca-amc .amc-bird { width: 36px; }
+#caixa-busca .marca-amc .amc-nome { height: 28px; }
+#topo #caixa-busca { width: min(560px, calc(100vw - 2 * 230px - 80px)); }
+body:has(#ficha:not([hidden])) #topo #caixa-busca { width: min(560px, calc(100vw - 220px - 432px - 24px - 80px)); }
+@media (max-width: 760px) { #caixa-busca .marca-amc { padding: 2px 4px; } }

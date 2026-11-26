@@ -3,7 +3,7 @@
 // Cada mapa tem a sua finalidade: as zonas são do TSE; os 6 Conselhos Tutelares juntam, cada um, duas das 12 Regiões
 // da SEPLAM (Resolução CMDCA 85/2023; data/conselho_regioes.geojson, gerado por scripts/regioes_conselho.py e levado
 // até o limite do município por scripts/conselho_ate_limite.py). Dentro de cada Conselho não há divisa desenhada.
-// As divisas são duas linhas pretas com uma vermelha (#FF0000) no meio — diferentes das divisas de
+// As divisas são duas linhas pretas com uma vermelha (#FF0000) no meio, as três da mesma largura (1.26.0) — diferentes das divisas de
 // bairro (preta, amarela, preta) — e cada área tem uma cor clara própria. Com um desses mapas ligado, o clique
 // seleciona a zona/região inteira (ou o colégio de votação), nunca quadra ou lote.
 import { CFG } from './config.js';
@@ -63,23 +63,24 @@ export class Eleicoes {
   async definir(modo) {
     this.modo = modo;
     this.fonte.entities.removeAll();
-    if (this.camada) { this.globo.viewer.imageryLayers.remove(this.camada, true); this.camada = null; }
+    if (this.camada) { this.globo.viewer.imageryLayers.remove(this.camada, true); this.camada = null; this.globo.camadaEleicao = null; }
     this.areas = modo === 'zonas' ? await this._zonas() : modo === 'conselho' ? await this._regioes() : [];
     if (this.modo !== modo) return;
     // Cor de cada área e divisa preta-vermelha-preta desenhadas numa camada de imagem, como a divisa dos bairros no
     // mapa: não somem com a distância nem com o relevo (linhas grudadas no chão sumiam em parte das vistas).
     const R = 6378137, mx = (lon) => (lon * Math.PI / 180) * R, my = (lat) => Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) * R;
-    const poligonos = [], linhas = [];
+    const poligonos = [], divisas = [];
     for (const a of this.areas) {
       const aneis = a.aneis.map((r) => r.map(([lo, la]) => [mx(lo), my(la)]));
       let o = Infinity, s = Infinity, l = -Infinity, n = -Infinity;
       for (const r of aneis) for (const [x, y] of r) { o = Math.min(o, x); l = Math.max(l, x); s = Math.min(s, y); n = Math.max(n, y); }
       const cor = Cesium.Color.fromCssColorString(a.cor).withAlpha(0.24).toCssColorString();
       poligonos.push({ aneis, ext: [o, s, l, n], centro: [(o + l) / 2, (s + n) / 2], cor, borda: 'rgba(0,0,0,0)', largura: 0.01 });
-      for (const r of aneis) for (let i = 1; i < r.length; i++) linhas.push({ de: r[i - 1], para: r[i], cor: '#FF0000', contorno: '#000000', largura: 2.6 });
+      for (const r of aneis) divisas.push({ pontos: r });
     }
-    this.camada = this.globo.viewer.imageryLayers.addImageryProvider(new ProvedorDesenho({ poligonos, linhas, retangulo: this.globo.ret, nivelMinimo: 8,
+    this.camada = this.globo.viewer.imageryLayers.addImageryProvider(new ProvedorDesenho({ poligonos, divisas, retangulo: this.globo.ret, nivelMinimo: 8,
       credito: modo === 'zonas' ? 'Zonas eleitorais: TSE' : 'Conselho Tutelar: Resolução CMDCA 85/2023' }));
+    this.globo.camadaEleicao = this.camada;
     this.globo.organizarPilha();
     for (const a of this.areas) {
       const maior = a.aneis.reduce((m, r) => (r.length > m.length ? r : m), a.aneis[0]);
@@ -110,6 +111,18 @@ export class Eleicoes {
         ? el('details', { class: 'lv-lista' }, el('summary', {}, `${titulo} (${fmtNum(itens.length)})`), el('p', {}, itens.join('; '))) : null);
       for (const bloco of [lista('Locais de votação de 2023', a.props.locais_votacao), lista('Bairros', a.props.bairros),
         lista('Bairros divididos com outro Conselho', a.props.bairros_divididos), lista('Ajustes ao desenho da SEPLAM', a.props.ajustes)]) if (bloco) id.corpo.append(bloco);
+      // Divisas com cada Conselho vizinho e as ruas, avenidas, rodovias e rios que elas seguem (scripts/conselho_divisas.py).
+      pedirJSON(`${CFG.dados}conselho_divisas.json`).then((dv) => {
+        const meus = (dv.divisas || []).filter((x) => x.conselhos.includes(a.props.regiao));
+        if (!meus.length) return;
+        const caixa = el('details', { class: 'lv-lista', open: true }, el('summary', {}, `Divisas com os Conselhos vizinhos (${meus.length})`));
+        for (const x of meus) {
+          const outro = x.conselhos.find((c) => c !== a.props.regiao);
+          caixa.append(el('p', {}, el('strong', {}, `${outro} — ${fmtNum(Math.round(x.extensao_m / 100) / 10, 1)} km: `),
+            x.referencias.slice(0, 12).map((r) => r.nome).join('; ') || 'divisas de bairro'));
+        }
+        id.corpo.append(caixa);
+      }).catch(() => {});
       id.corpo.append(el('p', { class: 'nota' }, 'Delimitação oficial: Resolução CMDCA n.º 85/2023 — cada Conselho atende duas Regiões da SEPLAM. As áreas do município sem bairro vão até o limite de Goiânia, com divisas por rodovias, avenidas, estradas e cursos d\'água.'));
     }
     return true;

@@ -74,21 +74,22 @@ function provedorRelevoLocal(grade) {
 }
 
 // --------------------------------------------------------------------- altura do chão
-// Marcadores "grudados no chão" (CLAMP_TO_GROUND) fazem o Cesium recalcular a altura de cada um a cada bloco de
-// relevo que chega (raio contra os triângulos do terreno): com centenas de marcadores isso travava a tela.
-// Agora a altura é lida uma vez, na criação, e o marcador fica sempre visível (sem teste de profundidade).
-let cenaAtual = null;
-const ALTURA_GOIANIA = 760;
-const alturas = new Map(); // altura por quadradinho de ~550 m: uma leitura do terreno serve a todos os marcadores dele
+// Marcadores de tela (números das quadras, bocas de lobo, escolas…) não usam CLAMP_TO_GROUND (recalcular a altura de
+// centenas deles a cada bloco de relevo travava a tela). A altura vem direto da grade do relevo do site — a mesma de
+// onde o terreno é desenhado —, com o exagero vertical aplicado; com o relevo desligado, o chão é o elipsoide (0 m).
+// Antes ela vinha de globe.getHeight(): lida antes de o relevo chegar, ficava 0 m (ou 760 m) guardada para sempre e
+// os marcadores saíam deslocados das quadras ao inclinar ou aproximar a câmera (1.26.0).
+const CHAO = { grade: null, ativo: false, exagero: 1 };
+function amostraGrade(lon, lat) {
+  const { largura: L, altura: A, oeste, norte, passo, alt } = CHAO.grade;
+  const cx = Math.min(L - 1.001, Math.max(0, (lon - oeste) / passo - 0.5));
+  const cy = Math.min(A - 1.001, Math.max(0, (norte - lat) / passo - 0.5));
+  const x0 = Math.floor(cx), y0 = Math.floor(cy), fx = cx - x0, fy = cy - y0, i = y0 * L + x0;
+  return (alt[i] * (1 - fx) + alt[i + 1] * fx) * (1 - fy) + (alt[i + L] * (1 - fx) + alt[i + L + 1] * fx) * fy;
+}
 export function alturaChao(lon, lat) {
-  const k = `${Math.round(lon * 200)}:${Math.round(lat * 200)}`;
-  if (alturas.has(k)) return alturas.get(k);
-  let h = null;
-  try { h = cenaAtual?.globe.getHeight(Cesium.Cartographic.fromDegrees(lon, lat)); } catch { /* sem relevo carregado */ }
-  if (!Number.isFinite(h)) return ALTURA_GOIANIA; // não guarda: tenta de novo quando o relevo chegar
-  alturas.set(k, h + 1.5);
-  if (alturas.size > 20000) alturas.clear();
-  return h + 1.5;
+  if (!CHAO.ativo || !CHAO.grade) return 1.5;
+  return amostraGrade(lon, lat) * CHAO.exagero + 1.5;
 }
 export const noChao = (lon, lat) => Cesium.Cartesian3.fromDegrees(lon, lat, alturaChao(lon, lat));
 
@@ -111,7 +112,6 @@ export class Globo {
       contextOptions: { webgl: { preserveDrawingBuffer: true } }, // permite "Salvar imagem"
     });
     this.viewer = viewer;
-    cenaAtual = viewer.scene;
     const cena = viewer.scene;
     cena.globe.baseColor = Cesium.Color.fromCssColorString(CFG.cores.fora);
     cena.globe.depthTestAgainstTerrain = true;
@@ -262,6 +262,8 @@ export class Globo {
   organizarPilha() {
     const camadas = this.viewer.imageryLayers;
     if (this.camadaRealce) camadas.raiseToTop(this.camadaRealce);
+    // Divisas dos Conselhos Tutelares e das zonas eleitorais por cima das divisas de bairro e dos nomes (1.26.0).
+    if (this.camadaEleicao && camadas.contains(this.camadaEleicao)) camadas.raiseToTop(this.camadaEleicao);
     if (this.camadaQuadras) camadas.raiseToTop(this.camadaQuadras); // número das quadras por cima de lotes e temas
     camadas.raiseToTop(this.camadaMascara);
   }
@@ -300,10 +302,12 @@ export class Globo {
       }
       this.viewer.terrainProvider = ligado ? this.provedorRelevo : new Cesium.EllipsoidTerrainProvider();
       this.relevoAtivo = !!ligado;
+      Object.assign(CHAO, { grade: this._grade || null, ativo: !!ligado, exagero: this.cena.verticalExaggeration || 1 });
     } catch (e) {
       console.warn('Relevo indisponível:', e);
       this.viewer.terrainProvider = new Cesium.EllipsoidTerrainProvider();
       this.relevoAtivo = false;
+      CHAO.ativo = false;
       throw e;
     } finally {
       this._aoMudarRelevo.forEach((fn) => fn(this.relevoAtivo));
@@ -313,6 +317,7 @@ export class Globo {
 
   definirExagero(fator) {
     this.cena.verticalExaggeration = fator;
+    CHAO.exagero = fator || 1;
     this._aoMudarRelevo.forEach((fn) => fn(this.relevoAtivo));
     this.redesenhar();
   }
@@ -402,7 +407,7 @@ export class Globo {
   }
 
   /** Voa até um ponto ou extensão, mantendo o rumo atual. */
-  voarPara({ lon, lat, extensao, distancia, inclinacao = -50, duracao = 1.8 }) {
+  voarPara({ lon, lat, extensao, distancia, inclinacao = -50, duracao = 1.8, rumo }) {
     this._chegando = false; // interrompe a animação de chegada
     let alvo, alcance = distancia;
     if (extensao) {
@@ -411,10 +416,9 @@ export class Globo {
       const diag = Cesium.Cartesian3.distance(Cesium.Cartesian3.fromDegrees(o, s), Cesium.Cartesian3.fromDegrees(l, n));
       alcance = alcance || Math.max(350, diag * 1.5);
     }
-    const alt = this.cena.globe.getHeight(Cesium.Cartographic.fromDegrees(lon, lat)) || 760;
-    alvo = Cesium.Cartesian3.fromDegrees(lon, lat, alt * this.cena.verticalExaggeration);
+    alvo = Cesium.Cartesian3.fromDegrees(lon, lat, alturaChao(lon, lat));
     return new Promise((ok) => this.camera.flyToBoundingSphere(new Cesium.BoundingSphere(alvo, 1), {
-      offset: new Cesium.HeadingPitchRange(this.camera.heading, rad(inclinacao), alcance || 900),
+      offset: new Cesium.HeadingPitchRange(rumo ?? this.camera.heading, rad(inclinacao), alcance || 900),
       duration: duracao, complete: ok, cancel: ok,
     }));
   }

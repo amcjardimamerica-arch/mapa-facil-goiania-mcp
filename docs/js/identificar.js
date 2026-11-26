@@ -237,19 +237,38 @@ export class Identificar {
     if ($('#ficha-titulo').textContent === 'Consultando…') this.titulo('Local em Goiânia', 'Sem lote cadastrado neste ponto');
   }
 
+  /**
+   * O que o clique seleciona depende da altura da câmera (a mesma do rodapé): acima de 5 km, o bairro inteiro;
+   * de 5 km a 2,5 km, a quadra; de 2,5 km para baixo, o lote.
+   */
+  static alvoPelaAltura(h) { return h > 5000 ? 'bairro' : h > 2500 ? 'quadra' : 'lote'; }
+
   _mostrarBase(resultados, ponto) {
     const por = (id) => resultados.find((r) => r.layerId === id);
     const lote = por(0), quadra = por(1), bairro = por(2);
     const nomeDoBairro = nomeBairro(bairro?.attributes.nm || bairro?.attributes.nm1 || '') || undefined;
+    const outros = resultados.filter((r) => ![0, 1, 2].includes(r.layerId));
+    const modo = Identificar.alvoPelaAltura(this.globo.camera.positionCartographic.height);
+    if (modo === 'bairro' && bairro) { this.fichaBairro(bairro); return; }
+    if (modo === 'quadra' && quadra) {
+      this.destacar(quadra.geometry);
+      const nq = String(quadra.attributes.nm_qdr || '').trim();
+      this.titulo(`Quadra ${nq}`, [nomeDoBairro, 'Goiânia'].filter(Boolean).join(' · '));
+      const area = Number(quadra.attributes['shape.STArea()']);
+      this.secao('Quadra', { aberto: true }).append(this.tabela([['Quadra', nq], ['Bairro', nomeDoBairro || '—'],
+        ...(area > 0 ? [['Área aproximada', `${fmtNum(area)} m²`]] : []),
+        ['Inscrição da quadra (CI)', String(quadra.attributes.ci || '').trim() || '—']]),
+      el('p', { class: 'nota' }, 'Aproxime abaixo de 2,5 km para selecionar o lote; acima de 5 km o clique seleciona o bairro inteiro.'));
+      if (bairro) this.secao('Bairro').append(el('button', { class: 'botao-texto', onclick: () => this.fichaBairro(bairro) }, `Ver o levantamento de ${nomeDoBairro || 'todo o bairro'}`));
+      if (outros.length) this._mostrarTema({ titulo: 'Base Cadastral' }, outros);
+      return;
+    }
     const partes = [];
     if (lote && !vazio(lote.attributes.nm_lot)) partes.push(`Lote ${lote.attributes.nm_lot.trim()}`);
     if (quadra && !vazio(quadra.attributes.nm_qdr)) partes.push(`Quadra ${quadra.attributes.nm_qdr.trim()}`);
     this.titulo(partes.join(' · ') || nomeDoBairro || 'Local em Goiânia',
       partes.length ? [nomeDoBairro, 'Goiânia'].filter(Boolean).join(' · ') : (nomeDoBairro ? 'Bairro · Goiânia' : 'Goiânia'));
-    // O que se seleciona depende do que aparece no mapa: sem quadras (acima de 5 km), o bairro inteiro; com
-    // quadras (5 km a 2,5 km), a quadra; com os números de lote (2,5 km ou menos), o lote.
-    const h = this.globo.camera.positionCartographic.height;
-    const alvo = h > 5000 ? bairro : h > 2500 ? (quadra || bairro) : (lote || quadra || bairro);
+    const alvo = lote || quadra || bairro;
     if (alvo?.geometry) this.destacar(alvo.geometry);
 
     if (lote) {
@@ -268,10 +287,84 @@ export class Identificar {
     }
     if (quadra) this.secao('Quadra').append(this.tabela(atributosLegiveis(quadra.attributes)),
       el('button', { class: 'botao-texto', onclick: () => this.destacar(quadra.geometry) }, 'Destacar no mapa'));
-    if (bairro) this.secao('Bairro', { aberto: !lote }).append(this.tabela(atributosLegiveis(bairro.attributes)),
-      el('button', { class: 'botao-texto', onclick: () => this.destacar(bairro.geometry, { preencher: false }) }, 'Destacar no mapa'));
-    const outros = resultados.filter((r) => ![0, 1, 2].includes(r.layerId));
+    if (bairro) this.secao('Bairro', { aberto: !lote }).append(
+      el('button', { class: 'botao-texto', onclick: () => this.fichaBairro(bairro) }, `Ver o levantamento de ${nomeDoBairro || 'todo o bairro'}`));
     if (outros.length) this._mostrarTema({ titulo: 'Base Cadastral' }, outros);
+  }
+
+  /** Levantamento de cada bairro (data/bairros_resumo.json, scripts/resumo_bairros.py), lido uma vez. */
+  resumoBairros() {
+    if (!this._resumo) {
+      this._resumo = pedirJSON(`${CFG.dados}bairros_resumo.json`, { tempo: 60000 });
+      this._resumo.catch(() => { this._resumo = null; });
+    }
+    return this._resumo;
+  }
+
+  /**
+   * Ficha do bairro inteiro: nome do bairro no título, sem coordenadas do ponto clicado nem "Marcar", e o
+   * levantamento do bairro — população, quadras, lotes, praças, escolas, igrejas, mercados, condomínios, locais
+   * esportivos, feiras e o mais que os dados da Prefeitura trazem —, com os nomes de cada item.
+   */
+  async fichaBairro(bairro) {
+    const n = ++this.pedido;
+    const a = bairro.attributes || {};
+    const nome = nomeBairro(a.nm || a.nm1 || '') || 'Bairro';
+    this.caixa.hidden = false;
+    this.titulo(nome, 'Bairro · Goiânia');
+    this.corpo.textContent = '';
+    if (bairro.geometry) this.destacar(bairro.geometry, { preencher: false });
+    const estado = el('p', { class: 'nota carregando' }, 'Levantando os dados do bairro…');
+    this.corpo.append(estado);
+    let r = null;
+    try { r = (await this.resumoBairros()).bairros[String(a.id || '').trim()] || null; } catch { r = null; }
+    if (n !== this.pedido) return;
+    estado.remove();
+    const R = (await this.resumoBairros().catch(() => ({ rotulos: {} }))).rotulos || {};
+    if (!r) {
+      this.corpo.append(el('p', { class: 'nota' }, 'Levantamento deste bairro indisponível.'));
+      return;
+    }
+    const c = r.c || {}, nomes = r.n || {};
+    this.titulo(nome, ['Bairro', r.regiao ? r.regiao.replace(/^REGI[AÃ]O\s+/i, 'Região ').replace(/\B\w+/g, (t) => t.toLowerCase()) : '',
+      r.conselho_tutelar ? `Conselho Tutelar ${r.conselho_tutelar}` : ''].filter(Boolean).join(' · '));
+    const num = (k) => fmtNum(c[k] || 0);
+    const dens = r.area_km2 ? Math.round((r.populacao || 0) / r.area_km2) : 0;
+    this.corpo.append(this.tabela([
+      ['População', `${fmtNum(r.populacao || 0)} pessoas${r.homens || r.mulheres ? ` (${fmtNum(r.mulheres || 0)} mulheres e ${fmtNum(r.homens || 0)} homens)` : ''}`],
+      ['Área', `${fmtNum(r.area_km2 || 0, 2)} km²${dens ? ` · ${fmtNum(dens)} hab./km²` : ''}`],
+      ['Quadras', num('quadras')], ['Lotes', num('lotes')], ['Lotes vagos', num('lotes_vagos')],
+      ['Empresas e atividades', num('empresas')],
+      ['Edifícios cadastrados', `${num('edificios')}${c.edificios ? ` (1 a 3 pav.: ${num('edificios_1')} · 4 a 10: ${num('edificios_2')} · 11 a 20: ${num('edificios_3')} · 21 a 30: ${num('edificios_4')} · mais de 30: ${num('edificios_5')})` : ''}`],
+    ]));
+    // Grupos do levantamento: cada item com a quantidade e, aberto, os nomes.
+    const GRUPOS = [
+      ['Praças, parques e áreas verdes', ['pracas', 'parques', 'areas_verdes']],
+      ['Esporte e lazer', ['esportivos', 'academias']],
+      ['Escolas e cursos', ['educacao_municipal', 'escolas_publicas', 'escolas_privadas', 'cursos']],
+      ['Igrejas e locais de religião', ['igrejas', 'religiosos_publicos', 'imoveis_religiosos']],
+      ['Supermercados, mercados e feiras', ['supermercados', 'feiras', 'padarias', 'acougues']],
+      ['Condomínios e edifícios', ['condominios', 'lotes_condominio', 'edificios']],
+      ['Saúde', ['saude_municipal', 'saude_publica', 'saude_privada', 'farmacias']],
+      ['Comércio e serviços', ['restaurantes', 'bares', 'combustivel', 'bancos', 'hoteis']],
+      ['Comunidade e serviços públicos', ['associacoes', 'comunitarios', 'seguranca', 'outras_areas']],
+      ['Transporte e meio ambiente', ['pontos_onibus', 'arvores', 'nascentes']],
+    ];
+    for (const [titulo, chaves] of GRUPOS) {
+      const itens = chaves.filter((k) => c[k]);
+      if (!itens.length) continue;
+      const total = itens.reduce((t, k) => t + (c[k] || 0), 0);
+      const corpo = this.secao(`${titulo} (${fmtNum(total)})`, { aberto: false });
+      for (const k of itens) {
+        const lista = nomes[k] || [];
+        const rot = `${R[k] || k}: ${fmtNum(c[k])}`;
+        if (!lista.length) { corpo.append(el('p', { class: 'lv-item-bairro' }, rot)); continue; }
+        corpo.append(el('details', { class: 'lv-empresa' }, el('summary', {}, rot),
+          el('ul', { class: 'lista-links' }, lista.map((t) => el('li', {}, t)),
+            c[k] > lista.length ? el('li', { class: 'nota' }, `e mais ${fmtNum(c[k] - lista.length)}`) : null)));
+      }
+    }
+    this.corpo.append(el('p', { class: 'nota' }, 'Levantamento a partir do banco do sistema (cadastros da Prefeitura de Goiânia): cada item conta no bairro em que está. Aproxime abaixo de 5 km para selecionar quadras e abaixo de 2,5 km para lotes.'));
   }
 
   _mostrarTema(tema, resultados) {
