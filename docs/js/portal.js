@@ -79,3 +79,14 @@ if (!sessao && !matchMedia('(pointer: coarse)').matches) $('#login').focus();
 
 // Mesmo service worker do sistema: confere sempre se há versão nova do site.
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+
+// Logomarca viva no login (1.26.1): o pássaro bate as asas ao passar o mouse e, parado, ajeita as penas de vez em quando.
+{
+  const ave = document.querySelector('.marca-amc-login .amc-bird');
+  if (ave) {
+    const animar = (cls, ms) => { ave.classList.remove(cls); void ave.getBoundingClientRect(); ave.classList.add(cls); setTimeout(() => ave.classList.remove(cls), ms); };
+    ave.closest('.marca-amc-login').addEventListener('mouseenter', () => animar('flap', 2080));
+    setTimeout(() => animar('flap', 2080), 600);
+    setInterval(() => { if (document.visibilityState === 'visible') animar(Math.random() < 0.5 ? 'ruffle' : 'chirp', 1000); }, 8000);
+  }
+}

@@ -103,3 +103,20 @@ a { color: var(--marinho); }
   .marcas { width: min(92vw, 420px); gap: 16px; }
   .logo-nucleo { padding-left: 16px; }
 }
+
+/* logomarca viva no login (1.26.1): pássaro de duas asas + nome */
+.marca-amc-login { display: flex; align-items: center; gap: 10px; }
+.marca-amc-login .amc-bird { width: 92px; height: auto; overflow: visible; }
+.marca-amc-login .amc-nome { height: 62px; width: auto; }
+.amc-bird .amc-wing { transform-box: view-box; transform-origin: 558px 355px; }
+.amc-bird .amc-beak { transform-box: view-box; transform-origin: 940px 330px; }
+@media (prefers-reduced-motion: no-preference) {
+  .amc-bird.flap .amc-wing { animation: amc-flap .26s ease-in-out infinite alternate; }
+  .amc-bird.flap .amc-asa-tras .amc-wing { animation-direction: alternate-reverse; }
+  .amc-bird.ruffle .amc-wing { animation: amc-ruffle .9s ease-in-out 1; }
+  .amc-bird.chirp .amc-beak { animation: amc-chirp .5s ease-in-out 1; }
+}
+@keyframes amc-flap{0%{transform:rotate(-16deg) scale(1,.92)}100%{transform:rotate(7deg) scale(1,1.01)}}
+@keyframes amc-ruffle{0%,100%{transform:none}30%{transform:rotate(-9deg)}55%{transform:rotate(4deg)}75%{transform:rotate(-3deg)}}
+@keyframes amc-chirp{0%,100%{transform:none}25%,60%{transform:rotate(16deg)}42%{transform:rotate(4deg)}}
+.marcas .marca-amc-login img.amc-nome { width: auto; max-width: 70%; height: auto; max-height: 72px; }
