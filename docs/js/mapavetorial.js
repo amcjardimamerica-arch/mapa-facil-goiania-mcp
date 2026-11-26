@@ -47,18 +47,20 @@ export const FILTRO_BAIRROS = { aneis: null, ext: null };
  * Camadas da Base Cadastral (Feature_Base) controladas por cada opção — também entram na ficha do clique.
  * Lote (0), quadra (1) e bairro (2) entram sempre na ficha, para o clique selecionar o que aparece no mapa.
  */
-export const CAMADAS_DA_OPCAO = { areas: 4, npo: 5, setores: 6, logradouros: 8, atividades: 9, logBairro: 10 };
+export const CAMADAS_DA_OPCAO = { areasVerdes: 4, imoveisPublicos: 4, npo: 5, atividades: 9 };
+/** Área pública verde (praça, área verde, parque, reserva) x imóvel público (os demais destinos). */
+export const ehAreaVerde = (a = {}) => /AREAS VERDES|PARQUES|RESERVAS ECOL/i.test(a.nm_grupo_d || '') || /PRA[CÇ]A|AREA VERDE|PARQUE|BOSQUE/i.test(a.nm_destin || '');
 export function idsDaFicha() {
   const ids = [0, 1, 2];
   if (BASE.ligado) for (const [k, id] of Object.entries(CAMADAS_DA_OPCAO)) if (BASE[k]) ids.push(id);
-  return ids.sort((a, b) => a - b);
+  return [...new Set(ids)].sort((a, b) => a - b);
 }
 /**
  * Opções da Base Cadastral (painel Camadas): controlam o desenho cadastral na cidade inteira — nomes de rua,
  * quadras, lotes, divisas e nomes de bairro, áreas públicas (verde #00FF00, contorno branco) e atividades econômicas.
  */
-export const BASE = Object.assign({ ligado: true, ruas: true, quadras: true, lotes: true, divisas: true, nomesBairros: true, areas: false, atividades: false,
-  cadastro: true, npo: false, setores: false, logradouros: false, logBairro: false },
+export const BASE = Object.assign({ ligado: true, ruas: true, quadras: true, lotes: true, divisas: true, nomesBairros: true, areasVerdes: false, imoveisPublicos: false, atividades: false,
+  cadastro: true, npo: false },
   (() => { try { return JSON.parse(localStorage.getItem('bussola:base') || '{}'); } catch { return {}; } })());
 export const gravarBase = () => { try { localStorage.setItem('bussola:base', JSON.stringify(BASE)); } catch { /* nada */ } };
 const baseVe = (k) => BASE.ligado && BASE[k];
@@ -345,32 +347,29 @@ export class ProvedorVetorial extends ProvedorCanvas {
     const noFiltro = blocoNoFiltro(ret);
     const ver = { quadras: baseVe('quadras') && noFiltro && mostraNaAltura('quadras', nivel), lotes: baseVe('lotes') && noFiltro && mostraNaAltura('lotes', nivel),
       numeroQuadra: mostraNaAltura('numeroQuadra', nivel), numeroLote: baseVe('lotes') && mostraNaAltura('numeroLote', nivel),
-      ruas: !BASE.ligado || BASE.ruas, nomesBairros: baseVe('nomesBairros'), areas: baseVe('areas') && nivel >= 13, atividades: baseVe('atividades') && nivel >= 15,
-      npo: baseVe('npo') && nivel >= 17, setores: baseVe('setores') && nivel >= 11, logradouros: baseVe('logradouros') && nivel >= 13, logBairro: baseVe('logBairro') && nivel >= 13 };
+      ruas: !BASE.ligado || BASE.ruas, nomesBairros: baseVe('nomesBairros'), areas: (baseVe('areasVerdes') || baseVe('imoveisPublicos')) && nivel >= 13, atividades: baseVe('atividades') && nivel >= 15,
+      npo: baseVe('npo') && nivel >= 17 };
     const filtroVias = nivel >= (sobre ? 15 : 14) ? '1=1' : nivel >= 12 ? 'in_hie >= 21' : 'in_hie >= 40';
-    const [limites, quadras, vias, lotes, areas, atividades, npo, setores, logradouros, logBairro] = await Promise.all([
+    const [limites, quadras, vias, lotes, areas, atividades, npo] = await Promise.all([
       baseVe('divisas') && nivel >= NIVEIS.bairros ? consultar(2, { ...comum, outFields: 'OBJECTID', where: '1=1', maxAllowableOffset: String(Math.max(1, q.mpp)) }, cancelada).catch(() => []) : [],
       ver.quadras ? consultar(1, { ...comum, outFields: ver.numeroQuadra ? 'nm_qdr' : 'OBJECTID', where: '1=1' }, cancelada).catch(() => []) : [],
       consultar(7, { ...comum, outFields: 'nm,in_hie', where: filtroVias }, cancelada).catch(() => []),
       // Divisas dos lotes dentro das quadras, carregadas por bloco do mapa conforme a aproximação.
       ver.lotes ? consultar(0, { ...comum, outFields: ver.numeroLote ? 'nm_lot' : 'OBJECTID', where: '1=1',
         maxAllowableOffset: String(Math.max(0.15, q.mpp * 0.5)) }, cancelada).catch(() => []) : [],
-      ver.areas ? consultar(4, { ...comum, outFields: 'nm_destin', where: '1=1' }, cancelada).catch(() => []) : [],
+      ver.areas ? consultar(4, { ...comum, outFields: 'nm_destin,nm_grupo_d', where: '1=1' }, cancelada).catch(() => []) : [],
       ver.atividades ? consultar(9, { ...comum, outFields: 'OBJECTID', where: '1=1' }, cancelada).catch(() => []) : [],
       ver.npo ? consultar(5, { ...comum, outFields: 'nm_npo', where: '1=1' }, cancelada).catch(() => []) : [],
-      ver.setores ? consultar(6, { ...comum, outFields: 'nm_scd,ci_scd', where: '1=1', maxAllowableOffset: String(Math.max(1, q.mpp)) }, cancelada).catch(() => []) : [],
-      ver.logradouros ? consultar(8, { ...comum, outFields: 'nm', where: '1=1' }, cancelada).catch(() => []) : [],
-      ver.logBairro ? consultar(10, { ...comum, outFields: 'nm', where: '1=1' }, cancelada).catch(() => []) : [],
     ]);
     // Painel Bairros com bairros marcados: quadras e lotes só deles.
-    return { limites, quadras: quadras.filter(passaFiltro), vias, lotes: lotes.filter(passaFiltro), areas: areas.filter(passaFiltro), atividades, npo, setores, logradouros, logBairro, ver };
+    return { limites, quadras: quadras.filter(passaFiltro), vias, lotes: lotes.filter(passaFiltro), areas: areas.filter(passaFiltro), atividades, npo, ver };
   }
 
   _desenhar(ret, nivel, relevo, dados) {
     return cronometrarSinc('desenhar-mapa', () => this._desenharSemMedida(ret, nivel, relevo, dados));
   }
 
-  _desenharSemMedida(ret, nivel, relevo, { limites = [], quadras, vias, lotes = [], areas = [], atividades = [], npo = [], setores = [], logradouros = [], logBairro = [], ver = {} }) {
+  _desenharSemMedida(ret, nivel, relevo, { limites = [], quadras, vias, lotes = [], areas = [], atividades = [], npo = [], ver = {} }) {
     const T = this._T, e = this.estilo, q = new Quadro(ret, T);
     const tela = this._tela(), g = tela.getContext('2d');
     const mapa = this.modo === 'mapa';
@@ -395,10 +394,15 @@ export class ProvedorVetorial extends ProvedorCanvas {
     }
 
     // Áreas públicas (Base Cadastral): verde #00FF00 com contorno branco.
-    if (areas.length) {
+    // Áreas verdes (praças, parques, reservas) em #00FF00 e imóveis públicos (escolas, saúde, institucional…) em
+    // azul, os dois com contorno branco; cada grupo tem a sua opção na Base Cadastral.
+    for (const [verde, cor] of [[true, '#00FF00'], [false, '#2979FF']]) {
+      if (!(verde ? BASE.areasVerdes : BASE.imoveisPublicos)) continue;
+      const lista = areas.filter((f) => ehAreaVerde(f.attributes) === verde && f.geometry?.rings);
+      if (!lista.length) continue;
       g.save(); g.beginPath();
-      for (const f of areas) if (f.geometry?.rings) q.caminho(g, f.geometry.rings);
-      g.globalAlpha = 0.55; g.fillStyle = '#00FF00'; g.fill('evenodd');
+      for (const f of lista) q.caminho(g, f.geometry.rings);
+      g.globalAlpha = 0.55; g.fillStyle = cor; g.fill('evenodd');
       g.globalAlpha = 1; g.lineJoin = 'round'; g.strokeStyle = '#FFFFFF'; g.lineWidth = nivel >= 16 ? 2 : 1.3; g.stroke();
       g.restore();
     }
@@ -446,30 +450,6 @@ export class ProvedorVetorial extends ProvedorCanvas {
     }
 
     const r = new Rotulos(g, T);
-    // Setor Cadastral: contorno roxo tracejado.
-    if (setores.length) {
-      g.save(); g.beginPath();
-      for (const f of setores) if (f.geometry?.rings) q.caminho(g, f.geometry.rings);
-      g.setLineDash([8, 5]); g.lineWidth = 2; g.strokeStyle = '#7b1fa2'; g.stroke(); g.setLineDash([]);
-      if (nivel <= 16) {
-        g.font = '700 12px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
-        for (const f of setores) {
-          const a = f.geometry?.rings?.[0], t = String(f.attributes?.nm_scd || f.attributes?.ci_scd || '').trim();
-          if (!a || !t) continue;
-          const [cx, cy] = centroDoAnel(a);
-          g.lineWidth = 3; g.strokeStyle = '#ffffff'; g.strokeText(`Setor ${t}`, q.x(cx), q.y(cy));
-          g.fillStyle = '#7b1fa2'; g.fillText(`Setor ${t}`, q.x(cx), q.y(cy));
-        }
-      }
-      g.restore();
-    }
-    // Logradouro (laranja) e Logradouro por Bairro (azul-claro): o eixo de cada um.
-    for (const [lista, cor, larg] of [[logradouros, '#ff6d00', 3], [logBairro, '#00b8d4', 2]]) {
-      if (!lista.length) continue;
-      g.save(); g.beginPath();
-      for (const f of lista) for (const p of f.geometry?.paths || []) p.forEach(([a, b], i) => (i ? g.lineTo(q.x(a), q.y(b)) : g.moveTo(q.x(a), q.y(b))));
-      g.lineCap = 'round'; g.lineJoin = 'round'; g.lineWidth = larg; g.strokeStyle = cor; g.globalAlpha = 0.85; g.stroke(); g.restore();
-    }
     // Número Predial Oficial: contorno fino e o número.
     if (npo.length) {
       g.save(); g.beginPath();

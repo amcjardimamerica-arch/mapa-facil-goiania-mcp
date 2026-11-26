@@ -234,11 +234,11 @@ def test_medicao_e_kml(mapa):
 
 
 def test_satelite_em_outras_datas(mapa):
-    """Datas anteriores do satélite (Esri Wayback) e ortofotos antigas da Prefeitura entram como fundo e voltam ao satélite."""
+    """Datas anteriores do satélite (Esri Wayback) entram como fundo e voltam ao satélite atual (1.25.1: sem as ortofotos)."""
     r = mapa.evaluate("""async () => {
       const datas = bussola.globo.basesDisponiveis().filter((b) => b.tipo === 'historico');
       if (!datas.length) return { total: 0 };
-      const alvo = datas[datas.length - 1].chave;            // a última: ortofoto de 2006 da Prefeitura
+      const alvo = datas[datas.length - 1].chave;            // a data mais antiga do satélite (Esri Wayback)
       const wayback = datas.filter((b) => b.chave.startsWith('sat-')).length;
       await bussola.trocarBase(alvo);
       const durante = { base: bussola.globo.chaveBase, seletor: document.querySelector('#satelite-data').value };
@@ -247,7 +247,7 @@ def test_satelite_em_outras_datas(mapa):
                opcoes: document.querySelectorAll('#satelite-data option').length };
     }""")
     assert r["total"] >= 2 and r["wayback"] >= 3
-    assert r["durante"]["base"] == r["alvo"] == r["durante"]["seletor"] and r["alvo"] == "foto-2006"
+    assert r["durante"]["base"] == r["alvo"] == r["durante"]["seletor"] and r["alvo"].startswith("sat-")
     assert r["depois"] == "satelite" and r["opcoes"] == r["total"] + 1
 
 
@@ -301,7 +301,7 @@ def test_fundos_sem_ortofotos_e_mapa_desenhado(mapa):
                realceModo: bussola.globo.camadaRealce?.imageryProvider.modo };
     }""")
     assert not any(c.startswith("orto") for c in r["chaves"]) and "mapa" in r["chaves"]
-    assert r["barra"] == ["Satélite", "Foto", "Mapa"]  # satélite Esri (padrão), foto da Prefeitura e mapa
+    assert r["barra"] == ["Satélite", "Mapa"]  # só satélite (Esri, padrão) e mapa (decisão do titular, 1.25.1)
     assert r["durante"] == {"base": "mapa", "modo": "mapa", "realceVisivel": False}
     assert r["bloco"] == [512, 512] and r["realceModo"] == "sobre"
 
@@ -739,33 +739,31 @@ def test_senha_do_cofre_na_validacao_e_sem_mapa_facil(navegador, servidor):
 
 
 def test_base_cadastral_opcoes_sem_repeticao_e_funcionando(mapa):
+    """1.25.1: sem opções repetidas nem as retiradas (Setor Cadastral, Logradouro, Logradouro por Bairro); áreas
+    públicas divididas em áreas verdes/praças e imóveis públicos; cada resultado vem da camada certa."""
     r = mapa.evaluate("""async () => {
       const m = await import('./js/mapavetorial.js');
       const base = bussola.camadas.grupo('base');
       if (!base.corpo.dataset.pronto) { bussola.camadas._montarCorpo(base, base.corpo); base.corpo.dataset.pronto = '1'; }
       const texto = base.corpo.textContent;
-      const repetidos = ['Divisas de Lote', 'Divisas de Quadra', 'Divisas de Bairro', 'Área Pública', 'Segmento de Logradouro'].filter((t) => texto.includes(t));
-      const novos = ['Cadastro Imobiliário', 'Número Predial Oficial', 'Setor Cadastral', 'Logradouro por Bairro'].filter((t) => texto.includes(t));
+      const repetidos = ['Divisas de Lote', 'Divisas de Quadra', 'Divisas de Bairro', 'Área Pública', 'Segmento de Logradouro',
+        'Setor Cadastral', 'Logradouro por Bairro'].filter((t) => texto.includes(t));
+      const novos = ['Cadastro Imobiliário', 'Número Predial Oficial', 'Áreas verdes e praças', 'Imóveis públicos'].filter((t) => texto.includes(t));
       const antes = { ...m.BASE };
-      Object.assign(m.BASE, { ligado: true, npo: true, setores: true, logradouros: true, logBairro: true, areas: true, atividades: true });
+      Object.assign(m.BASE, { ligado: true, npo: true, areasVerdes: true, imoveisPublicos: true, atividades: true });
       const ids = bussola.camadas.consultaBase().ids;
       const prov = new m.ProvedorVetorial({ modo: 'mapa', retangulo: bussola.globo.ret });
       const g = new Cesium.WebMercatorTilingScheme();
-      const nat = g.tileXYToNativeRectangle(47595, 71698, 17);
-      const d = await prov._dados(nat, 17, () => false);
-      const nat13 = g.tileXYToNativeRectangle(2974, 4481, 13);
-      const d13 = await prov._dados(nat13, 13, () => false);
+      const d = await prov._dados(g.tileXYToNativeRectangle(47595, 71698, 17), 17, () => false);
       Object.assign(m.BASE, antes);
-      // Cada resultado veio da camada certa (a ordem das consultas casa com a dos resultados).
-      const tipo = (lista, t) => lista.length > 0 && lista.every((f) => t === 'ponto' ? f.geometry?.x != null : t === 'linha' ? !!f.geometry?.paths : !!f.geometry?.rings);
-      const certo = { npo: tipo(d.npo, 'area') && d.npo.every((f) => 'nm_npo' in f.attributes), atv: tipo(d.atividades, 'ponto'),
-        logr: tipo(d.logradouros, 'linha'), logBai: tipo(d.logBairro, 'linha'), set: tipo(d13.setores, 'area'), areas: tipo(d.areas, 'area') };
-      return { certo, repetidos, novos, ids, npo: d.npo.length, logr: d.logradouros.length, logBai: d.logBairro.length, atv: d.atividades.length, areas: d.areas.length, setores: d13.setores.length };
+      const tipo = (lista, t) => lista.length > 0 && lista.every((f) => t === 'ponto' ? f.geometry?.x != null : !!f.geometry?.rings);
+      const verdes = d.areas.filter((f) => m.ehAreaVerde(f.attributes)).length;
+      return { repetidos, novos, ids, npo: tipo(d.npo, 'area') && d.npo.every((f) => 'nm_npo' in f.attributes),
+        atv: tipo(d.atividades, 'ponto'), areas: tipo(d.areas, 'area'), verdes, imoveis: d.areas.length - verdes };
     }""")
     assert not r["repetidos"] and len(r["novos"]) == 4, r
-    assert r["ids"] == [0, 1, 2, 4, 5, 6, 8, 9, 10], r
-    assert r["npo"] > 0 and r["logr"] > 0 and r["logBai"] > 0 and r["atv"] > 0 and r["setores"] > 0, r
-    assert all(r["certo"].values()), r["certo"]
+    assert r["ids"] == [0, 1, 2, 4, 5, 9], r
+    assert r["npo"] and r["atv"] and r["areas"], r
 
 
 def test_canteiros_centrais_e_nomes_completos(mapa):
@@ -841,3 +839,32 @@ def test_mapa_abre_com_a_trava_de_seguranca(navegador, servidor):
     # Única exceção conhecida: a biblioteca protobuf, dentro do Cesium, testa um eval num try/catch e segue sem ele.
     csp = [v for v in r["csp"] if not v.startswith("script-src eval Cesium.js")]
     assert not csp and not erros and not r["erros"], (r, erros)
+
+
+def test_versao_1_25_1_fundos_base_cadastral_e_divisas(mapa):
+    r = mapa.evaluate("""async () => {
+      const m = await import('./js/mapavetorial.js');
+      const base = bussola.camadas.grupo('base');
+      if (!base.corpo.dataset.pronto) { bussola.camadas._montarCorpo(base, base.corpo); base.corpo.dataset.pronto = '1'; }
+      const t = base.corpo.textContent;
+      const painel = document.querySelector('[data-secao=imagens]').textContent;
+      return { bases: bussola.globo.basesDisponiveis().filter((b) => b.tipo !== 'historico').map((b) => b.chave),
+        verdes: t.includes('Áreas verdes e praças'), imoveis: t.includes('Imóveis públicos'),
+        retirados: ['Setor Cadastral', 'Logradouro por Bairro', 'Áreas públicas (verde)'].filter((x) => t.includes(x)),
+        textos: ['ortofoto da Prefeitura', 'Arraste a barra vertical', 'municípios limítrofes aparecem só'].filter((x) => painel.includes(x)) };
+    }""")
+    assert r["bases"] == ["satelite", "mapa"], r
+    assert r["verdes"] and r["imoveis"] and not r["retirados"] and not r["textos"], r
+
+
+def test_conselho_divisa_norte_leste_pela_br153():
+    import json as _j
+    from shapely.geometry import shape
+    from shapely.ops import unary_union
+    raiz = DOCS.parent
+    d = _j.loads((DOCS / "data" / "conselho_regioes.geojson").read_text(encoding="utf-8"))
+    cs = {f["properties"]["regiao"]: shape(f["geometry"]) for f in d["features"] if f["properties"].get("tipo", "conselho") == "conselho"}
+    refs = _j.loads((raiz / "scripts" / "dados" / "referencias_conselho.geojson").read_text(encoding="utf-8"))
+    br = unary_union([shape(f["geometry"]) for f in refs["features"] if "BR 153" in str(f["properties"].get("nome"))])
+    divisa = cs["Norte"].boundary.intersection(cs["Leste"].boundary.buffer(1e-5))
+    assert divisa.length > 0 and divisa.intersection(br.buffer(0.0003)).length / divisa.length > 0.95

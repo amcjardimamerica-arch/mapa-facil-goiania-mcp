@@ -8,6 +8,7 @@
 // seleciona a zona/região inteira (ou o colégio de votação), nunca quadra ou lote.
 import { CFG } from './config.js';
 import { el, pedirJSON, fmtNum } from './util.js';
+import { ProvedorDesenho } from './mapavetorial.js';
 
 const Cesium = window.Cesium;
 const CORES = ['#8ecae6', '#ffb4a2', '#b5e48c', '#cdb4db', '#ffd6a5', '#a0c4ff', '#caffbf', '#ffc6ff', '#fdffb6', '#bdb2ff'];
@@ -62,21 +63,25 @@ export class Eleicoes {
   async definir(modo) {
     this.modo = modo;
     this.fonte.entities.removeAll();
+    if (this.camada) { this.globo.viewer.imageryLayers.remove(this.camada, true); this.camada = null; }
     this.areas = modo === 'zonas' ? await this._zonas() : modo === 'conselho' ? await this._regioes() : [];
     if (this.modo !== modo) return;
+    // Cor de cada área e divisa preta-vermelha-preta desenhadas numa camada de imagem, como a divisa dos bairros no
+    // mapa: não somem com a distância nem com o relevo (linhas grudadas no chão sumiam em parte das vistas).
+    const R = 6378137, mx = (lon) => (lon * Math.PI / 180) * R, my = (lat) => Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) * R;
+    const poligonos = [], linhas = [];
     for (const a of this.areas) {
-      // Preenchimento por polígono, com os buracos (enclaves de outro Conselho) de fato vazados.
-      for (const pol of a.poligonos || a.aneis.map((r) => [r])) {
-        const [ext, ...furos] = pol.map((r) => Cesium.Cartesian3.fromDegreesArray(r.flat()));
-        this.fonte.entities.add({ polygon: { hierarchy: new Cesium.PolygonHierarchy(ext, furos.map((f) => new Cesium.PolygonHierarchy(f))),
-          material: Cesium.Color.fromCssColorString(a.cor).withAlpha(0.22), classificationType: Cesium.ClassificationType.TERRAIN } });
-      }
-      for (const anel of a.aneis) {
-        const pos = Cesium.Cartesian3.fromDegreesArray(anel.flat());
-        // Divisa: preta larga por baixo e vermelha no meio = preta, vermelha, preta.
-        this.fonte.entities.add({ polyline: { positions: pos, clampToGround: true, width: 7, zIndex: 0, material: Cesium.Color.BLACK } });
-        this.fonte.entities.add({ polyline: { positions: pos, clampToGround: true, width: 2.4, zIndex: 1, material: Cesium.Color.fromCssColorString('#FF0000') } });
-      }
+      const aneis = a.aneis.map((r) => r.map(([lo, la]) => [mx(lo), my(la)]));
+      let o = Infinity, s = Infinity, l = -Infinity, n = -Infinity;
+      for (const r of aneis) for (const [x, y] of r) { o = Math.min(o, x); l = Math.max(l, x); s = Math.min(s, y); n = Math.max(n, y); }
+      const cor = Cesium.Color.fromCssColorString(a.cor).withAlpha(0.24).toCssColorString();
+      poligonos.push({ aneis, ext: [o, s, l, n], centro: [(o + l) / 2, (s + n) / 2], cor, borda: 'rgba(0,0,0,0)', largura: 0.01 });
+      for (const r of aneis) for (let i = 1; i < r.length; i++) linhas.push({ de: r[i - 1], para: r[i], cor: '#FF0000', contorno: '#000000', largura: 2.6 });
+    }
+    this.camada = this.globo.viewer.imageryLayers.addImageryProvider(new ProvedorDesenho({ poligonos, linhas, retangulo: this.globo.ret, nivelMinimo: 8,
+      credito: modo === 'zonas' ? 'Zonas eleitorais: TSE' : 'Conselho Tutelar: Resolução CMDCA 85/2023' }));
+    this.globo.organizarPilha();
+    for (const a of this.areas) {
       const maior = a.aneis.reduce((m, r) => (r.length > m.length ? r : m), a.aneis[0]);
       const c = a.props?.rotulo || maior.reduce((s, p) => [s[0] + p[0] / maior.length, s[1] + p[1] / maior.length], [0, 0]);
       this.fonte.entities.add({ position: Cesium.Cartesian3.fromDegrees(c[0], c[1]), label: { text: a.nome,

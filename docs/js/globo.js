@@ -159,10 +159,8 @@ export class Globo {
   basesDisponiveis() {
     // Satélite atual da Esri (fundo padrão); depois a foto aérea da Prefeitura (banco local) e o Mapa.
     const lista = [{ chave: 'satelite', titulo: 'Satélite', curto: 'Satélite', ano: null, tipo: 'satelite' }];
-    const fotos = (CFG.ortofotos || []).filter((o) => imagemLocal(o.servico)).sort((a, b) => b.ano - a.ano);
-    if (fotos.length) lista.push({ chave: 'foto', titulo: `Foto aérea ${fotos[0].ano} (Prefeitura)`, curto: 'Foto', ano: null, tipo: 'foto', servico: fotos[0].servico, captura: String(fotos[0].ano) });
+    // Só Satélite e Mapa (decisão do titular, 1.25.1): sem a foto aérea da Prefeitura nem o Mapa Básico.
     lista.push({ chave: 'mapa', titulo: 'Mapa', curto: 'Mapa', ano: null, tipo: 'vetor' });
-    for (const b of this.catalogo.bases) if (!b.ano && imagemLocal(b.url.split('/MapServer')[0].split('/').pop())) lista.push({ ...b, titulo: 'Mapa Básico da Prefeitura', curto: 'Básico', tipo: 'mapa' });
     // Datas anteriores do satélite (Esri World Imagery Wayback), da mais nova para a mais antiga.
     for (const v of [...(this.catalogo.satelite || [])].reverse()) {
       const quando = new Date(`${v.captura}T12:00:00Z`);
@@ -170,11 +168,6 @@ export class Globo {
       lista.push({ chave: `sat-${v.captura}`, titulo: `Satélite de ${mes}`, curto: `Sat. ${v.captura.slice(0, 4)}`,
         ano: null, tipo: 'historico', url: v.url, fonte: v.fonte, resolucao: v.resolucao_m,
         nivelMaximo: v.nivel_maximo || 17, captura: v.captura });
-    }
-    // Ortofotos anteriores da Prefeitura (banco local).
-    for (const o of fotos.slice(1)) {
-      lista.push({ chave: `foto-${o.ano}`, titulo: `Foto aérea de ${o.ano} (Prefeitura)`, curto: `Foto ${o.ano}`, ano: null, tipo: 'historico',
-        servico: o.servico, fonte: 'Prefeitura de Goiânia', captura: String(o.ano) });
     }
     return lista;
   }

@@ -1095,5 +1095,70 @@
    "cpu_lenta": 2,
    "processadores": 1
   }
+ },
+ "1.25.1": {
+  "etapas": {
+   "desenhar-mapa": {
+    "n": 16,
+    "media": 57.5,
+    "p95": 138.8,
+    "max": 138.8
+   }
+  },
+  "contadores": {
+   "bytes": 10188253,
+   "pedidos": 136,
+   "cacheMemoria": 366,
+   "cacheDisco": 0,
+   "cancelados": 0
+  },
+  "tarefasLongas": {
+   "n": 49,
+   "max": 15445,
+   "acimaDe50": 47
+  },
+  "memoria": 111,
+  "workersAtivos": 1,
+  "workers": [
+   {
+    "etapas": {
+     "descompactar": {
+      "n": 131,
+      "media": 161.6,
+      "p95": 674.7,
+      "max": 1045.2
+     },
+     "interpretar": {
+      "n": 139,
+      "media": 10.8,
+      "p95": 23.5,
+      "max": 668
+     },
+     "filtrar": {
+      "n": 56,
+      "media": 223.6,
+      "p95": 1213.1,
+      "max": 1569.9
+     },
+     "baixar": {
+      "n": 136,
+      "media": 94.3,
+      "p95": 228.4,
+      "max": 403.5
+     }
+    },
+    "contadores": {
+     "bytes": 10188253,
+     "pedidos": 136,
+     "cacheMemoria": 366,
+     "cacheDisco": 0,
+     "cancelados": 0
+    }
+   }
+  ],
+  "ambiente": {
+   "cpu_lenta": 2,
+   "processadores": 1
+  }
  }
 }

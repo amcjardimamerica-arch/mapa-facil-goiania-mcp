@@ -110,7 +110,22 @@ export class Edificios {
     return this.lista.filter((e) => bairros.some((b) => dentro(b.aneis, e.c[0], e.c[1])));
   }
 
+  /** Condomínios horizontais pintados no chão (GroundPrimitive), com a cor do condomínio e contorno. */
+  _chao(lista) {
+    if (this.primitivaChao) { this.globo.cena.groundPrimitives.remove(this.primitivaChao); this.primitivaChao = null; }
+    if (!lista.length) return;
+    const inst = lista.map((e) => new Cesium.GeometryInstance({
+      id: this._id(e.i, 0),
+      geometry: new Cesium.PolygonGeometry({ polygonHierarchy: new Cesium.PolygonHierarchy(Cesium.Cartesian3.fromDegreesArray(e.f.flat())) }),
+      attributes: { color: Cesium.ColorGeometryInstanceAttribute.fromColor(this.corDe(e).withAlpha(0.7)),
+        show: new Cesium.ShowGeometryInstanceAttribute(e.p >= this.minimo) },
+    }));
+    this.primitivaChao = this.globo.cena.groundPrimitives.add(new Cesium.GroundPrimitive({ geometryInstances: inst,
+      appearance: new Cesium.PerInstanceColorAppearance({ flat: true, translucent: true }), classificationType: Cesium.ClassificationType.TERRAIN, asynchronous: true }));
+  }
+
   _remover() {
+    if (this.primitivaChao) { this.globo.cena.groundPrimitives.remove(this.primitivaChao); this.primitivaChao = null; }
     this.fonteTetos?.entities.removeAll();
     if (this.primitiva) { this.globo.cena.primitives.remove(this.primitiva); this.primitiva = null; }
     this.globo.redesenhar();
@@ -136,12 +151,17 @@ export class Edificios {
       const g = tela.getContext('2d');
       // Só o número do lote (ou dos lotes), no mesmo formato dos números de lote do mapa: texto escuro com contorno
       // claro, sem "Lt" e sem quadra (o número da quadra fica no marcador próprio).
-      const lote = String(e.l).replace(/;/g, ' · ');
-      const px = Math.min(H * 0.42, (W * 0.8) / Math.max(2, lote.length * 0.58));
+      // Mesma grafia dos números de lote do mapa (numeroNoLote em mapavetorial.js): mesma fonte e peso, mesmas
+      // cores do fundo em uso (satélite: branco com contorno escuro; mapa: castanho com contorno branco), lotes
+      // separados por "/" e altura de letra de ~3,5 m, como o número no chão visto de perto.
+      const lote = String(e.l).replace(/\s*;\s*/g, '/');
+      const noMapa = this.globo.chaveBase === 'mapa';
+      const cor = noMapa ? '#7d7465' : 'rgba(255,255,255,.92)', halo = noMapa ? 'rgba(255,255,255,.95)' : 'rgba(0,0,0,.85)';
+      const px = Math.max(10, Math.min(H * 0.6, (W * 0.85) / Math.max(1, lote.length * 0.6), (H * 3.5) / hm));
       g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
-      g.font = `600 ${px}px system-ui, "Segoe UI", Roboto, sans-serif`;
-      g.lineWidth = px / 4; g.strokeStyle = 'rgba(255,255,255,.9)'; g.strokeText(lote, W / 2, H / 2);
-      g.fillStyle = '#1f2226'; g.fillText(lote, W / 2, H / 2);
+      g.font = `600 ${px.toFixed(1)}px system-ui, "Segoe UI", Roboto, sans-serif`;
+      g.lineWidth = Math.max(2, px / 4); g.strokeStyle = halo; g.strokeText(lote, W / 2, H / 2);
+      g.fillStyle = cor; g.fillText(lote, W / 2, H / 2);
       const teto = (altitudes[j] + Math.max(e.p, 1) * this.mpp) * exagero + 0.25;
       this.fonteTetos.entities.add({ polygon: { hierarchy: Cesium.Cartesian3.fromDegreesArray(anel.flat()), height: teto, perPositionHeight: false,
         material: new Cesium.ImageMaterialProperty({ image: tela, transparent: true }), distanceDisplayCondition: perto } });
@@ -155,7 +175,12 @@ export class Edificios {
     if (vez !== this._vez || !this.ativo) return;
     const exagero = this.globo.cena.verticalExaggeration || 1;
     if (!lista.length) { this._remover(); return; }
-    const instancias = lista.flatMap((e, j) => this._partes(e).map((anel, k) => new Cesium.GeometryInstance({
+    // Condomínio horizontal: o lote inteiro pintado sobre o terreno (sem volume). Um volume plano de 1 pavimento
+    // "quebrava" onde o terreno do lote tem desnível: o chão atravessava o teto e as paredes. Pintado no chão, o lote
+    // aparece inteiro e acompanha o relevo; o número do lote é o do próprio mapa.
+    const ehChao = (e) => e.uso === 'horizontal';
+    this._chao(lista.filter(ehChao));
+    const instancias = lista.flatMap((e, j) => (ehChao(e) ? [] : this._partes(e)).map((anel, k) => new Cesium.GeometryInstance({
       id: this._id(e.i, k),
       geometry: new Cesium.PolygonGeometry({
         polygonHierarchy: new Cesium.PolygonHierarchy(Cesium.Cartesian3.fromDegreesArray(anel.flat())),
@@ -175,7 +200,7 @@ export class Edificios {
     });
     this._remover();
     this.primitiva = this.globo.cena.primitives.add(nova);
-    this._tetos(lista, altitudes, exagero);
+    this._tetos(lista.map((e) => (ehChao(e) ? { ...e, l: null } : e)), altitudes, exagero);
     this.selecionado = -1;
     // Em modo "renderizar sob demanda" é preciso pedir quadros até a geometria ficar pronta.
     const espera = setInterval(() => {
@@ -190,9 +215,12 @@ export class Edificios {
   _id(i, k) { return k ? `edi:${i}:${k}` : `edi:${i}`; }
 
   _atributos(i) {
-    if (!this.primitiva || !this.primitiva.ready || !this.lista[i]) return [];
-    try { this.primitiva.getGeometryInstanceAttributes(this._id(i, 0)); } catch { return []; }
-    return this._partes(this.lista[i]).map((_, k) => this.primitiva.getGeometryInstanceAttributes(this._id(i, k))).filter(Boolean);
+    if (!this.lista[i]) return [];
+    const prim = this.lista[i].uso === 'horizontal' ? this.primitivaChao : this.primitiva;
+    if (!prim || !prim.ready) return [];
+    try { prim.getGeometryInstanceAttributes(this._id(i, 0)); } catch { return []; }
+    const partes = this.lista[i].uso === 'horizontal' ? [0] : this._partes(this.lista[i]);
+    return partes.map((_, k) => prim.getGeometryInstanceAttributes(this._id(i, k))).filter(Boolean);
   }
 
   filtrar(minimo) {

@@ -7,6 +7,7 @@ import { CFG } from './config.js';
 import { el, aviso, fmtNum, pedirJSON, semAcento, memoria } from './util.js';
 import { ProvedorLotes, ProvedorDesenho, FILTRO_BAIRROS } from './mapavetorial.js';
 import { Postes } from './postes.js';
+import { Ruas } from './ruas.js';
 import { Escolas, NIVEIS, AULAS } from './escolas.js';
 import { botaoManutencao, manutencao, relatorioCSV, relatorioImpressao } from './manutencao.js';
 
@@ -48,6 +49,7 @@ export class Levantamento {
     this.dados = null;
     this.camadaLotes = null;
     this.fonte = new Cesium.CustomDataSource('levantamento');
+    this.ruas = new Ruas({ globo, identificar });
     this.postes = new Postes({ globo, identificar });
     this.escolas = new Escolas({ globo, identificar });
     globo.viewer.dataSources.add(this.fonte);
@@ -442,6 +444,11 @@ export class Levantamento {
     if (this.escolas.itens) this.escolas.mostrar(this.mostrar && !!this.opcoes.escolas, this.opcoes.escolasFiltro, bairroVisivel);
     this._filtroDoMapa();
     this._desenharEleitoral();
+    // Ruas do bairro: cada uma é um marcador próprio, em toda a extensão dentro do bairro (ruas.js).
+    const bairrosRuas = this.mostrar ? d.limites.map((lim, i) => (this.opcoes.bairros[i] === false ? null
+      : { nome: d.bairros[i] || lim.nome || `Bairro ${i + 1}`, aneis: d.limites_oficiais?.[i]?.aneis.map(decodificarAnel) || lim.aneisLL })).filter(Boolean) : [];
+    const chaveRuas = bairrosRuas.map((b) => b.nome).join('|');
+    if (chaveRuas !== this._chaveRuas) { this._chaveRuas = chaveRuas; this.ruas.mostrar(this.mostrar, bairrosRuas).catch(() => {}); }
     this.globo.organizarPilha();
     this.globo.redesenhar();
     this.aoMudar();
@@ -657,6 +664,7 @@ export class Levantamento {
   aoClicar(pego, ponto) {
     if (!this.dados) return false;
     if (this.postes.aoClicar(pego)) return true;
+    if (this.ruas.aoClicar(pego)) return true;
     if (this.escolas.aoClicar(pego, (a) => this.abrirArea(a), (l) => this.abrirLote(l, true))) return true;
     const lv = pego?.id?.levantamento;
     if (lv) {

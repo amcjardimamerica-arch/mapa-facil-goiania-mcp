@@ -61,19 +61,15 @@
   <section data-secao="imagens" data-titulo="Fundo do mapa, satélite e relevo" hidden>
     <h3 class="subtitulo">Fundo do globo</h3>
     <div id="lista-bases" class="cartoes" role="radiogroup" aria-label="Fundo do globo"></div>
-    <p class="nota">O satélite (Esri) é o fundo padrão, com as imagens atuais. A foto aérea é a ortofoto da Prefeitura guardada no próprio sistema. O Mapa é desenhado aqui a partir dos dados da Prefeitura, sem fotos: quadras, ruas por hierarquia, nomes e o relevo sombreado.</p>
-    <h3 class="subtitulo">Satélite em outras datas e fotos aéreas antigas</h3>
+    <h3 class="subtitulo">Satélite em outras datas</h3>
     <label class="rotulo-faixa bloco"><span>Data da imagem</span><select id="satelite-data" class="campo"></select></label>
-    <p class="nota">Versões anteriores do satélite (arquivo Wayback da Esri; a data é a da captura no centro de Goiânia) e as ortofotos de 2011 e 2006 da Prefeitura.</p>
     <h3 class="subtitulo">Comparar épocas</h3>
     <label class="rotulo-faixa bloco"><span>Lado direito da tela</span><select id="comparar" class="campo"></select></label>
-    <p class="nota">Arraste a barra vertical sobre o mapa para revelar cada lado.</p>
     <h3 class="subtitulo">Relevo</h3>
     <label class="linha-chave"><span><strong>Relevo 3D</strong><small>terreno com altitude real</small></span><span class="interruptor"><input type="checkbox" id="relevo-liga"><span></span></span></label>
     <label class="rotulo-faixa bloco"><span>Exagero vertical <output id="exagero-valor">1×</output></span><input type="range" id="exagero" min="1" max="6" step="0.5" value="1" aria-label="Exagero vertical"></label>
     <h3 class="subtitulo">Território</h3>
     <label class="rotulo-faixa bloco"><span>Cinza fora de Goiânia <output id="mascara-valor">100%</output></span><input type="range" id="mascara" min="55" max="100" step="5" value="100" aria-label="Opacidade do cinza fora de Goiânia"></label>
-    <p class="nota">Os municípios limítrofes aparecem só como território, sem dados.</p>
   </section>
 
 
