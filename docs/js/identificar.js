@@ -2,6 +2,7 @@
 // estiver ligado nos temas do Mapa Fácil. Fora de Goiânia a ficha só indica o
 // território (limítrofe), sem dados.
 import { BASE } from './mapavetorial.js';
+import { fichaLote } from './fichalote.js';
 import { CFG, ROTULOS_CAMPOS, CAMPOS_OCULTOS, CAMPOS_SIM_NAO } from './config.js';
 import { $, el, pedirJSON, mercX, mercY, deMercator, paraUTM, fmtNum, fmtGraus, aviso, extensaoDe, nomeBairro } from './util.js';
 import { cofreDisponivel, cofreAberto, abrirCofre, camposPessoais, consultarOuServidor, identificarOuServidor, servicoDe } from './banco.js';
@@ -263,31 +264,21 @@ export class Identificar {
       if (outros.length) this._mostrarTema({ titulo: 'Base Cadastral' }, outros);
       return;
     }
-    const partes = [];
-    if (lote && !vazio(lote.attributes.nm_lot)) partes.push(`Lote ${lote.attributes.nm_lot.trim()}`);
-    if (quadra && !vazio(quadra.attributes.nm_qdr)) partes.push(`Quadra ${quadra.attributes.nm_qdr.trim()}`);
-    this.titulo(partes.join(' · ') || nomeDoBairro || 'Local em Goiânia',
-      partes.length ? [nomeDoBairro, 'Goiânia'].filter(Boolean).join(' · ') : (nomeDoBairro ? 'Bairro · Goiânia' : 'Goiânia'));
     const alvo = lote || quadra || bairro;
     if (alvo?.geometry) this.destacar(alvo.geometry);
-
     if (lote) {
-      const corpo = this.secao('Lote', { aberto: true });
-      corpo.append(this.tabela(atributosLegiveis(lote.attributes)));
-      if (lote.geometry?.rings && this.acoes.editarPoligono) {
-        const a = lote.attributes, qd = quadra?.attributes?.nm_qdr;
-        corpo.append(el('button', { class: 'botao destaque', onclick: () => this.acoes.editarPoligono({
-          aneis: lote.geometry.rings.map((r) => r.map(([x, y]) => deMercator(x, y))),
-          quadra: String(qd || '').trim(), lote: String(a.nm_lot || '').trim(), bairro: nomeDoBairro || '',
-          ci: String(a.ci || '').trim(), id: String(a.id || '').trim() }) }, 'Editar como polígono'));
-      }
-      this._anexos(String(lote.attributes.id || '').trim(), corpo);
-      const ci = String(lote.attributes.ci || '').trim();
-      if (/^\d{6,}$/.test(ci)) this.cadastroNaFicha(ci, ponto);
+      // Ficha do lote (fichalote.js): a mesma para todos os lotes de Goiânia.
+      const a = lote.attributes, qd = quadra?.attributes?.nm_qdr;
+      const editar = lote.geometry?.rings && this.acoes.editarPoligono ? () => this.acoes.editarPoligono({
+        aneis: lote.geometry.rings.map((r) => r.map(([x, y]) => deMercator(x, y))),
+        quadra: String(qd || '').trim(), lote: String(a.nm_lot || '').trim(), bairro: nomeDoBairro || '',
+        ci: String(a.ci || '').trim(), id: String(a.id || '').trim() }) : null;
+      fichaLote(this, { lote, quadra: quadra?.attributes, bairro: nomeDoBairro, ponto, aoEditarPoligono: editar })
+        .then(() => { if (outros.length) this._mostrarTema({ titulo: 'Base Cadastral' }, outros); });
+      return;
     }
-    if (quadra) this.secao('Quadra').append(this.tabela(atributosLegiveis(quadra.attributes)),
-      el('button', { class: 'botao-texto', onclick: () => this.destacar(quadra.geometry) }, 'Destacar no mapa'));
-    if (bairro) this.secao('Bairro', { aberto: !lote }).append(
+    this.titulo(nomeDoBairro || 'Local em Goiânia', nomeDoBairro ? 'Bairro · Goiânia' : 'Goiânia');
+    if (bairro) this.secao('Bairro', { aberto: true }).append(
       el('button', { class: 'botao-texto', onclick: () => this.fichaBairro(bairro) }, `Ver o levantamento de ${nomeDoBairro || 'todo o bairro'}`));
     if (outros.length) this._mostrarTema({ titulo: 'Base Cadastral' }, outros);
   }

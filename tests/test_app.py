@@ -392,16 +392,14 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
       lv.opcoes.bairros[1] = true; lv.campo.value = 'qd 262b lt 24'; lv._buscar();
       const achou = lv.resultados.textContent;
       lv.campo.value = ''; lv._buscar(); bussola.identificar.fechar();
-      const ficha = (() => { lv.abrirLote(lv.dados.lotes.find((x) => (lv.empresasDoLote.get(x.i) || []).length)); return document.querySelector('#ficha-corpo').textContent; })();
-      // Condomínio: a lista começa em " -- " (base geral) e cada unidade abre a sua própria base.
+      // 1.28: a ficha do lote é a mesma de toda Goiânia (fichalote.js) e é montada depois das consultas.
+      const fichaPronta = async () => { for (let i = 0; i < 160 && !document.querySelector('#ficha-corpo .coordenadas.fim'); i++) await new Promise((o) => setTimeout(o, 250)); await new Promise((o) => setTimeout(o, 400)); };
+      lv.abrirLote(lv.dados.lotes.find((x) => (lv.empresasDoLote.get(x.i) || []).length)); await fichaPronta();
+      const ficha = document.querySelector('#ficha-corpo').textContent;
+      // Condomínio: todas as inscrições de IPTU do lote aparecem na ficha, uma embaixo da outra.
       const condo = lv.dados.lotes.find((x) => (lv.unidadesDoLote[x.i] || []).length > 6 && x.f === 'Condomínio residencial');
-      lv.abrirLote(condo);
-      const sel = document.querySelector('#lv-unidade');
-      const unid = { opcoes: sel.options.length, primeira: sel.options[0].textContent, geral: document.querySelector('#ficha-corpo').textContent.includes('Inscrição do lote (CI)') };
-      sel.value = '1'; sel.dispatchEvent(new Event('change'));
-      unid.titulo = document.querySelector('#ficha-titulo').textContent;
-      unid.corpo = document.querySelector('#ficha-corpo').textContent;
-      unid.aindaTemLista = !!document.querySelector('#lv-unidade');
+      lv.abrirLote(condo); await fichaPronta();
+      const unid = { inscricoes: document.querySelectorAll('#ficha-corpo dl.unidade-vertical').length, titulo: document.querySelector('#ficha-titulo').textContent };
       // Edificações 3D dos dois bairros: o mesmo motor das Edificações da cidade, só dentro dos limites.
       lv.opcoes.edificacoes = true; await lv._edificacoes();
       const ed = bussola.edificios;
@@ -470,10 +468,12 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
     assert r["tratou"] and r["titulo"].startswith("Quadra "), r
     assert not r["semResid"] and r["soJA"], r
     assert "262B" in r["achou"], r
-    assert "mpresas no lote" in r["ficha"] and "Inscrição do lote (CI)" in r["ficha"], r["ficha"][:300]
+    for parte in ("Moradores, comerciantes e contatos", "Tipo do imóvel e edição do lote", "Proprietário",
+                  "Cadastro imobiliário e dados complementares", "Inscrição cadastral (CI)", "Latitude, longitude"):
+        assert parte in r["ficha"], (parte, r["ficha"][:300])
+    assert "UTM 22S" not in r["ficha"] and "Marcar" not in r["ficha"], r["ficha"][:300]
     u = r["unid"]
-    assert u["opcoes"] > 6 and u["primeira"].startswith(" -- ") and u["geral"], u
-    assert u["titulo"].startswith(("Apartamento", "Sala", "Loja", "Casa", "Box")) and "UN-" in u["corpo"] and u["aindaTemLista"], u
+    assert u["inscricoes"] > 6 and "Quadra" in u["titulo"] and "Lote" in u["titulo"], u
     eb = u["edificacoesBairros"]
     assert eb["bairros"] == 2 and not eb["cidade"] and 500 < eb["visiveis"] < eb["total"] and eb["horizontais"] > 100, eb
     assert u["edificacoesDepois"] == {"bairros": 0, "primitiva": False}, u
@@ -739,7 +739,7 @@ def test_dados_complementares_no_sobre_e_na_ficha(mapa):
       await new Promise((ok) => setTimeout(ok, 6000));
       const corpo = document.querySelector('#ficha-corpo').textContent;
       return { temCampo, msg, semBotao: !/Ver cadastro imobili/.test(corpo), cadastro: /Cadastro imobiliário e dados complementares/.test(corpo),
-               inscricoes: /Inscrições no lote/.test(corpo), cadeado: /🔒 Proprietário/.test(corpo) };
+               inscricoes: /Inscrições no lote/.test(corpo), cadeado: /Proprietário/.test(corpo) && /🔒 Nome, CPF\/CNPJ/.test(corpo) };
     }""")
     assert r["temCampo"] and "24 horas" in r["msg"], r
     assert r["semBotao"] and r["cadastro"] and r["inscricoes"] and r["cadeado"], r

@@ -7,6 +7,7 @@ import { CFG } from './config.js';
 import { el, aviso, fmtNum, pedirJSON, semAcento, memoria } from './util.js';
 import { ProvedorLotes, ProvedorDesenho, FILTRO_BAIRROS } from './mapavetorial.js';
 import { Postes } from './postes.js';
+import { fichaLote } from './fichalote.js';
 import { Ruas } from './ruas.js';
 import { Escolas, NIVEIS, AULAS } from './escolas.js';
 import { botaoManutencao, manutencao, relatorioCSV, relatorioImpressao } from './manutencao.js';
@@ -815,34 +816,24 @@ export class Levantamento {
 
   abrirLote(l, voar = false) {
     if (!this.detalhesProntos) { this._esperarFicha(() => this.abrirLote(l, voar)); return; }
-    const d = this.dados, id = this.identificar;
+    const d = this.dados, id = this.identificar, cl = d.colunas_lote;
     const c = l.aneis[0].reduce((a, p) => [a[0] + p[0] / l.aneis[0].length, a[1] + p[1] / l.aneis[0].length], [0, 0]);
     const ponto = { lon: c[0], lat: c[1], alt: NaN };
-    const unidades = this.unidadesDoLote[l.i] || [];
-    const cu = d.unidades?.colunas || [];
     id.limparDestaque();
     id.destacarLonLat(l.aneis, { fechado: true, cor: Cesium.Color.fromCssColorString(this.cor[l.f] || '#ffd54a') });
-    // Condomínio: a pessoa escolhe a base geral (" -- ") ou a de uma unidade (apartamento, sala, casa…).
-    const desenhar = (k) => {
-      id.abrir({ titulo: `Quadra ${l.q} · Lote ${l.l}`, subtitulo: `${d.bairros[l.b]} · ${l.f}`, ponto });
-      if (unidades.length) {
-        const kTipo = cu.indexOf('Tipo da unidade');
-        const principais = unidades.filter((u, i) => i > 0 && !['Box', 'Escaninho'].includes(u[kTipo])).length;
-        const seletor = el('select', { class: 'campo', id: 'lv-unidade', 'aria-label': 'Unidade do condomínio' },
-          unidades.map((u, i) => el('option', { value: String(i) }, i === 0 ? ' -- (condomínio, base geral)' : String(u[0]))));
-        seletor.value = String(k);
-        seletor.addEventListener('change', () => desenhar(Number(seletor.value)));
-        id.corpo.append(el('label', { class: 'rotulo-faixa bloco lv-unidade' },
-          el('span', {}, /horizontal/i.test(l.f) ? 'Casa do condomínio' : 'Apartamento ou sala',
-            el('small', {}, ` ${fmtNum(principais)} unidades principais, ${fmtNum(unidades.length - 1)} inscrições de IPTU`)), seletor));
-      }
-      if (k > 0) this._corpoUnidade(l, unidades[k], cu); else this._corpoGeral(l, unidades[0], cu);
-      // Cadastro imobiliário e dados complementares do lote, abertos direto na ficha.
-      const ci = String(l.v[d.colunas_lote.indexOf('Inscrição do lote (CI)')] || '').replace(/\D/g, '');
-      if (ci.length >= 6) id.cadastroNaFicha(ci, ponto);
-      id.corpo.append(el('button', { class: 'botao', onclick: () => id.emPonto(ponto) }, 'Consultar este ponto'));
-    };
-    desenhar(0);
+    // A mesma ficha de todos os lotes de Goiânia (fichalote.js), com o levantamento da Associação como dado adicional.
+    const ci = String(l.v[cl.indexOf('Inscrição do lote (CI)')] || '').replace(/\D/g, '');
+    const ce = d.empresas?.colunas || [];
+    const empresas = (this.empresasDoLote.get(l.i) || []).map((e) => Object.fromEntries(ce.map((k, i) => [k, e[i]])));
+    const R = 6378137, mx = (lon) => lon * (Math.PI / 180) * R, my = (lat) => Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) * R;
+    fichaLote(id, {
+      lote: { attributes: { ci, nm_lot: String(l.l) }, geometry: { rings: l.aneis.map((r) => r.map(([lo, la]) => [mx(lo), my(la)])) } },
+      quadra: { nm_qdr: String(l.q) }, bairro: d.bairros[l.b], ponto,
+      extra: { colunas: cl, valores: l.v, empresas, quadra: l.q, lote: l.l, endereco: l.v[cl.indexOf('Endereço (cadastro)')] },
+    }).then(() => {
+      const m = this._manutencao(l.v[cl.indexOf('Código para manutenção')]);
+      if (m) id.corpo.insertBefore(el('div', { class: 'linha-botoes' }, m), id.corpo.querySelector('.coordenadas.fim'));
+    });
     if (voar) this.globo.voarPara({ lon: c[0], lat: c[1], distancia: 350, inclinacao: -60 });
   }
 

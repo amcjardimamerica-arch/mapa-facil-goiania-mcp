@@ -496,3 +496,10 @@ body:has(#ficha:not([hidden])) #topo #caixa-busca { width: min(560px, calc(100vw
 .dren-simbolo.losango { width: 10px; height: 10px; transform: rotate(45deg); border: 1.5px solid #fff; }
 .dren-simbolo.tracejado { height: 0; border: 0; border-top: 3px dashed var(--cor); background: none; }
 .dren-simbolo.seta { width: 0; height: 0; background: none; border: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 12px solid #fff; }
+
+/* ficha do lote (1.28) */
+.acoes-lote { margin: 2px 0 8px; }
+.caixa-lote { width: 100%; min-height: 110px; resize: vertical; font: inherit; }
+.coordenadas.fim { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--linha); }
+.nota.cadeado { color: var(--texto-2); }
+.proprietario + .proprietario { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--linha); }
