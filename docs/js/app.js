@@ -19,6 +19,7 @@ import { encerrarSessao, sessaoAindaValida } from './acesso.js';
 import { iniciarBanco, cofreDisponivel, cofreAberto, cofreLiberadoAte, relatorioCompleto, zerarWorkers } from './banco.js';
 import { ALTURA, faixaAltura, BASE, gravarBase } from './mapavetorial.js';
 import { Quadras } from './quadras.js';
+import { Drenagem } from './drenagem.js';
 import { Eleicoes } from './eleicoes.js';
 import { relatorio as relatorioDesempenho, zerar as zerarDesempenho } from './desempenho.js';
 
@@ -106,10 +107,14 @@ async function iniciar() {
     conselho: (caixa) => caixa.append(el('p', { class: 'nota' }, 'Regiões da eleição do Conselho Tutelar (juntam zonas inteiras ou partes delas), com os colégios de votação e as transferências de seções.')),
     conselhoLigar: (ligado) => { eleicoes.definir(ligado ? 'conselho' : '').catch(() => {}); levantamento.definirEleicao(ligado ? 'ct' : '').catch(() => {}); },
     edificacoes: (caixa) => edificios.montarEm(caixa),
+    // Drenagem Pluvial: base própria da A.M.C. (bocas de lobo, galerias, pontos de inspeção e análises).
+    drenagem: (caixa) => drenagem.montarEm(caixa),
+    drenagemLigar: (ligado) => { drenagem.ligar(ligado).catch(() => {}); },
   };
   const camadas = new Camadas(globo, catalogo, $('#lista-camadas'), { especiais });
   const identificar = new Identificar(globo, camadas, territorio);
   const eleicoes = new Eleicoes({ globo, identificar });
+  const drenagem = new Drenagem({ globo, identificar });
   const servicos = new Servicos({ globo, identificar });
   camadas.servicos = servicos;
   const edificios = new Edificios(globo, identificar);
@@ -128,7 +133,7 @@ async function iniciar() {
   // Os locais de votação só aparecem com o projeto Zonas Eleitorais ligado.
   levantamento.opcoes.eleicao = '';
   const localizacao = new Localizacao({ globo, camadas, territorio, botaoGps: $('#nav-local') });
-  Object.assign(app, { globo, camadas, identificar, servicos, edificios, medir, marcadores, poligonos, localizacao, lotes, levantamento, eleicoes, busca, territorio, catalogo, manifesto, sessao });
+  Object.assign(app, { drenagem, globo, camadas, identificar, servicos, edificios, medir, marcadores, poligonos, localizacao, lotes, levantamento, eleicoes, busca, territorio, catalogo, manifesto, sessao });
 
   const bases = globo.basesDisponiveis();
   const baseInicial = bases.some((b) => b.chave === hash.b) ? hash.b : globo.basePadrao;
@@ -349,7 +354,7 @@ async function iniciar() {
     const pego = globo.cena.pick(ev.position);
     edificios.limparSelecao();
     if (pego?.id?.alca) return; // alças de edição: tratadas no arrastar
-    if (poligonos.aoClicar(pego) || edificios.aoClicar(pego) || servicos.aoClicar(pego) || marcadores.aoClicar(pego) || levantamento.aoClicar(pego, ponto)) return;
+    if (poligonos.aoClicar(pego) || edificios.aoClicar(pego) || servicos.aoClicar(pego) || marcadores.aoClicar(pego) || drenagem.aoClicar(ponto) || levantamento.aoClicar(pego, ponto)) return;
     if (eleicoes.aoClicar(ponto)) return; // mapa de eleição ligado: zona ou região inteira, nunca quadra ou lote
     if (ponto) identificar.emPonto(ponto);
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);

@@ -13,6 +13,8 @@ import { idsDaFicha } from './mapavetorial.js';
 /** Organização dos projetos. `ids` lista camadas (folhas ou grupos) do serviço; sem `ids`, entra o serviço todo. */
 export const ORGANIZACAO = [
   { chave: 'base', titulo: 'Base Cadastral', especial: 'base', fontes: [{ tema: 'Feature_Base' }] },
+  // Drenagem Pluvial: base própria da A.M.C. (drenagem.js), ligada à parte, sem desligar os mapas de eleição.
+  { chave: 'drenagem', titulo: 'Drenagem Pluvial', especial: 'drenagem', proprio: true, independente: true, semConta: true, fontes: [{ tema: 'Mapa_Sanemanento', ids: [] }] },
   // Mapas de eleição: desenho próprio (eleicoes.js), um de cada vez.
   { chave: 'eleitoral', titulo: 'Zonas Eleitorais', especial: 'eleitoral', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
   { chave: 'conselho', titulo: 'Conselho Tutelar', especial: 'conselho', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
@@ -208,6 +210,7 @@ export class Camadas {
 
   _atualizarConta(g) {
     if (!g.conta) return;
+    if (g.semConta) { g.conta.textContent = ''; g.no.classList.toggle('ligado', !!g.ligado); return; }
     const sel = g.fontes.reduce((s, f) => s + f.sel.size, 0);
     g.conta.textContent = g.ligado && !g.consulta ? `${sel}/${this._total(g)}` : `${this._total(g)}`;
     g.no.classList.toggle('ligado', g.ligado && !g.consulta);
@@ -256,7 +259,7 @@ export class Camadas {
     if (g.chave === 'base') { g.ligado = ligado; g.liga.checked = ligado; this._aoLigar(g, ligado); this.aoMudar(); return; }
     if (g.consulta) return;
     // Zonas Eleitorais e Conselho Tutelar: um mapa de eleição de cada vez.
-    if (ligado && g.proprio) for (const o of this.grupos) if (o !== g && o.proprio && o.ligado) { o.ligado = false; o.liga.checked = false; this._aoLigar(o, false); }
+    if (ligado && g.proprio && !g.independente) for (const o of this.grupos) if (o !== g && o.proprio && !o.independente && o.ligado) { o.ligado = false; o.liga.checked = false; this._aoLigar(o, false); }
     g.ligado = ligado;
     if (ligado && g.fontes.every((f) => !f.sel.size)) {
       for (const f of g.fontes) { f.padrao.forEach((id) => f.sel.add(id)); if (!f.sel.size) f.folhas.forEach((id) => f.sel.add(id)); }

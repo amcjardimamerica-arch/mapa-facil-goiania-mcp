@@ -349,6 +349,8 @@ export class Identificar {
       ['Comércio e serviços', ['restaurantes', 'bares', 'combustivel', 'bancos', 'hoteis']],
       ['Comunidade e serviços públicos', ['associacoes', 'comunitarios', 'seguranca', 'outras_areas']],
       ['Transporte e meio ambiente', ['pontos_onibus', 'arvores', 'nascentes']],
+      ['Drenagem pluvial (base da A.M.C.)', ['drenagem_bocas', 'drenagem_unidades', 'drenagem_bocas_ruins', 'drenagem_bocas_sem_galeria', 'drenagem_galeria_m',
+        'drenagem_pocos', 'drenagem_pocos_fechados', 'drenagem_pontos_baixos', 'drenagem_ruas_sem_boca_m']],
     ];
     for (const [titulo, chaves] of GRUPOS) {
       const itens = chaves.filter((k) => c[k]);

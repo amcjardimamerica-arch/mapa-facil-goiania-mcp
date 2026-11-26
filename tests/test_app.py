@@ -172,6 +172,26 @@ def test_selecao_pela_altura_bairro_e_quadra(mapa):
     assert r["quadra"].startswith("Quadra "), r
 
 
+def test_drenagem_pluvial(mapa):
+    """Camadas → Drenagem Pluvial: base própria da A.M.C. (bocas de lobo, galerias, pontos de inspeção e análises)."""
+    r = mapa.evaluate("""async () => {
+      const d = bussola.drenagem;
+      bussola.camadas.ligar('drenagem', true);
+      await d.carregar(); await new Promise((ok) => setTimeout(ok, 300));
+      const b = d.bocas.find((x) => x.origem.startsWith('PDDU + '));
+      const lon = b.v[0], lat = b.v[1];
+      bussola.globo.camera.setView({ destination: Cesium.Cartesian3.fromDegrees(lon, lat, 1200) });
+      const clicou = d.aoClicar({ lon, lat, alt: NaN });
+      const titulo = document.querySelector('#ficha-titulo').textContent, corpo = document.querySelector('#ficha-corpo').textContent;
+      const camada = !!d.camada, eleicaoIntacta = bussola.camadas.grupo('drenagem').independente;
+      bussola.identificar.fechar(); bussola.camadas.ligar('drenagem', false);
+      return { bocas: d.bocas.length, rede: d.rede.length, clicou, titulo, corpo, camada, eleicaoIntacta, desligou: !d.camada };
+    }""")
+    assert r["bocas"] > 30000 and r["rede"] > 50000, r
+    assert r["clicou"] and r["titulo"].startswith("Boca de lobo") and "PDDU-GYN" in r["corpo"] and "Logradouro" in r["corpo"], r
+    assert r["camada"] and r["desligou"] and r["eleicaoIntacta"], r
+
+
 def test_temas_e_link(mapa):
     estado = mapa.evaluate("""() => {
       bussola.camadas.ligar('meio', true);
@@ -199,7 +219,7 @@ def test_camadas_organizadas_em_projetos(mapa):
         edificiosDesligados: !bussola.edificios.ativo && !bussola.edificios.primitiva,
       };
     }""")
-    assert r["ordem"] == ["Base Cadastral", "Zonas Eleitorais", "Conselho Tutelar", "Energia", "Saneamento", "Sistema Viário", "Edificações", "Meio Ambiente"], r["ordem"]
+    assert r["ordem"] == ["Base Cadastral", "Drenagem Pluvial", "Zonas Eleitorais", "Conselho Tutelar", "Energia", "Saneamento", "Sistema Viário", "Edificações"], r["ordem"]
     assert "Zonas Municipais" in r["titulos"] and "Pontos Notáveis" not in r["titulos"] and "PUAMA" not in r["titulos"]
     assert "Simplifica Goiânia – Uso do Solo" not in r["titulos"] and "Documentação de Bairros" not in r["titulos"]
     assert r["eleitoral"] == [["Mapa_Limites", [10], ""]] and all(10 not in f[1] for f in r["limites"]), r["limites"]

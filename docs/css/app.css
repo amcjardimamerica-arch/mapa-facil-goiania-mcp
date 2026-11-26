@@ -484,3 +484,17 @@ body:has(#ficha:not([hidden])) #topo #caixa-busca { width: min(560px, calc(100vw
   .amc-bird.flap .amc-asa-tras .amc-wing { animation: amc-flap .26s ease-in-out infinite alternate-reverse; }
 }
 @media (max-width: 640px) { .marca-abertura .logo-nucleo { height: 90px; } .marca-abertura .amc-nome { height: 56px; } }
+/* 1.27.0: Drenagem Pluvial (Camadas) — legenda com o símbolo de cada parte. */
+.dren-grupo { margin: 6px 0; border-top: 1px solid var(--borda, rgba(255,255,255,.12)); padding-top: 4px; }
+.dren-grupo > summary { cursor: pointer; font-weight: 700; padding: 4px 0; }
+.dren-sub { padding-left: 18px; }
+.dren-linha { gap: 8px; }
+.dren-rotulo { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.dren-n { color: var(--texto-2); font-variant-numeric: tabular-nums; }
+.dren-simbolo { flex: none; width: 16px; height: 10px; background: var(--cor); border: 1.5px solid #101418; border-radius: 2px; }
+.dren-simbolo.linha { height: 5px; border-radius: 3px; border: 1px solid rgba(0,0,0,.6); }
+.dren-simbolo.circulo { width: 11px; height: 11px; border-radius: 50%; border: 2px solid #fff; }
+.dren-simbolo.triangulo { width: 0; height: 0; background: none; border: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 12px solid var(--cor); }
+.dren-simbolo.losango { width: 10px; height: 10px; transform: rotate(45deg); border: 1.5px solid #fff; }
+.dren-simbolo.tracejado { height: 0; border: 0; border-top: 3px dashed var(--cor); background: none; }
+.dren-simbolo.seta { width: 0; height: 0; background: none; border: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 12px solid #fff; }

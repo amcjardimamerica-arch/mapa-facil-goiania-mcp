@@ -169,7 +169,7 @@ export function nomeVia(nm) {
 }
 
 // ------------------------------------------------------------------ geometria
-class Quadro {
+export class Quadro {
   constructor(ret, T) {
     this.o = ret.west; this.n = ret.north; this.T = T;
     this.kx = T / (ret.east - ret.west); this.ky = T / (ret.north - ret.south);
@@ -254,7 +254,7 @@ class Rotulos {
 }
 
 // ------------------------------------------------------- provedor base (Cesium)
-class ProvedorCanvas {
+export class ProvedorCanvas {
   constructor({ retangulo, tamanho = 512, credito, nivelMinimo = NIVEL_MINIMO, nivelMaximo = 21 }) {
     this._T = tamanho; this._ret = retangulo; this._min = nivelMinimo; this._max = nivelMaximo;
     this._grade = new Cesium.WebMercatorTilingScheme();
