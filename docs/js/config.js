@@ -1,5 +1,5 @@
 // Configuração da Bússola. Tudo que depende de endereço externo fica aqui.
-export const VERSAO = '1.27.0';
+export const VERSAO = '1.27.1';
 
 // Endereços do Mapa Fácil: servem só de NOME das consultas, que o banco local responde (banco.js). A política de
 // segurança das páginas (CSP) não deixa o navegador se conectar a eles.
@@ -26,6 +26,8 @@ export const CFG = {
   // nenhuma imagem de fora (Esri e Google foram retirados: os termos deles não permitem guardar as fotos).
   // A primeira da lista que existir no banco é o fundo "Foto aérea"; as demais aparecem como épocas anteriores.
   // Satélite atual da Esri (World Imagery) e datas anteriores (Wayback, data/satelite.json): o fundo padrão.
+  // Divisas dos Conselhos Tutelares editáveis (pontos arrastáveis) até o titular pedir para travar.
+  conselhoEditavel: true,
   satelite: {
     url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     nivelMaximo: 19,

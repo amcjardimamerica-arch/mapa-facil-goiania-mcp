@@ -628,14 +628,6 @@ export class ProvedorDesenho extends ProvedorCanvas {
       g.strokeStyle = ln.cor; g.lineWidth = w; g.stroke();
     }
     g.setLineDash([]);
-    const divisas = this.divisas.filter((d) => toca(...d.ext));
-    if (divisas.length) {
-      const w = (nivel >= 16 ? 3.6 : nivel >= 11 ? 3.2 : 2.4);
-      g.beginPath();
-      for (const d of divisas) q.caminho(g, [d.pontos]);
-      g.strokeStyle = '#000000'; g.lineWidth = w * 3; g.stroke();
-      g.strokeStyle = '#FF0000'; g.lineWidth = w; g.stroke();
-    }
     for (const p of this.poligonos) {
       if (!toca(...p.ext)) continue;
       const lado = Math.max(q.x(p.ext[2]) - q.x(p.ext[0]), q.y(p.ext[1]) - q.y(p.ext[3]));
@@ -646,6 +638,16 @@ export class ProvedorDesenho extends ProvedorCanvas {
       const w = (p.largura || 3) * escala;
       g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = w + 2; g.stroke();
       g.strokeStyle = p.borda; g.lineWidth = w; g.stroke();
+    }
+    // Divisas por último, por cima do preenchimento (o preenchimento escurecia o vermelho): três faixas iguais,
+    // preta, vermelha #FF0000 e preta, largas o bastante para o vermelho aparecer também na vista da cidade.
+    const divisas = this.divisas.filter((d) => toca(...d.ext));
+    if (divisas.length) {
+      const w = nivel >= 16 ? 5 : nivel >= 13 ? 4.5 : 4;
+      g.beginPath();
+      for (const d of divisas) q.caminho(g, [d.pontos]);
+      g.strokeStyle = '#000000'; g.lineWidth = w * 3.6; g.stroke(); // preta | vermelha | preta: as pretas com folga
+      g.strokeStyle = '#FF0000'; g.lineWidth = w; g.stroke();          // para não sumirem ao reduzir o bloco
     }
     return Promise.resolve(tela);
   }

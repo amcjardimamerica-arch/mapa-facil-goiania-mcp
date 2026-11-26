@@ -104,8 +104,14 @@ async function iniciar() {
     // Mapas de eleição: Zonas Eleitorais (TSE) e Conselho Tutelar (regiões e locais da eleição de 2023).
     eleitoral: (caixa) => caixa.append(el('p', { class: 'nota' }, 'Zonas eleitorais do TSE e os colégios de votação. O clique seleciona a zona inteira ou o colégio.')),
     eleitoralLigar: (ligado) => { eleicoes.definir(ligado ? 'zonas' : '').catch(() => {}); levantamento.definirEleicao(ligado ? 'geral' : '').catch(() => {}); },
-    conselho: (caixa) => caixa.append(el('p', { class: 'nota' }, 'Regiões da eleição do Conselho Tutelar (juntam zonas inteiras ou partes delas), com os colégios de votação e as transferências de seções.')),
-    conselhoLigar: (ligado) => { eleicoes.definir(ligado ? 'conselho' : '').catch(() => {}); levantamento.definirEleicao(ligado ? 'ct' : '').catch(() => {}); },
+    conselho: (caixa) => caixa.append(el('p', { class: 'nota' }, 'Regiões da eleição do Conselho Tutelar (juntam zonas inteiras ou partes delas), com os colégios de votação e as transferências de seções.'),
+      CFG.conselhoEditavel ? el('div', { class: 'linha-botoes' },
+        el('button', { class: 'botao', onclick: async (e) => {
+          if (eleicoes.editando) { eleicoes.pararEdicao(); e.target.textContent = 'Editar divisas (arrastar pontos)'; return; }
+          await eleicoes.iniciarEdicao(); e.target.textContent = 'Parar a edição';
+          aviso('Aproxime (abaixo de ~9 km) e arraste os pontos: vermelhos ficam na divisa entre dois Conselhos.'); } }, 'Editar divisas (arrastar pontos)'),
+        el('button', { class: 'botao-texto', onclick: () => eleicoes.salvarEdicao() }, 'Salvar divisas editadas')) : null),
+    conselhoLigar: (ligado) => { if (!ligado) eleicoes.pararEdicao(); eleicoes.definir(ligado ? 'conselho' : '').catch(() => {}); levantamento.definirEleicao(ligado ? 'ct' : '').catch(() => {}); },
     edificacoes: (caixa) => edificios.montarEm(caixa),
     // Drenagem Pluvial: base própria da A.M.C. (bocas de lobo, galerias, pontos de inspeção e análises).
     drenagem: (caixa) => drenagem.montarEm(caixa),

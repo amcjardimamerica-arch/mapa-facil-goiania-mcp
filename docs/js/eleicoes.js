@@ -41,6 +41,7 @@ export class Eleicoes {
   async _regioes() {
     if (this._cacheReg) return this._cacheReg;
     const d = await pedirJSON(`${CFG.dados}conselho_regioes.geojson`);
+    this._geoConselho = d; // as coordenadas são as mesmas listas usadas no desenho: o editor mexe direto nelas
     const aneisDe = (f) => (f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates).flat();
     // Regiões administrativas da SEPLAM (duas por Conselho): só a divisa interna, tracejada.
     this._subregioes = d.features.filter((f) => f.properties.tipo === 'regiao_administrativa')
@@ -127,4 +128,109 @@ export class Eleicoes {
     }
     return true;
   }
+
+  // ------------------------------------------------------------------ edição das divisas (Conselho Tutelar)
+  // Enquanto CFG.conselhoEditavel for verdadeiro, cada vértice das divisas dos Conselhos vira um ponto que se
+  // arrasta com o mouse; os vértices dos Conselhos vizinhos no mesmo lugar (até ~3 m) andam juntos, para a divisa
+  // não abrir nem sobrepor. "Salvar divisas" baixa o arquivo editado (conselho_regioes.geojson) para implantar.
+  async iniciarEdicao() {
+    if (!CFG.conselhoEditavel) return false;
+    if (this.modo !== 'conselho') await this.definir('conselho');
+    if (this.editando) return true;
+    this.editando = true;
+    this._alcas = new Cesium.CustomDataSource('alcas-conselho');
+    await this.globo.viewer.dataSources.add(this._alcas);
+    const cena = this.globo.cena, ctrl = cena.screenSpaceCameraController;
+    this._h = new Cesium.ScreenSpaceEventHandler(cena.canvas);
+    let arrasto = null;
+    this._h.setInputAction((m) => {
+      const pk = cena.pick(m.position);
+      const v = pk?.id?.vertice;
+      if (!v) return;
+      arrasto = { v, ent: pk.id };
+      ctrl.enableInputs = false;
+    }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
+    this._h.setInputAction((m) => {
+      if (!arrasto) return;
+      const c = this.globo.camera.pickEllipsoid(m.endPosition);
+      if (!c) return;
+      const g = Cesium.Cartographic.fromCartesian(c);
+      const lon = Cesium.Math.toDegrees(g.longitude), lat = Cesium.Math.toDegrees(g.latitude);
+      for (const p of arrasto.v.pontos) { p[0] = lon; p[1] = lat; }
+      arrasto.ent.position = Cesium.Cartesian3.fromDegrees(lon, lat);
+      this.globo.redesenhar();
+    }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+    this._h.setInputAction(() => {
+      if (!arrasto) return;
+      arrasto = null;
+      ctrl.enableInputs = true;
+      this.alterado = true;
+      this._redesenharDivisas();
+    }, Cesium.ScreenSpaceEventType.LEFT_UP);
+    this._aoMover = () => this._mostrarAlcas();
+    this.globo.camera.moveEnd.addEventListener(this._aoMover);
+    this._mostrarAlcas();
+    return true;
+  }
+
+  pararEdicao() {
+    if (!this.editando) return;
+    this.editando = false;
+    this._h?.destroy(); this._h = null;
+    if (this._aoMover) this.globo.camera.moveEnd.removeEventListener(this._aoMover);
+    if (this._alcas) this.globo.viewer.dataSources.remove(this._alcas, true);
+    this._alcas = null;
+    this.globo.cena.screenSpaceCameraController.enableInputs = true;
+    this.globo.redesenhar();
+  }
+
+  /** Pontos arrastáveis dos vértices visíveis (até 900), com os vértices vizinhos (≤ ~3 m) agrupados. */
+  _mostrarAlcas() {
+    if (!this._alcas) return;
+    this._alcas.entities.removeAll();
+    const h = this.globo.camera.positionCartographic.height;
+    const vista = this.globo.camera.computeViewRectangle();
+    if (!vista || h > 9000) return; // de longe os pontos se amontoam: aproxime para editar
+    const [o, s, l, n] = [vista.west, vista.south, vista.east, vista.north].map(Cesium.Math.toDegrees);
+    const grupos = new Map();
+    const chave = (p) => `${Math.round(p[0] / 3e-5)}:${Math.round(p[1] / 3e-5)}`;
+    for (const a of this.areas) for (const r of a.aneis) for (const p of r) {
+      if (p[0] < o || p[0] > l || p[1] < s || p[1] > n) continue;
+      const k = chave(p);
+      if (!grupos.has(k)) grupos.set(k, { pontos: [], areas: new Set() });
+      const gr = grupos.get(k);
+      if (!gr.pontos.includes(p)) gr.pontos.push(p);
+      gr.areas.add(a);
+    }
+    const lista = [...grupos.values()];
+    const passo = Math.max(1, Math.ceil(lista.length / 900));
+    lista.forEach((v, i) => {
+      if (i % passo) return;
+      const [lon, lat] = v.pontos[0];
+      const divisa = v.areas.size > 1;
+      this._alcas.entities.add({ vertice: v, position: Cesium.Cartesian3.fromDegrees(lon, lat),
+        point: { pixelSize: divisa ? 11 : 8, color: divisa ? Cesium.Color.fromCssColorString('#FF0000') : Cesium.Color.WHITE,
+          outlineColor: Cesium.Color.BLACK, outlineWidth: 2, disableDepthTestDistance: Number.POSITIVE_INFINITY } });
+    });
+    this.globo.redesenhar();
+  }
+
+  _redesenharDivisas() {
+    const modo = this.modo;
+    this.modo = '';
+    this.definir(modo).then(() => this._mostrarAlcas());
+  }
+
+  /** Baixa o arquivo das divisas editadas (para implantar no sistema). */
+  salvarEdicao() {
+    if (!this._geoConselho) return;
+    const texto = JSON.stringify(this._geoConselho);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([texto], { type: 'application/geo+json' }));
+    a.download = 'conselho_regioes.geojson';
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    this.alterado = false;
+  }
+
 }
