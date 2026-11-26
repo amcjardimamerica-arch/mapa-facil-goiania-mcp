@@ -1164,84 +1164,66 @@
  "1.26.0": {
   "etapas": {
    "desenhar-mapa": {
-    "n": 77,
-    "media": 33.9,
-    "p95": 104.8,
-    "max": 139.4
-   },
-   "baixar": {
-    "n": 4,
-    "media": 746.9,
-    "p95": 747.7,
-    "max": 747.7
-   },
-   "interpretar": {
-    "n": 4,
-    "media": 0.1,
-    "p95": 0.4,
-    "max": 0.4
-   },
-   "desenhar": {
-    "n": 44,
-    "media": 1411.6,
-    "p95": 2344.7,
-    "max": 2925.2
+    "n": 13,
+    "media": 69.5,
+    "p95": 183,
+    "max": 183
    }
   },
   "contadores": {
-   "bytes": 14318125,
-   "pedidos": 195,
-   "cacheMemoria": 1636,
+   "bytes": 14856845,
+   "pedidos": 151,
+   "cacheMemoria": 331,
    "cacheDisco": 0,
-   "cancelados": 24
+   "cancelados": 0
   },
   "tarefasLongas": {
-   "n": 275,
-   "max": 2197,
-   "acimaDe50": 272
+   "n": 53,
+   "max": 5413,
+   "acimaDe50": 50
   },
-  "memoria": 125,
+  "memoria": 104,
   "workersAtivos": 1,
   "workers": [
    {
     "etapas": {
-     "filtrar": {
-      "n": 277,
-      "media": 14.2,
-      "p95": 34.9,
-      "max": 269.5
-     },
      "baixar": {
-      "n": 191,
-      "media": 34.5,
-      "p95": 90.5,
-      "max": 264.4
+      "n": 151,
+      "media": 124.6,
+      "p95": 393.5,
+      "max": 583.4
      },
      "interpretar": {
-      "n": 191,
-      "media": 1.7,
-      "p95": 3.6,
-      "max": 101.8
+      "n": 151,
+      "media": 13.6,
+      "p95": 37.8,
+      "max": 587.8
      },
      "descompactar": {
-      "n": 183,
-      "media": 21.9,
-      "p95": 61.8,
-      "max": 82.4
+      "n": 141,
+      "media": 219.4,
+      "p95": 887.6,
+      "max": 1696.7
+     },
+     "filtrar": {
+      "n": 52,
+      "media": 252.4,
+      "p95": 973.8,
+      "max": 2346.2
      }
     },
     "contadores": {
-     "bytes": 14295682,
-     "pedidos": 191,
-     "cacheMemoria": 1636,
+     "bytes": 14856845,
+     "pedidos": 151,
+     "cacheMemoria": 331,
      "cacheDisco": 0,
      "cancelados": 0
     }
    }
   ],
   "ambiente": {
-   "cpu_lenta": 4,
-   "processadores": 2
+   "cpu_lenta": 2,
+   "processadores": 1
   }
  }
 }
