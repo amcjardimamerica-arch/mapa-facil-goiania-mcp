@@ -333,9 +333,11 @@ export class Camadas {
         ? new ProvedorTema({ servico: t.chave, camadas: lista, retangulo: this.globo.ret, credito: `${credito} · banco local` })
         : imagemLocal(t.chave) || provedorExport(t.url, { camadas: lista, retangulo: this.globo.ret, credito });
       provedor.errorEvent.addEventListener((erro) => {
-        if (erro.timesRetried === 0 && !e.avisou) {
+        if (!erro.cancelado && erro.timesRetried < 2) erro.retry = true; // falha passageira: tenta de novo
+        if (erro.cancelado) return; // bloco cancelado: pedido de novo, não é falha
+        if (erro.timesRetried >= 2 && !e.avisou) {
           e.avisou = true;
-          aviso(`"${t.titulo}": o servidor municipal não respondeu a parte da imagem.`, 'alerta');
+          aviso(`"${t.titulo}": parte da imagem não carregou. Aproxime ou afaste o mapa para tentar de novo.`, 'alerta');
         }
       });
       e.camada = this.globo.adicionarTema(provedor, e.opacidade);

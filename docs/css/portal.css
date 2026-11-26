@@ -104,7 +104,7 @@ a { color: var(--marinho); }
   .logo-nucleo { padding-left: 16px; }
 }
 
-/* logomarca viva no login (1.26.1): pássaro de duas asas + nome */
+/* logomarca viva no login: pássaro do modelo Pássaro Guia + nome */
 .marca-amc-login { display: flex; align-items: center; gap: 10px; }
 .marca-amc-login .amc-bird { width: 92px; height: auto; overflow: visible; }
 .marca-amc-login .amc-nome { height: 62px; width: auto; }
@@ -112,7 +112,6 @@ a { color: var(--marinho); }
 .amc-bird .amc-beak { transform-box: view-box; transform-origin: 940px 330px; }
 @media (prefers-reduced-motion: no-preference) {
   .amc-bird.flap .amc-wing { animation: amc-flap .26s ease-in-out infinite alternate; }
-  .amc-bird.flap .amc-asa-tras .amc-wing { animation-direction: alternate-reverse; }
   .amc-bird.ruffle .amc-wing { animation: amc-ruffle .9s ease-in-out 1; }
   .amc-bird.chirp .amc-beak { animation: amc-chirp .5s ease-in-out 1; }
 }

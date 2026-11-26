@@ -259,6 +259,11 @@ export class ProvedorCanvas {
     this._T = tamanho; this._ret = retangulo; this._min = nivelMinimo; this._max = nivelMaximo;
     this._grade = new Cesium.WebMercatorTilingScheme();
     this._erro = new Cesium.Event();
+    // Bloco cancelado (saiu da tela durante a navegação) não é erro: o globo pede de novo, sem aviso.
+    this._erro.addEventListener((e) => {
+      const err = e?.error;
+      if (err?.name === 'Cancelado' || err?.name === 'AbortError' || /cancelad/i.test(String(err?.message || e?.message || ''))) { e.retry = true; e.cancelado = true; }
+    });
     this._credito = credito ? new Cesium.Credit(credito) : undefined;
   }
   get tileWidth() { return this._T; }

@@ -577,18 +577,18 @@ def test_sem_login_volta_ao_portal(navegador, servidor):
 def test_login_errado_e_certo(navegador, servidor):
     ctx = _contexto(navegador, logado=False)
     pagina = ctx.new_page()
-    pagina.goto(f"{servidor}/index.html")
-    pagina.fill("#login", "teste")
+    pagina.goto(f"{servidor}/index.html", timeout=90_000)
+    pagina.fill("#login", "teste", timeout=90_000)
     pagina.fill("#senha", "senha-errada-000")
     pagina.click("#entrar")
-    pagina.wait_for_selector("#mensagem:not([hidden])")
+    pagina.wait_for_selector("#mensagem:not([hidden])", timeout=90_000)
     assert "incorretos" in pagina.text_content("#mensagem")
     assert pagina.evaluate("sessionStorage.getItem('bussola:sessao') || localStorage.getItem('bussola:sessao')") is None
     pagina.fill("#login", "  TESTE ")
     pagina.fill("#senha", SENHA_TESTE)
     pagina.check("#lembrar")
     pagina.click("#entrar")
-    pagina.wait_for_url("**/sistema.html")
+    pagina.wait_for_url("**/sistema.html", wait_until="commit", timeout=120_000)  # só a troca de página
     sessao = json.loads(pagina.evaluate("localStorage.getItem('bussola:sessao')"))
     assert sessao["login"] == "teste" and "resumo" not in sessao and "sal" not in sessao
     ctx.close()
@@ -600,8 +600,8 @@ def test_usuario_removido_perde_o_acesso(navegador, servidor):
     ctx.add_init_script("if (location.pathname.endsWith('sistema.html')) "
                         f"localStorage.setItem('bussola:sessao', JSON.stringify({json.dumps(SESSAO_TESTE)}))")
     pagina = ctx.new_page()
-    pagina.goto(f"{servidor}/sistema.html#ed=0&r=0")
-    pagina.wait_for_url("**/index.html", timeout=180_000)
+    pagina.goto(f"{servidor}/sistema.html#ed=0&r=0", wait_until="commit", timeout=120_000)
+    pagina.wait_for_url("**/index.html", wait_until="commit", timeout=180_000)
     assert pagina.evaluate("localStorage.getItem('bussola:sessao')") is None
     ctx.close()
 

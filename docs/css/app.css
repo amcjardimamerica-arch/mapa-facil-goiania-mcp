@@ -474,14 +474,12 @@ body:has(#ficha:not([hidden])) #gps-cartao { right: 432px; }
 body:has(#ficha:not([hidden])) #topo #caixa-busca { width: min(560px, calc(100vw - 220px - 432px - 24px - 80px)); }
 @media (max-width: 760px) { #caixa-busca .marca-amc { padding: 2px 4px; } }
 
-/* abertura (1.26.1): logomarca completa — pássaro de duas asas, nome e Núcleo de Fiscalização */
+/* abertura: logomarca completa (pássaro do modelo Pássaro Guia, nome) e Núcleo de Fiscalização */
 .marca-abertura { flex-wrap: wrap; gap: 18px; }
 .marca-abertura .amc-bird { width: 120px; height: auto; overflow: visible; }
 .marca-abertura .amc-nome { height: 78px; width: auto; }
 .marca-abertura .logo-nucleo { height: 130px; width: auto; margin-left: 10px; }
-.amc-bird .amc-asa-tras .amc-wing { transform-box: view-box; transform-origin: 558px 355px; }
 @media (prefers-reduced-motion: no-preference) {
-  .amc-bird.flap .amc-asa-tras .amc-wing { animation: amc-flap .26s ease-in-out infinite alternate-reverse; }
 }
 @media (max-width: 640px) { .marca-abertura .logo-nucleo { height: 90px; } .marca-abertura .amc-nome { height: 56px; } }
 /* 1.27.0: Drenagem Pluvial (Camadas) — legenda com o símbolo de cada parte. */
