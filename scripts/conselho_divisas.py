@@ -133,6 +133,20 @@ def main():
     # Os pedaços já cobrem o município sem sobreposição: cada Conselho é a junção dos seus.
     novos = [so_areas(juntar([faces[k] for k in range(len(faces)) if dono[k] == i])) for i in range(len(geos))]
     print("Conselhos montados", flush=True)
+    # Limpeza: buraquinhos e pedacinhos (< 0,05 km²) que sobram entre pedaços viravam "divisas" soltas no mapa.
+    MIN = 0.05 / KM2
+    novos = [so_areas(unary_union([Polygon(q.exterior, [h for h in q.interiors if Polygon(h).area >= MIN])
+                                   for q in getattr(g, "geoms", [g])])) for g in novos]
+    for i in range(len(novos)):
+        partes = list(getattr(novos[i], "geoms", [novos[i]]))
+        grandes = [q for q in partes if q.area >= MIN] or [max(partes, key=lambda q: q.area)]
+        for q in partes:
+            if q not in grandes:
+                j = max((k for k in range(len(novos)) if k != i), key=lambda k: novos[k].buffer(1e-6).intersection(q.buffer(1e-6)).area)
+                novos[j] = so_areas(unary_union([novos[j], q]))
+        novos[i] = so_areas(unary_union(grandes))
+    for i in range(1, len(novos)):
+        novos[i] = so_areas(novos[i].difference(unary_union(novos[:i])).buffer(1e-7).buffer(-1e-7))
 
     for i, f in enumerate(cons):
         g = novos[i]

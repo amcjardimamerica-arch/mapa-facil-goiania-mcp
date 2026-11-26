@@ -33,7 +33,7 @@ export class Eleicoes {
   async _zonas() {
     if (this._cacheZonas) return this._cacheZonas;
     const d = await pedirJSON(`${CFG.ms}/Mapa_Limites/MapServer/10/query`, { parametros: { f: 'json', where: '1=1', outFields: '*', outSR: '4326', returnGeometry: 'true' } });
-    this._cacheZonas = (d.features || []).map((f, i) => ({ nome: `Zona ${String(f.attributes.nm_zoe || f.attributes.nm || f.attributes.id).replace(/^zona\s*/i, '')}`,
+    this._cacheZonas = (d.features || []).map((f, i) => ({ nome: ((z) => (/zona/i.test(z) ? z.replace(/^zona\s*/i, '').trim() : `Zona ${z}`))(String(f.attributes.nm_zoe || f.attributes.nm || f.attributes.id)),
       aneis: f.geometry.rings, cor: CORES[i % CORES.length], info: f.attributes }));
     return this._cacheZonas;
   }
