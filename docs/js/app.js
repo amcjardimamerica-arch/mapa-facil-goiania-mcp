@@ -22,6 +22,7 @@ import { Quadras } from './quadras.js';
 import { Drenagem } from './drenagem.js';
 import { Geo360 } from './geo360.js';
 import { Eleicoes } from './eleicoes.js';
+import { Comparador } from './comparar.js';
 import { restaurarGravacao, gravacaoAberta, gravacaoAte } from './gravacao.js';
 import { sincronizarManutencao } from './manutencao.js';
 import { relatorio as relatorioDesempenho, zerar as zerarDesempenho } from './desempenho.js';
@@ -391,6 +392,13 @@ async function iniciar() {
 
   // ---------------------------------------------------- cliques e cursor
   const maos = new Cesium.ScreenSpaceEventHandler(globo.cena.canvas);
+  // Ctrl + clique: o lote abre numa janela própria, ao lado das outras, para comparar (até 3).
+  const comparador = new Comparador({ globo, identificar });
+  app.comparador = comparador;
+  maos.setInputAction((ev) => {
+    const ponto = globo.pontoNaTela(ev.position);
+    if (ponto) comparador.abrir(ponto).catch(() => {});
+  }, Cesium.ScreenSpaceEventType.LEFT_CLICK, Cesium.KeyboardEventModifier.CTRL);
   maos.setInputAction((ev) => {
     const ponto = globo.pontoNaTela(ev.position);
     if (poligonos.desenho) { poligonos.clique(ponto); return; }
@@ -468,11 +476,11 @@ async function iniciar() {
     const ate = cofreLiberadoAte();
     caixa.append(el('p', { class: 'nota' }, cofreAberto()
       ? `🔓 Liberados${ate ? ` até ${ate.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}` : ''} para esta conta.`
-      : '🔒 Bloqueados. A senha é aplicada na página de validação e vale 24 horas para esta conta.'));
+      : '🔒'));
     const ateG = gravacaoAte();
     caixa.append(el('p', { class: 'nota' }, gravacaoAberta()
       ? `💾 Gravação no banco de dados liberada${ateG ? ` até ${ateG.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}` : ''}.`
-      : '💾 Gravação fechada: o que você escreve fica só neste aparelho. A senha de gravação é aplicada na página de validação.'));
+      : '💾 🔒'));
   };
   montarCofreSobre();
   $('#sobre-usuario').textContent = sessao.nome ? `Conectado como ${sessao.nome} (${sessao.login}).` : '';

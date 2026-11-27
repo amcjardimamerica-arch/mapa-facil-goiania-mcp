@@ -494,7 +494,7 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
     assert r["tratou"] and r["titulo"].startswith("Quadra "), r
     assert not r["semResid"] and r["soJA"], r
     assert "262B" in r["achou"], r
-    for parte in ("Pessoas e empresas no lote (editável)", "Classificação do lote e edição", "Proprietário",
+    for parte in ("Morador ou comerciante e proprietário", "Classificação do lote e edição", "Levantamento da Associação (Earth)",
                   "Cadastro imobiliário e dados complementares (somente leitura)", "Inscrição cadastral (CI)", "Latitude, longitude"):
         assert parte in r["ficha"], (parte, r["ficha"][:300])
     assert "UTM 22S" not in r["ficha"] and "Marcar" not in r["ficha"], r["ficha"][:300]
@@ -818,9 +818,9 @@ def test_dados_complementares_no_sobre_e_na_ficha(mapa):
       await new Promise((ok) => setTimeout(ok, 6000));
       const corpo = document.querySelector('#ficha-corpo').textContent;
       return { temCampo, msg, semBotao: !/Ver cadastro imobili/.test(corpo), cadastro: /Cadastro imobiliário e dados complementares/.test(corpo),
-               inscricoes: /Inscrições no lote/.test(corpo), cadeado: /Proprietário/.test(corpo) && /🔒 Nome, CPF\/CNPJ/.test(corpo) };
+               inscricoes: /Inscrições no lote/.test(corpo), cadeado: /Morador ou comerciante e proprietário/.test(corpo) && /🔒/.test(corpo) };
     }""")
-    assert r["temCampo"] and "24 horas" in r["msg"], r
+    assert r["temCampo"] and "🔒" in r["msg"], r  # 1.33: o Sobre só mostra o estado, sem explicar a senha
     assert r["semBotao"] and r["cadastro"] and r["inscricoes"] and r["cadeado"], r
 
 
@@ -849,9 +849,9 @@ def test_senha_do_cofre_na_validacao_e_sem_mapa_facil(navegador, servidor):
     ctx.on("request", lambda r: "portalmapa" in r.url and externos.append(r.url))
     p = ctx.new_page()
     p.goto(f"{servidor}/validacao.html")
-    p.wait_for_selector("#cofre-corpo input[type=password], #cofre-corpo .nota", timeout=60_000)
-    p.wait_for_timeout(4000)
-    tem = p.evaluate("!!document.querySelector('#cofre-corpo input[type=password]') || /Liberados|não tem dados/.test(document.querySelector('#cofre-corpo').textContent)")
+    # 1.33: um campo só, no fim da página, com o título "#" e nenhuma indicação do que a senha faz
+    p.wait_for_selector("#senha-corpo input[type=password]", timeout=60_000)
+    tem = p.evaluate("document.querySelector('#senha-titulo').textContent === '#' && !document.querySelector('#senha-corpo input').placeholder")
     # Só o HTML: o evento "load" do mapa pode passar de 30 s no ambiente de teste (o sistema fica pronto depois).
     p.goto(f"{servidor}/sistema.html#ed=0&r=0", wait_until="domcontentloaded", timeout=120_000)
     p.wait_for_function("window.bussola && bussola.pronto", timeout=180_000)

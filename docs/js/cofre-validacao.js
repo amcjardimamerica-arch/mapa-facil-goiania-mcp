@@ -1,84 +1,57 @@
-// Página de validação: liberar os dados complementares (cofre) para esta conta, por 24 horas.
-import { iniciarBanco, cofreDisponivel, cofreAberto, abrirCofre, fecharCofre, cofreLiberadoAte } from './banco.js';
-import { gravacaoDisponivel, gravacaoAberta, gravacaoAte, abrirGravacao, fecharGravacao, restaurarGravacao, trocarSenhaGravacao, gravacaoUnificada, unificarComCofre } from './gravacao.js';
+// Página de validação: um campo só ("#") para a senha. A mesma senha libera, por 24 horas e para esta conta,
+// os dados protegidos (cofre) e a gravação no banco de dados. Sem nenhuma indicação do que a senha faz.
+// Senha certa: "Acesso Liberado". Senha errada: só um aviso com "!".
+// 5 erros seguidos: bloqueio de 5 minutos; 5 bloqueios: conta suspensa por 24 horas (neste aparelho).
+import { iniciarBanco, cofreDisponivel, cofreAberto, abrirCofre } from './banco.js';
+import { gravacaoDisponivel, gravacaoAberta, abrirGravacao, restaurarGravacao, gravacaoUnificada, unificarComCofre } from './gravacao.js';
 import { el } from './util.js';
 
-const corpo = document.querySelector('#cofre-corpo');
+const corpo = document.querySelector('#senha-corpo');
+const alerta = document.querySelector('#senha-alerta');
+const chaveT = () => `bussola:tentativas:${window.bussolaSessao?.login || 'anonimo'}`;
+const lerT = () => { try { return JSON.parse(localStorage.getItem(chaveT()) || '{}'); } catch { return {}; } };
+const gravarT = (t) => { try { localStorage.setItem(chaveT(), JSON.stringify(t)); } catch { /* */ } };
+let senhaDoCofre = null, senhaProvisoria = null; // só na memória desta página, para unificar as senhas
 
-function montar() {
+function exclamar() {
+  alerta.hidden = false;
+  clearTimeout(exclamar.t);
+  exclamar.t = setTimeout(() => { alerta.hidden = true; }, 1800);
+}
+
+async function tentar(senha) {
+  const t = lerT(), agora = Date.now();
+  if ((t.suspensoAte || 0) > agora || (t.bloqueadoAte || 0) > agora) { exclamar(); return false; }
+  let ok = false;
+  try { if (cofreDisponivel()) { await abrirCofre(senha); ok = true; senhaDoCofre = senha; } } catch { /* */ }
+  try { if (await gravacaoDisponivel()) { await abrirGravacao(senha); ok = true; if (!(await gravacaoUnificada())) senhaProvisoria = senha; } } catch { /* */ }
+  // Unificação: a gravação passa a abrir com a senha do cofre (uma vez, sem nada a fazer além de digitar as duas).
+  if (senhaDoCofre && senhaProvisoria && senhaDoCofre !== senhaProvisoria && !(await gravacaoUnificada())) {
+    try { await unificarComCofre(senhaDoCofre, senhaProvisoria, async (x) => { await abrirCofre(x); }); senhaProvisoria = null; } catch { /* */ }
+  }
+  if (ok) { gravarT({}); return true; }
+  t.erros = (t.erros || 0) + 1;
+  if (t.erros >= 5) {
+    t.erros = 0; t.bloqueios = (t.bloqueios || 0) + 1; t.bloqueadoAte = agora + 5 * 60e3;
+    if (t.bloqueios >= 5) { t.bloqueios = 0; t.suspensoAte = agora + 24 * 3600e3; }
+  }
+  gravarT(t);
+  exclamar();
+  return false;
+}
+
+function montar(liberado = false) {
   corpo.textContent = '';
-  if (!cofreDisponivel()) { corpo.append(el('p', { class: 'nota' }, 'Este banco não tem dados complementares cifrados.')); return; }
-  if (cofreAberto()) {
-    const ate = cofreLiberadoAte();
-    corpo.append(el('p', { class: 'nota' }, `🔓 Liberados para esta conta${ate ? ` até ${ate.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}` : ''}: proprietário, CPF/CNPJ e demais dados aparecem nas fichas e na busca do mapa.`),
-      el('div', { class: 'linha-botoes' }, el('a', { class: 'botao', href: 'sistema.html' }, 'Voltar ao mapa'),
-        el('button', { class: 'botao-texto', onclick: () => { fecharCofre(); montar(); } }, 'Bloquear agora')));
-    return;
-  }
-  const campo = el('input', { type: 'password', class: 'campo', placeholder: 'Senha dos dados complementares', autocomplete: 'off', 'aria-label': 'Senha dos dados complementares' });
-  const msg = el('p', { class: 'nota' }, '🔒 Bloqueados. A senha libera, para esta conta e por 24 horas, os dados complementares em todo o mapa.');
-  const liberar = async () => {
-    try {
-      const senha = campo.value;
-      await abrirCofre(senha);
-      if (await gravacaoDisponivel()) await abrirGravacao(senha).catch(() => {}); // senha única: abre os dois
-      campo.value = ''; montar(); montarGravacao();
-    }
-    catch (e) { msg.textContent = `🔒 ${e.message}`; msg.classList.add('erro'); }
+  const msg = el('p', { class: 'nota' }, liberado || cofreAberto() || gravacaoAberta() ? 'Acesso Liberado' : '');
+  const campo = el('input', { type: 'password', class: 'campo', autocomplete: 'off', 'aria-label': '#' });
+  const enviar = async () => {
+    const s = campo.value;
+    campo.value = '';
+    if (!s) return;
+    if (await tentar(s)) montar(true);
   };
-  campo.addEventListener('keydown', (e) => { if (e.key === 'Enter') liberar(); });
-  corpo.append(msg, el('div', { class: 'linha-botoes' }, campo, el('button', { class: 'botao', onclick: liberar }, 'Liberar por 24 horas')));
+  campo.addEventListener('keydown', (e) => { if (e.key === 'Enter') enviar(); });
+  corpo.append(msg, el('div', { class: 'linha-botoes' }, campo, el('button', { class: 'botao', onclick: enviar }, 'Enviar')));
 }
 
-corpo.append(el('p', { class: 'nota' }, 'Carregando…'));
-iniciarBanco().catch(() => {}).finally(montar);
-
-
-// ------------------------------------------------------------------ banco de dados gravável (gravacao.js)
-
-const caixaG = document.querySelector('#gravacao-corpo');
-async function montarGravacao() {
-  if (!caixaG) return;
-  caixaG.textContent = '';
-  if (!(await gravacaoDisponivel())) { caixaG.append(el('p', { class: 'nota' }, 'Banco de dados gravável não configurado.')); return; }
-  const msg = el('p', { class: 'nota' });
-  if (gravacaoAberta()) {
-    const ate = gravacaoAte();
-    msg.textContent = `🔓 Gravação liberada para esta conta${ate ? ` até ${ate.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}` : ''}: pedidos de manutenção, dados dos lotes e divisas editadas são gravados no banco de dados da Associação e aparecem em todos os computadores.`;
-    const atual = el('input', { type: 'password', class: 'campo', placeholder: 'Senha de gravação atual', autocomplete: 'off' });
-    const nova = el('input', { type: 'password', class: 'campo', placeholder: 'Senha nova (12 caracteres ou mais)', autocomplete: 'new-password' });
-    const aviso2 = el('p', { class: 'nota' });
-    const trocar = async () => {
-      aviso2.textContent = 'Trocando a senha…';
-      try { await trocarSenhaGravacao(atual.value, nova.value); aviso2.textContent = 'Senha trocada. Em 1 a 2 minutos ela vale em todos os computadores.'; atual.value = nova.value = ''; }
-      catch (e) { aviso2.textContent = `Não trocou: ${e.message}`; aviso2.classList.add('erro'); }
-    };
-    caixaG.append(msg, el('div', { class: 'linha-botoes' }, el('a', { class: 'botao', href: 'sistema.html' }, 'Voltar ao mapa'),
-      el('button', { class: 'botao-texto', onclick: () => { fecharGravacao(); montarGravacao(); } }, 'Fechar a gravação agora')),
-    el('details', {}, el('summary', {}, 'Trocar a senha de gravação (só se não for usar a do cofre)'), el('div', { class: 'linha-botoes' }, atual, nova, el('button', { class: 'botao', onclick: trocar }, 'Trocar')), aviso2));
-    return;
-  }
-  if (!(await gravacaoUnificada())) {
-    // Uma única vez: a gravação passa a usar a mesma senha do cofre.
-    msg.textContent = '🔒 Gravação fechada. Para usar uma senha só (a do cofre) também na gravação, faça uma única vez: digite a senha do cofre e a senha provisória de gravação recebida na implantação.';
-    const sc = el('input', { type: 'password', class: 'campo', placeholder: 'Senha do cofre', autocomplete: 'off', 'aria-label': 'Senha do cofre' });
-    const sp = el('input', { type: 'password', class: 'campo', placeholder: 'Senha provisória de gravação', autocomplete: 'off', 'aria-label': 'Senha provisória de gravação' });
-    const unificar = async () => {
-      msg.textContent = 'Unificando as senhas…';
-      try {
-        await unificarComCofre(sc.value, sp.value, async (x) => { await abrirCofre(x); });
-        sc.value = sp.value = '';
-        msg.textContent = 'Pronto: a senha do cofre agora libera também a gravação (vale em todos os computadores em 1 a 2 minutos).';
-        montar(); setTimeout(montarGravacao, 1500);
-      } catch (e) { msg.textContent = `🔒 Não unificou: ${e.message}`; msg.classList.add('erro'); }
-    };
-    caixaG.append(msg, el('div', { class: 'linha-botoes' }, sc, sp, el('button', { class: 'botao', onclick: unificar }, 'Usar a senha do cofre também na gravação')));
-    return;
-  }
-  msg.textContent = '🔒 Gravação fechada: a mesma senha do cofre libera, por 24 horas, salvar no banco de dados da Associação.';
-  const campo = el('input', { type: 'password', class: 'campo', placeholder: 'Senha do cofre', autocomplete: 'off', 'aria-label': 'Senha do cofre (libera a gravação)' });
-  const liberar = async () => { try { await abrirGravacao(campo.value); campo.value = ''; montarGravacao(); } catch (e) { msg.textContent = `🔒 ${e.message}`; msg.classList.add('erro'); } };
-  campo.addEventListener('keydown', (e) => { if (e.key === 'Enter') liberar(); });
-  caixaG.append(msg, el('div', { class: 'linha-botoes' }, campo, el('button', { class: 'botao', onclick: liberar }, 'Liberar a gravação por 24 horas')));
-}
-restaurarGravacao().finally(montarGravacao);
+iniciarBanco().catch(() => {}).then(() => restaurarGravacao()).finally(() => montar());

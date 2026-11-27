@@ -45,14 +45,6 @@
     <div><h1>Validação da Bússola</h1><p class="nota">Testes automáticos dos dados, dos cálculos e dos serviços que o mapa usa. Rodam no seu navegador, ao vivo.</p></div>
     <div class="linha-botoes"><a class="botao" href="sistema.html">Abrir o mapa</a><button class="botao" id="abrir-logs" aria-pressed="false" aria-controls="logs">Logs de acesso</button><button class="botao" id="rodar">Rodar de novo</button><button class="botao" id="baixar" disabled>Baixar relatório</button></div>
   </header>
-  <section id="gravacao" class="grupo-v" aria-labelledby="gravacao-titulo">
-    <h2 id="gravacao-titulo">Banco de dados (gravação)</h2>
-    <div class="logs-corpo" id="gravacao-corpo"></div>
-  </section>
-  <section id="cofre" class="grupo-v" aria-labelledby="cofre-titulo">
-    <h2 id="cofre-titulo">Dados complementares (cofre)</h2>
-    <div class="logs-corpo" id="cofre-corpo"></div>
-  </section>
   <section id="logs" class="grupo-v logs" hidden aria-labelledby="logs-titulo">
     <h2 id="logs-titulo">Logs de acesso</h2>
     <div class="logs-corpo">
@@ -69,6 +61,12 @@
   </section>
   <section id="resumo" aria-live="polite"></section>
   <div id="grupos"></div>
+
+  <section id="senha-unica" class="grupo-v" aria-labelledby="senha-titulo">
+    <h2 id="senha-titulo">#</h2>
+    <div class="logs-corpo" id="senha-corpo"></div>
+  </section>
+  <div id="senha-alerta" class="senha-alerta" hidden role="alertdialog" aria-label="!"><div>!</div></div>
 </main>
 <div id="avisos"></div>
 <script type="module" src="js/validacao.js"></script>

@@ -427,6 +427,32 @@ export class Levantamento {
   }
 
   // ------------------------------------------------------------------ desenho
+  /** Dados do levantamento (Earth) de um lote, para a ficha: pela inscrição (CI) ou por bairro, quadra e lote. */
+  extraDeIndice(i) {
+    const d = this.dados, l = d.lotes[i], cl = d.colunas_lote;
+    const ce = d.empresas?.colunas || [];
+    const emp = this.empresasDoLote.get(i) || [];
+    return { colunas: cl, valores: l.v, quadra: l.q, lote: l.l, finalidade: l.f, endereco: l.v[cl.indexOf('Endereço (cadastro)')],
+      empresas: emp.map((e) => Object.fromEntries(ce.map((k, j) => [k, e[j]]))), empresasCols: ce, empresasLinhas: emp,
+      unidades: { colunas: d.unidades?.colunas || [], linhas: this.unidadesDoLote[i] || [] },
+      google: { colunas: d.google?.colunas || [], linhas: this.googleDoLote.get(i) || [] },
+      condominio: { colunas: d.condominios?.colunas || [], linhas: this.condominioDoLote.get(i) || [] } };
+  }
+
+  async extraDoLote({ ci, bairro, quadra, lote }) {
+    await this.carregar();
+    const d = this.dados;
+    if (!d?.bairros?.some((b) => b === bairro) && !ci) return null;
+    if (!this.detalhesProntos) await this.detalhes?.();
+    for (let k = 0; k < 120 && !this.detalhesProntos; k++) await new Promise((ok) => setTimeout(ok, 250));
+    if (!this.detalhesProntos) return null;
+    const cl = d.colunas_lote, kci = cl.indexOf('Inscrição do lote (CI)');
+    const ciN = String(ci || '').replace(/\D/g, '');
+    let i = ciN ? d.lotes.findIndex((l) => String(l.v?.[kci] || '').replace(/\D/g, '') === ciN) : -1;
+    if (i < 0 && bairro) i = d.lotes.findIndex((l) => d.bairros[l.b] === bairro && String(l.q) === String(quadra) && String(l.l) === String(lote));
+    return i < 0 ? null : this.extraDeIndice(i);
+  }
+
   /** Aplica classificações gravadas (bairro|quadra|lote -> finalidade) e redesenha se algo mudou. */
   aplicarClassificacao(mapa) {
     const d = this.dados;
@@ -850,15 +876,12 @@ export class Levantamento {
     const ponto = { lon: c[0], lat: c[1], alt: NaN };
     id.limparDestaque();
     id.destacarLonLat(l.aneis, { fechado: true, cor: Cesium.Color.fromCssColorString(this.cor[l.f] || '#ffd54a') });
-    // A mesma ficha de todos os lotes de Goiânia (fichalote.js), com o levantamento da Associação como dado adicional.
+    // A mesma ficha de todos os lotes de Goiânia (fichalote.js), com o levantamento da Associação (Earth) inteiro.
     const ci = String(l.v[cl.indexOf('Inscrição do lote (CI)')] || '').replace(/\D/g, '');
-    const ce = d.empresas?.colunas || [];
-    const empresas = (this.empresasDoLote.get(l.i) || []).map((e) => Object.fromEntries(ce.map((k, i) => [k, e[i]])));
     const R = 6378137, mx = (lon) => lon * (Math.PI / 180) * R, my = (lat) => Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) * R;
     fichaLote(id, {
       lote: { attributes: { ci, nm_lot: String(l.l) }, geometry: { rings: l.aneis.map((r) => r.map(([lo, la]) => [mx(lo), my(la)])) } },
-      quadra: { nm_qdr: String(l.q) }, bairro: d.bairros[l.b], ponto,
-      extra: { colunas: cl, valores: l.v, empresas, quadra: l.q, lote: l.l, finalidade: l.f, endereco: l.v[cl.indexOf('Endereço (cadastro)')] },
+      quadra: { nm_qdr: String(l.q) }, bairro: d.bairros[l.b], ponto, extra: this.extraDeIndice(l.i),
     }).then(() => {
       const m = this._manutencao(l.v[cl.indexOf('Código para manutenção')]);
       if (m) id.corpo.insertBefore(el('div', { class: 'linha-botoes' }, m), id.corpo.querySelector('.coordenadas.fim'));
