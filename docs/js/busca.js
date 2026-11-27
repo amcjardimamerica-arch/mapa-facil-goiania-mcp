@@ -54,6 +54,7 @@ export class Busca {
     }).catch(() => {});
     this.edificios = edificios; // módulo Edificios (lista pode chegar depois)
     this.ruas = null;
+    this._acrescentar = []; // lugares que chegam depois (ex.: equipamentos do Geo360)
     this.campo = $('#busca');
     this.lista = $('#resultados');
     this.itens = [];
@@ -66,6 +67,13 @@ export class Busca {
     this.campo.addEventListener('keydown', (e) => this._tecla(e));
     $('#busca-limpar').addEventListener('click', () => { this.campo.value = ''; this._fechar(); this.campo.focus(); });
     document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#caixa-busca')) this._fechar(); });
+  }
+
+  /** Acrescenta lugares à busca depois da abertura (ex.: equipamentos do Geo360), sem repetir. */
+  acrescentarLugares(lista) {
+    const ja = new Set(this.lugares.map((l) => l.k));
+    for (const l of lista) { const k = chave(l.n); if (!ja.has(k)) { ja.add(k); this.lugares.push({ ...l, k }); } }
+    if (this.campo.value.trim().length >= 2) this.procurar();
   }
 
   async _carregarRuas() {

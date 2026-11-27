@@ -15,6 +15,8 @@ export const ORGANIZACAO = [
   { chave: 'base', titulo: 'Base Cadastral', especial: 'base', fontes: [{ tema: 'Feature_Base' }] },
   // Drenagem Pluvial: base própria da A.M.C. (drenagem.js), ligada à parte, sem desligar os mapas de eleição.
   { chave: 'drenagem', titulo: 'Drenagem Pluvial', especial: 'drenagem', proprio: true, independente: true, semConta: true, fontes: [{ tema: 'Mapa_Sanemanento', ids: [] }] },
+  // Geo360 (atualização 2024-2025): dados públicos do portal da Prefeitura que não vinham do Mapa Fácil (geo360.js).
+  { chave: 'geo360', titulo: 'Geo360 (atualização 2024-2025)', especial: 'geo360', proprio: true, independente: true, semConta: true, fontes: [{ tema: 'Mapa_Sanemanento', ids: [] }] },
   // Mapas de eleição: desenho próprio (eleicoes.js), um de cada vez.
   { chave: 'eleitoral', titulo: 'Zonas Eleitorais', especial: 'eleitoral', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
   { chave: 'conselho', titulo: 'Conselho Tutelar', especial: 'conselho', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },

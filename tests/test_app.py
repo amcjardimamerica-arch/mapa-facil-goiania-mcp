@@ -192,6 +192,32 @@ def test_drenagem_pluvial(mapa):
     assert r["camada"] and r["desligou"] and r["eleicaoIntacta"], r
 
 
+def test_geo360_atualizacao(mapa):
+    """Camadas → Geo360 (atualização 2024-2025): condomínios, Planta de Valores, risco geológico e equipamentos."""
+    r = mapa.evaluate("""async () => {
+      const g = bussola.geo360;
+      bussola.camadas.ligar('geo360', true);
+      await g.carregar(); await new Promise((ok) => setTimeout(ok, 300));
+      const R = 6378137, paraLon = (x) => (x / R) * (180 / Math.PI), paraLat = (y) => (2 * Math.atan(Math.exp(y / R)) - Math.PI / 2) * (180 / Math.PI);
+      const cond = g.condominios[0], lon = paraLon(cond.centro[0]), lat = paraLat(cond.centro[1]);
+      bussola.globo.camera.setView({ destination: Cesium.Cartesian3.fromDegrees(lon, lat, 400) });
+      const clicou = g.aoClicar({ lon, lat, alt: NaN });
+      const tituloCond = document.querySelector('#ficha-titulo').textContent, corpoCond = document.querySelector('#ficha-corpo').textContent;
+      const rk = g.risco[0], rlon = paraLon(rk.centro[0]), rlat = paraLat(rk.centro[1]);
+      const clicouRisco = g.aoClicar({ lon: rlon, lat: rlat, alt: NaN });
+      const corpoRisco = document.querySelector('#ficha-corpo').textContent;
+      const eq = g.equipamentos.some((e) => e.t === 'gcm') && g.equipamentos.some((e) => e.t === 'cultura') && g.equipamentos.some((e) => e.t === 'assist');
+      const camada = !!g.camada, independente = bussola.camadas.grupo('geo360').independente;
+      bussola.identificar.fechar(); bussola.camadas.ligar('geo360', false);
+      return { cond: g.condominios.length, pv: g.planta.length, risco: g.risco.length, eqN: g.equipamentos.length, eq,
+        clicou, tituloCond, corpoCond, clicouRisco, corpoRisco, camada, independente, desligou: !g.camada };
+    }""")
+    assert r["cond"] > 3000 and r["pv"] > 1000 and r["risco"] > 10 and r["eqN"] > 50 and r["eq"], r
+    assert r["clicou"] and "Geo360" in r["corpoCond"], r
+    assert r["clicouRisco"] and ("risco" in r["corpoRisco"].lower() or "Grau" in r["corpoRisco"]), r
+    assert r["camada"] and r["desligou"] and r["independente"], r
+
+
 def test_temas_e_link(mapa):
     estado = mapa.evaluate("""() => {
       bussola.camadas.ligar('meio', true);
@@ -219,7 +245,7 @@ def test_camadas_organizadas_em_projetos(mapa):
         edificiosDesligados: !bussola.edificios.ativo && !bussola.edificios.primitiva,
       };
     }""")
-    assert r["ordem"] == ["Base Cadastral", "Drenagem Pluvial", "Zonas Eleitorais", "Conselho Tutelar", "Energia", "Saneamento", "Sistema Viário", "Trânsito"], r["ordem"]
+    assert r["ordem"] == ["Base Cadastral", "Drenagem Pluvial", "Geo360 (atualização 2024-2025)", "Zonas Eleitorais", "Conselho Tutelar", "Energia", "Saneamento", "Sistema Viário"], r["ordem"]
     assert "Zonas Municipais" in r["titulos"] and "Pontos Notáveis" not in r["titulos"] and "PUAMA" not in r["titulos"]
     assert "Simplifica Goiânia – Uso do Solo" not in r["titulos"] and "Documentação de Bairros" not in r["titulos"]
     assert r["eleitoral"] == [["Mapa_Limites", [10], ""]] and all(10 not in f[1] for f in r["limites"]), r["limites"]

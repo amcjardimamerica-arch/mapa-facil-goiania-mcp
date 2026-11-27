@@ -263,6 +263,7 @@ export class Globo {
     const camadas = this.viewer.imageryLayers;
     if (this.camadaRealce) camadas.raiseToTop(this.camadaRealce);
     if (this.camadaDrenagem && camadas.contains(this.camadaDrenagem)) camadas.raiseToTop(this.camadaDrenagem);
+    if (this.camadaGeo360 && camadas.contains(this.camadaGeo360)) camadas.raiseToTop(this.camadaGeo360);
     // Divisas dos Conselhos Tutelares e das zonas eleitorais por cima das divisas de bairro e dos nomes (1.26.0).
     if (this.camadaEleicao && camadas.contains(this.camadaEleicao)) camadas.raiseToTop(this.camadaEleicao);
     if (this.camadaQuadras) camadas.raiseToTop(this.camadaQuadras); // número das quadras por cima de lotes e temas

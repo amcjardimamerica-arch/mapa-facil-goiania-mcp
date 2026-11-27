@@ -496,6 +496,7 @@ body:has(#ficha:not([hidden])) #topo #caixa-busca { width: min(560px, calc(100vw
 .dren-simbolo.losango { width: 10px; height: 10px; transform: rotate(45deg); border: 1.5px solid #fff; }
 .dren-simbolo.tracejado { height: 0; border: 0; border-top: 3px dashed var(--cor); background: none; }
 .dren-simbolo.seta { width: 0; height: 0; background: none; border: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 12px solid #fff; }
+.dren-simbolo.faixa { width: 16px; height: 10px; border: 1px solid rgba(0,0,0,.5); border-radius: 2px; background: linear-gradient(90deg, #1a9850, #fee08b, #d73027); }
 
 /* ficha do lote (1.28) */
 .acoes-lote { margin: 2px 0 8px; }
