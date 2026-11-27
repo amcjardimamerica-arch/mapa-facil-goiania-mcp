@@ -38,10 +38,17 @@ export function escalaMostrador(alturaCamera, { ate = LAMPADA_ALTURA_MAX, fator 
   const t = Math.min(1, Math.max(0, (alturaCamera - LAMPADA_ALTURA_REF) / (ate - LAMPADA_ALTURA_REF)));
   return Math.round((1 + (fator - 1) * t) / LAMPADA_PASSO) * LAMPADA_PASSO;
 }
-/** Bocas de lobo: mesma premissa das luminárias, crescendo até 5 km. */
-export const BOCA_METROS = 3.2;          // lado do mostrador de perto (m)
-export const BOCA_ALTURA_MAX = 5000;     // m de câmera: cresce até aqui (6×) e some acima de 6 km
-export const escalaBoca = (h) => escalaMostrador(h, { ate: BOCA_ALTURA_MAX });
+/**
+ * Bocas de lobo: mesma premissa das luminárias (mínimo até 1 km, crescendo até 5 km, em degraus), mas medida na
+ * TELA — em metros o mostrador ficava com 3 ou 4 pixels de longe e "sumia" a partir de ~800 m.
+ */
+export const BOCA_PX_MIN = 24;           // lado do mostrador na tela até 1 km de câmera
+export const BOCA_PX_MAX = 44;           // lado em 5 km (e acima, até sumir em 6 km)
+export const BOCA_ALTURA_MAX = 5000;
+export function bocaPx(h) {
+  const t = Math.min(1, Math.max(0, (h - LAMPADA_ALTURA_REF) / (BOCA_ALTURA_MAX - LAMPADA_ALTURA_REF)));
+  return Math.round((BOCA_PX_MIN + (BOCA_PX_MAX - BOCA_PX_MIN) * t) / 2) * 2; // degraus de 2 px
+}
 /** Escala da esfera da luminária para a altura da câmera (1 de perto; até 6 de longe). */
 export function escalaLampada(alturaCamera) {
   // Mínimo até 1 km; cresce em linha reta até 6× (+500%) em 4 km; acima disso fica em 6×.

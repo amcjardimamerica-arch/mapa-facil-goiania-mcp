@@ -8,7 +8,7 @@
 import { CFG } from './config.js';
 import { el, pedirJSON, fmtNum, memoria, aviso } from './util.js';
 import { ProvedorCanvas, Quadro } from './mapavetorial.js';
-import { BOCA_METROS, escalaBoca } from './postes.js';
+import { bocaPx } from './postes.js';
 
 const Cesium = window.Cesium;
 const R = 6378137;
@@ -108,10 +108,9 @@ class ProvedorDrenagem extends ProvedorCanvas {
     // Coleta da galeria (boca de lobo): o mesmo ícone das bocas de lobo da Associação, sem pedido de manutenção.
     // Mesma premissa das luminárias e das bocas da Associação: tamanho real mínimo até 1 km de câmera, crescendo
     // até 6× em 5 km; acima de 6 km não aparecem. O tamanho em pixels do bloco sai dos metros reais.
-    if (op.bocas && nivel >= 13 && d.alturaCamera() <= 6000) {
-      const pxPorMetroMerc = Math.abs(q.x(1) - q.x(0));
-      const cosLat = Math.cos((-16.68 * Math.PI) / 180);
-      const T = Math.max(5, Math.min(72, (BOCA_METROS * d.escalaBocaAtual / cosLat) * pxPorMetroMerc));
+    if (op.bocas && nivel >= 12 && d.alturaCamera() <= 6000) {
+      // Tamanho na tela (o bloco é desenhado em ~1 pixel de tela por pixel do bloco).
+      const T = d.escalaBocaAtual;
       for (const b of por.boca) {
         if (!d.bocaVisivel(b)) continue;
         const img = iconeColeta(b.un, b.estado === 'Ruim', b.estado === 'Não implantada');
@@ -231,9 +230,9 @@ export class Drenagem {
   /** Ao mudar o degrau de escala das bocas (premissa das luminárias), redesenha a camada. */
   _acompanharEscala() {
     if (this._ouvinteEscala) return;
-    this.escalaBocaAtual = escalaBoca(this.alturaCamera());
+    this.escalaBocaAtual = bocaPx(this.alturaCamera());
     this._ouvinteEscala = this.globo.camera.moveEnd.addEventListener(() => {
-      const nova = escalaBoca(this.alturaCamera());
+      const nova = bocaPx(this.alturaCamera());
       if (nova !== this.escalaBocaAtual) { this.escalaBocaAtual = nova; if (this.ligado && this.opcoes?.bocas) this.redesenhar(); }
     });
   }
