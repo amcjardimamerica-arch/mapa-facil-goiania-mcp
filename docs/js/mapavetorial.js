@@ -69,10 +69,12 @@ export function idsDaFicha() {
  * Opções da Base Cadastral (painel Camadas): controlam o desenho cadastral na cidade inteira — nomes de rua,
  * quadras, lotes, divisas e nomes de bairro, áreas públicas (verde #00FF00, contorno branco) e atividades econômicas.
  */
-export const BASE = Object.assign({ ligado: true, ruas: true, quadras: true, lotes: true, divisas: true, nomesBairros: true, areasVerdes: false, imoveisPublicos: false, atividades: false,
-  cadastro: true, npo: false, avenidas: true },
-  (() => { try { return JSON.parse(localStorage.getItem('bussola:base') || '{}'); } catch { return {}; } })());
-export const gravarBase = () => { try { localStorage.setItem('bussola:base', JSON.stringify(BASE)); } catch { /* nada */ } };
+// 1.34: o mapa abre limpo — nada da Base Cadastral (nem o destaque das avenidas) aparece sem ser escolhido.
+// As escolhas da pessoa ficam guardadas (chave nova: as antigas, que ligavam tudo por padrão, não valem mais).
+export const BASE = Object.assign({ ligado: false, ruas: true, quadras: true, lotes: true, divisas: true, nomesBairros: true, areasVerdes: false, imoveisPublicos: false, atividades: false,
+  npo: false, avenidas: false },
+  (() => { try { return JSON.parse(localStorage.getItem('bussola:base2') || '{}'); } catch { return {}; } })());
+export const gravarBase = () => { try { localStorage.setItem('bussola:base2', JSON.stringify(BASE)); } catch { /* nada */ } };
 const baseVe = (k) => BASE.ligado && BASE[k];
 function dentroAneis(aneis, x, y) {
   let d = false;
@@ -484,8 +486,11 @@ export class ProvedorVetorial extends ProvedorCanvas {
         const a = f.geometry?.rings?.[0], t = String(f.attributes?.nm_npo ?? '').trim();
         if (!a || !t) continue;
         const [cx, cy] = centroDoAnel(a);
-        g.lineWidth = 3; g.strokeStyle = '#ffffff'; g.strokeText(t, q.x(cx), q.y(cy));
-        g.fillStyle = '#1a237e'; g.fillText(t, q.x(cx), q.y(cy));
+        // Etiqueta do número oficial: fundo preto e número branco.
+        const x = q.x(cx), y = q.y(cy), tam = nivel >= 19 ? 11 : 9, w = g.measureText(t).width + 8, h = tam + 6;
+        g.fillStyle = '#000000';
+        g.beginPath(); g.roundRect ? g.roundRect(x - w / 2, y - h / 2, w, h, 3) : g.rect(x - w / 2, y - h / 2, w, h); g.fill();
+        g.fillStyle = '#ffffff'; g.fillText(t, x, y + 0.5);
       }
       g.restore();
     }

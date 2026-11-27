@@ -102,8 +102,7 @@ async function iniciar() {
         el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', checked: !!BASE[k], onchange: (e) => { BASE[k] = e.target.checked; gravarBase(); app.refazerMapas?.(); } }), el('span', {})));
       caixa.append(op('ruas', 'Nomes das ruas'), op('quadras', 'Quadras'), op('lotes', 'Lotes'), op('divisas', 'Divisas dos bairros'),
         op('nomesBairros', 'Nomes dos bairros'), op('areasVerdes', 'Áreas verdes e praças (verde)'), op('imoveisPublicos', 'Imóveis públicos (azul)'), op('atividades', 'Cadastro de Atividade Econômica'),
-        // Demais camadas da Base Cadastral (as que não repetem as opções acima)
-        op('cadastro', 'Cadastro Imobiliário (na ficha do lote)'), op('npo', 'Número Predial Oficial'));
+        op('npo', 'Número Predial Oficial'));
     },
     baseLigar: (ligado) => { BASE.ligado = ligado; gravarBase(); app.refazerMapas?.(); },
     // Sistema Viário: destaque amarelo das avenidas e vias principais sobre o satélite (desligável).
@@ -281,7 +280,7 @@ async function iniciar() {
 
   // ------------------------------------------- nomes, relevo, máscara, 3D
   const realce = $('#realce-liga');
-  realce.checked = hash.n !== '0';
+  realce.checked = hash.n === '1'; // 1.34: mapa limpo; liga só quando escolhido
   realce.addEventListener('change', () => { globo.definirRealce(realce.checked); marcarBase(); atualizarLink(); });
   globo.definirRealce(realce.checked);
 
@@ -507,7 +506,7 @@ async function iniciar() {
     if (edificios.cidade) p.set('ed', '1');
     const eb = edificios.serializarBairros();
     if (eb) p.set('eb', eb);
-    if (!realce.checked) p.set('n', '0');
+    if (realce.checked) p.set('n', '1');
     const l = lotes.serializar();
     if (l) p.set('l', l);
     if (levantamento.ativo) p.set('lv', '1');

@@ -523,3 +523,5 @@ body:has(#ficha:not([hidden])) #topo #caixa-busca { width: min(560px, calc(100vw
   background: var(--fundo); border: 1px solid var(--linha); border-radius: var(--raio); box-shadow: var(--sombra); overflow: hidden; }
 .ficha-comparar-corpo { overflow: auto; padding: 0 14px 14px; }
 @media (max-width: 900px) { .ficha-comparar { left: 8px; right: 8px !important; top: auto; bottom: calc(var(--rodape) + 66px); width: auto; max-height: 40vh; } }
+/* 1.34: Drenagem Pluvial em 4 filtros, subdivisões recuadas e menores */
+.dren-sub-linha { padding-left: 18px; font-size: .9em; }

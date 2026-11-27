@@ -4,6 +4,7 @@
 // um serviço pode aparecer em mais de um projeto (ex.: Limites → Zonas Eleitorais e
 // Limites Administrativos). O desenho continua sendo um por serviço: as camadas de
 // todos os projetos ligados que usam o serviço são pedidas juntas.
+import { BASE } from './mapavetorial.js';
 import { CFG } from './config.js';
 import { $$, el, pedirJSON, debounce, semAcento, aviso, fmtNum } from './util.js';
 import { provedorExport } from './globo.js';
@@ -101,7 +102,8 @@ export class Camadas {
       }
       if (!fontes.length) return;
       const consulta = fontes.every((f) => f.tema.somente_consulta);
-      grupos.push({ ...def, fontes, consulta, ligado: consulta, opacidade: 1 });
+      // Base Cadastral: o interruptor segue o desenho (BASE.ligado), que começa desligado — mapa limpo ao abrir.
+      grupos.push({ ...def, fontes, consulta, ligado: def.chave === 'base' ? !!BASE.ligado : consulta, opacidade: 1 });
     };
     ORGANIZACAO.forEach(montar);
     // Serviços que a organização não cita (o catálogo pode crescer): cada um vira um projeto próprio.

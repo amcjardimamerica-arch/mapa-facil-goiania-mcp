@@ -371,8 +371,8 @@ def test_fundos_sem_ortofotos_e_mapa_desenhado(mapa):
     }""")
     assert not any(c.startswith("orto") for c in r["chaves"]) and "mapa" in r["chaves"]
     assert r["barra"] == ["Satélite", "Mapa"]  # só satélite (Esri, padrão) e mapa (decisão do titular, 1.25.1)
-    assert r["durante"] == {"base": "mapa", "modo": "mapa", "realceVisivel": False}
-    assert r["bloco"] == [512, 512] and r["realceModo"] == "sobre"
+    assert r["durante"]["base"] == "mapa" and r["durante"]["modo"] == "mapa" and not r["durante"]["realceVisivel"], r  # 1.34: abre sem o realce
+    assert r["bloco"] == [512, 512] and r["realceModo"] in (None, "sobre")  # 1.34: "Ruas e quadras" só quando escolhido
 
 
 def test_nome_de_via_legivel(mapa):
@@ -872,20 +872,22 @@ def test_base_cadastral_opcoes_sem_repeticao_e_funcionando(mapa):
       const texto = base.corpo.textContent;
       const repetidos = ['Divisas de Lote', 'Divisas de Quadra', 'Divisas de Bairro', 'Área Pública', 'Segmento de Logradouro',
         'Setor Cadastral', 'Logradouro por Bairro'].filter((t) => texto.includes(t));
-      const novos = ['Cadastro Imobiliário', 'Número Predial Oficial', 'Áreas verdes e praças', 'Imóveis públicos'].filter((t) => texto.includes(t));
+      const novos = ['Número Predial Oficial', 'Áreas verdes e praças', 'Imóveis públicos'].filter((t) => texto.includes(t));
+      const semCadastro = !texto.includes('Cadastro Imobiliário (na ficha do lote)'); // 1.34: opção retirada
       const antes = { ...m.BASE };
       Object.assign(m.BASE, { ligado: true, npo: true, areasVerdes: true, imoveisPublicos: true, atividades: true });
+      const alturaAntes = m.ALTURA.camera; m.ALTURA.camera = 1500; // atividades: só abaixo de 5 km
       const ids = bussola.camadas.consultaBase().ids;
       const prov = new m.ProvedorVetorial({ modo: 'mapa', retangulo: bussola.globo.ret });
       const g = new Cesium.WebMercatorTilingScheme();
       const d = await prov._dados(g.tileXYToNativeRectangle(47595, 71698, 17), 17, () => false);
-      Object.assign(m.BASE, antes);
+      Object.assign(m.BASE, antes); m.ALTURA.camera = alturaAntes;
       const tipo = (lista, t) => lista.length > 0 && lista.every((f) => t === 'ponto' ? f.geometry?.x != null : !!f.geometry?.rings);
       const verdes = d.areas.filter((f) => m.ehAreaVerde(f.attributes)).length;
       return { repetidos, novos, ids, npo: tipo(d.npo, 'area') && d.npo.every((f) => 'nm_npo' in f.attributes),
         atv: tipo(d.atividades, 'ponto'), areas: tipo(d.areas, 'area'), verdes, imoveis: d.areas.length - verdes };
     }""")
-    assert not r["repetidos"] and len(r["novos"]) == 4, r
+    assert not r["repetidos"] and len(r["novos"]) == 3, r
     assert r["ids"] == [0, 1, 2, 4, 5, 9], r
     assert r["npo"] and r["atv"] and r["areas"], r
 

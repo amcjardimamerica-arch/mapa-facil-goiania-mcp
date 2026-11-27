@@ -104,22 +104,13 @@ class ProvedorDrenagem extends ProvedorCanvas {
         g.lineWidth = 2; g.strokeStyle = p.fechado ? COR.pocoFechado : '#ffffff'; g.stroke();
       }
     }
-    // Bocas de lobo: retângulo pela classe (simples, grelha, combinada); conferência pinta pela origem.
+    // Coleta da galeria (boca de lobo): o mesmo ícone das bocas de lobo da Associação, sem pedido de manutenção.
     if (op.bocas && nivel >= 15) {
-      const w = nivel >= 18 ? 12 : nivel >= 17 ? 9 : 6.5, h = w * 0.55;
+      const T = nivel >= 18 ? 26 : nivel >= 17 ? 20 : 14;
       for (const b of por.boca) {
         if (!d.bocaVisivel(b)) continue;
-        const cx = q.x(b.m[0]), cy = q.y(b.m[1]);
-        let cor = b.tipo === 'Grelha' ? COR.grelha : b.tipo === 'Combinada' ? COR.combinada : COR.simples;
-        if (op.conferencia) cor = b.origem.startsWith('PDDU + ') ? COR.conferida : b.origem.startsWith('Só no') ? COR.soAmc : b.origem.includes('não achada') ? COR.soPddu : cor;
-        const nao = b.estado === 'Não implantada';
-        g.beginPath(); if (g.roundRect) g.roundRect(cx - w / 2, cy - h / 2, w, h, 2); else g.rect(cx - w / 2, cy - h / 2, w, h);
-        if (nao) { g.setLineDash([3, 2]); g.lineWidth = 1.5; g.strokeStyle = COR.naoImplantada; g.stroke(); g.setLineDash([]); continue; }
-        g.fillStyle = cor; g.fill(); g.lineWidth = b.estado === 'Ruim' ? 2.4 : 1.4; g.strokeStyle = b.estado === 'Ruim' ? COR.ruim : '#101418'; g.stroke();
-        if (b.un > 1 && nivel >= 17) {
-          g.font = `800 ${nivel >= 18 ? 10 : 9}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
-          g.lineWidth = 3; g.strokeStyle = '#101418'; g.strokeText(String(b.un), cx + w * 0.75, cy - h); g.fillStyle = '#ffffff'; g.fillText(String(b.un), cx + w * 0.75, cy - h);
-        }
+        const img = iconeColeta(b.un, b.estado === 'Ruim', b.estado === 'Não implantada');
+        g.drawImage(img, q.x(b.m[0]) - T / 2, q.y(b.m[1]) - T / 2, T, T);
       }
     }
     // Análise: ponto baixo de rua sem boca de lobo (losango vermelho com "!").
@@ -134,6 +125,33 @@ class ProvedorDrenagem extends ProvedorCanvas {
     }
     return Promise.resolve(tela);
   }
+}
+
+// Ícone da boca de lobo (o mesmo do mapa da Associação): grelha escura, borda branca (vermelha se em estado
+// ruim; tracejada se prevista e não implantada) e o mostrador com o número de unidades.
+const icones = new Map();
+function iconeColeta(n, ruim, prevista) {
+  const chave = `${n}|${ruim ? 1 : 0}|${prevista ? 1 : 0}`;
+  if (icones.has(chave)) return icones.get(chave);
+  const T = 64, c = document.createElement('canvas'); c.width = c.height = T;
+  const g = c.getContext('2d');
+  g.lineJoin = 'round';
+  const x0 = 6, y0 = 16, w = 44, h = 38;
+  g.globalAlpha = prevista ? 0.55 : 1;
+  g.fillStyle = '#23272c'; g.strokeStyle = '#000000'; g.lineWidth = 7;
+  g.beginPath(); if (g.roundRect) g.roundRect(x0, y0, w, h, 6); else g.rect(x0, y0, w, h); g.stroke();
+  if (prevista) g.setLineDash([6, 4]);
+  g.strokeStyle = ruim ? '#e53935' : '#ffffff'; g.lineWidth = 4; g.stroke(); g.setLineDash([]); g.fill();
+  g.fillStyle = '#c9cfd6';
+  for (let i = 0; i < 5; i++) g.fillRect(x0 + 6 + i * 7.6, y0 + 9, 3.6, h - 15);
+  g.fillRect(x0 + 4, y0 + 4, w - 8, 3);
+  const r = 13, cx = T - r - 2, cy = r + 2;
+  g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fillStyle = '#ffffff'; g.fill();
+  g.lineWidth = 2.5; g.strokeStyle = '#000000'; g.stroke();
+  g.fillStyle = '#111418'; g.font = '800 17px system-ui, "Segoe UI", Roboto, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(String(n || 1), cx, cy + 1);
+  icones.set(chave, c);
+  return c;
 }
 
 export class Drenagem {
@@ -219,37 +237,28 @@ export class Drenagem {
     const c = this.caixa;
     if (!c) return;
     c.textContent = '';
+    // 4 filtros (Coleta, Galeria, Ponto de inspeção, Ponto de despejo), cada um com as suas subdivisões, no
+    // mesmo padrão dos demais projetos: sem textos nem tópicos grandes. Sem pedido de manutenção (só indicação).
     const op = this.opcoes, cont = (f) => (this.bocas ? this.bocas.filter(f).length : null);
-    const chave = (id, titulo, cor, n, sub, forma = 'quadro') => el('label', { class: 'linha-chave dren-linha' },
-      el('span', { class: 'dren-rotulo' }, el('span', { class: `dren-simbolo ${forma}`, style: `--cor:${cor}` }),
-        el('span', {}, el('strong', {}, titulo), sub ? el('small', {}, sub) : null)),
+    const chave = (id, titulo, n, sub = false) => el('label', { class: `linha-chave${sub ? ' dren-sub-linha' : ''}` },
+      el('span', {}, sub ? titulo : el('strong', {}, titulo)),
       n != null ? el('small', { class: 'dren-n' }, fmtNum(n)) : null,
       el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', checked: !!op[id], onchange: (e) => { op[id] = e.target.checked; this._gravar(); this.redesenhar(); } }), el('span', {})));
-    const grupo = (titulo, ...itens) => el('details', { class: 'dren-grupo', open: true }, el('summary', {}, titulo), ...itens);
     const rs = this.resumo?.cidade;
-    c.append(el('p', { class: 'nota' }, rs
-      ? `${fmtNum(rs.bocas)} bocas de lobo (${fmtNum(rs.unidades)} unidades), ${fmtNum(rs.galeria_km, 1)} km de galerias, ${fmtNum(rs.pocos)} poços de visita e ${fmtNum(rs.lancamentos)} lançamentos em córregos. Bocas a partir de ~3 km de altura; poços de visita a partir de ~1 km.`
-      : 'Ligue o projeto para carregar a Drenagem Pluvial de Goiânia.'));
+    const existe = (b) => b.estado !== 'Não implantada';
     c.append(
-      grupo('Bocas de lobo',
-        chave('bocas', 'Bocas de lobo', COR.simples, cont((b) => b.estado !== 'Não implantada'), 'todas as existentes'),
-        el('div', { class: 'dren-sub' },
-          chave('simples', 'Simples (abertura no meio-fio)', COR.simples, cont((b) => b.tipo === 'Simples (guia)' && b.estado !== 'Não implantada')),
-          chave('grelha', 'Com grelha', COR.grelha, cont((b) => b.tipo === 'Grelha' && b.estado !== 'Não implantada')),
-          chave('combinada', 'Combinada (grelha + meio-fio)', COR.combinada, cont((b) => b.tipo === 'Combinada' && b.estado !== 'Não implantada')),
-          chave('ruins', 'Em estado ruim (borda vermelha)', COR.ruim, cont((b) => b.estado === 'Ruim')),
-          chave('naoImplantadas', 'Previstas e não implantadas (tracejado)', COR.naoImplantada, cont((b) => b.estado === 'Não implantada')),
-          chave('conferencia', 'Conferência com o levantamento da A.M.C.', COR.conferida, null, 'verde: conferida em campo · rosa: só no levantamento da A.M.C. · âmbar: não achada em campo'))),
-      grupo('Sistema (galerias pluviais)',
-        chave('rede', 'Galerias', COR.galeriaMedia, this.rede?.length, 'azul claro até 0,4 m · azul de 0,5 a 0,8 m · azul escuro 1 m ou mais', 'linha'),
-        el('div', { class: 'dren-sub' }, chave('sentido', 'Sentido do escoamento (setas, de perto)', '#ffffff', null, 'pelo relevo, do ponto mais alto ao mais baixo', 'seta'))),
-      grupo('Pontos de inspeção',
-        chave('pocos', 'Poços de visita', COR.poco, rs?.pocos, rs ? `${fmtNum(rs.pocos_fechados)} com tampa lacrada ou sob o asfalto (borda vermelha)` : '', 'circulo'),
-        chave('lancamentos', 'Lançamentos nos córregos', COR.lancamento, rs?.lancamentos, 'onde a galeria entrega a água', 'triangulo')),
-      grupo('Análises da A.M.C.',
-        chave('baixos', 'Pontos baixos de rua sem boca de lobo', COR.baixo, rs?.pontos_baixos, 'cruzamento mais baixo que as ruas que chegam nele, sem boca a 30 m', 'losango'),
-        chave('semBoca', 'Ruas sem boca de lobo a 80 m', COR.semBoca, null, rs ? `${fmtNum(rs.ruas_sem_boca_km, 1)} km de ruas asfaltadas, na área coberta pelo cadastro` : '', 'tracejado')),
-      el('p', { class: 'nota' }, 'Base própria da A.M.C. Jardim América, feita a partir do cadastro da microdrenagem do Plano Diretor de Drenagem Urbana de Goiânia (PDDU-GYN — UFG, Seinfra e Prefeitura; versão de 26/08/2025), usado como fonte de pesquisa, cruzado com o levantamento de campo da A.M.C., a Base Cadastral e o relevo.'));
+      chave('bocas', 'Coleta da galeria (boca de lobo)', cont(existe)),
+      chave('simples', 'Simples (meio-fio)', cont((b) => b.tipo === 'Simples (guia)' && existe(b)), true),
+      chave('grelha', 'Com grelha', cont((b) => b.tipo === 'Grelha' && existe(b)), true),
+      chave('combinada', 'Combinada', cont((b) => b.tipo === 'Combinada' && existe(b)), true),
+      chave('ruins', 'Em estado ruim', cont((b) => b.estado === 'Ruim'), true),
+      chave('naoImplantadas', 'Previstas e não implantadas', cont((b) => !existe(b)), true),
+      chave('baixos', 'Pontos baixos sem coleta', rs?.pontos_baixos, true),
+      chave('semBoca', 'Ruas sem coleta a 80 m', null, true),
+      chave('rede', 'Galeria', this.rede?.length),
+      chave('sentido', 'Sentido do escoamento', null, true),
+      chave('pocos', 'Ponto de inspeção', rs?.pocos),
+      chave('lancamentos', 'Ponto de despejo', rs?.lancamentos));
   }
 
   // ------------------------------------------------------------------ clique

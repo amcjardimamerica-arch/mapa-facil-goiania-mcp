@@ -395,7 +395,6 @@ export class Identificar {
 
   /** Cadastro imobiliário e dados complementares do lote, já abertos na ficha (sem botão). */
   cadastroNaFicha(ci, ponto) {
-    if (BASE.ligado && !BASE.cadastro) return; // opção "Cadastro Imobiliário" desligada na Base Cadastral
     const alvo = this.secao('Cadastro imobiliário e dados complementares', { aberto: true });
     this._cadastro(ci, alvo, ponto);
   }
