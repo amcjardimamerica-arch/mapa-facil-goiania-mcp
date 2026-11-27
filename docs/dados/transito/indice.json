@@ -1,6 +1,6 @@
 {
- "versao": "1.0",
- "gerado_em": "2026-11-26",
+ "versao": "1.0 + pontos novos do Mapillary",
+ "gerado_em": "2026-11-27",
  "escopo": "Sinalização sem placas verticais: semafórica, horizontal, dispositivos e fiscalização eletrônica",
  "camadas": [
   {
@@ -21,6 +21,16 @@
    "cor": "#00e676",
    "tipo": "ponto",
    "quantidade": 61,
+   "ligada": true
+  },
+  {
+   "chave": "semaforos_novos",
+   "titulo": "Semáforos novos (Mapillary)",
+   "grupo": "Sinalização semafórica",
+   "icone": "semaforo",
+   "cor": "#69f0ae",
+   "tipo": "ponto",
+   "quantidade": 186,
    "ligada": true
   },
   {
@@ -82,6 +92,66 @@
    "ligada": false
   },
   {
+   "chave": "faixas_novas",
+   "titulo": "Faixas de pedestres novas (Mapillary)",
+   "grupo": "Sinalização horizontal e dispositivos",
+   "icone": "faixa",
+   "cor": "#e0f7fa",
+   "tipo": "ponto",
+   "quantidade": 2150,
+   "ligada": true
+  },
+  {
+   "chave": "quebra_molas_novos",
+   "titulo": "Quebra-molas novos (indicados por placa, Mapillary)",
+   "grupo": "Sinalização horizontal e dispositivos",
+   "icone": "lombada",
+   "cor": "#ffd180",
+   "tipo": "ponto",
+   "quantidade": 135,
+   "ligada": true
+  },
+  {
+   "chave": "pare_novos",
+   "titulo": "PARE novos (Mapillary)",
+   "grupo": "Sinalização horizontal e dispositivos",
+   "icone": "pare",
+   "cor": "#ff8a80",
+   "tipo": "ponto",
+   "quantidade": 798,
+   "ligada": false
+  },
+  {
+   "chave": "retencao",
+   "titulo": "Linhas de retenção pintadas (Mapillary)",
+   "grupo": "Sinalização horizontal e dispositivos",
+   "icone": "faixa",
+   "cor": "#ff5252",
+   "tipo": "ponto",
+   "quantidade": 1957,
+   "ligada": false
+  },
+  {
+   "chave": "setas",
+   "titulo": "Setas pintadas no pavimento (Mapillary)",
+   "grupo": "Sinalização horizontal e dispositivos",
+   "icone": "seta",
+   "cor": "#e0e0e0",
+   "tipo": "ponto",
+   "quantidade": 672,
+   "ligada": false
+  },
+  {
+   "chave": "bicicleta",
+   "titulo": "Símbolos de bicicleta pintados (Mapillary)",
+   "grupo": "Sinalização horizontal e dispositivos",
+   "icone": "seta",
+   "cor": "#76ff03",
+   "tipo": "ponto",
+   "quantidade": 103,
+   "ligada": false
+  },
+  {
    "chave": "fiscalizacao",
    "titulo": "Radares, lombadas eletrônicas e faixa exclusiva (SET)",
    "grupo": "Fiscalização eletrônica",
@@ -119,6 +189,16 @@
    "cor": "#9e9e9e",
    "tipo": "ponto",
    "quantidade": 65,
+   "ligada": false
+  },
+  {
+   "chave": "cameras_mapillary",
+   "titulo": "Câmeras detectadas no Mapillary (públicas ou privadas)",
+   "grupo": "Fiscalização eletrônica",
+   "icone": "camera",
+   "cor": "#80deea",
+   "tipo": "ponto",
+   "quantidade": 181,
    "ligada": false
   },
   {
@@ -200,6 +280,10 @@
   {
    "nome": "Pardal – radares e lombadas de Goiás (ODbL)",
    "url": "https://github.com/murkiriel/pardal"
+  },
+  {
+   "nome": "Mapillary (CC-BY-SA 4.0) – detecções em fotos de rua: semáforos, faixas, PARE, retenção, setas, bicicleta, câmeras",
+   "url": "https://www.mapillary.com/app/?lat=-16.69&lng=-49.27&z=12"
   },
   {
    "nome": "Jornal Opção – lista de Direita Livre divulgada pela SET",

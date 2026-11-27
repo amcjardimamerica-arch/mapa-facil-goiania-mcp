@@ -23,6 +23,7 @@ import { Drenagem } from './drenagem.js';
 import { Geo360 } from './geo360.js';
 import { Eleicoes } from './eleicoes.js';
 import { Comparador } from './comparar.js';
+import { Energia3D } from './energia3d.js';
 import { restaurarGravacao, gravacaoAberta, gravacaoAte } from './gravacao.js';
 import { sincronizarManutencao } from './manutencao.js';
 import { relatorio as relatorioDesempenho, zerar as zerarDesempenho } from './desempenho.js';
@@ -394,6 +395,10 @@ async function iniciar() {
   });
 
   // ---------------------------------------------------- cliques e cursor
+  // Energia: postes 3D em toda Goiânia (no lugar dos marcadores de poste e de iluminação).
+  const energia3d = new Energia3D({ globo, identificar });
+  camadas.energia3d = energia3d;
+  app.energia3d = energia3d;
   const maos = new Cesium.ScreenSpaceEventHandler(globo.cena.canvas);
   // Ctrl + clique: o lote abre numa janela própria, ao lado das outras, para comparar (até 3).
   const comparador = new Comparador({ globo, identificar });
@@ -416,10 +421,12 @@ async function iniciar() {
       T._destacar(pego.id);
       identificar.abrir({ titulo: f.titulo, subtitulo: 'Trânsito · Goiânia', ponto });
       identificar.corpo.textContent = '';
-      identificar.corpo.append(identificar.tabela(f.linhas.map(([r, v]) => [r, String(v)])));
+      identificar.corpo.append(identificar.tabela(f.linhas.filter(([, v]) => !/^https?:\/\//.test(String(v))).map(([r, v]) => [r, String(v)])));
+      const links = f.linhas.filter(([, v]) => /^https?:\/\//.test(String(v)));
+      if (links.length) identificar.corpo.append(el('div', { class: 'linha-botoes centro' }, ...links.map(([r, v]) => el('a', { class: 'botao-texto', href: String(v), target: '_blank', rel: 'noopener' }, r))));
       return;
     }
-    if (poligonos.aoClicar(pego) || edificios.aoClicar(pego) || servicos.aoClicar(pego) || marcadores.aoClicar(pego) || drenagem.aoClicar(ponto) || geo360.aoClicar(ponto) || levantamento.aoClicar(pego, ponto)) return;
+    if (energia3d.postes.aoClicar(pego) || poligonos.aoClicar(pego) || edificios.aoClicar(pego) || servicos.aoClicar(pego) || marcadores.aoClicar(pego) || drenagem.aoClicar(ponto) || geo360.aoClicar(ponto) || levantamento.aoClicar(pego, ponto)) return;
     if (eleicoes.aoClicar(ponto)) return; // mapa de eleição ligado: zona ou região inteira, nunca quadra ou lote
     if (ponto) identificar.emPonto(ponto);
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);

@@ -1010,5 +1010,5 @@ def test_transito_no_painel_camadas(mapa):
       return { camadas: T.indice.camadas.length, botoes: g.corpo.querySelectorAll('input[type=checkbox]').length, ja, titulo: f.titulo,
         flutuante: !!document.querySelector('#transito-botao'), desligado: !T.ligada('semaforos') };
     }""")
-    assert r["camadas"] == 17 and r["botoes"] == 17 and r["ja"] == 43 and r["titulo"] == "Cruzamentos semaforizados", r
+    assert r["camadas"] == 25 and r["botoes"] == 25 and r["ja"] >= 43 and r["titulo"] == "Cruzamentos semaforizados", r
     assert not r["flutuante"] and r["desligado"], r

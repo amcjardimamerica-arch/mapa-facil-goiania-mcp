@@ -255,6 +255,7 @@ export class Postes {
   aoClicar(pego) {
     const p = pego?.id?.poste;
     if (!p) return false;
+    if (pego.primitive && pego.primitive !== this.primitiva && pego.primitive !== this.primLampadas) return false; // é de outro conjunto de postes
     this.abrir(p);
     return true;
   }

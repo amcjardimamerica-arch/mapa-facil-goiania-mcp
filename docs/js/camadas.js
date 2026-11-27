@@ -21,7 +21,7 @@ export const ORGANIZACAO = [
   // Mapas de eleição: desenho próprio (eleicoes.js), um de cada vez.
   { chave: 'eleitoral', titulo: 'Zonas Eleitorais', especial: 'eleitoral', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
   { chave: 'conselho', titulo: 'Conselho Tutelar', especial: 'conselho', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
-  { chave: 'energia', titulo: 'Energia', fontes: [{ tema: 'Mapa_Energia' }] },
+  { chave: 'energia', titulo: 'Energia', fontes: [{ tema: 'Mapa_Energia', ids: [1, 3, 4, 5, 6, 7, 8] }] }, // 1.36: sem "Tipo de Lâmpada"
   { chave: 'saneamento', titulo: 'Saneamento', fontes: [{ tema: 'Mapa_Sanemanento' }] },
   { chave: 'viario', titulo: 'Sistema Viário', especial: 'viario', fontes: [{ tema: 'Mapa_RedeViaria' }] },
   // Trânsito (sinalização sem placas verticais): dados próprios em dados/transito (transito.js), sem servidor.
@@ -311,7 +311,10 @@ export class Camadas {
       if (!g.ligado || g.consulta || g.proprio) continue;
       for (const f of g.fontes) {
         if (f.tema.chave !== chave) continue;
-        for (const id of f.sel) if (!(g.marcadores && this.servicos?.ehMarcador(chave, id))) ids.add(id);
+        for (const id of f.sel) {
+          if (chave === 'Mapa_Energia' && id <= 4) continue; // postes e iluminação: desenho 3D (energia3d.js)
+          if (!(g.marcadores && this.servicos?.ehMarcador(chave, id))) ids.add(id);
+        }
       }
     }
     return ids;
@@ -320,7 +323,12 @@ export class Camadas {
   async _aplicarMarcadores(g) {
     if (!this.servicos) return;
     for (const f of g.fontes) {
-      const ids = g.ligado ? [...f.sel] : [];
+      let ids = g.ligado ? [...f.sel] : [];
+      // Energia: postes e iluminação pública no desenho 3D dos postes do Jardim América (energia3d.js), no lugar dos marcadores.
+      if (f.tema.chave === 'Mapa_Energia' && this.energia3d) {
+        this.energia3d.definir({ postes: ids.includes(4), luz: ids.includes(1) || ids.includes(3) });
+        ids = ids.filter((id) => ![1, 2, 3, 4].includes(id));
+      }
       await this.servicos.definir(f.tema, ids);
       this._redesenhar(f.tema.chave); // as que não são pontos (ex.: linhas de ônibus) seguem como imagem
     }
@@ -328,6 +336,11 @@ export class Camadas {
 
   _aplicar(chave) {
     const e = this.porTema.get(chave), t = e.tema;
+    if (chave === 'Mapa_Energia' && this.energia3d) {
+      const g = this.grupos.find((x) => x.chave === 'energia');
+      const sel = g?.ligado ? [...(g.fontes[0]?.sel || [])] : [];
+      this.energia3d.definir({ postes: sel.includes(4), luz: sel.includes(1) || sel.includes(3) });
+    }
     if (t.somente_consulta) return;
     if (e.camada) { this.globo.removerTema(e.camada); e.camada = null; }
     const ids = this._desenhadas(chave);
