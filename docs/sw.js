@@ -1,10 +1,13 @@
 // Service worker da Bússola: guarda no aparelho os arquivos do banco local e dos dados, para o mapa
 // abrir de imediato nas próximas vezes e continuar funcionando com a internet fraca.
 //
-// - banco/ e data/: mostra o que já está guardado e atualiza por trás (o banco muda só a cada nova extração).
+// - banco/, vendor/ e relevo/: mostra o que já está guardado e atualiza por trás (mudam só a cada nova extração).
+// - data/: sempre do servidor primeiro (divisas, classificações e listas mudam a cada versão); a cópia guardada
+//   só é usada sem internet.
 // - Páginas, código e estilos: sempre conferidos com o servidor (versão nova aparece na hora).
 // - O login (acesso/) segue direto para a rede.
 const CACHE = 'bussola-dados-v2'; // (o nome do cache não muda: os dados guardados continuam valendo)
+const VERSAO_SW = '1.30.1'; // muda a cada troca de regra, para o navegador instalar este arquivo de novo
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil((async () => {
@@ -18,6 +21,15 @@ self.addEventListener('fetch', (e) => {
   const caminho = url.pathname.slice(new URL(self.registration.scope).pathname.length);
   // Páginas, código e estilos: sempre confere com o servidor se há versão nova (sem esperar o cache de 10 min
   // do GitHub Pages expirar). O login (acesso/) segue direto.
+  if (/^data\//.test(caminho)) {
+    // Dados do sistema: o servidor primeiro (versão nova na hora); guardado só para usar sem internet.
+    e.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      try { const r = await fetch(e.request, { cache: 'no-cache' }); if (r.ok) cache.put(e.request, r.clone()); return r; }
+      catch { return (await cache.match(e.request)) || new Response('', { status: 504 }); }
+    })());
+    return;
+  }
   if (!/^(banco|data|vendor|relevo)\//.test(caminho)) {
     if (/^acesso\//.test(caminho)) return;
     e.respondWith(fetch(e.request, { cache: 'no-cache' }).catch(() => caches.match(e.request).then((r) => r || Response.error())));

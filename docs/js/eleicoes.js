@@ -7,7 +7,7 @@
 // bairro (preta, amarela, preta) — e cada área tem uma cor clara própria. Com um desses mapas ligado, o clique
 // seleciona a zona/região inteira (ou o colégio de votação), nunca quadra ou lote.
 import { gravacaoAberta, gravarDado, repoDoSite } from './gravacao.js';
-import { CFG } from './config.js';
+import { CFG, VERSAO } from './config.js';
 import { el, pedirJSON, fmtNum, aviso } from './util.js';
 import { ProvedorDesenho } from './mapavetorial.js';
 
@@ -41,7 +41,7 @@ export class Eleicoes {
 
   async _regioes() {
     if (this._cacheReg) return this._cacheReg;
-    const d = await pedirJSON(`${CFG.dados}conselho_regioes.geojson`);
+    const d = await pedirJSON(`${CFG.dados}conselho_regioes.geojson?v=${VERSAO}`);
     this._geoConselho = d; // as coordenadas são as mesmas listas usadas no desenho: o editor mexe direto nelas
     const aneisDe = (f) => (f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates).flat();
     // Regiões administrativas da SEPLAM (duas por Conselho): só a divisa interna, tracejada.
@@ -116,7 +116,7 @@ export class Eleicoes {
       for (const bloco of [lista('Locais de votação de 2023', a.props.locais_votacao), lista('Bairros', a.props.bairros),
         lista('Bairros divididos com outro Conselho', a.props.bairros_divididos), lista('Ajustes ao desenho da SEPLAM', a.props.ajustes)]) if (bloco) id.corpo.append(bloco);
       // Divisas com cada Conselho vizinho e as ruas, avenidas, rodovias e rios que elas seguem (scripts/conselho_divisas.py).
-      pedirJSON(`${CFG.dados}conselho_divisas.json`).then((dv) => {
+      pedirJSON(`${CFG.dados}conselho_divisas.json?v=${VERSAO}`).then((dv) => {
         const meus = (dv.divisas || []).filter((x) => x.conselhos.includes(a.props.regiao));
         if (!meus.length) return;
         const caixa = el('details', { class: 'lv-lista', open: true }, el('summary', {}, `Divisas com os Conselhos vizinhos (${meus.length})`));
