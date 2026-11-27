@@ -21,6 +21,8 @@ export const ORGANIZACAO = [
   { chave: 'energia', titulo: 'Energia', fontes: [{ tema: 'Mapa_Energia' }] },
   { chave: 'saneamento', titulo: 'Saneamento', fontes: [{ tema: 'Mapa_Sanemanento' }] },
   { chave: 'viario', titulo: 'Sistema Viário', especial: 'viario', fontes: [{ tema: 'Mapa_RedeViaria' }] },
+  // Trânsito (sinalização sem placas verticais): dados próprios em dados/transito (transito.js), sem servidor.
+  { chave: 'transito', titulo: 'Trânsito', especial: 'transito', proprio: true, independente: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
   { chave: 'edificacoes', titulo: 'Edificações', especial: 'edificacoes', fontes: [
     { tema: 'Mapa_Edificios' },
     { tema: 'Mapa_PontosNotaveis', ids: [0, 1, 2, 3], sub: 'Equipamentos públicos e patrimônio' },

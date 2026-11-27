@@ -26,6 +26,12 @@ import { sincronizarManutencao } from './manutencao.js';
 import { relatorio as relatorioDesempenho, zerar as zerarDesempenho } from './desempenho.js';
 
 const Cesium = window.Cesium;
+// Módulo Trânsito (transito.js): espera ele se ligar ao globo.
+const esperarTransito = async () => {
+  for (let i = 0; i < 120 && !(window.BussolaTransito?.indice); i++) await new Promise((ok) => setTimeout(ok, 250));
+  if (!window.BussolaTransito?.indice) throw new Error('módulo de trânsito indisponível');
+  return window.BussolaTransito;
+};
 const app = (window.bussola = { versao: VERSAO, pronto: false, erros: [] });
 // Medidas de desempenho: bussola.desempenho() no console; bussola.zerarDesempenho() recomeça a contagem.
 app.desempenho = () => relatorioCompleto();
@@ -106,6 +112,30 @@ async function iniciar() {
     // Mapas de eleição: Zonas Eleitorais (TSE) e Conselho Tutelar (regiões e locais da eleição de 2023).
     eleitoral: (caixa) => caixa.append(el('p', { class: 'nota' }, 'Zonas eleitorais do TSE e os colégios de votação. O clique seleciona a zona inteira ou o colégio.')),
     eleitoralLigar: (ligado) => { eleicoes.definir(ligado ? 'zonas' : '').catch(() => {}); levantamento.definirEleicao(ligado ? 'geral' : '').catch(() => {}); },
+    // Trânsito: um botão por camada (semáforos, faixas, quebra-molas, PARE, rotatórias, ciclovias, fiscalização…)
+    transito: async (caixa) => {
+      const T = await esperarTransito();
+      const filtro = el('input', { type: 'search', class: 'campo', placeholder: 'Filtrar por bairro (ex.: Jardim América)', oninput: (e) => T.filtrarBairro(e.target.value) });
+      caixa.append(el('p', { class: 'nota' }, 'Sinalização de trânsito (sem placas verticais). O que não é da base oficial da SET vem de mapeamento colaborativo e notícias: conferir em campo.'), filtro);
+      const grupos = new Map();
+      for (const cam of T.indice.camadas) {
+        if (!grupos.has(cam.grupo)) { const g = el('div', {}, el('h4', { class: 'subtitulo' }, cam.grupo)); grupos.set(cam.grupo, g); caixa.append(g); }
+        const ent = el('input', { type: 'checkbox', checked: T.ligada(cam.chave), onchange: (e) => T.ligar(cam.chave, e.target.checked) });
+        grupos.get(cam.grupo).append(el('label', { class: 'linha-chave' },
+          el('span', {}, el('span', { class: 'lv-cor', style: `background:${cam.cor}` }), ` ${cam.titulo} `, el('small', {}, (cam.quantidade || 0).toLocaleString('pt-BR'))),
+          el('span', { class: 'interruptor' }, ent, el('span', {}))));
+        cam._caixa = ent;
+      }
+      caixa.append(el('p', { class: 'nota' }, `Fontes: ${T.indice.fontes.map((f) => f.nome).join(' · ')}. Dados de ${T.indice.gerado_em}.`));
+    },
+    transitoLigar: async (ligado) => {
+      const T = await esperarTransito();
+      for (const cam of T.indice.camadas) {
+        const on = ligado && cam.ligada;
+        if (ligado ? on : T.ligada(cam.chave)) await T.ligar(cam.chave, on);
+        if (cam._caixa) cam._caixa.checked = T.ligada(cam.chave);
+      }
+    },
     conselho: (caixa) => caixa.append(el('p', { class: 'nota' }, 'Regiões da eleição do Conselho Tutelar (juntam zonas inteiras ou partes delas), com os colégios de votação e as transferências de seções.'),
       CFG.conselhoEditavel ? el('div', { class: 'linha-botoes' },
         el('button', { class: 'botao', onclick: async (e) => {
@@ -362,6 +392,15 @@ async function iniciar() {
     const pego = globo.cena.pick(ev.position);
     edificios.limparSelecao();
     if (pego?.id?.alca) return; // alças de edição: tratadas no arrastar
+    // Trânsito: a ficha do objeto (semáforo, faixa, radar…) na janela de informações do sistema.
+    if (pego?.id?.transito && window.BussolaTransito) {
+      const T = window.BussolaTransito, f = T.linhas(pego.id);
+      T._destacar(pego.id);
+      identificar.abrir({ titulo: f.titulo, subtitulo: 'Trânsito · Goiânia', ponto });
+      identificar.corpo.textContent = '';
+      identificar.corpo.append(identificar.tabela(f.linhas.map(([r, v]) => [r, String(v)])));
+      return;
+    }
     if (poligonos.aoClicar(pego) || edificios.aoClicar(pego) || servicos.aoClicar(pego) || marcadores.aoClicar(pego) || drenagem.aoClicar(ponto) || levantamento.aoClicar(pego, ponto)) return;
     if (eleicoes.aoClicar(ponto)) return; // mapa de eleição ligado: zona ou região inteira, nunca quadra ou lote
     if (ponto) identificar.emPonto(ponto);

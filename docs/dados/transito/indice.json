@@ -1,0 +1,209 @@
+{
+ "versao": "1.0",
+ "gerado_em": "2026-11-26",
+ "escopo": "Sinalização sem placas verticais: semafórica, horizontal, dispositivos e fiscalização eletrônica",
+ "camadas": [
+  {
+   "chave": "semaforos",
+   "titulo": "Cruzamentos semaforizados",
+   "grupo": "Sinalização semafórica",
+   "icone": "semaforo",
+   "cor": "#00c853",
+   "tipo": "ponto",
+   "quantidade": 605,
+   "ligada": true
+  },
+  {
+   "chave": "direita_livre",
+   "titulo": "Direita Livre e Esquerda Livre",
+   "grupo": "Sinalização semafórica",
+   "icone": "seta",
+   "cor": "#00e676",
+   "tipo": "ponto",
+   "quantidade": 61,
+   "ligada": true
+  },
+  {
+   "chave": "faixas",
+   "titulo": "Faixas de pedestres",
+   "grupo": "Sinalização horizontal e dispositivos",
+   "icone": "faixa",
+   "cor": "#ffffff",
+   "tipo": "ponto",
+   "quantidade": 2274,
+   "ligada": true
+  },
+  {
+   "chave": "quebra_molas",
+   "titulo": "Quebra-molas e faixas elevadas",
+   "grupo": "Sinalização horizontal e dispositivos",
+   "icone": "lombada",
+   "cor": "#ffab00",
+   "tipo": "ponto",
+   "quantidade": 130,
+   "ligada": true
+  },
+  {
+   "chave": "pare",
+   "titulo": "PARE (parada obrigatória)",
+   "grupo": "Sinalização horizontal e dispositivos",
+   "icone": "pare",
+   "cor": "#d50000",
+   "tipo": "ponto",
+   "quantidade": 2614,
+   "ligada": false
+  },
+  {
+   "chave": "rotatorias",
+   "titulo": "Rotatórias e mini-rotatórias",
+   "grupo": "Sinalização horizontal e dispositivos",
+   "icone": "rotatoria",
+   "cor": "#64dd17",
+   "tipo": "ponto",
+   "quantidade": 842,
+   "ligada": false
+  },
+  {
+   "chave": "ciclovias",
+   "titulo": "Ciclovias e ciclofaixas",
+   "grupo": "Sinalização horizontal e dispositivos",
+   "cor": "#00c853",
+   "tipo": "linha",
+   "quantidade": 417,
+   "ligada": false
+  },
+  {
+   "chave": "faixas_onibus",
+   "titulo": "Faixas e pistas exclusivas de ônibus",
+   "grupo": "Sinalização horizontal e dispositivos",
+   "cor": "#2962ff",
+   "tipo": "linha",
+   "quantidade": 327,
+   "ligada": false
+  },
+  {
+   "chave": "fiscalizacao",
+   "titulo": "Radares, lombadas eletrônicas e faixa exclusiva (SET)",
+   "grupo": "Fiscalização eletrônica",
+   "icone": "radar",
+   "cor": "#d50000",
+   "tipo": "ponto",
+   "quantidade": 261,
+   "ligada": true
+  },
+  {
+   "chave": "licitacao_2023",
+   "titulo": "Locais previstos na licitação de 2023",
+   "grupo": "Fiscalização eletrônica",
+   "icone": "radar",
+   "cor": "#ff80ab",
+   "tipo": "ponto",
+   "quantidade": 310,
+   "ligada": false
+  },
+  {
+   "chave": "videomonitoramento",
+   "titulo": "Câmeras de videomonitoramento (licitação 2023)",
+   "grupo": "Fiscalização eletrônica",
+   "icone": "camera",
+   "cor": "#00b8d4",
+   "tipo": "ponto",
+   "quantidade": 20,
+   "ligada": false
+  },
+  {
+   "chave": "radares_fora_set",
+   "titulo": "Radares em outras fontes (fora da lista SET)",
+   "grupo": "Fiscalização eletrônica",
+   "icone": "radar",
+   "cor": "#9e9e9e",
+   "tipo": "ponto",
+   "quantidade": 65,
+   "ligada": false
+  },
+  {
+   "chave": "noticias",
+   "titulo": "Notícias oficiais da Prefeitura (cruzamentos citados)",
+   "grupo": "Estudo e fontes",
+   "icone": "noticia",
+   "cor": "#ffd600",
+   "tipo": "ponto",
+   "quantidade": 206,
+   "ligada": false
+  },
+  {
+   "chave": "estudo_cruzamentos",
+   "titulo": "Estudo: cruzamentos estruturais sem semáforo mapeado",
+   "grupo": "Estudo e fontes",
+   "icone": "alerta",
+   "cor": "#ff6d00",
+   "tipo": "ponto",
+   "quantidade": 364,
+   "ligada": false
+  },
+  {
+   "chave": "estudo_escolas",
+   "titulo": "Estudo: escolas sem faixa em via estrutural",
+   "grupo": "Estudo e fontes",
+   "icone": "escola",
+   "cor": "#ff1744",
+   "tipo": "ponto",
+   "quantidade": 267,
+   "ligada": false
+  },
+  {
+   "chave": "estudo_saude",
+   "titulo": "Estudo: saúde sem faixa em via estrutural",
+   "grupo": "Estudo e fontes",
+   "icone": "saude",
+   "cor": "#ff1744",
+   "tipo": "ponto",
+   "quantidade": 67,
+   "ligada": false
+  },
+  {
+   "chave": "estudo_onibus",
+   "titulo": "Estudo: pontos de ônibus em arterial sem travessia",
+   "grupo": "Estudo e fontes",
+   "icone": "onibus",
+   "cor": "#2979ff",
+   "tipo": "ponto",
+   "quantidade": 722,
+   "ligada": false
+  }
+ ],
+ "fontes": [
+  {
+   "nome": "SET – API de equipamentos de fiscalização eletrônica",
+   "url": "https://www.goiania.go.gov.br/set/wp-json/set-goiania/v1/equipamentos"
+  },
+  {
+   "nome": "Prefeitura – Termo de Referência da manutenção semafórica (721 cruzamentos)",
+   "url": "https://www10.goiania.go.gov.br/DadosINTER/PUBLIC/PREG%C3%83OELETR%C3%94NICO-SEMAD/2023/arq_3294745.pdf"
+  },
+  {
+   "nome": "Prefeitura – Termo de Referência da fiscalização eletrônica de 2023",
+   "url": "https://www10.goiania.go.gov.br/DadosINTER/PUBLIC/PREG%C3%83OELETR%C3%94NICO-SEMAD/2023/arq_3496036.pdf"
+  },
+  {
+   "nome": "Prefeitura – notícias oficiais de trânsito (2019–2026)",
+   "url": "https://www.goiania.go.gov.br/agora/"
+  },
+  {
+   "nome": "Mapa Fácil – rede viária, bairros, escolas, saúde e ônibus",
+   "url": "https://portalmapa.goiania.go.gov.br/mapafacil/"
+  },
+  {
+   "nome": "OpenStreetMap (ODbL) – semáforos, faixas, quebra-molas, PARE, rotatórias, ciclovias",
+   "url": "https://www.openstreetmap.org/copyright"
+  },
+  {
+   "nome": "Pardal – radares e lombadas de Goiás (ODbL)",
+   "url": "https://github.com/murkiriel/pardal"
+  },
+  {
+   "nome": "Jornal Opção – lista de Direita Livre divulgada pela SET",
+   "url": "https://www.jornalopcao.com.br/ultimas-noticias/goiania-reforca-placas-de-direita-livre-em-84-cruzamentos-saiba-onde-e-permitido-virar-no-vermelho-869505/"
+  }
+ ]
+}

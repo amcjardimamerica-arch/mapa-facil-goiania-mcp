@@ -219,7 +219,7 @@ def test_camadas_organizadas_em_projetos(mapa):
         edificiosDesligados: !bussola.edificios.ativo && !bussola.edificios.primitiva,
       };
     }""")
-    assert r["ordem"] == ["Base Cadastral", "Drenagem Pluvial", "Zonas Eleitorais", "Conselho Tutelar", "Energia", "Saneamento", "Sistema Viário", "Edificações"], r["ordem"]
+    assert r["ordem"] == ["Base Cadastral", "Drenagem Pluvial", "Zonas Eleitorais", "Conselho Tutelar", "Energia", "Saneamento", "Sistema Viário", "Trânsito"], r["ordem"]
     assert "Zonas Municipais" in r["titulos"] and "Pontos Notáveis" not in r["titulos"] and "PUAMA" not in r["titulos"]
     assert "Simplifica Goiânia – Uso do Solo" not in r["titulos"] and "Documentação de Bairros" not in r["titulos"]
     assert r["eleitoral"] == [["Mapa_Limites", [10], ""]] and all(10 not in f[1] for f in r["limites"]), r["limites"]
@@ -966,3 +966,21 @@ def test_conselho_divisa_norte_leste_pela_br153():
     br = unary_union([shape(f["geometry"]) for f in refs["features"] if "BR 153" in str(f["properties"].get("nome"))])
     divisa = cs["Norte"].boundary.intersection(cs["Leste"].boundary.buffer(1e-5))
     assert divisa.length > 0 and divisa.intersection(br.buffer(0.0003)).length / divisa.length > 0.95
+
+
+def test_transito_no_painel_camadas(mapa):
+    """1.31: Trânsito como projeto do painel Camadas — um botão por camada, filtro por bairro e ficha do sistema."""
+    r = mapa.evaluate("""async () => {
+      const cam = bussola.camadas; cam.ligar('transito', true);
+      for (let i = 0; i < 80 && !(window.BussolaTransito?.ligada('semaforos')); i++) await new Promise((o) => setTimeout(o, 250));
+      const T = window.BussolaTransito; const g = cam.grupo('transito');
+      if (!g.corpo.dataset.pronto) { await cam._montarCorpo(g, g.corpo); g.corpo.dataset.pronto = '1'; }
+      T.filtrarBairro('jardim américa'); const ja = T.fontes.semaforos.entities.values.filter((e) => e.show).length; T.filtrarBairro('');
+      const f = T.linhas(T.fontes.semaforos.entities.values[0]);
+      cam.ligar('transito', false);
+      for (let i = 0; i < 40 && T.ligada('semaforos'); i++) await new Promise((o) => setTimeout(o, 250));
+      return { camadas: T.indice.camadas.length, botoes: g.corpo.querySelectorAll('input[type=checkbox]').length, ja, titulo: f.titulo,
+        flutuante: !!document.querySelector('#transito-botao'), desligado: !T.ligada('semaforos') };
+    }""")
+    assert r["camadas"] == 17 and r["botoes"] == 17 and r["ja"] == 43 and r["titulo"] == "Cruzamentos semaforizados", r
+    assert not r["flutuante"] and r["desligado"], r
