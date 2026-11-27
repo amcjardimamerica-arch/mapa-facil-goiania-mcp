@@ -113,6 +113,7 @@ export class Globo {
     });
     this.viewer = viewer;
     const cena = viewer.scene;
+    this._vigiarMontagem();
     cena.globe.baseColor = Cesium.Color.fromCssColorString(CFG.cores.fora);
     cena.globe.depthTestAgainstTerrain = true;
     cena.globe.enableLighting = false;
@@ -153,7 +154,35 @@ export class Globo {
 
   get cena() { return this.viewer.scene; }
   get camera() { return this.viewer.camera; }
-  redesenhar() { this.cena.requestRender(); }
+  /**
+   * Pede um quadro novo. Com o desenho sob demanda (requestRenderMode), camadas que terminam de montar depois do
+   * clique (postes 3D, marcadores, linhas no chão, blocos de imagem) só apareciam ao mexer no mapa; por isso o
+   * globo segue redesenhando por mais 2,5 s e enquanto houver algo ainda sendo montado (ver _vigiarMontagem).
+   */
+  redesenhar() {
+    this._redesenharAte = Math.max(this._redesenharAte || 0, performance.now() + 2500);
+    this.cena.requestRender();
+  }
+
+  /** Enquanto houver primitivas ou entidades sendo montadas, continua pedindo quadros (até aparecerem). */
+  _vigiarMontagem() {
+    const pendente = (col, nivel = 0) => {
+      if (!col || nivel > 3) return false;
+      const n = typeof col.length === 'number' ? col.length : 0;
+      for (let i = 0; i < n; i++) {
+        const p = col.get(i);
+        if (!p || p.show === false) continue;
+        if (p.ready === false) return true;
+        if (typeof p.length === 'number' && typeof p.get === 'function' && pendente(p, nivel + 1)) return true;
+      }
+      return false;
+    };
+    this.cena.postRender.addEventListener(() => {
+      const agora = performance.now();
+      const montando = !this.viewer.dataSourceDisplay.ready || pendente(this.cena.primitives) || pendente(this.cena.groundPrimitives);
+      if (montando || agora < (this._redesenharAte || 0)) setTimeout(() => this.cena.requestRender(), montando ? 60 : 120);
+    });
+  }
 
   // ------------------------------------------------------------------- bases
   basesDisponiveis() {
