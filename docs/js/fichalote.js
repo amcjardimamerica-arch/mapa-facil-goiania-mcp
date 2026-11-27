@@ -12,6 +12,24 @@
 // O que a pessoa escreve ou corrige fica guardado neste aparelho (por inscrição do lote) — o site é estático.
 import { el, fmtNum, fmtGraus, aviso, nomeBairro } from './util.js';
 import { cofreDisponivel, cofreAberto, consultarOuServidor } from './banco.js';
+import { gravacaoAberta, lerDado, gravarDado, quemGrava, repoDoSite } from './gravacao.js';
+import { CFG } from './config.js';
+
+/** Classificação de cada lote (cor no mapa): docs/data/lotes_classificacao.json, público e gravável. */
+let classificacao = null;
+export function lerClassificacao() {
+  if (!classificacao) classificacao = fetch(`${CFG.dados}lotes_classificacao.json`, { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : {})).then((d) => d.lotes || {}).catch(() => ({}));
+  return classificacao;
+}
+async function gravarClassificacao(chave, valor) {
+  const repo = await repoDoSite();
+  await gravarDado('docs/data/lotes_classificacao.json', (atual) => {
+    const lotes = { ...(atual?.lotes || {}) };
+    if (valor) lotes[chave] = valor; else delete lotes[chave];
+    return { nota: 'Classificação de cada lote (bairro|quadra|lote -> finalidade), alterada pela Associação no sistema.', lotes };
+  }, `Classificação do lote ${chave}: ${valor || 'retirada'}`, { repo });
+  (await lerClassificacao())[chave] = valor;
+}
 
 export const TIPOS_IMOVEL = ['Imóvel residencial', 'Imóvel comercial', 'Misto (residencial e comercial)', 'Igreja', 'Imóvel público',
   'Praça', 'Escola', 'Condomínio', 'Lote vago', 'Abandonado', 'Em obra', 'Outro'];
@@ -94,39 +112,95 @@ export async function fichaLote(ident, { lote, quadra, bairro, ponto, extra = nu
       href: `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${ponto.lat},${ponto.lon}` }, 'Street View') : null));
 
   const chaveLote = ci || `${nb}-${nq}-${nl}`;
+  // Banco de dados (gravacao.js): com a gravação aberta, o que a Associação escreveu neste lote vem do banco e
+  // cada alteração é gravada lá (vale para todos os computadores); sem ela, fica só neste aparelho.
+  const arqLote = `lotes/${String(chaveLote).normalize('NFD').replace(/[^\w-]+/g, '_')}.json`;
+  let noBanco = null;
+  if (gravacaoAberta()) { try { noBanco = await lerDado(arqLote); } catch { noBanco = null; } if (n !== ident.pedido) return; }
+  const salvar = (campo, valor, oQue) => {
+    if (!gravacaoAberta()) { aviso(`${oQue} guardado só neste aparelho (gravação fechada).`); return; }
+    gravarDado(arqLote, (atual) => ({ ...(atual || {}), ci, quadra: nq, lote: nl, bairro: nb, [campo]: valor, por: quemGrava(), em: new Date().toISOString() }), `Lote ${chaveLote}: ${oQue.toLowerCase()}`)
+      .then(() => aviso(`${oQue} gravado no banco de dados.`), (e) => aviso(`${oQue} ficou só neste aparelho (${e.message}).`, 'alerta'));
+  };
   const liberado = !cofreDisponivel() || cofreAberto();
   const fechado = (texto) => el('p', { class: 'nota cadeado' }, `🔒 ${texto} Libere os dados complementares na página de validação (senha do cofre).`);
 
-  // 3. Caixa de texto do lote: moradores, inquilinos, comerciantes e contatos
-  const s3 = ident.secao('Moradores, comerciantes e contatos', { aberto: true });
+  // 3. Pessoas e empresas no lote (EDITÁVEL, banco de dados da Associação; protegido pela senha do cofre).
+  //    Tudo o que muda com a troca de morador, inquilino, comerciante ou proprietário fica aqui.
+  const s3 = ident.secao('Pessoas e empresas no lote (editável)', { aberto: true });
   if (!liberado) s3.append(fechado('Dados protegidos.'));
   else {
-    const linhas = [];
     const col = (nome) => (extra?.colunas ? extra.valores[extra.colunas.indexOf(nome)] : null);
-    for (const nome of ['Nomes no levantamento', 'Contatos do levantamento', 'Telefones do levantamento', 'Empresas (nome)']) {
-      if (!vazio(col(nome))) linhas.push(`${nome.replace(' do levantamento', '').replace(' no levantamento', '')}: ${t(col(nome))}`);
+    // Primeira vez: começa com o que o levantamento e o cadastro de atividades já sabem deste lote.
+    const pessoas0 = [], empresas0 = [];
+    const contatos = [col('Contatos do levantamento'), col('Nomes no levantamento')].filter((x) => !vazio(x)).join('; ');
+    if (contatos || !vazio(col('Telefones do levantamento'))) pessoas0.push({ nome: contatos, vinculo: 'Morador', telefone: t(col('Telefones do levantamento')), email: '', obs: '' });
+    for (const e of extra?.empresas || []) empresas0.push({ nome: e['Nome fantasia'] || e['Razão social'] || '', razao: e['Razão social'] || '', cnpj: e.CNPJ || '',
+      atividade: e['Descrição do CNAE'] || '', telefone: e.Telefone || '', email: e['E-mail'] || '' });
+    for (const x of ativ) if (!empresas0.some((e) => e.nome && (e.nome === t(x.NM_FANT) || e.razao === t(x.NM_SOCIAL)))) {
+      empresas0.push({ nome: t(x.NM_FANT) || t(x.NM_SOCIAL), razao: t(x.NM_SOCIAL), cnpj: '', atividade: t(x.NM_ATIV1), telefone: '', email: '' });
     }
-    for (const e of extra?.empresas || []) {
-      linhas.push(['Empresa', e['Nome fantasia'] || e['Razão social'], e['Razão social'] && e['Nome fantasia'] ? `(${e['Razão social']})` : '',
-        e.CNPJ && `CNPJ ${e.CNPJ}`, e.Telefone && `tel. ${e.Telefone}`, e['E-mail']].filter(Boolean).join(' · '));
-    }
-    for (const x of ativ) {
-      linhas.push(['Atividade econômica', t(x.NM_FANT) || t(x.NM_SOCIAL), t(x.NM_FANT) && t(x.NM_SOCIAL) ? `(${t(x.NM_SOCIAL)})` : '', t(x.NM_ATIV1), t(x.END_COMP)].filter(Boolean).join(' · '));
-    }
-    const chave = `bussola:lote-texto:${chaveLote}`;
-    const area = el('textarea', { class: 'campo area caixa-lote', rows: Math.max(5, Math.min(14, linhas.length + 3)), 'aria-label': 'Moradores, comerciantes e contatos do lote',
-      placeholder: 'Morador, inquilino ou ocupante, comerciante, telefones, e-mails, observações…' }, guardado(chave, null) ?? [...new Set(linhas)].join('\n'));
-    area.addEventListener('change', () => { guardar(chave, area.value); aviso('Dados do lote guardados neste aparelho.'); });
-    s3.append(area, el('p', { class: 'nota' }, 'Use para quem ocupa o imóvel e não é o proprietário (inquilino, morador, comércio). Fica guardado neste aparelho.'));
+    const chaveP2 = `bussola:lote-pessoas:${chaveLote}`;
+    const dado = { pessoas: noBanco?.pessoas ?? guardado(chaveP2, null)?.pessoas ?? pessoas0,
+      empresas: noBanco?.empresas ?? guardado(chaveP2, null)?.empresas ?? empresas0,
+      observacoes: noBanco?.observacoes ?? noBanco?.texto ?? guardado(chaveP2, null)?.observacoes ?? '' };
+    let espera = null;
+    const salvarTudo = () => {
+      guardar(chaveP2, dado);
+      clearTimeout(espera);
+      espera = setTimeout(() => { salvar('pessoas', dado.pessoas, 'Pessoas do lote'); salvar('empresas', dado.empresas, 'Empresas do lote'); salvar('observacoes', dado.observacoes, 'Observações do lote'); }, 600);
+    };
+    const VINCULOS = ['Proprietário', 'Morador', 'Inquilino', 'Responsável', 'Síndico', 'Funcionário', 'Contato'];
+    const lista = (titulo, itens, campos, novo) => {
+      const caixa = el('div', { class: 'lista-editavel' }, el('h4', { class: 'subtitulo' }, titulo));
+      const desenhar = () => {
+        caixa.querySelectorAll('.item-editavel, .botao-add').forEach((x) => x.remove());
+        itens.forEach((it, k) => {
+          const linha = el('div', { class: 'item-editavel' });
+          for (const [c, rot, opcoes] of campos) {
+            const inp = opcoes ? el('select', { class: 'campo', 'aria-label': rot }, ...opcoes.map((o) => el('option', { value: o, selected: o === it[c] }, o)))
+              : el('input', { class: 'campo', value: it[c] || '', placeholder: rot, 'aria-label': rot });
+            inp.addEventListener('change', () => { it[c] = inp.value; salvarTudo(); });
+            linha.append(el('label', { class: 'rotulo-faixa bloco' }, el('span', {}, rot), inp));
+          }
+          linha.append(el('button', { class: 'botao-texto', onclick: () => { itens.splice(k, 1); salvarTudo(); desenhar(); } }, 'Remover'));
+          caixa.append(linha);
+        });
+        caixa.append(el('button', { class: 'botao botao-add', onclick: () => { itens.push(novo()); salvarTudo(); desenhar(); } }, `+ Acrescentar`));
+      };
+      desenhar();
+      return caixa;
+    };
+    s3.append(
+      lista('Pessoas (moradores, inquilinos, responsáveis)', dado.pessoas,
+        [['nome', 'Nome'], ['vinculo', 'Vínculo com o imóvel', VINCULOS], ['telefone', 'Telefone'], ['email', 'E-mail'], ['obs', 'Observação']],
+        () => ({ nome: '', vinculo: 'Morador', telefone: '', email: '', obs: '' })),
+      lista('Empresas e comércios', dado.empresas,
+        [['nome', 'Nome fantasia'], ['razao', 'Razão social'], ['cnpj', 'CNPJ'], ['atividade', 'Atividade'], ['telefone', 'Telefone'], ['email', 'E-mail']],
+        () => ({ nome: '', razao: '', cnpj: '', atividade: '', telefone: '', email: '' })));
+    const area = el('textarea', { class: 'campo area caixa-lote', rows: 3, placeholder: 'Observações sobre quem ocupa o imóvel…', 'aria-label': 'Observações' }, dado.observacoes);
+    area.addEventListener('change', () => { dado.observacoes = area.value; salvarTudo(); });
+    s3.append(el('label', { class: 'rotulo-faixa bloco' }, el('span', {}, 'Observações'), area),
+      el('p', { class: 'nota' }, gravacaoAberta() ? 'Gravado no banco de dados da Associação (todos os computadores).'
+        : 'Gravação fechada: fica só neste aparelho até a gravação ser aberta na página de validação.'));
   }
 
-  // 4. Tipo do imóvel e edição do lote
-  const s4 = ident.secao('Tipo do imóvel e edição do lote', { aberto: true });
-  const chaveTipo = `bussola:lote-tipo:${chaveLote}`;
-  const tipoAtual = guardado(chaveTipo, '');
-  const sel = el('select', { class: 'campo', 'aria-label': 'Tipo do imóvel', onchange: (e) => { guardar(chaveTipo, e.target.value); aviso('Tipo do imóvel guardado neste aparelho.'); } },
-    el('option', { value: '' }, '— escolha o tipo do imóvel —'), ...TIPOS_IMOVEL.map((x) => el('option', { value: x, selected: x === tipoAtual }, x)));
-  s4.append(el('label', { class: 'rotulo-faixa bloco' }, el('span', {}, 'Tipo do imóvel'), sel));
+  // 4. Classificação do lote (cor no mapa), dentro do padrão das finalidades da Associação, e edição do lote.
+  //    Não é dado pessoal: fica num arquivo público do sistema, para todos verem a mesma cor.
+  const s4 = ident.secao('Classificação do lote e edição', { aberto: true });
+  const finalidades = window.bussola?.levantamento?.dados?.finalidades || TIPOS_IMOVEL.map((nome) => ({ nome }));
+  const chaveClass = `${nb}|${nq}|${nl}`;
+  const classes = await lerClassificacao();
+  const atual = classes[chaveClass] || noBanco?.tipo || guardado(`bussola:lote-tipo:${chaveLote}`, '') || t(extra?.finalidade);
+  const sel = el('select', { class: 'campo', 'aria-label': 'Classificação do lote' },
+    el('option', { value: '' }, '— classificação do lote —'), ...finalidades.map((f) => el('option', { value: f.nome, selected: f.nome === atual }, f.nome)));
+  sel.addEventListener('change', () => {
+    guardar(`bussola:lote-tipo:${chaveLote}`, sel.value);
+    if (!gravacaoAberta()) { aviso('Classificação guardada só neste aparelho (gravação fechada).'); return; }
+    gravarClassificacao(chaveClass, sel.value).then(() => { aviso('Classificação gravada. A cor do lote muda no mapa em 1 a 2 minutos para todos.'); window.bussola?.levantamento?.aplicarClassificacao?.({ [chaveClass]: sel.value }); },
+      (e) => aviso(`Não gravou (${e.message}).`, 'alerta'));
+  });
+  s4.append(el('label', { class: 'rotulo-faixa bloco' }, el('span', {}, 'Classificação (cor do lote no mapa)'), sel));
   if (aoEditarPoligono) s4.append(el('button', { class: 'botao destaque', onclick: aoEditarPoligono }, 'Editar como polígono'));
 
   // 5. Proprietário (cadastro tributário, no cofre)
@@ -136,14 +210,14 @@ export async function fichaLote(ident, { lote, quadra, bairro, ponto, extra = nu
   else if (!trib.length) s5.append(el('p', { class: 'nota' }, 'Sem registro no cadastro tributário para este ponto.'));
   else {
     const chaveP = `bussola:lote-prop:${chaveLote}`;
-    const ajustes = guardado(chaveP, {});
+    const ajustes = { ...guardado(chaveP, {}), ...(noBanco?.proprietario || {}) };
     const campos = [['PROPRIETAR', 'Nome do proprietário'], ['CPF_CNPJ', 'CPF/CNPJ'], ['RG', 'RG'], ['TELEFONE', 'Telefone'], ['DT_NASCIME', 'Data de nascimento'], ['ESTADO_CIV', 'Estado civil']];
     trib.slice(0, 20).forEach((p, i) => {
       const bloco = el('div', { class: 'proprietario' }, trib.length > 1 ? el('h4', { class: 'subtitulo' }, `Inscrição ${t(p.INSCRICAO) || i + 1}${t(p.COMPLEMENT) ? ` · ${t(p.COMPLEMENT)}` : ''}`) : null);
       for (const [c, rotulo] of campos) {
         const k = `${i}:${c}`;
         const inp = el('input', { class: 'campo', value: ajustes[k] ?? t(p[c]), 'aria-label': rotulo,
-          onchange: (e) => { ajustes[k] = e.target.value; guardar(chaveP, ajustes); aviso('Dados do proprietário guardados neste aparelho.'); } });
+          onchange: (e) => { ajustes[k] = e.target.value; guardar(chaveP, ajustes); salvar('proprietario', ajustes, 'Dados do proprietário'); } });
         bloco.append(el('label', { class: 'rotulo-faixa bloco' }, el('span', {}, rotulo), inp));
       }
       s5.append(bloco);
@@ -151,7 +225,8 @@ export async function fichaLote(ident, { lote, quadra, bairro, ponto, extra = nu
   }
 
   // 6. Cadastro imobiliário e dados complementares (lote, quadra, bairro, cadastro e levantamento unificados)
-  const s6 = ident.secao('Cadastro imobiliário e dados complementares', { aberto: true });
+  const s6 = ident.secao('🔒 Cadastro imobiliário e dados complementares (somente leitura)', { aberto: true });
+  s6.append(el('p', { class: 'nota' }, 'Dados do imóvel que não mudam com a troca de morador, empresa ou proprietário: travados, só para consulta.'));
   const linhas = [];
   const por = new Set();
   const add = (rotulo, valor) => { if (vazio(valor) || por.has(rotulo)) return; por.add(rotulo); linhas.push([rotulo, String(valor)]); };

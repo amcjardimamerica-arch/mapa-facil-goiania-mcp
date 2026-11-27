@@ -6,8 +6,9 @@
 // As divisas são duas linhas pretas com uma vermelha (#FF0000) no meio, as três da mesma largura (1.26.0) — diferentes das divisas de
 // bairro (preta, amarela, preta) — e cada área tem uma cor clara própria. Com um desses mapas ligado, o clique
 // seleciona a zona/região inteira (ou o colégio de votação), nunca quadra ou lote.
+import { gravacaoAberta, gravarDado, repoDoSite } from './gravacao.js';
 import { CFG } from './config.js';
-import { el, pedirJSON, fmtNum } from './util.js';
+import { el, pedirJSON, fmtNum, aviso } from './util.js';
 import { ProvedorDesenho } from './mapavetorial.js';
 
 const Cesium = window.Cesium;
@@ -225,6 +226,12 @@ export class Eleicoes {
   salvarEdicao() {
     if (!this._geoConselho) return;
     const texto = JSON.stringify(this._geoConselho);
+    // Com a gravação aberta, as divisas vão direto para o sistema (o site se atualiza em 1 a 2 minutos).
+    if (gravacaoAberta()) {
+      repoDoSite().then((repo) => gravarDado('docs/data/conselho_regioes.geojson', texto, 'Divisas dos Conselhos Tutelares editadas', { repo, texto: true }))
+        .then(() => { this.alterado = false; aviso('Divisas gravadas no sistema. O site se atualiza em 1 a 2 minutos.'); },
+          (e) => aviso(`Não gravou no sistema (${e.message}). Use o arquivo baixado.`, 'alerta'));
+    }
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([texto], { type: 'application/geo+json' }));
     a.download = 'conselho_regioes.geojson';

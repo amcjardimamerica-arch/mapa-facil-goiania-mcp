@@ -135,7 +135,8 @@ def test_sistema_autossuficiente():
     for pagina in ("index.html", "sistema.html", "validacao.html"):
         html = (raiz / pagina).read_text(encoding="utf-8")
         externos = set(re.findall(r"https://([a-z0-9.*-]+)", html)) - {"www.w3.org"}
-        assert externos <= {"ipwho.is", "script.google.com", "script.googleusercontent.com"} | esri, (pagina, externos)
+        # api.github.com: banco de dados gravável (repositório privado Bussola-dados), só com a senha de gravação
+        assert externos <= {"ipwho.is", "script.google.com", "script.googleusercontent.com", "api.github.com"} | esri, (pagina, externos)
     proibidos = re.compile(r"jsdelivr|googleapis|gstatic|elevation3d")  # a Prefeitura só como nome das consultas (a CSP bloqueia)
     for js in (raiz / "js").glob("*.js"):
         texto = js.read_text(encoding="utf-8")
@@ -358,3 +359,21 @@ def test_nenhum_fluxo_automatico_consulta_o_mapa_facil():
     assert "portalmapa" not in texto and "extrair_dados" not in texto and "extrair_mapafacil" not in texto
     raiz = Path(__file__).resolve().parent.parent
     assert not (raiz / "TRIGGER_EXPORT.txt").exists() and not (raiz / "TRIGGER_STATS.txt").exists()
+
+
+def test_banco_gravavel_chave_cifrada_e_nenhum_segredo_no_site():
+    """A chave de acesso do banco gravável só existe cifrada (acesso/gravacao.json); nenhum arquivo do site ou do
+    repositório traz chave do GitHub em claro, nem a senha de gravação."""
+    import re
+    from pathlib import Path
+    raiz = Path(__file__).resolve().parent.parent
+    g = json.loads((raiz / "docs/acesso/gravacao.json").read_text(encoding="utf-8"))
+    assert g["repo_dados"].endswith("/Bussola-dados") and g["iteracoes"] >= 600000
+    assert all(len(g[k]) > 10 for k in ("sal", "iv", "cifra")) and "token" not in g
+    segredo = re.compile(r"github_pat_[A-Za-z0-9_]{20,}|ghp_[A-Za-z0-9]{30,}")
+    for pasta in ("docs/js", "docs/acesso", "docs/data", "scripts", "tests", ".github"):
+        for arq in (raiz / pasta).rglob("*"):
+            if arq.is_file() and arq.suffix in (".js", ".json", ".py", ".yml", ".html", ".md", ".geojson") and arq.stat().st_size < 3_000_000:
+                assert not segredo.search(arq.read_text(encoding="utf-8", errors="ignore")), arq
+    js = (raiz / "docs/js/gravacao.js").read_text(encoding="utf-8")
+    assert "AES-GCM" in js and "PBKDF2" in js and "localStorage.setItem(chaveLocal()" in js

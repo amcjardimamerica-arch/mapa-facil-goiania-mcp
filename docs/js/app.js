@@ -21,6 +21,8 @@ import { ALTURA, faixaAltura, BASE, gravarBase } from './mapavetorial.js';
 import { Quadras } from './quadras.js';
 import { Drenagem } from './drenagem.js';
 import { Eleicoes } from './eleicoes.js';
+import { restaurarGravacao, gravacaoAberta, gravacaoAte } from './gravacao.js';
+import { sincronizarManutencao } from './manutencao.js';
 import { relatorio as relatorioDesempenho, zerar as zerarDesempenho } from './desempenho.js';
 
 const Cesium = window.Cesium;
@@ -411,6 +413,8 @@ async function iniciar() {
 
   // ---------------------------------------------------------------- sobre
   // Dados complementares (cofre): senha informada aqui libera por 24 horas, para este usuário, em todo o mapa.
+  // Banco de dados gravável: reabre se a liberação de 24 horas ainda vale e junta os pedidos de manutenção.
+  restaurarGravacao().then((ok) => { if (!ok) return null; montarCofreSobre(); return sincronizarManutencao().then(() => levantamento.dados && levantamento.redesenhar()); }).catch(() => {});
   const montarCofreSobre = () => {
     const caixa = $('#cofre-sobre');
     caixa.textContent = '';
@@ -419,6 +423,10 @@ async function iniciar() {
     caixa.append(el('p', { class: 'nota' }, cofreAberto()
       ? `🔓 Liberados${ate ? ` até ${ate.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}` : ''} para esta conta.`
       : '🔒 Bloqueados. A senha é aplicada na página de validação e vale 24 horas para esta conta.'));
+    const ateG = gravacaoAte();
+    caixa.append(el('p', { class: 'nota' }, gravacaoAberta()
+      ? `💾 Gravação no banco de dados liberada${ateG ? ` até ${ateG.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}` : ''}.`
+      : '💾 Gravação fechada: o que você escreve fica só neste aparelho. A senha de gravação é aplicada na página de validação.'));
   };
   montarCofreSobre();
   $('#sobre-usuario').textContent = sessao.nome ? `Conectado como ${sessao.nome} (${sessao.login}).` : '';

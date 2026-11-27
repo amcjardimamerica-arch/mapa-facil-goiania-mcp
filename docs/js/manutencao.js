@@ -1,12 +1,34 @@
 // Pedidos de manutenção registrados no próprio sistema (lotes, áreas públicas, bocas de lobo e postes).
 // Ficam guardados neste aparelho; o relatório sai em planilha (CSV) ou em página para imprimir/salvar em PDF.
 import { el, aviso, baixarArquivo } from './util.js';
+import { gravacaoAberta, lerDado, gravarDado, quemGrava } from './gravacao.js';
 
 const CHAVE = 'bussola:manutencao';
 const hoje = () => new Date().toLocaleDateString('pt-BR');
 
 function ler() { try { return JSON.parse(localStorage.getItem(CHAVE) || '{}'); } catch { return {}; } }
 function gravar(d) { try { localStorage.setItem(CHAVE, JSON.stringify(d)); } catch { aviso('Não foi possível guardar o pedido neste aparelho.', 'alerta'); } }
+
+// Banco de dados (gravacao.js): com a gravação aberta, cada pedido vai também para pedidos/manutencao.json e
+// passa a aparecer em qualquer computador. Sem ela, fica só neste aparelho até a próxima sincronização.
+const ARQ = 'pedidos/manutencao.json';
+function noBanco(mudar, mensagem) {
+  if (!gravacaoAberta()) return;
+  gravarDado(ARQ, (atual) => { const itens = { ...(atual?.itens || {}) }; mudar(itens); return { itens, atualizado: new Date().toISOString() }; }, mensagem)
+    .catch((e) => aviso(`O pedido ficou só neste aparelho (não gravou no banco: ${e.message}).`, 'alerta'));
+}
+/** Junta os pedidos deste aparelho com os do banco (nos dois sentidos). Devolve quantos existem. */
+export async function sincronizarManutencao() {
+  if (!gravacaoAberta()) return null;
+  const remoto = (await lerDado(ARQ))?.itens || {};
+  const local = ler();
+  const soLocais = Object.keys(local).filter((k) => !remoto[k]);
+  const junto = { ...local, ...remoto };
+  gravar(junto);
+  if (soLocais.length) await gravarDado(ARQ, (atual) => ({ itens: { ...Object.fromEntries(soLocais.map((k) => [k, local[k]])), ...(atual?.itens || {}) }, atualizado: new Date().toISOString() }),
+    `Pedidos de manutenção deste aparelho (${soLocais.length})`);
+  return Object.keys(junto).length;
+}
 
 export const manutencao = {
   todos: () => Object.values(ler()).sort((a, b) => (a.registrado < b.registrado ? 1 : -1)),
@@ -15,16 +37,20 @@ export const manutencao = {
   /** Liga ou desliga o pedido do item. Devolve o pedido (ou null, se foi retirado). */
   alternar(item) {
     const d = ler();
-    if (d[item.codigo]) { delete d[item.codigo]; gravar(d); return null; }
-    d[item.codigo] = { ...item, data: hoje(), registrado: new Date().toISOString(), descricao: item.descricao || '' };
+    if (d[item.codigo]) { delete d[item.codigo]; gravar(d); noBanco((it) => { delete it[item.codigo]; }, `Pedido de manutenção retirado: ${item.codigo}`); return null; }
+    d[item.codigo] = { ...item, data: hoje(), registrado: new Date().toISOString(), descricao: item.descricao || '', por: quemGrava() };
     gravar(d);
-    return d[item.codigo];
+    const novo = d[item.codigo];
+    noBanco((it) => { it[item.codigo] = novo; }, `Pedido de manutenção: ${item.codigo}`);
+    return novo;
   },
   atualizar(codigo, campos) {
     const d = ler();
     if (!d[codigo]) return;
     Object.assign(d[codigo], campos);
     gravar(d);
+    const novo = d[codigo];
+    noBanco((it) => { it[codigo] = novo; }, `Pedido de manutenção atualizado: ${codigo}`);
   },
 };
 

@@ -1,0 +1,10 @@
+{
+ "v": 1,
+ "nota": "Chave de gravação do banco de dados da Bússola, cifrada (AES-256-GCM, PBKDF2-SHA256). Só abre com a senha de gravação; a senha não fica guardada em lugar nenhum.",
+ "repo_dados": "amcjardimamerica-arch/Bussola-dados",
+ "repo_site": "amcjardimamerica-arch/Bussola",
+ "sal": "0uoIcjvUMUdSfND0UB0Raw==",
+ "iteracoes": 600000,
+ "iv": "tm2FCPggrFZhBXyF",
+ "cifra": "FGVk7Ti2pIicqh//34UPOXovMa/P3h4yMwG7O9UCv4F/MjdXNdUtoN0WH+0EcJWJ2a1qxn/qTq9R8C02UoJbWwt1IsWOZSh3BWOH89ETafdkui5VlzBginecc6WcvVDi0uHJ6Sq5bDJr3HiDbQckFxnDjqh/6gB4uJf0DTDm8Hc2/y+0qkPzgWHkj4qhk41oSy2y7/1kkw=="
+}

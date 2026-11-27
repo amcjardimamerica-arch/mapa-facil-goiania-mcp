@@ -503,3 +503,6 @@ body:has(#ficha:not([hidden])) #topo #caixa-busca { width: min(560px, calc(100vw
 .coordenadas.fim { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--linha); }
 .nota.cadeado { color: var(--texto-2); }
 .proprietario + .proprietario { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--linha); }
+.lista-editavel { margin: 6px 0 10px; }
+.item-editavel { padding: 8px; margin: 6px 0; border: 1px solid var(--linha); border-radius: 8px; }
+.item-editavel .rotulo-faixa { margin-bottom: 4px; }

@@ -206,6 +206,19 @@ e retoma de onde parou.
 - `tests/test_equivalencia.py`: 200 consultas sorteadas (semente 20261124) comparadas com
   `tests/equivalencia-referencia.json.gz`; `BUSSOLA_REGRAVAR_EQUIVALENCIA=1` regrava (com justificativa no commit).
 
+## Banco de dados gravável (1.29)
+
+O site só entrega arquivos; para gravar, o sistema usa o GitHub como banco de dados: o repositório privado
+`Bussola-dados` guarda `pedidos/manutencao.json` (pedidos de manutenção de postes, bocas de lobo e lotes) e
+`lotes/<inscrição>.json` (texto de moradores/comerciantes, tipo do imóvel e dados do proprietário corrigidos).
+As divisas dos Conselhos editadas são gravadas em `docs/data/conselho_regioes.geojson` deste repositório.
+Cada gravação é um commit com o usuário e a data (nada se perde; tudo pode ser desfeito).
+
+Segurança (`docs/js/gravacao.js`): a chave de acesso fica em `docs/acesso/gravacao.json` cifrada (AES-256-GCM,
+PBKDF2-SHA256 com 600 mil iterações) e só abre com a **senha de gravação**, digitada na página de validação
+(vale 24 horas por conta). A senha não é guardada; ela pode ser trocada na mesma página. Sem a senha, o que a
+pessoa escreve fica só no aparelho dela e é enviado ao banco na próxima vez que a gravação for aberta.
+
 ## Acesso com usuário e senha
 
 A página inicial (`docs/index.html`) é o portal de acesso. O mapa fica em `docs/sistema.html` e só abre

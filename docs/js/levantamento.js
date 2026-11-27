@@ -7,7 +7,7 @@ import { CFG } from './config.js';
 import { el, aviso, fmtNum, pedirJSON, semAcento, memoria } from './util.js';
 import { ProvedorLotes, ProvedorDesenho, FILTRO_BAIRROS } from './mapavetorial.js';
 import { Postes } from './postes.js';
-import { fichaLote } from './fichalote.js';
+import { fichaLote, lerClassificacao } from './fichalote.js';
 import { Ruas } from './ruas.js';
 import { Escolas, NIVEIS, AULAS } from './escolas.js';
 import { botaoManutencao, manutencao, relatorioCSV, relatorioImpressao } from './manutencao.js';
@@ -159,6 +159,8 @@ export class Levantamento {
       for (const lim of d.limites) lim.aneisLL = lim.aneis.map(decodificarAnel);
       this.lotesEleitorais = (await lotesEleitorais)?.lotes || {};
       this.cor = Object.fromEntries(d.finalidades.map((f) => [f.nome, f.cor]));
+      // Classificação alterada pela Associação (data/lotes_classificacao.json): troca a finalidade (e a cor) do lote.
+      lerClassificacao().then((c) => this.aplicarClassificacao(c));
       // Bases dos prédios (predios.json): a torre de cada lote, nunca o terreno inteiro.
       this.basesDoLote = new Map();
       for (const p of (await predios)?.predios || []) {
@@ -425,6 +427,18 @@ export class Levantamento {
   }
 
   // ------------------------------------------------------------------ desenho
+  /** Aplica classificações gravadas (bairro|quadra|lote -> finalidade) e redesenha se algo mudou. */
+  aplicarClassificacao(mapa) {
+    const d = this.dados;
+    if (!d?.lotes || !mapa) return;
+    let mudou = false;
+    for (const l of d.lotes) {
+      const nova = mapa[`${d.bairros[l.b]}|${l.q}|${l.l}`];
+      if (nova && this.cor?.[nova] && l.f !== nova) { l.f = nova; mudou = true; }
+    }
+    if (mudou && this.mostrar) this.redesenhar();
+  }
+
   redesenhar() {
     if (!this.dados) return;
     const d = this.dados, camadas = this.globo.viewer.imageryLayers;
@@ -829,7 +843,7 @@ export class Levantamento {
     fichaLote(id, {
       lote: { attributes: { ci, nm_lot: String(l.l) }, geometry: { rings: l.aneis.map((r) => r.map(([lo, la]) => [mx(lo), my(la)])) } },
       quadra: { nm_qdr: String(l.q) }, bairro: d.bairros[l.b], ponto,
-      extra: { colunas: cl, valores: l.v, empresas, quadra: l.q, lote: l.l, endereco: l.v[cl.indexOf('Endereço (cadastro)')] },
+      extra: { colunas: cl, valores: l.v, empresas, quadra: l.q, lote: l.l, finalidade: l.f, endereco: l.v[cl.indexOf('Endereço (cadastro)')] },
     }).then(() => {
       const m = this._manutencao(l.v[cl.indexOf('Código para manutenção')]);
       if (m) id.corpo.insertBefore(el('div', { class: 'linha-botoes' }, m), id.corpo.querySelector('.coordenadas.fim'));

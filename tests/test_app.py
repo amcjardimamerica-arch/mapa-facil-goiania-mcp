@@ -468,8 +468,8 @@ def test_levantamento_lotes_limites_e_ficha(mapa):
     assert r["tratou"] and r["titulo"].startswith("Quadra "), r
     assert not r["semResid"] and r["soJA"], r
     assert "262B" in r["achou"], r
-    for parte in ("Moradores, comerciantes e contatos", "Tipo do imóvel e edição do lote", "Proprietário",
-                  "Cadastro imobiliário e dados complementares", "Inscrição cadastral (CI)", "Latitude, longitude"):
+    for parte in ("Pessoas e empresas no lote (editável)", "Classificação do lote e edição", "Proprietário",
+                  "Cadastro imobiliário e dados complementares (somente leitura)", "Inscrição cadastral (CI)", "Latitude, longitude"):
         assert parte in r["ficha"], (parte, r["ficha"][:300])
     assert "UTM 22S" not in r["ficha"] and "Marcar" not in r["ficha"], r["ficha"][:300]
     u = r["unid"]
