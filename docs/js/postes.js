@@ -30,6 +30,18 @@ export const LAMPADA_ESCALA_MAX = 6;
 const LAMPADA_ALTURA_REF = 1000;                    // m de câmera: até 1 km fica no tamanho mínimo; acima, cresce
 const LAMPADA_ALTURA_MAX = 4000;                    // m de câmera em que chega a 6× (+500%)
 const LAMPADA_PASSO = 0.25;                         // degraus de escala (refaz as esferas só ao mudar de degrau)
+/**
+ * Escala de um mostrador pela altura da câmera, com a mesma premissa das luminárias: tamanho mínimo até 1 km;
+ * cresce em linha reta até `fator`× na altura `ate` e para ali; em degraus de 0,25 (refaz só ao mudar de degrau).
+ */
+export function escalaMostrador(alturaCamera, { ate = LAMPADA_ALTURA_MAX, fator = LAMPADA_ESCALA_MAX } = {}) {
+  const t = Math.min(1, Math.max(0, (alturaCamera - LAMPADA_ALTURA_REF) / (ate - LAMPADA_ALTURA_REF)));
+  return Math.round((1 + (fator - 1) * t) / LAMPADA_PASSO) * LAMPADA_PASSO;
+}
+/** Bocas de lobo: mesma premissa das luminárias, crescendo até 5 km. */
+export const BOCA_METROS = 3.2;          // lado do mostrador de perto (m)
+export const BOCA_ALTURA_MAX = 5000;     // m de câmera: cresce até aqui (6×) e some acima de 6 km
+export const escalaBoca = (h) => escalaMostrador(h, { ate: BOCA_ALTURA_MAX });
 /** Escala da esfera da luminária para a altura da câmera (1 de perto; até 6 de longe). */
 export function escalaLampada(alturaCamera) {
   // Mínimo até 1 km; cresce em linha reta até 6× (+500%) em 4 km; acima disso fica em 6×.

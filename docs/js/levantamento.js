@@ -6,7 +6,7 @@ import { noChao } from './globo.js';
 import { CFG } from './config.js';
 import { el, aviso, fmtNum, pedirJSON, semAcento, memoria } from './util.js';
 import { ProvedorLotes, ProvedorDesenho, FILTRO_BAIRROS } from './mapavetorial.js';
-import { Postes } from './postes.js';
+import { Postes, BOCA_METROS, escalaBoca } from './postes.js';
 import { fichaLote, lerClassificacao } from './fichalote.js';
 import { Ruas } from './ruas.js';
 import { Escolas, NIVEIS, AULAS } from './escolas.js';
@@ -572,9 +572,10 @@ export class Levantamento {
     for (const b of d.bocas.linhas) {
       const codigo = b.v[kc];
       const ent = this.fixos.entities.add({ show: false, position: noChao(b.v[klo], b.v[kla]),
-        billboard: { image: this._iconeBoca(b.v[kn], manutencao.tem(codigo), /alerta/.test(b.icone || '')), width: 30, height: 30,
-          // Cresce ao aproximar e diminui ao afastar a câmera, como os demais marcadores do mapa.
-          scaleByDistance: new Cesium.NearFarScalar(120, 1.5, 2500, 0.3),
+        // Mesma premissa das luminárias (postes.js): tamanho real (metros) mínimo até 1 km de câmera, crescendo
+        // até 6× em 5 km; some acima de 6 km.
+        billboard: { image: this._iconeBoca(b.v[kn], manutencao.tem(codigo), /alerta/.test(b.icone || '')), sizeInMeters: true,
+          width: BOCA_METROS * this._escalaBoca(), height: BOCA_METROS * this._escalaBoca(),
           disableDepthTestDistance: Number.POSITIVE_INFINITY, distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 6000) } });
       ent.lvFixo = { grupo: 'boca', bairro: b.v[kb], codigo, n: b.v[kn], alerta: /alerta/.test(b.icone || '') };
       ent.levantamento = { tipo: 'boca', dado: b };
@@ -595,6 +596,23 @@ export class Levantamento {
    * Ícone da boca de lobo: grelha escura com contorno branco e o número de unidades num mostrador branco. Com pedido
    * de manutenção, contorno e mostrador ficam vermelhos (laranja: observação do levantamento).
    */
+  /** Escala atual das bocas (degraus); ao mudar de degrau, redimensiona os mostradores. */
+  _escalaBoca() {
+    const e = escalaBoca(this.globo.camera.positionCartographic.height);
+    if (!this._ouvinteBoca) {
+      this._ouvinteBoca = this.globo.camera.changed.addEventListener(() => {
+        const nova = escalaBoca(this.globo.camera.positionCartographic.height);
+        if (nova === this._escalaBocaAtual || !this.fixos) return;
+        this._escalaBocaAtual = nova;
+        const m = BOCA_METROS * nova;
+        for (const ent of this.fixos.entities.values) if (ent.lvFixo?.grupo === 'boca' && ent.billboard) { ent.billboard.width = m; ent.billboard.height = m; }
+        this.globo.redesenhar();
+      });
+    }
+    this._escalaBocaAtual = e;
+    return e;
+  }
+
   _iconeBoca(n, pedido, alerta) {
     const chave = `${n}|${pedido ? 1 : 0}|${alerta ? 1 : 0}`;
     this._icones ||= new Map();
