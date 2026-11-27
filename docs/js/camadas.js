@@ -236,7 +236,7 @@ export class Camadas {
         partes.push(el('div', { class: 'legenda-camada' }, el('strong', {}, l.layerName),
           (l.legend || []).map((s) => el('div', { class: 'legenda-item' },
             el('img', { src: `data:${s.contentType};base64,${s.imageData}`, alt: '', width: s.width, height: s.height }),
-            el('span', {}, s.label || l.layerName)))));
+            el('span', {}, s.label || ((l.legend || []).length > 1 ? l.layerName : '')))))); // símbolo único: o nome já está no título
       }
     }
     caixa.textContent = '';

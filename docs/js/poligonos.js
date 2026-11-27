@@ -471,7 +471,7 @@ export class Poligonos {
     if (!lista.length) { aviso('Nenhum polígono para exportar.', 'alerta'); return; }
     const kml = '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document>' +
       `<name>${escaparXML(lista.length === 1 ? lista[0].nome : 'Polígonos da Bússola')}</name><Folder><name>Polígonos</name>${this.placemarks(lista)}</Folder></Document></kml>`;
-    const nome = lista.length === 1 ? lista[0].nome.normalize('NFD').replace(/[^\w]+/g, '-').replace(/^-|-$/g, '').toLowerCase() || 'poligono' : 'poligonos';
+    const nome = lista.length === 1 ? lista[0].nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w]+/g, '-').replace(/^-|-$/g, '').toLowerCase() || 'poligono' : 'poligonos';
     baixarArquivo(`${nome}.kml`, kml, 'application/vnd.google-earth.kml+xml');
   }
 }

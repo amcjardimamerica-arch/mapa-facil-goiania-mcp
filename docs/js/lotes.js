@@ -66,7 +66,11 @@ export class Lotes {
     this.lista.textContent = '';
     this.ativo = -1;
     if (q.length < 2) { this._fecharLista(); return; }
-    const achados = this.bairros.filter((b) => semAcento(b.n).includes(q) || semAcento(b.b || '').includes(q))
+    // "setor bueno", "s bueno" e "bueno" acham o mesmo bairro (tipo por extenso, abreviado ou sem tipo).
+    const TIPOS = { S: 'Setor', Bro: 'Bairro', Jd: 'Jardim', Vl: 'Vila', Res: 'Residencial', Prq: 'Parque', Cj: 'Conjunto', Ch: 'Chácara',
+      Lot: 'Loteamento', Con: 'Condomínio', Vlg: 'Village' };
+    const textos = (b) => [b.n, b.b, b.o, `${TIPOS[b.t] || ''} ${b.b || b.n}`].filter(Boolean).map((t) => semAcento(t));
+    const achados = this.bairros.filter((b) => textos(b).some((t) => t.includes(q)))
       .sort((a, b) => (semAcento(a.b || a.n).startsWith(q) ? 0 : 1) - (semAcento(b.b || b.n).startsWith(q) ? 0 : 1) || (b.pop || 0) - (a.pop || 0))
       .slice(0, 8);
     this.sugestoes = achados;

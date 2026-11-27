@@ -68,6 +68,8 @@ export class Eleicoes {
     if (this.camada) { this.globo.viewer.imageryLayers.remove(this.camada, true); this.camada = null; this.globo.camadaEleicao = null; }
     this.areas = modo === 'zonas' ? await this._zonas() : modo === 'conselho' ? await this._regioes() : [];
     if (this.modo !== modo) return;
+    // Desligado: nenhuma camada (antes ficava uma camada vazia a cada vez que o mapa de eleição era desligado).
+    if (!modo) { this.globo.redesenhar(); return; }
     // Cor de cada área e divisa preta-vermelha-preta desenhadas numa camada de imagem, como a divisa dos bairros no
     // mapa: não somem com a distância nem com o relevo (linhas grudadas no chão sumiam em parte das vistas).
     const R = 6378137, mx = (lon) => (lon * Math.PI / 180) * R, my = (lat) => Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) * R;

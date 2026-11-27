@@ -729,6 +729,59 @@ def test_base_cadastral_eleicoes_e_associacao(mapa):
     assert r["titulo"] == "Associação" and r["camadasTitulo"] == "Camadas", r
 
 
+def test_desenho_de_poligono_enorme_e_igual_e_leve(mapa):
+    """1.29.0: o traçado só com o que cai no bloco (tracar) desenha o mesmo que o polígono inteiro, com bem menos
+    vértices — antes polígonos de dezenas de milhares de vértices (COMURG) travavam as Camadas."""
+    r = mapa.evaluate("""async () => {
+      const { tracar } = await import('./js/banco-desenho.js');
+      let semente = 7; const R = () => { semente = (semente * 16807) % 2147483647; return semente / 2147483647; };
+      let pior = 0, antes = 0, depois = 0;
+      for (let t = 0; t < 12; t++) {
+        const n = 4000, xy = new Float64Array(n * 2); let ang = 0;
+        const cx = R() * 1000 - 300, cy = R() * 1000 - 300, raio = 300 + R() * 3000;
+        for (let i = 0; i < n; i++) { ang += Math.PI * 2 / n; const r = raio * (0.5 + R() * 0.5); xy[i * 2] = cx + Math.cos(ang) * r; xy[i * 2 + 1] = cy + Math.sin(ang) * r; }
+        const des = (novo) => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
+          let k = 0; const conta = { moveTo: (x, y) => { k++; g.moveTo(x, y); }, lineTo: (x, y) => { k++; g.lineTo(x, y); } };
+          g.beginPath();
+          if (novo) tracar(conta, xy, 0, n, (v) => v, (v) => v, 256);
+          else for (let a = 0; a < n; a++) a ? conta.lineTo(xy[a * 2], xy[a * 2 + 1]) : conta.moveTo(xy[0], xy[1]);
+          g.closePath(); g.fillStyle = '#f00'; g.fill('evenodd'); return [g.getImageData(0, 0, 256, 256).data, k]; };
+        const [a, ka] = des(false), [b, kb] = des(true); antes += ka; depois += kb;
+        let d = 0; for (let i = 3; i < a.length; i += 4) if (Math.abs(a[i] - b[i]) > 60) d++;
+        pior = Math.max(pior, d);
+      }
+      return { pior, antes, depois };
+    }""")
+    assert r["pior"] < 120, r            # só a borda suavizada muda (pontos a menos de 0,6 px)
+    assert r["depois"] < r["antes"] * 0.6, r
+
+
+def test_eleicao_desligada_nao_deixa_camada_e_zonas_do_banco(mapa):
+    r = mapa.evaluate("""async () => {
+      const cam = bussola.camadas, n0 = bussola.globo.viewer.imageryLayers.length;
+      const espera = (ms) => new Promise((ok) => setTimeout(ok, ms));
+      cam.ligar('eleitoral', true);
+      for (let i = 0; i < 60 && !bussola.eleicoes.areas.length; i++) await espera(500);
+      const zonas = bussola.eleicoes.areas.length;
+      cam.ligar('eleitoral', false); await espera(1500);
+      cam.ligar('conselho', true); await espera(3000); cam.ligar('conselho', false); await espera(1500);
+      return { zonas, n0, depois: bussola.globo.viewer.imageryLayers.length };
+    }""")
+    assert r["zonas"] >= 9 and r["depois"] == r["n0"], r
+
+
+def test_busca_de_lote_exata_no_levantamento(mapa):
+    r = mapa.evaluate("""async () => {
+      const lv = bussola.levantamento; await lv.carregar?.(); await lv.detalhes();
+      const achar = async (q) => { lv.campo.value = q; lv._buscar(); return [...document.querySelectorAll('.lv-resultados li small')].map((s) => s.textContent); };
+      const r = { lt24: await achar('qd 262b lt 24'), lt7: await achar('quadra 262b lote 7') };
+      lv.campo.value = ''; lv._buscar();
+      return r;
+    }""")
+    assert r["lt24"] and all("Qd 262B Lt 24" in t for t in r["lt24"]), r
+    assert r["lt7"] and all("Lt 6-8" in t for t in r["lt7"]), r
+
+
 def test_dados_complementares_no_sobre_e_na_ficha(mapa):
     r = mapa.evaluate("""async () => {
       bussola.abrirPainel('sobre');

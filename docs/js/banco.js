@@ -57,9 +57,10 @@ function despachar() {
     const fila = pool.fila[pr];
     for (let i = 0; i < fila.length;) {
       const t = fila[i];
-      // Passo 7: bloco que saiu da tela (sinal abortado) ou de um nível de zoom 2+ distante do atual: descartado.
-      const longe = pr > 0 && t.nivel != null && pool.nivel != null && Math.abs(t.nivel - pool.nivel) >= 2;
-      if (t.sinal?.aborted || longe) { fila.splice(i, 1); contadores.cancelados++; t.falha(new Cancelado()); continue; }
+      // Passo 7: bloco que saiu da tela (sinal abortado pelo Cesium) é descartado. Antes também se descartava o bloco
+      // de um nível 2+ distante do "atual"; mas o Cesium pede ao mesmo tempo os blocos-pais (níveis baixos) e os da
+      // tela: um cancelava o outro sem fim e camadas sem limite de nível (COMURG, Divisas) nunca terminavam (1.29.0).
+      if (t.sinal?.aborted) { fila.splice(i, 1); contadores.cancelados++; t.falha(new Cancelado()); continue; }
       if (pool.emCurso[t.w] >= 3) { i++; continue; }
       fila.splice(i, 1);
       pool.emCurso[t.w]++;

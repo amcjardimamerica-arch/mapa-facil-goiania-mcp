@@ -262,7 +262,10 @@ export class ProvedorCanvas {
     // Bloco cancelado (saiu da tela durante a navegação) não é erro: o globo pede de novo, sem aviso.
     this._erro.addEventListener((e) => {
       const err = e?.error;
-      if (err?.name === 'Cancelado' || err?.name === 'AbortError' || /cancelad/i.test(String(err?.message || e?.message || ''))) { e.retry = true; e.cancelado = true; }
+      // 1.29.0: sem "retry" aqui — o Cesium repete o pedido na hora, dentro do mesmo tratamento de erro, e o bloco
+      // cancelado de novo virava um laço sem fim que travava a tela (Saneamento, Sistema Viário, Meio Ambiente a 4 km).
+      // O bloco cancelado é marcado como cancelado no próprio pedido (requestImage) e o globo o pede de novo depois.
+      if (err?.name === 'Cancelado' || err?.name === 'AbortError' || /cancelad/i.test(String(err?.message || e?.message || ''))) { e.retry = false; e.cancelado = true; }
     });
     this._credito = credito ? new Cesium.Credit(credito) : undefined;
   }
@@ -349,6 +352,7 @@ export class ProvedorVetorial extends ProvedorCanvas {
     const vigia = setInterval(() => { if (cancelada()) ac.abort(); }, 100);
     return Promise.all([relevo, this._dados(ret, nivel, cancelada)])
       .then(([r, dados]) => { if (ac.signal.aborted) throw new Error('cancelado'); return this._desenhar(ret, nivel, r, dados); })
+      .catch((e) => { if (/cancelad/i.test(String(e?.message || '')) && request) request.state = Cesium.RequestState.CANCELLED; throw e; })
       .finally(() => clearInterval(vigia));
   }
 

@@ -96,6 +96,19 @@ def test_lugares(goiania):
         assert x["n"] and perto.contains(Point(x["c"])), x["n"]
 
 
+def test_lugares_complemento(goiania):
+    """1.29.0: Lago das Rosas, shoppings, terminais e grandes equipamentos (Rodoviária, Centro de Convenções) na busca."""
+    lugares = ler("lugares_complemento.json")["lugares"]
+    nomes = {x["n"] for x in lugares}
+    assert "Lago das Rosas" in nomes and "Rodoviária de Goiânia" in nomes and "Centro de Convenções" in nomes, sorted(nomes)[:30]
+    assert any(n.startswith("Terminal ") for n in nomes) and any(x["r"] == "Shopping" for x in lugares)
+    # só nomes próprios dos grandes equipamentos: as partes ("Gramado", "Guarita"…) ficam de fora
+    assert not {"Gramado", "Guarita", "Galpão", "Arquibancada"} & nomes
+    perto = goiania.buffer(0.15)  # terminais do Eixo Anhanguera também em Aparecida, Senador Canedo e Trindade
+    for x in lugares:
+        assert x["n"] and perto.contains(Point(x["c"])), x["n"]
+
+
 def test_camadas():
     c = ler("camadas.json")
     temas = c["temas"]

@@ -96,6 +96,10 @@ export class Medir {
     if (!ponto) return;
     this.pontos.push(ponto);
     this.fonte.entities.add({ position: ponto.cartesiano, point: this._ponto() }).rascunho = true;
+    // 1.29.0: a medida parcial também no painel (antes só no rótulo do mapa, que some atrás de prédios e do relevo).
+    if (this.tipo && this.pontos.length >= (this.tipo === 'area' ? 3 : 2)) {
+      this.estado.textContent = `Até aqui: ${this._texto(false).replace('\n', ' · ')}. Duplo clique ou “Concluir” encerra.`;
+    }
     this.globo.redesenhar();
   }
 

@@ -741,8 +741,23 @@ export class Levantamento {
       this.detalhes().then(() => this._buscar()).catch(() => {});
       return;
     }
-    const termos = q.split(/\s+/);
-    const achados = this._lotesVisiveis().filter((l) => termos.every((t) => l.busca.includes(t))).slice(0, 40);
+    // "qd 262b lt 24" / "quadra 12 lote 5": quadra e lote exatos (antes cada palavra era procurada solta e "24"
+    // achava qualquer lote com 24 no texto — telefone, CNPJ —, sem trazer o lote 24 da quadra).
+    const ql = q.match(/\bq(?:d|uadra)\.?\s*([\w-]+)(?:\s+l(?:t|ote)\.?\s*([\w-]+))?/);
+    const resto = ql ? q.replace(ql[0], ' ') : q;
+    const termos = resto.split(/\s+/).filter(Boolean);
+    const noLote = (l) => {
+      if (!ql) return true;
+      if (semAcento(String(l.q)) !== ql[1]) return false;
+      if (!ql[2]) return true;
+      const n = semAcento(String(l.l));
+      if (n === ql[2]) return true;
+      // "4;5" e "6-8" (lotes unificados): o número pedido dentro da faixa ou da lista
+      const partes = n.split(/[;,]/).map((x) => x.trim());
+      const alvo = parseInt(ql[2], 10);
+      return partes.some((x) => x === ql[2] || (/^\d+-\d+$/.test(x) && alvo >= +x.split('-')[0] && alvo <= +x.split('-')[1]));
+    };
+    const achados = this._lotesVisiveis().filter((l) => noLote(l) && termos.every((t) => l.busca.includes(t))).slice(0, 40);
     const cod = this.campo.value.trim().toUpperCase();
     if (/^(BL|IP)-(JA|NS|EN)-\d+$/.test(cod)) {
       const t = cod.startsWith('BL') ? this.dados.bocas : this.dados.iluminacao, k = t.colunas.indexOf('Código para manutenção');
@@ -754,7 +769,7 @@ export class Levantamento {
           el('span', { class: 'lv-cor', style: 'background:#4fc3f7' }), el('span', {}, el('strong', {}, cod), el('small', {}, cod.startsWith('BL') ? 'Boca de lobo' : 'Iluminação pública')))));
       }
     }
-    const semLote = this.semLote.filter((e) => termos.every((t) => e.busca.includes(t))).slice(0, 20);
+    const semLote = ql ? [] : this.semLote.filter((e) => termos.every((t) => e.busca.includes(t))).slice(0, 20);
     if (!achados.length && !semLote.length && !this.resultados.children.length) { this.resultados.append(el('li', { class: 'nota' }, 'Nada encontrado nos lotes visíveis nem nas empresas sem lote.')); return; }
     for (const e of semLote) {
       this.resultados.append(el('li', {}, el('button', { class: 'lv-resultado', onclick: () => this.abrirEmpresaSemLote(e) },

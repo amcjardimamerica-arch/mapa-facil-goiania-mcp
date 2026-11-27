@@ -56,7 +56,7 @@ def test_roteiro_de_desempenho(navegador, servidor):  # noqa: F811
     # Desde o passo 4 as consultas rodam nos workers: as etapas deles vêm em rel["workers"].
     etapas = set(rel["etapas"]) | {k for w in rel.get("workers", []) for k in w["etapas"]}
     assert rel["contadores"]["pedidos"] > 0 and "filtrar" in etapas, rel
-    # Passo 7: o número de cancelados depende do tempo de cada bloco (com 1 processador às vezes todos terminam
-    # antes de a câmera sair deles). Fica registrado no relatório; só reprova com 2 ou mais processadores.
-    if (os.cpu_count() or 1) >= 2:
-        assert rel["contadores"]["cancelados"] > 0, rel["contadores"]
+    # Passo 7: o número de cancelados fica só registrado no relatório. Desde a 1.29.0 a fila não descarta mais blocos
+    # de outro nível (o globo pede pais e filhos ao mesmo tempo e um cancelava o outro sem fim — a COMURG nunca
+    # terminava); só cancela o que o próprio Cesium abandona, o que depende da velocidade da máquina.
+    assert rel["contadores"]["cancelados"] >= 0, rel["contadores"]

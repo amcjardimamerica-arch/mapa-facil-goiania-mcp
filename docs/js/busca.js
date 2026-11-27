@@ -5,6 +5,7 @@
 import { CFG } from './config.js';
 import { cofreAberto, buscarPessoas, vinculosDaPessoa, consultarOuServidor, identificarOuServidor, servicoDe } from './banco.js';
 import { $, el, pedirJSON, semAcento, debounce, deUTM, extensaoDe, fmtNum, aviso, nomeBairro } from './util.js';
+import { nomeVia } from './mapavetorial.js';
 
 const chave = (s) => semAcento(s).replace(/[-–.]/g, ' ').replace(/\s+/g, ' ').trim();
 const TROCAS = [[/^(rua)\s+/, 'r '], [/^(avenida|av)\s+/, 'av '], [/^(alameda)\s+/, 'al '],
@@ -46,6 +47,11 @@ export class Busca {
     this.bairros = bairros.map((b) => ({ ...b, k: chave(b.n), tipo: TIPOS_BAIRRO[b.t] || 'Bairro',
       ks: [chave(`${TIPOS_BAIRRO[b.t] || ''} ${b.b}`), chave(b.b), chave(b.o || '')] }));
     this.lugares = lugares.map((l) => ({ ...l, k: chave(l.n) }));
+    // Parques, lagos, bosques e shoppings pelo nome (scripts/lugares_complemento.py), chegam depois da abertura.
+    pedirJSON(`${CFG.dados}lugares_complemento.json`).then((d) => {
+      const ja = new Set(this.lugares.map((l) => l.k));
+      for (const l of d.lugares || []) { const k = chave(l.n); if (!ja.has(k)) { ja.add(k); this.lugares.push({ ...l, k }); } }
+    }).catch(() => {});
     this.edificios = edificios; // módulo Edificios (lista pode chegar depois)
     this.ruas = null;
     this.campo = $('#busca');
@@ -68,7 +74,7 @@ export class Busca {
     try {
       const d = await pedirJSON(`${CFG.dados}logradouros.json`);
       this.ruas = d.ruas.map(([id, n, b]) => ({ id, n, b: d.bairros[b] || '', k: chave(n) }));
-      if (this.campo.value && document.activeElement === this.campo) this.procurar();
+      if (this.campo.value.trim().length >= 2) this.procurar();
     } catch (e) { console.warn('Índice de logradouros indisponível:', e); this._carregando = false; }
   }
 
@@ -89,6 +95,8 @@ export class Busca {
     const bruto = this.campo.value.trim();
     $('#busca-limpar').hidden = !bruto;
     if (bruto.length < 2) { this._fechar(); return; }
+    // O índice de ruas carrega no foco da caixa; texto que chega sem foco (colado, link) também o carrega.
+    if (!this.ruas) this._carregarRuas();
     let q = chave(bruto);
     const grupos = [];
     const coord = this._coordenadas(bruto);
@@ -104,7 +112,8 @@ export class Busca {
     for (const [re, por] of TROCAS) qRua = qRua.replace(re, por);
     if (this.ruas) {
       const r = melhores(this.ruas, qRua, 6);
-      if (r.length) grupos.push(['Logradouros', r.map((x) => ({ tipo: 'rua', n: x.n, sub: nomeBairro(x.b), dado: x }))]);
+      // Nome da rua como no mapa ("AV T 9" → "Av. T-9").
+      if (r.length) grupos.push(['Logradouros', r.map((x) => ({ tipo: 'rua', n: nomeVia(x.n) || x.n, sub: nomeBairro(x.b), dado: x }))]);
     }
     const eds = this.edificios?.lista || [];
     if (eds.length) {
@@ -250,7 +259,7 @@ export class Busca {
     const id = this.identificar;
     id.destacarLonLat(linhas);
     const ext = extensaoDe(linhas.flat());
-    id.abrir({ titulo: r.n, subtitulo: `${nomeBairro(r.b)} · Goiânia`, ponto: { lon: (ext[0] + ext[2]) / 2, lat: (ext[1] + ext[3]) / 2, alt: NaN } });
+    id.abrir({ titulo: nomeVia(r.n) || r.n, subtitulo: `${nomeBairro(r.b)} · Goiânia`, ponto: { lon: (ext[0] + ext[2]) / 2, lat: (ext[1] + ext[3]) / 2, alt: NaN } });
     id.corpo.append(el('p', { class: 'nota' }, 'Trecho do logradouro neste bairro, conforme a base “Logradouro por Bairro”. Clique em um lote para ver o cadastro.'));
     await this.globo.voarPara({ extensao: ext, inclinacao: -60 });
   }

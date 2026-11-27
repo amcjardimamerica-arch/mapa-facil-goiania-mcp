@@ -108,7 +108,10 @@ export class ProvedorTema {
     // Bloco cancelado (saiu da tela durante a navegação) não é erro: o globo pede de novo, sem aviso.
     this._erro.addEventListener((e) => {
       const err = e?.error;
-      if (err?.name === 'Cancelado' || err?.name === 'AbortError' || /cancelad/i.test(String(err?.message || e?.message || ''))) { e.retry = true; e.cancelado = true; }
+      // 1.29.0: sem "retry" aqui — o Cesium repete o pedido na hora, dentro do mesmo tratamento de erro, e o bloco
+      // cancelado de novo virava um laço sem fim que travava a tela (Saneamento, Sistema Viário, Meio Ambiente a 4 km).
+      // O bloco cancelado é marcado como cancelado no próprio pedido (requestImage) e o globo o pede de novo depois.
+      if (err?.name === 'Cancelado' || err?.name === 'AbortError' || /cancelad/i.test(String(err?.message || e?.message || ''))) { e.retry = false; e.cancelado = true; }
     });
     this._credito = credito ? new Cesium.Credit(credito) : undefined;
     this._metas = null;
@@ -157,7 +160,12 @@ export class ProvedorTema {
     const vigia = setInterval(() => { if (request && request.state === Cesium.RequestState.CANCELLED) ac.abort(); }, 100);
     return this._desenhar(x, y, nivel, { sinal: ac.signal, nivel })
       .catch((e) => {
-        if (e instanceof Cancelado || ac.signal.aborted) throw e; // o Cesium pede de novo quando o bloco voltar à tela
+        if (e instanceof Cancelado || ac.signal.aborted) {
+          // Pedido cancelado (pela fila do banco ou pelo globo): marcado como cancelado, o Cesium volta o bloco a
+          // "não carregado" e o pede de novo no próximo quadro, sem erro nem repetição imediata.
+          if (request) request.state = Cesium.RequestState.CANCELLED;
+          throw e;
+        }
         console.warn('tema local', this.S, e); return this._tela();
       })
       .finally(() => clearInterval(vigia));
@@ -185,7 +193,10 @@ export class ProvedorTema {
     const rotulos = [];
     for (const { info, meta } of metas) {
       if (!this._visivel(meta, nivel) || !info.geo) continue;
-      if (info.z != null && info.zv == null && nivel < info.z - 4) continue; // camada densa: só de perto
+      // Camada densa (esgoto, água, rede elétrica, árvores, lotes do uso do solo — dezenas a centenas de milhares de
+      // feições): só de perto, a partir de um nível abaixo do bloco do banco (~3 km de altura). Com "z - 4" (cidade
+      // inteira) o Saneamento travava a tela por minutos (1.29.0).
+      if (info.z != null && info.zv == null && nivel < info.z - 1) continue;
       const campos = camposDoDesenho(meta, info);
       let d;
       try { d = await fornecer(info._s, info._id, caixa, campos, opcoes); }
@@ -198,6 +209,8 @@ export class ProvedorTema {
         .map((l) => ({ l, filtro: (() => { try { return compilarWhere(l.where, campos); } catch { return () => true; } })() }));
       const { xy, partes, inicio, caixas: cx } = d;
       const tipo = d.geo;
+      // Linhas do mesmo símbolo vão num caminho só, riscado uma vez (antes: um stroke por feição).
+      const lotesLinha = new Map();
       for (let i = 0; i < d.n; i++) {
         const e0 = cx[i * 4], e1 = cx[i * 4 + 1], e2 = cx[i * 4 + 2], e3 = cx[i * 4 + 3];
         if (e2 < caixa[0] || e0 > caixa[2] || e3 < caixa[1] || e1 > caixa[3]) continue;
@@ -217,13 +230,13 @@ export class ProvedorTema {
         const sim = simboloDe(ren, valores, campos);
         if (!sim) continue;
         if (tipo === 'ponto') { for (let k = p0; k < p1; k++) for (let a = ini(k); a < partes[k]; a++) desenharMarcador(g, sim, pxX(xy[a * 2]), pxY(xy[a * 2 + 1]), alfa); continue; }
-        g.beginPath();
-        for (let k = p0; k < p1; k++) {
-          const a0 = ini(k), a1 = partes[k];
-          for (let a = a0; a < a1; a++) { const X = pxX(xy[a * 2]), Y = pxY(xy[a * 2 + 1]); if (a === a0) g.moveTo(X, Y); else g.lineTo(X, Y); }
-          if (tipo === 'area') g.closePath();
-        }
         if (tipo === 'area') {
+          g.beginPath();
+          for (let k = p0; k < p1; k++) {
+            const a0 = ini(k), a1 = partes[k];
+            tracar(g, xy, a0, a1, pxX, pxY, T);
+            g.closePath();
+          }
           if (sim.type === 'esriPFS') {
             const { img } = imagemDe(sim);
             if (img.naturalWidth) { g.save(); g.globalAlpha = alfa; g.fillStyle = g.createPattern(img, 'repeat'); g.fill('evenodd'); g.restore(); }
@@ -236,25 +249,47 @@ export class ProvedorTema {
         } else {
           const linha = sim.type === 'esriSLS' ? sim : sim.outline || sim;
           if (linha.style === 'esriSLSNull' || !linha.color) continue;
-          g.setLineDash(tracejado(linha.style, (linha.width || 1) * PT));
-          g.lineWidth = Math.max(0.6, (linha.width || 1) * PT);
-          g.strokeStyle = corCss(linha.color, alfa);
-          g.stroke();
-          g.setLineDash([]);
+          const chave = `${linha.style}|${linha.width}|${linha.color}`;
+          let lote = lotesLinha.get(chave);
+          if (!lote) lotesLinha.set(chave, (lote = { linha, caminho: new Path2D() }));
+          for (let k = p0; k < p1; k++) {
+            const a0 = ini(k), a1 = partes[k];
+            tracar(lote.caminho, xy, a0, a1, pxX, pxY, T);
+          }
         }
       }
+      for (const { linha, caminho } of lotesLinha.values()) {
+        g.setLineDash(tracejado(linha.style, (linha.width || 1) * PT));
+        g.lineWidth = Math.max(0.6, (linha.width || 1) * PT);
+        g.strokeStyle = corCss(linha.color, alfa);
+        g.stroke(caminho);
+        g.setLineDash([]);
+      }
     }
-    // rótulos por cima de tudo, sem sobreposição
-    const caixas = [];
+    // rótulos por cima de tudo, sem sobreposição. A conferência de sobreposição usa uma grade de 32 px (antes cada
+    // rótulo era comparado com todos os anteriores: com milhares de nomes de rua por bloco o Sistema Viário travava).
+    const grade = new Map(), CEL = 32;
+    const livre = (c) => {
+      for (let i = Math.floor(c[0] / CEL); i <= Math.floor(c[2] / CEL); i++) for (let j = Math.floor(c[1] / CEL); j <= Math.floor(c[3] / CEL); j++) {
+        for (const b of grade.get(i * 1000 + j) || []) if (c[0] < b[2] && c[2] > b[0] && c[1] < b[3] && c[3] > b[1]) return false;
+      }
+      return true;
+    };
+    const guardar = (c) => {
+      for (let i = Math.floor(c[0] / CEL); i <= Math.floor(c[2] / CEL); i++) for (let j = Math.floor(c[1] / CEL); j <= Math.floor(c[3] / CEL); j++) {
+        const k = i * 1000 + j; let l = grade.get(k); if (!l) grade.set(k, (l = [])); l.push(c);
+      }
+    };
     for (const r of rotulos) {
+      if (r.px < -50 || r.py < -20 || r.px > T + 50 || r.py > T + 20) continue;
       const ts = r.sim || {};
       const tam = ((ts.font?.size || 8) * PT);
       g.font = `${ts.font?.style === 'italic' ? 'italic ' : ''}${ts.font?.weight === 'bold' ? '700 ' : '500 '}${tam}px ${ts.font?.family ? `"${ts.font.family}", ` : ''}system-ui, sans-serif`;
       const w = g.measureText(r.texto).width;
       const x = r.ponto ? r.px + 4 + (ts.xoffset || 0) * PT : r.px - w / 2, y = r.ponto ? r.py - 4 - (ts.yoffset || 0) * PT : r.py + tam / 3;
       const c = [x - 2, y - tam, x + w + 2, y + 3];
-      if (c[0] < 0 || c[1] < 0 || c[2] > T || c[3] > T || caixas.some((b) => c[0] < b[2] && c[2] > b[0] && c[1] < b[3] && c[3] > b[1])) continue;
-      caixas.push(c);
+      if (c[0] < 0 || c[1] < 0 || c[2] > T || c[3] > T || !livre(c)) continue;
+      guardar(c);
       g.lineJoin = 'round';
       g.lineWidth = Math.max(2.5, (ts.haloSize || 1.5) * PT * 1.6);
       g.strokeStyle = ts.haloColor ? corCss(ts.haloColor) : 'rgba(255,255,255,.9)';
@@ -263,6 +298,27 @@ export class ProvedorTema {
       g.fillText(r.texto, x, y);
     }
     return tela;
+  }
+}
+
+/**
+ * Traça um anel/linha no canvas só com o que importa para o bloco: pontos a menos de ~0,6 px do anterior são
+ * descartados e trechos inteiros fora do bloco, do mesmo lado, viram um segmento só (o desenho dentro do bloco é o
+ * mesmo, inclusive o preenchimento par-ímpar). Sem isso, polígonos enormes (setores da COMURG, Macrozonas) eram
+ * traçados inteiros, com dezenas de milhares de vértices, em cada bloco — e a camada não terminava de carregar.
+ */
+export function tracar(t, xy, a0, a1, fx, fy, T) {
+  const lo = -64, hi = T + 64;
+  const cod = (X, Y) => (X < lo ? 1 : X > hi ? 2 : 0) | (Y < lo ? 4 : Y > hi ? 8 : 0);
+  let lx = 0, ly = 0, lado = 0, px = 0, py = 0, pend = false;
+  for (let a = a0; a < a1; a++) {
+    const X = fx(xy[a * 2]), Y = fy(xy[a * 2 + 1]);
+    if (a === a0) { t.moveTo(X, Y); lx = X; ly = Y; lado = cod(X, Y); continue; }
+    const c = cod(X, Y), r = lado & c, ultimo = a === a1 - 1;
+    if (r && !ultimo) { lado = r; px = X; py = Y; pend = true; continue; }
+    if (pend) { t.lineTo(px, py); lx = px; ly = py; pend = false; }
+    if (!ultimo && Math.abs(X - lx) < 0.6 && Math.abs(Y - ly) < 0.6) continue;
+    t.lineTo(X, Y); lx = X; ly = Y; lado = c;
   }
 }
 
