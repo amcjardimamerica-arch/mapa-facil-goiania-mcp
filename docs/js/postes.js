@@ -39,15 +39,24 @@ export function escalaMostrador(alturaCamera, { ate = LAMPADA_ALTURA_MAX, fator 
   return Math.round((1 + (fator - 1) * t) / LAMPADA_PASSO) * LAMPADA_PASSO;
 }
 /**
- * Bocas de lobo: mesma premissa das luminárias (mínimo até 1 km, crescendo até 5 km, em degraus), mas medida na
- * TELA — em metros o mostrador ficava com 3 ou 4 pixels de longe e "sumia" a partir de ~800 m.
+ * Bocas de lobo: a premissa das luminárias. O mostrador tem tamanho REAL no chão: até 1 km de câmera fica no tamanho
+ * original; de 1 km a 5 km cresce em linha reta até 5× (500%) e para ali. Como a câmera também se afasta, na tela
+ * ele fica do mesmo tamanho entre 1 e 5 km (uma referência, sem cobrir o mapa) e diminui acima disso; some em 6 km.
+ * O tamanho original é o que ocupa BOCA_PX_1KM pixels de tela vista a 1 km de altura.
  */
-export const BOCA_PX_MIN = 24;           // lado do mostrador na tela até 1 km de câmera
-export const BOCA_PX_MAX = 44;           // lado em 5 km (e acima, até sumir em 6 km)
-export const BOCA_ALTURA_MAX = 5000;
+export const BOCA_PX_1KM = 16;           // pixels na tela a 1 km de altura (tamanho original)
+export const BOCA_ESCALA_MAX = 5;        // 500% do original
+export const BOCA_ALTURA_MIN = 1000;     // começa a crescer aqui
+export const BOCA_ALTURA_MAX = 5000;     // para de crescer aqui
+export const BOCA_PX_PERTO = 40;         // limite de perto (abaixo de 1 km o tamanho real cresceria na tela)
+export function escalaBocaReal(h) {
+  const t = Math.min(1, Math.max(0, (h - BOCA_ALTURA_MIN) / (BOCA_ALTURA_MAX - BOCA_ALTURA_MIN)));
+  return 1 + (BOCA_ESCALA_MAX - 1) * t;
+}
+/** Lado em pixels de tela para a altura h: tamanho real (original × escala) visto da altura h. */
 export function bocaPx(h) {
-  const t = Math.min(1, Math.max(0, (h - LAMPADA_ALTURA_REF) / (BOCA_ALTURA_MAX - LAMPADA_ALTURA_REF)));
-  return Math.round((BOCA_PX_MIN + (BOCA_PX_MAX - BOCA_PX_MIN) * t) / 2) * 2; // degraus de 2 px
+  const px = (BOCA_PX_1KM * escalaBocaReal(h) * BOCA_ALTURA_MIN) / Math.max(h, 50);
+  return Math.max(4, Math.min(BOCA_PX_PERTO, Math.round(px)));
 }
 /** Escala da esfera da luminária para a altura da câmera (1 de perto; até 6 de longe). */
 export function escalaLampada(alturaCamera) {
