@@ -30,6 +30,9 @@ import { sincronizarManutencao } from './manutencao.js';
 import { relatorio as relatorioDesempenho, zerar as zerarDesempenho } from './desempenho.js';
 
 const Cesium = window.Cesium;
+// Botões de edição das divisas (Conselho Tutelar e Zonas Eleitorais), enquanto as divisas não forem travadas.
+let botoesEdicao = () => null;
+
 // Vias e Mobilidade: estado das opções (guardado no aparelho) e o que cada uma liga.
 const TRANSITO_GRUPOS = [
   ['Sinalização Semafórica', ['semaforos', 'direita_livre', 'estudo_cruzamentos']],
@@ -159,16 +162,10 @@ async function iniciar() {
     },
     viarioLigar: (ligado) => { viasLigado = ligado; aplicarVias(); },
     // Mapas de eleição: Zonas Eleitorais (TSE) e Conselho Tutelar (regiões e locais da eleição de 2023).
-    eleitoral: (caixa) => caixa.append(el('p', { class: 'nota' }, 'Zonas eleitorais do TSE e os colégios de votação. O clique seleciona a zona inteira ou o colégio.')),
-    eleitoralLigar: (ligado) => { eleicoes.definir(ligado ? 'zonas' : '').catch(() => {}); levantamento.definirEleicao(ligado ? 'geral' : '').catch(() => {}); },
+    eleitoral: (caixa) => caixa.append(botoesEdicao() || ''),
+    eleitoralLigar: (ligado) => { if (!ligado) eleicoes.pararEdicao(); eleicoes.definir(ligado ? 'zonas' : '').catch(() => {}); levantamento.definirEleicao(ligado ? 'geral' : '').catch(() => {}); },
     // Trânsito: um botão por camada (semáforos, faixas, quebra-molas, PARE, rotatórias, ciclovias, fiscalização…)
-    conselho: (caixa) => caixa.append(el('p', { class: 'nota' }, 'Regiões da eleição do Conselho Tutelar (juntam zonas inteiras ou partes delas), com os colégios de votação e as transferências de seções.'),
-      CFG.conselhoEditavel ? el('div', { class: 'linha-botoes' },
-        el('button', { class: 'botao', onclick: async (e) => {
-          if (eleicoes.editando) { eleicoes.pararEdicao(); e.target.textContent = 'Editar divisas (arrastar pontos)'; return; }
-          await eleicoes.iniciarEdicao(); e.target.textContent = 'Parar a edição';
-          aviso('Aproxime (abaixo de ~9 km) e arraste os pontos: vermelhos ficam na divisa entre dois Conselhos.'); } }, 'Editar divisas (arrastar pontos)'),
-        el('button', { class: 'botao-texto', onclick: () => eleicoes.salvarEdicao() }, 'Salvar divisas editadas')) : null),
+    conselho: (caixa) => caixa.append(botoesEdicao() || ''),
     conselhoLigar: (ligado) => { if (!ligado) eleicoes.pararEdicao(); eleicoes.definir(ligado ? 'conselho' : '').catch(() => {}); levantamento.definirEleicao(ligado ? 'ct' : '').catch(() => {}); },
     edificacoes: (caixa) => edificios.montarEm(caixa),
     // Drenagem Pluvial: base própria da A.M.C. (bocas de lobo, galerias, pontos de inspeção e análises).
@@ -443,6 +440,11 @@ async function iniciar() {
   app.energia3d = energia3d;
   const maos = new Cesium.ScreenSpaceEventHandler(globo.cena.canvas);
   // Ctrl + clique: o lote abre numa janela própria, ao lado das outras, para comparar (até 3).
+  botoesEdicao = () => (CFG.conselhoEditavel ? el('div', { class: 'linha-botoes' },
+    el('button', { class: 'botao', onclick: async (e) => {
+      if (eleicoes.editando) { eleicoes.pararEdicao(); e.target.textContent = 'Editar divisas'; return; }
+      await eleicoes.iniciarEdicao(); e.target.textContent = 'Parar a edição'; } }, 'Editar divisas'),
+    el('button', { class: 'botao-texto', onclick: () => eleicoes.salvarEdicao() }, 'Salvar divisas')) : null);
   const comparador = new Comparador({ globo, identificar });
   app.comparador = comparador;
   maos.setInputAction((ev) => {

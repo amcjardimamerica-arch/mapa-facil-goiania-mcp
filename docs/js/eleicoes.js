@@ -33,9 +33,13 @@ export class Eleicoes {
 
   async _zonas() {
     if (this._cacheZonas) return this._cacheZonas;
-    const d = await pedirJSON(`${CFG.ms}/Mapa_Limites/MapServer/10/query`, { parametros: { f: 'json', where: '1=1', outFields: '*', outSR: '4326', returnGeometry: 'true' } });
-    this._cacheZonas = (d.features || []).map((f, i) => ({ nome: ((z) => (/zona/i.test(z) ? z.replace(/^zona\s*/i, '').trim() : `Zona ${z}`))(String(f.attributes.nm_zoe || f.attributes.nm || f.attributes.id)),
-      aneis: f.geometry.rings, cor: CORES[i % CORES.length], info: f.attributes }));
+    // Zonas eleitorais com divisas editáveis (data/zonas_eleitorais.geojson: vértices compartilhados entre vizinhas).
+    const d = await pedirJSON(`${CFG.dados}zonas_eleitorais.geojson?v=${VERSAO}`);
+    this._geoZonas = d;
+    const aneisDe = (f) => (f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates).flat();
+    const nomeZona = (z) => (/zona/i.test(z) ? z.replace(/^zona\s*/i, '').trim() : `Zona ${z}`);
+    this._cacheZonas = (d.features || []).map((f, i) => ({ nome: nomeZona(String(f.properties.nm_zoe || f.properties.nm || f.properties.id)),
+      aneis: aneisDe(f), cor: CORES[i % CORES.length], info: f.properties }));
     return this._cacheZonas;
   }
 
@@ -138,7 +142,7 @@ export class Eleicoes {
   // não abrir nem sobrepor. "Salvar divisas" baixa o arquivo editado (conselho_regioes.geojson) para implantar.
   async iniciarEdicao() {
     if (!CFG.conselhoEditavel) return false;
-    if (this.modo !== 'conselho') await this.definir('conselho');
+    if (this.modo !== 'conselho' && this.modo !== 'zonas') await this.definir('conselho');
     if (this.editando) return true;
     this.editando = true;
     this._alcas = new Cesium.CustomDataSource('alcas-conselho');
@@ -196,7 +200,8 @@ export class Eleicoes {
     if (!vista || h > 9000) return; // de longe os pontos se amontoam: aproxime para editar
     const [o, s, l, n] = [vista.west, vista.south, vista.east, vista.north].map(Cesium.Math.toDegrees);
     const grupos = new Map();
-    const chave = (p) => `${Math.round(p[0] / 3e-5)}:${Math.round(p[1] / 3e-5)}`;
+    // Vértice compartilhado = mesma coordenada (scripts/divisas_topologia.py deixa as divisas vizinhas com os mesmos pontos).
+    const chave = (p) => `${p[0].toFixed(7)}:${p[1].toFixed(7)}`;
     for (const a of this.areas) for (const r of a.aneis) for (const p of r) {
       if (p[0] < o || p[0] > l || p[1] < s || p[1] > n) continue;
       const k = chave(p);
@@ -226,17 +231,20 @@ export class Eleicoes {
 
   /** Baixa o arquivo das divisas editadas (para implantar no sistema). */
   salvarEdicao() {
-    if (!this._geoConselho) return;
-    const texto = JSON.stringify(this._geoConselho);
+    const zonas = this.modo === 'zonas';
+    const geo = zonas ? this._geoZonas : this._geoConselho;
+    if (!geo) return;
+    const arquivo = zonas ? 'zonas_eleitorais.geojson' : 'conselho_regioes.geojson';
+    const texto = JSON.stringify(geo);
     // Com a gravação aberta, as divisas vão direto para o sistema (o site se atualiza em 1 a 2 minutos).
     if (gravacaoAberta()) {
-      repoDoSite().then((repo) => gravarDado('docs/data/conselho_regioes.geojson', texto, 'Divisas dos Conselhos Tutelares editadas', { repo, texto: true }))
+      repoDoSite().then((repo) => gravarDado(`docs/data/${arquivo}`, texto, zonas ? 'Divisas das Zonas Eleitorais editadas' : 'Divisas dos Conselhos Tutelares editadas', { repo, texto: true }))
         .then(() => { this.alterado = false; aviso('Divisas gravadas no sistema. O site se atualiza em 1 a 2 minutos.'); },
           (e) => aviso(`Não gravou no sistema (${e.message}). Use o arquivo baixado.`, 'alerta'));
     }
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([texto], { type: 'application/geo+json' }));
-    a.download = 'conselho_regioes.geojson';
+    a.download = arquivo;
     document.body.append(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 5000);
     this.alterado = false;
