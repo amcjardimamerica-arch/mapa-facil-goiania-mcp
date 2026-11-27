@@ -1,0 +1,3100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:ex="http://earth.google.com/kml/ext">
+<Document id="16UA9phXsd5D4LP2ZLcRpndZJNfRDuwGx">
+	<ex:extension>base64;Co4BCoEBCn8KAggBEnkKdwokCiAKAwjQDxoHCNLtZRD_ASEAAAAAAADwPykAAAAAAAAAABgAEg8KCAitgO8HEP8BEKAfGAAaGgoHCP___wcQQBIICK2A7wcQ_wEYoB8gACgAIgkIARIFCP___wcqFwgBEggI____BxD_ARkAAAAAAADwPyAAEgQIARAAGgIIAA</ex:extension>
+	<name>Locais de Votação CMDCA - Oeste</name>
+	<visibility>0</visibility>
+	<gx:CascadingStyle kml:id="__managed_style_0E40038F2A434F92D22F_normal">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+				<color>ff58eeff</color>
+				<scale>2</scale>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>4</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_0E40038F2A434F92D22F">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_0E40038F2A434F92D22F_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_0E40038F2A434F92D22F_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="__managed_style_09F3DCE228434F92D22E">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_09F3DCE228434F92D22E_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_09F3DCE228434F92D22E_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<gx:CascadingStyle kml:id="__managed_style_0656D96E74434F92D233_normal">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<width>8</width>
+			</LineStyle>
+			<PolyStyle>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_0656D96E74434F92D233">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_0656D96E74434F92D233_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_0656D96E74434F92D233_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<gx:CascadingStyle kml:id="__managed_style_06EFB7D71D434F92D230_highlight">
+		<ex:extension>base64;Eq4BGAEiqQEKpgEKT2h0dHBzOi8vZWFydGguZ29vZ2xlLmNvbS9iYWxsb29uX2NvbXBvbmVudHMvYmFzZS8xLjEuMC4wL2NhcmRfdGVtcGxhdGUua21sI21haW4SUwpPaHR0cHM6Ly9lYXJ0aC5nb29nbGUuY29tL2JhbGxvb25fY29tcG9uZW50cy9iYXNlL2N1cnJlbnQvY2FyZF90ZW1wbGF0ZS5rbWwjbWFpbhgA</ex:extension>
+		<styleUrl>https://earth.google.com/balloon_components/base/1.1.0.0/card_template.kml#main</styleUrl>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2f2fd3</color>
+				<width>6</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>c000ff08</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_06EFB7D71D434F92D230_normal">
+		<ex:extension>base64;Eq4BGAEiqQEKpgEKT2h0dHBzOi8vZWFydGguZ29vZ2xlLmNvbS9iYWxsb29uX2NvbXBvbmVudHMvYmFzZS8xLjEuMC4wL2NhcmRfdGVtcGxhdGUua21sI21haW4SUwpPaHR0cHM6Ly9lYXJ0aC5nb29nbGUuY29tL2JhbGxvb25fY29tcG9uZW50cy9iYXNlL2N1cnJlbnQvY2FyZF90ZW1wbGF0ZS5rbWwjbWFpbhgA</ex:extension>
+		<styleUrl>https://earth.google.com/balloon_components/base/1.1.0.0/card_template.kml#main</styleUrl>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2f2fd3</color>
+				<width>4</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>c000ff08</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_06EFB7D71D434F92D230">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_06EFB7D71D434F92D230_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_06EFB7D71D434F92D230_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<gx:CascadingStyle kml:id="__managed_style_1927FBAE58434F92D22C_highlight">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff58eeff</color>
+				<width>6</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_2E12D7A9EC434F92D22C_normal">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff007cf5</color>
+				<width>4</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_1927FBAE58434F92D22C_normal">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff58eeff</color>
+				<width>4</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_1EE03374BE434F92D228_normal">
+		<ex:extension>base64;Eq4BGAEiqQEKpgEKT2h0dHBzOi8vZWFydGguZ29vZ2xlLmNvbS9iYWxsb29uX2NvbXBvbmVudHMvYmFzZS8xLjEuMC4wL2NhcmRfdGVtcGxhdGUua21sI21haW4SUwpPaHR0cHM6Ly9lYXJ0aC5nb29nbGUuY29tL2JhbGxvb25fY29tcG9uZW50cy9iYXNlL2N1cnJlbnQvY2FyZF90ZW1wbGF0ZS5rbWwjbWFpbhgA</ex:extension>
+		<styleUrl>https://earth.google.com/balloon_components/base/1.1.0.0/card_template.kml#main</styleUrl>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2f2fd3</color>
+				<width>8</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>c000ef2d</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_1EE03374BE434F92D228">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_1EE03374BE434F92D228_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_1EE03374BE434F92D228_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<gx:CascadingStyle kml:id="__managed_style_01FBBCF597434F92D22B_highlight">
+		<ex:extension>base64;Eq4BGAEiqQEKpgEKT2h0dHBzOi8vZWFydGguZ29vZ2xlLmNvbS9iYWxsb29uX2NvbXBvbmVudHMvYmFzZS8xLjEuMC4wL2NhcmRfdGVtcGxhdGUua21sI21haW4SUwpPaHR0cHM6Ly9lYXJ0aC5nb29nbGUuY29tL2JhbGxvb25fY29tcG9uZW50cy9iYXNlL2N1cnJlbnQvY2FyZF90ZW1wbGF0ZS5rbWwjbWFpbhgA</ex:extension>
+		<styleUrl>https://earth.google.com/balloon_components/base/1.1.0.0/card_template.kml#main</styleUrl>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2f2fd3</color>
+				<width>12</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>c000ff08</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_0A8864CA80434F92D22C">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_0A8864CA80434F92D22C_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_0A8864CA80434F92D22C_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<gx:CascadingStyle kml:id="__managed_style_0FAFF612AB434F92D228_highlight">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>6</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_0FAFF612AB434F92D228_normal">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>4</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_1EE03374BE434F92D228_highlight">
+		<ex:extension>base64;Eq4BGAEiqQEKpgEKT2h0dHBzOi8vZWFydGguZ29vZ2xlLmNvbS9iYWxsb29uX2NvbXBvbmVudHMvYmFzZS8xLjEuMC4wL2NhcmRfdGVtcGxhdGUua21sI21haW4SUwpPaHR0cHM6Ly9lYXJ0aC5nb29nbGUuY29tL2JhbGxvb25fY29tcG9uZW50cy9iYXNlL2N1cnJlbnQvY2FyZF90ZW1wbGF0ZS5rbWwjbWFpbhgA</ex:extension>
+		<styleUrl>https://earth.google.com/balloon_components/base/1.1.0.0/card_template.kml#main</styleUrl>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2f2fd3</color>
+				<width>12</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>c000ef2d</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_09F3DCE228434F92D22E_normal">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>8</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+				<gx:displayMode>panel</gx:displayMode>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_069DA079ED434F92D229_normal">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<width>8</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>c0ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_069DA079ED434F92D229">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_069DA079ED434F92D229_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_069DA079ED434F92D229_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="__managed_style_1927FBAE58434F92D22C">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_1927FBAE58434F92D22C_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_1927FBAE58434F92D22C_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<gx:CascadingStyle kml:id="__managed_style_09F3DCE228434F92D22E_highlight">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>12</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+				<gx:displayMode>panel</gx:displayMode>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_176CDDDD61434F92D230_highlight">
+		<ex:extension>base64;Eq4BGAEiqQEKpgEKT2h0dHBzOi8vZWFydGguZ29vZ2xlLmNvbS9iYWxsb29uX2NvbXBvbmVudHMvYmFzZS8xLjEuMC4wL2NhcmRfdGVtcGxhdGUua21sI21haW4SUwpPaHR0cHM6Ly9lYXJ0aC5nb29nbGUuY29tL2JhbGxvb25fY29tcG9uZW50cy9iYXNlL2N1cnJlbnQvY2FyZF90ZW1wbGF0ZS5rbWwjbWFpbhgA</ex:extension>
+		<styleUrl>https://earth.google.com/balloon_components/base/1.1.0.0/card_template.kml#main</styleUrl>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ffbc47ab</color>
+				<width>6</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40c6c1bd</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_176CDDDD61434F92D230">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_176CDDDD61434F92D230_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_176CDDDD61434F92D230_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="__managed_style_2E12D7A9EC434F92D22C">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_2E12D7A9EC434F92D22C_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_2E12D7A9EC434F92D22C_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<gx:CascadingStyle kml:id="__managed_style_00C58E577B434F92D231_normal">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+				<color>ff58eeff</color>
+				<scale>2</scale>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>4</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_0A8864CA80434F92D22C_highlight">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<width>6</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>c0ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_176CDDDD61434F92D230_normal">
+		<ex:extension>base64;Eq4BGAEiqQEKpgEKT2h0dHBzOi8vZWFydGguZ29vZ2xlLmNvbS9iYWxsb29uX2NvbXBvbmVudHMvYmFzZS8xLjEuMC4wL2NhcmRfdGVtcGxhdGUua21sI21haW4SUwpPaHR0cHM6Ly9lYXJ0aC5nb29nbGUuY29tL2JhbGxvb25fY29tcG9uZW50cy9iYXNlL2N1cnJlbnQvY2FyZF90ZW1wbGF0ZS5rbWwjbWFpbhgA</ex:extension>
+		<styleUrl>https://earth.google.com/balloon_components/base/1.1.0.0/card_template.kml#main</styleUrl>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ffbc47ab</color>
+				<width>4</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40c6c1bd</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_00C58E577B434F92D231_highlight">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+				<color>ff58eeff</color>
+				<scale>2</scale>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>6</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_0FAFF612AB434F92D228">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_0FAFF612AB434F92D228_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_0FAFF612AB434F92D228_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="__managed_style_00C58E577B434F92D231">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_00C58E577B434F92D231_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_00C58E577B434F92D231_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<gx:CascadingStyle kml:id="__managed_style_0656D96E74434F92D233_highlight">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<width>12</width>
+			</LineStyle>
+			<PolyStyle>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_01FBBCF597434F92D22B_normal">
+		<ex:extension>base64;Eq4BGAEiqQEKpgEKT2h0dHBzOi8vZWFydGguZ29vZ2xlLmNvbS9iYWxsb29uX2NvbXBvbmVudHMvYmFzZS8xLjEuMC4wL2NhcmRfdGVtcGxhdGUua21sI21haW4SUwpPaHR0cHM6Ly9lYXJ0aC5nb29nbGUuY29tL2JhbGxvb25fY29tcG9uZW50cy9iYXNlL2N1cnJlbnQvY2FyZF90ZW1wbGF0ZS5rbWwjbWFpbhgA</ex:extension>
+		<styleUrl>https://earth.google.com/balloon_components/base/1.1.0.0/card_template.kml#main</styleUrl>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2f2fd3</color>
+				<width>8</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>c000ff08</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_0E40038F2A434F92D22F_highlight">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+				<color>ff58eeff</color>
+				<scale>2</scale>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>6</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_0A8864CA80434F92D22C_normal">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<width>4</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>c0ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_069DA079ED434F92D229_highlight">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<width>12</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>c0ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_2E12D7A9EC434F92D22C_highlight">
+		<ex:extension>base64;EgIYAQ</ex:extension>
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff007cf5</color>
+				<width>6</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_01FBBCF597434F92D22B">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_01FBBCF597434F92D22B_normal</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_01FBBCF597434F92D22B_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Placemark id="0B7F7B9A242B539D0432">
+		<name>Região Sudoeste</name>
+		<LookAt>
+			<longitude>-49.29367332341935</longitude>
+			<latitude>-16.68826236982926</latitude>
+			<altitude>742.6116294245218</altitude>
+			<heading>1.069834679198058</heading>
+			<tilt>1.019456144898899</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>1272.812146242941</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_176CDDDD61434F92D230</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.30269155290296,-16.69113964605724,734.1042578967401 -49.30365268506216,-16.69072371803347,750.9482955719707 -49.30839965785203,-16.69157576187978,757.0047218733954 -49.30837283219428,-16.69188509492351,762.0816669637228 -49.31108832096027,-16.69238537747786,766.4468167454036 -49.31148583846225,-16.69250380679736,773.1259424879632 -49.31192033400413,-16.69263760519059,780.9908156040692 -49.31460937747344,-16.69285571972132,790.6544356204013 -49.31499773780384,-16.69294136768366,796.6050441972621 -49.31621759094272,-16.69303482806463,799.5907248775846 -49.31736695468869,-16.6925708179185,801.0835652177459 -49.31709289448351,-16.69194983146443,802.5764055579074 -49.31731294890575,-16.69205866521679,804.0692458980686 -49.31755412718928,-16.69215097545528,805.5620862382299 -49.31796622808934,-16.69224244342368,808.5477669185523 -49.31957715083802,-16.69266914302883,815.2025929138373 -49.32120695239161,-16.69310242080122,821.8574189091223 -49.3215569106147,-16.69319973458635,822.0349271969128 -49.32189754851036,-16.69331893548497,822.2124354847033 -49.3223359445991,-16.69354242495718,822.5674520602842 -49.32532278011678,-16.69534314139808,822.7449603480746 -49.32853247775257,-16.69728612121025,822.9224686358651 -49.33517895302067,-16.70126353350537,823.2774852114462 -49.33574204179062,-16.7015746741523,819.632742670833 -49.33634593692673,-16.70181126221065,815.98800013022 -49.34135731402137,-16.70342261171432,824.0622747958748 -49.34261413226032,-16.70408904264917,860.4119604239468 -49.34744918286972,-16.70683654494137,865.9655366657742 -49.35104801376083,-16.70889557023576,874.5417711358134 -49.35319718870766,-16.71008034268866,882.3829799399488 -49.35426893639405,-16.7107165249639,885.6448320672716 -49.35719075948795,-16.7124987383872,884.0100311649385 -49.36249650020875,-16.71538327402747,885.1637977377527 -49.36904204532964,-16.71922476030007,882.7693333771522 -49.37919834711672,-16.72503986803245,880.3748690165517 -49.38056881763078,-16.72589325776433,873.16845231421 -49.38327984136399,-16.72775784491698,858.103983131063 -49.38373586263379,-16.72812299834288,853.7345671942073 -49.38416634609558,-16.7285072223916,850.6036703649444 -49.3847038476885,-16.72891938207169,851.6886953539433 -49.3851594552538,-16.72920934493541,853.1276868862005 -49.38570358436108,-16.72949249674121,861.8686094687802 -49.38615770510259,-16.72968178874026,872.4499486084662 -49.38681651572313,-16.72988772938508,868.9076034696658 -49.39547179012216,-16.73171729927316,862.0208271557829 -49.39631219482549,-16.73193887025465,860.2466807903252 -49.3970471781672,-16.73218616108019,858.7636440174985 -49.39761429989735,-16.73242107738614,865.1063638570829 -49.39810068154777,-16.7326424153705,870.1643686146908 -49.3987817935895,-16.73298901046293,898.1653312733579 -49.40040055443015,-16.73392001450873,879.6739988974357 -49.40136544063976,-16.73449570845946,901.9697390235659 -49.40233411738252,-16.73507570458042,902.7970511761991 -49.40326609263622,-16.73563498669143,900.9210061106846 -49.40416283677492,-16.7361798686772,901.2922977368773 -49.40464238683674,-16.73646956260201,901.3974832522428 -49.40515244933961,-16.73675367528756,898.8190655228649 -49.40598681340695,-16.73718981896708,895.5983222971144 -49.40674365985673,-16.73761584040982,893.596778174412 -49.40748159088992,-16.73804045535708,891.3002987999512 -49.40808452343195,-16.73835143216989,891.0583800319735 -49.40856373244164,-16.73866093020055,891.0034166793591 -49.40929467530476,-16.73907687208766,890.1570051875262 -49.40995295565438,-16.73948438700298,889.7030802915156 -49.41065110974282,-16.73988158661608,888.9292501452555 -49.41124405647483,-16.74022205216029,889.9457661200504 -49.41170900477184,-16.74049827743957,889.0304130866803 -49.41223560182617,-16.74080684003163,885.2047243024637 -49.41217342294235,-16.74089743533965,848.8780919487916 -49.41191459029896,-16.7410992249521,847.5453426742533 -49.41167709577984,-16.74123443610224,845.9756070962108 -49.41142873434317,-16.74140280756447,847.9554479448944 -49.41120282541508,-16.741538051286,844.6076596195996 -49.41099121827881,-16.74165560024094,840.9606419211871 -49.40959609401418,-16.74243807172078,841.769790111459 -49.40858044720808,-16.74302038552062,845.2836016859645 -49.40840462324533,-16.74316285595938,840.7602592163535 -49.40827640000105,-16.74334422805382,853.770052417123 -49.40820203923131,-16.74359291261685,844.8408089071792 -49.40816290051492,-16.74371712970683,844.4686586403359 -49.40807786395234,-16.74385970284819,836.8495606166686 -49.40798800370693,-16.74398475380912,834.3297296227021 -49.40715459743253,-16.74467292314524,854.1268368338924 -49.40700999919891,-16.74479235079384,851.8634617385552 -49.40687917905441,-16.74490132505553,835.646780491621 -49.40677067847451,-16.74498757226635,830.1939937664807 -49.40661848241111,-16.74509594513594,828.3379718918635 -49.40641562027885,-16.74523323610291,824.7620228823696 -49.40618404515946,-16.74532545142518,828.6262929408887 -49.40599572355279,-16.74535514977357,827.4421233996777 -49.40334071313038,-16.7669207224508,825.8043309870598 -49.40306579941532,-16.76770226765464,827.423519081319 -49.40294550110583,-16.76875268089617,823.3648189080341 -49.40269652044519,-16.76965261338607,820.9324865204632 -49.40240170294569,-16.77055359713519,819.6409156689781 -49.401813207747,-16.77134256377426,822.6393328259942 -49.40135292848399,-16.77222064344944,821.8446836118919 -49.40110540229219,-16.77329328685134,820.3136224443583 -49.40050121297333,-16.77444303898056,820.1686041095938 -49.40029757249273,-16.77538563293477,817.4070443363443 -49.40034540372929,-16.77644954270694,818.2233348656946 -49.40031660964912,-16.77730148896189,817.5415781799202 -49.39981569885536,-16.77833725498073,816.844704820241 -49.3994571834761,-16.77909912588962,817.2681309931342 -49.39949544470576,-16.78025244233962,813.5857668092036 -49.39967274566712,-16.78101722564102,813.996381124095 -49.40006288709584,-16.78190839377582,811.1185579997285 -49.40038545417575,-16.7824988502601,811.3718809373796 -49.4005140535441,-16.78310515565244,812.2769404302167 -49.40041313728985,-16.78394901090316,809.1371158680831 -49.40016287431227,-16.78467388019888,813.0643545241105 -49.3996373272259,-16.78525482982955,811.2974277870466 -49.39879763697964,-16.78589963889934,809.9769243003681 -49.39803326961297,-16.78677439872201,810.9700899854292 -49.3974371078555,-16.78755678194298,808.5578344081738 -49.39685768043276,-16.7894917850817,808.1311510596852 -49.39669824245706,-16.79048406733659,805.6901417875271 -49.39638841053372,-16.79114022634949,808.0044652836635 -49.39550912958376,-16.79161787064638,810.0517145755609 -49.39487510077038,-16.79218871175999,810.3994663165977 -49.39413764537305,-16.79289046655244,812.383568940705 -49.39347425686506,-16.79346056148377,814.6234794299861 -49.39282238301138,-16.79434235690847,810.4820687598125 -49.39250870083477,-16.79501987813849,806.4657276723048 -49.3915044467023,-16.79617122908984,806.2952690321162 -49.39053515880538,-16.79729548751326,804.0000132549583 -49.38959207756186,-16.79832804245997,816.0262536601961 -49.3892449090598,-16.79957903595657,810.162969594611 -49.38922950272646,-16.80072275043774,805.8602315991704 -49.38930725285262,-16.80153734307492,802.3133579275271 -49.38977296039127,-16.8024463560047,801.6156121768149 -49.39000808362339,-16.80311482107495,802.1733106842105 -49.3901163365401,-16.80390889547889,800.0996413792139 -49.39013665012071,-16.80490001253755,797.4409231691786 -49.38959256198096,-16.80573128999494,799.5835263072934 -49.38889568596814,-16.80623244152517,800.4474585123728 -49.38826439488977,-16.80693239912658,799.7278424728373 -49.38815910538334,-16.80769431701551,798.7288450072671 -49.38843696535531,-16.80821813215778,800.8506892213161 -49.38839252283547,-16.80894269120319,797.8769939532667 -49.38801168193805,-16.81020022897761,795.0959383926772 -49.38753359868043,-16.81112882406349,794.3989899420462 -49.38707374559262,-16.81219978476197,793.5521218144422 -49.38699890845055,-16.81297706956424,791.727306589782 -49.38689892678027,-16.81388657247238,799.1419088806418 -49.38691934290016,-16.81498422656582,802.2071272444614 -49.38698316940189,-16.81588436775222,794.3642337015967 -49.38720679350624,-16.81661506974988,796.7419712227535 -49.38772612276841,-16.81697922969698,792.4966602438698 -49.38812672959663,-16.81749001207196,791.8599103111322 -49.38824092380204,-16.81801951824844,792.6915035279201 -49.38827651320273,-16.81881378997871,804.6183311621947 -49.38862029641802,-16.81921559894822,795.4006371020673 -49.38901793739108,-16.81981307620675,790.3723620760248 -49.38925170814404,-16.82021322242201,789.7828463550089 -49.38961821073365,-16.82053966312177,790.4525099486571 -49.38988142233312,-16.82088096901806,789.5314285526489 -49.38997757425035,-16.8212838592075,790.1803073157752 -49.39040944649629,-16.82182402234669,789.3669705439878 -49.39039767347611,-16.82208385390067,789.9321086830668 -49.39035575727854,-16.82261735229458,793.2654355769604 -49.39022781283978,-16.82305089195181,793.1529480412493 -49.39002784661619,-16.82347202705242,790.9018262229204 -49.38984116039752,-16.8239375764619,792.2027743330244 -49.38957024461841,-16.82437882340699,789.2451980597097 -49.3895806559475,-16.8246164870624,787.1833651574728 -49.38966141721915,-16.82501045974768,788.4959653359917 -49.38970876757013,-16.82524980252801,788.2097182775198 -49.38930523500231,-16.8253600152756,794.1125695353888 -49.38888432595935,-16.82540852260953,796.6607721602626 -49.38842975609521,-16.82551878499261,804.4619225849704 -49.38786351798942,-16.82563376082297,802.806397901267 -49.38750778000742,-16.82602989500084,793.3814481307214 -49.3874132683405,-16.82635233538201,789.091031879857 -49.38781871117468,-16.82689003688845,786.3411462576838 -49.38807306358127,-16.82701257206675,786.0866295336155 -49.38813542867912,-16.82722576308131,784.5469814573768 -49.38840960375942,-16.82740139424648,785.8549736238617 -49.38854284118014,-16.82747910137309,786.4630144471701 -49.38848921846131,-16.82780220317527,784.8107882736737 -49.38822965212341,-16.82785301581453,785.8457066823543 -49.38794320279286,-16.82791115318872,786.549739778458 -49.38775802779286,-16.8280356555601,785.6104651128177 -49.3873811610438,-16.82810203921882,786.2697831931653 -49.3870733931172,-16.82821726798558,786.836002069864 -49.38677257980928,-16.82835921201534,787.6021237107074 -49.38661308022836,-16.82861120981971,787.2473795196632 -49.38664525304761,-16.8288754378546,786.4359093566325 -49.38675196354391,-16.82908101150806,787.5304394488552 -49.38678065963554,-16.82931929142343,787.0332573775316 -49.38676854878163,-16.82958356162339,787.66469982392 -49.38684842365706,-16.82989690934507,786.9864891835293 -49.38700200727019,-16.83018252362908,786.5106080602199 -49.3872058359277,-16.83024107986556,786.3139937085217 -49.38747450198805,-16.8303596584012,785.3586309129455 -49.38742920495135,-16.83047852112642,783.3450154157991 -49.38723937325669,-16.83074166568802,784.646588793422 -49.38712572196616,-16.83097600143019,784.9183430308594 -49.38679368658427,-16.83119379682855,784.2354711254106 -49.38647111780254,-16.83120822755853,784.9100954948905 -49.38628422360314,-16.830992963098,784.8274513761338 -49.38603628907107,-16.83085151300632,783.8211264633275 -49.38587533481622,-16.83074784545589,785.4906666897447 -49.38584939199026,-16.83053591284959,787.2296911918011 -49.38573647907847,-16.83033823796189,784.0222207363055 -49.38553755010588,-16.83037944055452,782.9616497471354 -49.38529419838009,-16.83046625798851,782.5528345721746 -49.38509948072696,-16.83048805480617,782.944529808024 -49.38490874742991,-16.83059740520519,784.2247417769747 -49.38472366169473,-16.83069237982926,785.2336209930759 -49.3845758712031,-16.83087021876549,784.214371090006 -49.38441446000322,-16.83104983951615,783.8809788719291 -49.38436791527435,-16.83119668076074,782.6320518607973 -49.38417364251383,-16.83133973411688,782.3820660334493 -49.3840754156109,-16.83155901227306,784.0613470406843 -49.38411233749381,-16.83185082015053,784.0573538970889 -49.38245432379342,-16.83155209169165,793.6932036665237 -49.3818435517743,-16.83143127694938,798.0435652231207 -49.38127426611911,-16.83124125065471,801.5956159137498 -49.38086682902389,-16.83105584302596,804.2795551686099 -49.38055167569399,-16.83085469593858,805.3871156027918 -49.37990254020556,-16.8303475409479,808.7097461237038 -49.37780822136234,-16.82855473481795,814.6111682669799 -49.369919683593,-16.82183060046975,835.5362177618871 -49.36687183633625,-16.81921715715493,843.840916172882 -49.36633191565932,-16.81875449106941,844.1050470158092 -49.36582484095106,-16.8182153261269,843.2490335385569 -49.3655042636622,-16.81778783470642,843.7881561139285 -49.36514748613858,-16.81720078105903,842.9136524507355 -49.36490110320668,-16.81666959646558,843.2229361034881 -49.36476111169215,-16.81626186040559,843.9487032931405 -49.36465571716695,-16.81586657115839,844.5481208597678 -49.36277425211632,-16.80865585307657,870.7155784340322 -49.36212417595017,-16.80608821216314,878.4450620013071 -49.36058223478463,-16.80037028411114,881.2293065995372 -49.36041618424038,-16.79980079140443,880.0244347102939 -49.36014389106958,-16.79905156718112,879.044344473256 -49.35982890289419,-16.79844185752169,879.763035646791 -49.35940754899982,-16.79788458940558,881.1815910678445 -49.35894380719675,-16.7973889327195,883.1353401669313 -49.35817411731764,-16.79661930997578,886.3626487773137 -49.35774341116711,-16.79617348341093,888.050084373874 -49.35729406898671,-16.79574520851859,889.9251929548806 -49.35690237860795,-16.7953442370484,891.3725055749211 -49.35648846778628,-16.79480301512821,892.8586878538279 -49.35623586760097,-16.79438732659309,893.2169139161457 -49.35601752735564,-16.79395585819862,893.5709085698825 -49.35586145246582,-16.79355757430532,893.5674359687997 -49.35573345362941,-16.79311748137593,893.5707669777242 -49.35562994143675,-16.79259061442132,893.5049053832164 -49.35091963867461,-16.76900882351943,910.5697684073306 -49.35087271140444,-16.76847624037398,909.6029113544415 -49.35067455636029,-16.76734798640873,908.4143377538857 -49.3505658621032,-16.76695105976663,908.1401359780826 -49.35047263404592,-16.76664658817941,907.9298599424066 -49.35030222669215,-16.76625883017809,907.5335510062221 -49.35013836090086,-16.76590550963011,906.8323138622377 -49.3498585428522,-16.76546035594544,906.2899710717894 -49.34963268721025,-16.765136453074,905.9892359285259 -49.34906758408138,-16.76455003707429,905.8014340172685 -49.34749182151278,-16.7630850317818,900.9442499382238 -49.34463867318418,-16.76047345515309,885.0399765907863 -49.3417259445448,-16.75779369872643,876.7368631688328 -49.34026373076584,-16.75645463286828,877.4989962891517 -49.33916622823213,-16.75551978858771,879.5865452782739 -49.33569962570405,-16.75231236073333,880.8093208515489 -49.33492841980348,-16.75152457106806,878.4949460630908 -49.33339048317001,-16.75028460883864,873.8469238242532 -49.33267466422963,-16.74963781017822,871.7314529478278 -49.33217860725337,-16.74940320780879,870.3903138463261 -49.3318322501179,-16.74938017564688,869.3197883300385 -49.31274521583529,-16.75070102623504,870.6995134053046 -49.31242891352526,-16.7506890994229,870.4535285134353 -49.3121824458982,-16.75060620992416,870.0088889889715 -49.30405998765286,-16.74707489686847,866.3089741281265 -49.30356743796015,-16.74691231359482,866.6093249892259 -49.30325279263104,-16.74686056610211,866.0632474930542 -49.29726060375972,-16.7462530705841,853.07565735168 -49.29701566062479,-16.74624040717876,852.34282559183 -49.29681255255175,-16.7462764987727,851.8285762544134 -49.28915860857747,-16.7482320166055,839.2047640280704 -49.28871844149282,-16.74830598792893,839.459116204481 -49.28836621357372,-16.74829444296133,838.3386619744475 -49.28805571955201,-16.74817479657288,837.8795941835996 -49.28339924295192,-16.74568335164536,846.533547956926 -49.28219247452022,-16.74504496859956,851.9130337204144 -49.28221582330112,-16.74491593017741,852.0064558203895 -49.28225776772783,-16.74479147361966,852.1610105023025 -49.28956882880616,-16.73022657208145,797.3708912265585 -49.29027875593506,-16.73053981964222,796.5525793046969 -49.29058943954428,-16.72989631572531,794.4252106509911 -49.29079936627679,-16.72999514604166,794.3889056761094 -49.29196239248262,-16.72791299145071,787.673043544663 -49.29245986255665,-16.72629515182021,781.3906810200839 -49.29260077356771,-16.72547737640775,779.5398061215647 -49.2926374746837,-16.72500930526817,778.1610248841487 -49.29259912688649,-16.72459349443793,777.7490249466147 -49.29300834274742,-16.72445481370108,772.5528427430643 -49.29336913889718,-16.72438724238391,771.0826933110485 -49.29346882309683,-16.72400750987942,772.411788076281 -49.29355164982303,-16.72348874267768,772.4061703759286 -49.29409463462996,-16.72256498342535,768.8590771310488 -49.29434294373212,-16.72200907550039,768.4499402480664 -49.29437780051856,-16.72128656848927,766.719074903235 -49.29431614055039,-16.71977007656829,767.0088025810168 -49.29402689391667,-16.71883546406873,769.784962177891 -49.29440097030693,-16.71801050592129,763.2353323099563 -49.29489358751675,-16.71696709270683,757.1784080904908 -49.29507292214314,-16.71588497912258,760.9054090120233 -49.29526207486786,-16.71477182804647,759.8618609057673 -49.29525450561074,-16.71360947075934,755.3959068611048 -49.29533227126639,-16.71233898265267,757.1204744940011 -49.29552780176806,-16.71152921691333,751.7983848115384 -49.29588936469219,-16.70969227241271,748.1194403279137 -49.29596581100174,-16.70854531469422,747.1159168801116 -49.29598893453367,-16.70776511946833,746.9282988844633 -49.29600864868156,-16.70674695616017,745.0810925257325 -49.29557792214444,-16.70597314328517,744.9877016442183 -49.29532383061865,-16.70516226126837,744.438035554283 -49.29530062603624,-16.7043137331972,743.9490071159825 -49.29552793097328,-16.70339821414139,743.4789340679189 -49.29546619986489,-16.70308801544713,742.1807293232094 -49.29516530499293,-16.7029400946316,741.9394272839329 -49.29511940801591,-16.70231233635288,742.5146593184603 -49.29494905265381,-16.70146769318778,740.9422489982023 -49.29444782083299,-16.70085488505011,740.3379108246847 -49.29398496001298,-16.70065442464211,741.7249223634083 -49.29379096206691,-16.70012218869091,739.619218355332 -49.29363918662786,-16.69927334302912,743.3693232211406 -49.29348042735461,-16.6981935228249,746.7954378979847 -49.29329503475611,-16.69752259567205,739.1161188521972 -49.29300696423505,-16.69634425015511,735.8018130433977 -49.2927508153989,-16.69565304351321,735.3518150939251 -49.29258853837297,-16.6947651586174,734.7711496353895 -49.29265857944374,-16.69363591423738,734.4055268321131 -49.29288400952598,-16.69289214611334,736.2791904742697 -49.29288432544215,-16.69202405674659,737.3913100005292 -49.29266256066192,-16.69114931463199,732.9276005798951 -49.29225820671878,-16.69043540903227,731.7244712234267 -49.29176763885418,-16.68958575715389,730.8752613476938 -49.29173283491369,-16.68916660785612,730.9761674898515 -49.29178383616685,-16.6887633546326,731.0013940253909 -49.29274275741641,-16.68891620646745,731.0266205609304 -49.29286930760038,-16.68802134747521,731.0770736320092 -49.29684333475375,-16.68845961342392,731.2788859163246 -49.29688049041444,-16.68782543777987,731.6825104849554 -49.29735670694858,-16.68790198901254,732.489759622217 -49.3022322793685,-16.69107759191297,733.2970087594786 -49.30269155290296,-16.69113964605724,734.1042578967401 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0A309235732B4D98098B">
+		<name>1406 - CEPI DEP. PROFESSOR JOSÉ LUCIANO</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div><div>1406 | COLÉGIO ESTADUAL DEPUTADO PROFESSOR JOSÉ LUCIANO,<br></div><div>(AVENIDA MIGUEL DO CARMO, QD. 16, LT. 25, SETOR RIO FORMOSO)<br></div><div>- Colégio Rosamarques<br></div><div>- Escola Municipal Pedro Xavier Teixeira<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 4006:<br></div><div>URNA N.º 170 - ABADIA CESAR MACHADO / CRISTIANE ANDREA DE CARVALHO RODRIGUES<br></div><div>URNA N.º 171 - CRISTIANE APARECIDA CAMARGO / GEOVANNA VITORIA SOUZA RODRIGUES<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 401:<br></div><div>URNA N.º 172 - GERACY PEREIRA QUEIROZ / KEILA DA SILVA SIQUEIRA<br></div><div>URNA N.º 173 - KEILA GOMES BARRETO DE SOUZA / MARIA REGINA ARAUJO FIALKOVITS<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 402:<br></div><div>URNA N.º 174 - MARIA REGINA DE PONTE/ ROMULO COSTA PEREIRA<br></div><div>URNA N.º 175 - ROMULO DA SILVA CARNEIRO / ZULMIRA DE SOUSA AMORIM SOARES<br></div></div><div><br></div>]]></description>
+		<LookAt>
+			<longitude>-49.33228550856728</longitude>
+			<latitude>-16.71783496618633</latitude>
+			<altitude>804.8904807372737</altitude>
+			<heading>4.130930857781648</heading>
+			<tilt>4.625260787818052</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>338.9988362774966</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_01FBBCF597434F92D22B</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.33303153102544,-16.71717592289417,802.2612506948578 -49.33303624132635,-16.71778042452063,800.8310883015511 -49.33294585637035,-16.71788604434366,800.3468822878834 -49.33187824165995,-16.71822221202562,799.486629504068 -49.33167710252587,-16.71754704441559,801.6295225588108 -49.33303153102544,-16.71717592289417,802.2612506948578 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="075A6FE7E32B4DAB988F">
+		<name>COLÉGIO ROSAMARQUES</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.33610180321595</longitude>
+			<latitude>-16.72403410681672</latitude>
+			<altitude>806.7180079051583</altitude>
+			<heading>4.130934607241992</heading>
+			<tilt>4.625069492006116</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>141.8916176709536</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.33601818912659,-16.72385716839246,801.770113547703 -49.33615209129601,-16.7241426303052,803.1352072894662 -49.33594561678859,-16.724234508445,804.2136473405632 -49.33580300014872,-16.72395142514294,802.5488201015788 -49.33601818912659,-16.72385716839246,801.770113547703 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0DCD556C532B4DAEE746">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.33235454327348</longitude>
+			<latitude>-16.71811076009367</latitude>
+			<altitude>799.9388022929634</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>53.16667797458649</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.33600269030363,-16.72411348528931,803.0372835151627 -49.33232562623378,-16.71797829988181,800.9391623464564 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0DCB445BEE2B4DB53D40">
+		<name>Escola Municipal Pedro Xavier Teixeira</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.3235008839759</longitude>
+			<latitude>-16.72256650847151</latitude>
+			<altitude>796.625958984459</altitude>
+			<heading>13.12564624874973</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>197.2553698216507</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.32356655559522,-16.72197792605834,789.6075108644195 -49.32358310795563,-16.72198426004048,789.6052208114335 -49.32359747989057,-16.72199392966856,789.6029307584473 -49.32362292796655,-16.72202217586855,789.5983506524751 -49.32386597291538,-16.72266875048711,790.8438042872967 -49.32327142076819,-16.722858813667,793.0030004957027 -49.32312863582305,-16.72242402127932,792.4711796492593 -49.32311979046537,-16.72238871491628,792.3154600482443 -49.32350723088442,-16.72198876898262,789.9273762116815 -49.32353687377418,-16.72197912865477,789.7674435380504 -49.32356655559522,-16.72197792605834,789.6075108644195 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0732DF20062B4DB7594C">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.33239128915277</longitude>
+			<latitude>-16.71794484644579</latitude>
+			<altitude>801.3578716996342</altitude>
+			<heading>13.12813992228519</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>73.81768143374757</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.32328912921098,-16.72234306864985,791.8704639644809 -49.33232287897125,-16.71799024809415,800.8951852834518 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0EE606C1662B52821B18">
+		<name>1031 - COLÉGIO ESTADUAL DO JARDIM VILA BOA</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1031 | COLÉGIO ESTADUAL DO JARDIM VILA BOA<br></div><div>(RUA PAOLA NEY, QD. 59, S/N, JARDIM VILA BOA)<br></div><div>- Colégio Master<br></div><div>- Escola Meta Júnior<br></div><div>- CMEI Mateus Barcelos Barretos<br></div><div>- Escola Municipal Deputado Jamel Cecílio<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 403:<br></div><div>URNA N.º 198 - ABADIA ALVES BERNARDES / ASSIS SILVA NETTO<br></div><div>URNA N.º 199 - ASTHER GOMES DE OLIVEIRA / DENILSON RAMOS DO CARMO<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 404:<br></div><div>URNA N.º 200 - DENILSON ROBERTO LIMA SANTOS / FERNANDO ASSUNCAO SANTANA<br></div><div>URNA N.º 201 - FERNANDO BARP BERWANGER CHAGAS / ISAIAS MENDES DE SOUSA<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 405:<br></div><div>URNA N.º 202 - ISAIAS VICENTINI JUNIOR / KARINA CAVALCANTE RODRIGUES<br></div><div>URNA N.º 203 - KARINA CRISTIANE NASCENTE / MACIEL SILVA DE SOUZA<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 406:<br></div><div>URNA N.º 204 - MACIO MIGUEL DE OLIVEIRA / MAURICIO DA SILVA PEREIRA<br></div><div>URNA N.º 205 - MAURICIO DE ANDRADE / RAUL PASCHOIM DOS SANTOS<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 407:<br></div><div>URNA N.º 206 - RAUL SODRE DE SOUZA / TATIANE GUIMARAES NOVAES<br></div><div>URNA N.º 207 - TATIANE JOSE ALEXANDRE / ZUMARIA MARINHO TEIXEIRA<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.32137526429648</longitude>
+			<latitude>-16.73082480503615</latitude>
+			<altitude>806.2967176801742</altitude>
+			<heading>-7.092785423418342</heading>
+			<tilt>0.2187015183499753</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>477.9769833537285</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_01FBBCF597434F92D22B</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.32222509755398,-16.73054811297787,802.2596982964864 -49.32208172627824,-16.73145424431721,800.9526556886898 -49.32145123049896,-16.73137334152622,805.0412049559133 -49.32138278528258,-16.73135972642929,805.3281569152917 -49.32136096035863,-16.73130450462436,805.6151088746701 -49.32148832539247,-16.73025438826708,806.9040211505418 -49.32149802692585,-16.73021663348678,806.7687019656147 -49.32152759886659,-16.73018193457926,806.6333827806878 -49.32156064901269,-16.73017339688754,806.4980635957606 -49.32158995640754,-16.73018821877001,806.3627444108336 -49.32222509755398,-16.73054811297787,802.2596982964864 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="071F1DD9D82B52A9213B">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.3213029354627</longitude>
+			<latitude>-16.72892242765797</latitude>
+			<altitude>813.5119944640709</altitude>
+			<heading>352.4403417781021</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>970.3023840775131</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.32079403240292,-16.72678819648916,812.0983006307765 -49.32156399444089,-16.73066776011895,806.1516825620212 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0DACBEA3E02B529A9CB1">
+		<name>COLÉGIO META JUNIOR</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.32064713254665</longitude>
+			<latitude>-16.72703660852368</latitude>
+			<altitude>816.2611532978975</altitude>
+			<heading>352.4400961191835</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>253.849365768765</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.32070484830197,-16.72647482933547,811.214350866515 -49.32085623949139,-16.72670110712607,811.561774430343 -49.32085858800006,-16.72675439715312,811.5973391409376 -49.32063246362018,-16.72739851770345,813.6703016295937 -49.32056902930824,-16.72740250377811,813.8819523470218 -49.32026666925015,-16.72694426053934,813.8847354583777 -49.3205304192261,-16.7267806819202,812.7207991310091 -49.32042755117931,-16.72664474191519,812.4410838055128 -49.32070484830197,-16.72647482933547,811.214350866515 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0ECC0DCE4D2B52A76CC2">
+		<name>COLÉGIO MASTER</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.31984981024451</longitude>
+			<latitude>-16.72795952060668</latitude>
+			<altitude>822.6629208318301</altitude>
+			<heading>352.4394996709692</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>161.2102278589191</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.31946427834327,-16.7282453911099,817.982076380613 -49.31939031095699,-16.72814062264694,818.181356286385 -49.3194082767064,-16.72813095081197,818.1490219579453 -49.31964496269522,-16.72798106107057,817.9308950820039 -49.31946548325936,-16.72767466121767,817.8451201652666 -49.31974179046998,-16.72751414047318,816.5689304378141 -49.32000325459432,-16.72791886413767,816.3356179281024 -49.31946427834327,-16.7282453911099,817.982076380613 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="08BE8C390D2B52A89E51">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.32082692503413</longitude>
+			<latitude>-16.73027888260996</latitude>
+			<altitude>813.4012438690295</altitude>
+			<heading>352.4402406261121</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>508.180686538617</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.31992636553447,-16.7278896222154,816.6359768626002 -49.3215573965396,-16.7306830341647,805.4914021713445 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="09F42C13692B52AB73A1">
+		<name>CMEI MATEUS BARCELOS BARRETOS</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.31820360169903</longitude>
+			<latitude>-16.72987093075853</latitude>
+			<altitude>820.657238763537</altitude>
+			<heading>352.4400948097733</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>108.2404435908938</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.31824340066805,-16.72964997513524,820.4861486370353 -49.31828089866474,-16.72984235672432,820.5801585729325 -49.31814793091345,-16.72998658639398,820.7966081172436 -49.31782991989645,-16.7299472981898,820.9258863694324 -49.31785599094049,-16.72978203051952,821.0584168912159 -49.31788353380077,-16.72973171285949,821.0124157209899 -49.31791045342191,-16.72972161637053,820.9664145507638 -49.31824340066805,-16.72964997513524,820.4861486370353 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="070E8A52202B52AD4FF3">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.32156622436703</longitude>
+			<latitude>-16.73075071768529</latitude>
+			<altitude>809.5450581243473</altitude>
+			<heading>352.4414278801665</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>74.36185090591607</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.31805649344662,-16.72975174095784,820.8067545640508 -49.32155178336358,-16.73069338306377,805.494680215833 -49.32155586100588,-16.73069629552678,805.5147049501118 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="09025F6A942B52B0037B">
+		<name>EM DEPUTADO JAMEL CECILIO</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.3223838566022</longitude>
+			<latitude>-16.73106843612211</latitude>
+			<altitude>804.1263143017868</altitude>
+			<heading>20.72925550012926</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>211.1765545027083</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0A8864CA80434F92D22C</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.32222762096323,-16.73054718713917,802.2260357405187 -49.32275513113138,-16.7308694527194,798.4322323220237 -49.32277127055112,-16.73090037679973,798.399957625965 -49.32276965993535,-16.73094593495407,798.3676829299064 -49.32247159050712,-16.73141459746885,798.9795413827979 -49.32243865886521,-16.73145641791472,799.0794110130465 -49.32238868970867,-16.73147467066884,799.1792806432954 -49.32208760041347,-16.7314543282924,801.0701490355643 -49.32222762096323,-16.73054718713917,802.2260357405187 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0CD5E542602B52B0F0B2">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.32234915378952</longitude>
+			<latitude>-16.73104858520375</latitude>
+			<altitude>804.1310022626749</altitude>
+			<heading>20.72925549957816</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>471.6245132764016</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.32255118184548,-16.73102241428637,799.5215678309861 -49.32155531838263,-16.73068730896961,805.4846591620452 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0F94DF9BB32B52BE762D">
+		<name>1376 - CEPMG - MADRE GERMANA</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1376 | COLÉGIO ESTADUAL MADRE GERMANA<br></div><div>(RUA SÃO MATEUS, ESQUINA COM A RUA SÃO VICENTE, CONJUNTO HABITACIONAL MADRE GERMANA II)<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 408:<br></div><div>URNA N.º 212 - ABADIA XAVIER DA SILVA / JURACY MOREIRA DA COSTA<br></div><div>URNA N.º 213 - JURAIR GONCALVES DOS SANTOS / ZULMIRA ROGADO DA SILVA<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.37272289742047</longitude>
+			<latitude>-16.82195487838744</latitude>
+			<altitude>824.708835224718</altitude>
+			<heading>22.7723032503805</heading>
+			<tilt>0.1328656902027693</tilt>
+			<gx:fovy>34.99997863788672</gx:fovy>
+			<range>291.6333723570643</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_01FBBCF597434F92D22B</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.37300927864922,-16.82136172663331,819.33473525827 -49.37338864439054,-16.8218253207956,817.8372519135089 -49.37338311826913,-16.82185229711296,817.8707884815975 -49.37337506907286,-16.82186474199944,817.8875567656418 -49.37336414142661,-16.82187569427566,817.9043250496861 -49.37319704243512,-16.8220522163052,819.900694473426 -49.37303064156062,-16.82223098427091,821.8970638971658 -49.37270186196606,-16.82259401375208,825.8898027446453 -49.37228521000929,-16.82224714710165,826.9951493516943 -49.37292551280998,-16.82134594066097,819.6585361007903 -49.37293917373172,-16.821331945975,819.5775858901601 -49.3729582711069,-16.82132840094843,819.49663567953 -49.37298588157844,-16.82134033584567,819.4156854688999 -49.37300927864922,-16.82136172663331,819.33473525827 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0A1E4EBF502B52C260F1">
+		<name>1457 - COLÉGIO ESTADUAL MARIA DE FÁTIMA SANTANA</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1457 | COLEGIO ESTADUAL MARIA DE FATIMA SANTANA<br></div><div>(RUA 34, QD.48, S/N, CONDOMÍNIO DAS ESMERALDAS)<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 409:<br></div><div>URNA N.º 214 - ABADIA AMELIA DOS SANTOS / ELIDIO PEREIRA DE SOUSA<br></div><div>URNA N.º 215 - ELIELMA SANTOS / JULIO CAMARA ROTONDANO NETO<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 410:<br></div><div>URNA N.º 216 - JULIO CARLOS BAPTISTA DOS SANTOS / ODELCY CARDOSO CESAR<br></div><div>URNA N.º 217 - ODERLANIA CRISTINA NASCIMENTO DE SOUSA / ZULMIRA MARIA PEREIRA DE SOUSA VICENTE<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.35946066619897</longitude>
+			<latitude>-16.78493980459713</latitude>
+			<altitude>899.5400915014343</altitude>
+			<heading>-32.95114725750386</heading>
+			<tilt>0.1595505937853375</tilt>
+			<gx:fovy>34.99999614350128</gx:fovy>
+			<range>209.8307240182839</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_01FBBCF597434F92D22B</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.36005396278447,-16.78492441756554,894.2030543285273 -49.35937887065288,-16.7853833338204,893.322998904573 -49.35936672912071,-16.78539038275337,893.3419908217392 -49.35935351265416,-16.7853908367366,893.3609827389052 -49.35933699330222,-16.7853827096617,893.3799746560715 -49.35932116250706,-16.78537180130023,893.3989665732374 -49.35929972252408,-16.78535580298486,893.4884291099218 -49.35927942274144,-16.78533154627977,893.5778916466064 -49.35924259188911,-16.78528081835685,893.7568167199754 -49.35917121053159,-16.78518196555974,894.1146668667134 -49.35903273958195,-16.7849849743126,894.8303671601893 -49.35901753675721,-16.78495064334911,894.9321027427978 -49.35901502079009,-16.78491322898608,895.0338383254064 -49.3590187581301,-16.78489556766004,895.0847061167107 -49.35902422887774,-16.78487534705538,895.1355739080149 -49.35903444259241,-16.78485748622728,895.1864416993192 -49.3590475123517,-16.78484415648143,895.2373094906235 -49.35998246346835,-16.78482144150451,894.423407115528 -49.36001086210824,-16.78484131930931,894.3683189187776 -49.36003701554657,-16.78486302163653,894.3132307220276 -49.36004788891912,-16.78487697767699,894.2856866236524 -49.36005764728723,-16.78489271898987,894.2581425252772 -49.3600610463829,-16.78491006726534,894.2305984269021 -49.36006030774606,-16.78491810430723,894.2168263777146 -49.36005396278447,-16.78492441756554,894.2030543285273 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="058833F22B2B52D04C90">
+		<name>1864 - COLÉGIO ESTADUAL POLIVALENTE PROFESSOR GOIANY  PRATES</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1864 | COLÉGIO ESTADUAL POLIVALENTE PROFESSOR GOIANY<br></div><div>PRATES<br></div><div>(RUA C-68, QD. 115, N.º 336, SETOR SUDOESTE)<br></div><div>- Colégio Princípios<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 411:<br></div><div>URNA N.º 234&nbsp; - ABADIO JOSE DE LIMA / ELISETE BATISTA<br></div><div>URNA N.º 235 - ELISEU DE OLIVEIRA LOPES / KAROLYNA CECILIA GUIMARAES SANTOS<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 412:<br></div><div>URNA N.º 236 - KAROLYNE RAFAELLY DE SOUSA CARVALHO / OSMIRO JOSE DE OLIVEIRA<br></div><div>URNA N.º 237 - OSNEIDE DE LIMA MACHADO / ZULMIRA BATISTA DA COSTA<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.29950123426483</longitude>
+			<latitude>-16.70166141267038</latitude>
+			<altitude>775.5346549693769</altitude>
+			<heading>275.7041142249022</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99995361132338</gx:fovy>
+			<range>401.7733476922878</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_01FBBCF597434F92D22B</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.30022237976739,-16.70235572296179,777.8953098783347 -49.29884133337262,-16.70251874628145,772.0065117560461 -49.29881361112437,-16.70251498158223,771.9641760989683 -49.298785250775,-16.70250295402995,771.9218404418906 -49.29875801432033,-16.70248153850983,771.8795047848129 -49.29874361228737,-16.70246039194044,771.8371691277351 -49.29859155539997,-16.70135893498481,771.0566958406941 -49.29936632324261,-16.70128345019648,774.1568721313853 -49.30013270362323,-16.70119146920936,777.2570484220764 -49.30019052815824,-16.70177614500924,777.5761791502056 -49.30023139875455,-16.70206761266763,777.7357445142702 -49.30025410473866,-16.70223380716608,777.8155271963025 -49.30025908814973,-16.70228159697102,777.8354728668105 -49.30025845475159,-16.70231676813792,777.8554185373184 -49.30024431806536,-16.70234607561336,777.8753642078265 -49.30022237976739,-16.70235572296179,777.8953098783347 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="02308DFBA72B52E649C7">
+		<name>COLÉGIO PRINCÍPIOS</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.29898642465658</longitude>
+			<latitude>-16.69670544210375</latitude>
+			<altitude>769.7561214764531</altitude>
+			<heading>1.407021245566219</heading>
+			<tilt>0.1020431912968045</tilt>
+			<gx:fovy>34.99995361132338</gx:fovy>
+			<range>182.904866467652</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.29870191846268,-16.69665881334856,767.2074240203013 -49.29869447235442,-16.69640838495918,767.9122654040606 -49.29830107152123,-16.6964274144564,767.2109271891068 -49.29828689717793,-16.69618014280837,767.0905176110473 -49.29906012142528,-16.69614306395102,769.0856145146986 -49.29909104470423,-16.69663758290793,769.8321931995805 -49.29870191846268,-16.69665881334856,767.2074240203013 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0E09EBF4792B52E76EA2">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.30016319925608</longitude>
+			<latitude>-16.70203343190315</latitude>
+			<altitude>777.7936925391126</altitude>
+			<heading>1.407021228360521</heading>
+			<tilt>0.1020435930806538</tilt>
+			<gx:fovy>34.99995361132338</gx:fovy>
+			<range>209.6993070299141</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.29897966930378,-16.69649828491974,769.1018808959913 -49.29946145252823,-16.70188427758247,776.698069993152 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="03B3FFF4692B52EB277B">
+		<name>1465 - COLÉGIO ESTADUAL VILLA LOBOS</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1465 | COLÉGIO ESTADUAL VILLA LOBOS<br></div><div>(RUA 3-B, QD. 51, S/N, GARAVELO - B)<br></div><div>- Escola/Colégio Estadual Governador Joaquim Sobrosa – LIONS<br></div><div>- Colégio Executivo<br></div><div>- Escola Municipal Monteiro Lobato<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 413:<br></div><div>URNA N.º 289 - AAROM GOMES LOBO FREITAS / CARLA CAROLINE NOGUEIRA DE HOLANDA<br></div><div>URNA N.º 290 - CARLA CIBELE TEIXEIRA DIAS CASTRO / ELINE AMORIM RIBEIRO<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 414:<br></div><div>URNA N.º 291 - ELINE ARAUJO DE SOUSA / IARA FERNANDES RAMOS<br></div><div>URNA N.º 292 - IARA IANAEL SIQUEIRA DA SILVA / KAMILA DE OLIVEIRA BARBOSA MARTINS<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 415:<br></div><div>URNA N.º 293 - KAMILA DE OLIVEIRA MESSIAS / MARCOS FILIPE RAMOS E SILVA<br></div><div>URNA N.º 294 - MARCOS FILIPI MOTTA PAMPLONA / ODAIR JOSE DOS SANTOS<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 416:<br></div><div>URNA N.º 295 - ODAIR LAGARES DA SILVA / SILVIO JOSE DA COSTA<br></div><div>URNA N.º 296 - SILVIO JOSE PEREIRA / ZUMIRA MARIA DOS SANTOS<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.3492321782058</longitude>
+			<latitude>-16.76119591233822</latitude>
+			<altitude>907.7873051640712</altitude>
+			<heading>23.37793913126779</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>191.3741814609057</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_01FBBCF597434F92D22B</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.34952325475798,-16.76114696370382,904.1355955890238 -49.3496726692953,-16.76161372124549,904.690995855802 -49.34976993848284,-16.7621544240262,905.1237268035595 -49.34988353451285,-16.76270707828206,904.6137535846866 -49.34988785399904,-16.7627243025385,904.5983450242559 -49.34988718131301,-16.76274286092989,904.5829364638248 -49.34988484081951,-16.76275608654579,904.5752321836093 -49.3498785795294,-16.76276785273013,904.5675279033939 -49.34986702847667,-16.76277344356368,904.5598236231784 -49.34985432972172,-16.76277467462971,904.552119342963 -49.34980347819684,-16.76278379983789,904.6186452188705 -49.34977605934571,-16.7627887462494,904.6519081568243 -49.34976291963905,-16.76279059650618,904.6685396258013 -49.34974994939157,-16.76279124140936,904.6851710947781 -49.34972759373166,-16.76278815051841,904.7252575015733 -49.34970724839174,-16.76278238188514,904.7653439083689 -49.34967322007154,-16.76275979025707,904.8455167219597 -49.34945505025293,-16.76227531316134,905.0996730105919 -49.34933845844826,-16.76206813641254,904.7906228328256 -49.34911096308,-16.76169529110597,904.0953687971189 -49.34900568641905,-16.7614749202599,903.7575529749148 -49.34897011627699,-16.76140336463703,903.5898477370512 -49.34952325475798,-16.76114696370382,904.1355955890238 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="007D7155122B530C5E31">
+		<name>Colégio Estadual Governador Joaquim Sobrosa – LIONS</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.35299225566135</longitude>
+			<latitude>-16.76612258656446</latitude>
+			<altitude>903.5499377047279</altitude>
+			<heading>359.4989671428135</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999999984487</gx:fovy>
+			<range>206.2565295986132</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0A8864CA80434F92D22C</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.35270776205108,-16.76603309274102,903.9582884322291 -49.35335267929304,-16.76592073542773,902.4405599424809 -49.35339472973986,-16.76615064474884,902.5527279473145 -49.35275176009865,-16.7662570598226,904.1770177008248 -49.35270776205108,-16.76603309274102,903.9582884322291 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0579A6C1F62B530F304E">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.34934403965776</longitude>
+			<latitude>-16.76179483298286</latitude>
+			<altitude>908.8277859080099</altitude>
+			<heading>359.4989646640522</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999999984487</gx:fovy>
+			<range>91.56892964260805</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.35278345577222,-16.76618451192692,904.078099731432 -49.34932943844122,-16.76181285366636,904.6634805469365 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0146F7A26B2B53130CFE">
+		<name>COLÉGIO EXECUTIVO</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.33971198601667</longitude>
+			<latitude>-16.75461454011799</latitude>
+			<altitude>882.998618429557</altitude>
+			<heading>320.1829145991033</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>172.4286610898344</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.34016535247051,-16.754720246106,883.266792791709 -49.33991722869659,-16.75497485021849,882.1068297094915 -49.33990171588285,-16.75498695986423,882.0389183308328 -49.33988239700207,-16.75499753717105,881.9710069521739 -49.33986092603257,-16.75500454084332,881.9030955735153 -49.33985060903642,-16.75500604612492,881.869139884186 -49.33984170408384,-16.75500412465673,881.8351841948567 -49.33940925029978,-16.75460863792311,882.566873303585 -49.33951280298784,-16.75449911503377,883.3651561057578 -49.33942936730492,-16.75443114706951,883.4561582360354 -49.33946725986954,-16.75439440208385,883.5458533797311 -49.33956957420503,-16.75447607694581,883.5375583045026 -49.33971019206815,-16.75433449749992,883.9207482087613 -49.34015956393142,-16.75466585346666,883.5568387766978 -49.34017298943723,-16.75467869932762,883.4843272804505 -49.34017863344236,-16.75469500282833,883.4118157842033 -49.34017489263992,-16.75470923870736,883.3393042879562 -49.34016535247051,-16.754720246106,883.266792791709 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="046C0E73E52B53147608">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.34994461207469</longitude>
+			<latitude>-16.7614730080857</latitude>
+			<altitude>907.3646851893977</altitude>
+			<heading>320.1855277984154</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>1087.282045806205</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.33952514321182,-16.75464091464154,882.7634569107294 -49.34932986359031,-16.76178721788173,904.6100873734093 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0A3DA68D162B5316E370">
+		<name>EM MONTEIRO LOBATO</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.35694937588364</longitude>
+			<latitude>-16.75264816516486</latitude>
+			<altitude>867.0438457331612</altitude>
+			<heading>349.0746805102</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>76.00635952449011</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.35683461379216,-16.75270689140338,867.707875359415 -49.35633694717168,-16.75263701648427,869.6999555097956 -49.35632251019357,-16.75263568056657,869.7389062403932 -49.35630877408867,-16.75262903843473,869.777856970991 -49.35629226959672,-16.75260121170991,869.8557584321866 -49.35619098331203,-16.75240058128324,869.5865050851642 -49.35619298282202,-16.75239260344862,869.5207335459356 -49.35619648259549,-16.75238433258822,869.4549620067069 -49.35619822250958,-16.75238065339228,869.4220762370927 -49.35620026311495,-16.75237716132278,869.3891904674783 -49.35620558208707,-16.75236964424304,869.3234189282498 -49.35623170574193,-16.75234629366101,869.060332771335 -49.35738166171472,-16.75184209270283,863.4874629873759 -49.35742276122839,-16.75184913437114,863.4448614191924 -49.35746114357104,-16.75186952932842,863.402259851009 -49.35748378566542,-16.75190249052454,863.3596582828253 -49.35749134141506,-16.75194279992434,863.3170567146418 -49.35748759430781,-16.7519717652081,863.4437450667382 -49.3568992640297,-16.7526850978531,867.4179778658247 -49.35688752557909,-16.75269476402609,867.4904522392222 -49.35687198597832,-16.752703061992,867.5629266126199 -49.35685371815006,-16.75270606224946,867.6354009860174 -49.35683461379216,-16.75270689140338,867.707875359415 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0FC96FAB712B53192616">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.3493157983824</longitude>
+			<latitude>-16.76150232244858</latitude>
+			<altitude>910.9193757497446</altitude>
+			<heading>346.5122920453746</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>320.5080256394649</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.35671250481055,-16.75227925683186,866.7065893690325 -49.3493189309109,-16.76179091003516,904.6016744381642 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="032FC41C8C2B531C49D6">
+		<name>1180 - EM. PROFº PERCIVAL XAVIER RABELO</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>| 1180 | ESCOLA MUNICIPAL PROFESSOR PERCIVAL XAVIER RABELO,<br></div><div>(RUA B-16, N.º 101, SETOR NOVO HORIZONTE)<br></div><div>- CEPI – Centro de Ensino em Período Integral Novo Horizonte (Antigo Colégio Estadual Novo Horizonte)<br></div><div>- Centro Educacional Novo Horizonte<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 417:<br></div><div>URNA N.º 319 - ABADIA ALVES DE SOUSA / ELIZABETH CARRIJO GUIMARAES<br></div><div>URNA N.º 320 - ELIZABETH CONCEICAO CARVALHO DE OLIVEIRA / KAROLINA ALVES DE OLIVEIRA<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 418:<br></div><div>URNA N.º 321 - KAROLINA MARTINS FERREIRA MENEZES / ODIBERTO DE OLIVEIRA<br></div><div>URNA N.º 322 - ODILON DIOGO DE OLIVEIRA / ZULMIRA FELIZARDA RAMOS<br></div><div><br></div>]]></description>
+		<LookAt>
+			<longitude>-49.31810583759793</longitude>
+			<latitude>-16.72121001964155</latitude>
+			<altitude>794.5526684374247</altitude>
+			<heading>291.9187234446902</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99998709948716</gx:fovy>
+			<range>169.1116221350603</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_01FBBCF597434F92D22B</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.317768665448,-16.72145695170991,796.0357631358594 -49.31743478375675,-16.72056509885983,792.3855232758139 -49.31793729468201,-16.72039660582498,791.7745148229004 -49.31827102728666,-16.72128479368083,794.7800175703745 -49.317768665448,-16.72145695170991,796.0357631358594 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="078ACEF04F2B53229EA7">
+		<name>CEPI NOVO HORIZONTE</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.31796851484017</longitude>
+			<latitude>-16.71442978373278</latitude>
+			<altitude>771.5907806593121</altitude>
+			<heading>325.1028736956385</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99998796731749</gx:fovy>
+			<range>104.5209256232374</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.31789064060708,-16.71444528450299,767.0341688154507 -49.31756234946837,-16.71409957853974,765.6529331559902 -49.31827611225962,-16.71328883229738,763.65783095731 -49.31846206681136,-16.71379650327604,765.5020819075831 -49.31846617930107,-16.7138155584766,765.5896195706526 -49.31846410018628,-16.71383553883347,765.6771572337223 -49.31845788800586,-16.71385531553599,765.7646948967918 -49.3184456168221,-16.71387045745691,765.8522325598612 -49.31789064060708,-16.71444528450299,767.0341688154507 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="00F81EE2D42B53242C5A">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.31804632433256</longitude>
+			<latitude>-16.72156287468176</latitude>
+			<altitude>801.6413081969127</altitude>
+			<heading>104.4436096441118</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99998796731749</gx:fovy>
+			<range>552.2450576926349</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.31823086680025,-16.71396565038201,765.263339640632 -49.31777234025963,-16.72060067503437,792.3119224652874 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0350EEB4552B5327DD08">
+		<name>CENTRO EDUCACIONAL NOVO HORIZONTE</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.31999053772103</longitude>
+			<latitude>-16.72102480078737</latitude>
+			<altitude>795.3125625965528</altitude>
+			<heading>300.8045304417721</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999956806447</gx:fovy>
+			<range>78.63850041818296</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.32012884335434,-16.72086259715178,791.4120717559514 -49.32021471536004,-16.72108215624377,792.315408315967 -49.31993651779047,-16.72117908311489,792.4178707930207 -49.31985273205069,-16.72095031620539,791.535529782479 -49.32012884335434,-16.72086259715178,791.4120717559514 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="01BB87C6672B532886F2">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.31771877034875</longitude>
+			<latitude>-16.72061061497525</latitude>
+			<altitude>794.1332893048161</altitude>
+			<heading>300.8039028573234</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999956806447</gx:fovy>
+			<range>121.815447647914</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.31997193224773,-16.7209596432392,792.4376201348664 -49.31777846314031,-16.72060157858007,792.3119043224217 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="04F9B41DF82B576BDC48">
+		<name> 1791 - ESCOLA MUICNIPAL ENGENHEIRO ANTONIO FELIX DA SILVA</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1791 | ESCOLA MUNICIPAL ENGENHEIRO ANTONIO FELIX DA SILVA,<br></div><div>(RUA DINAMARCA, QD. 99, LT. 01, JARDIM EUROPA)<br></div><div>- Colégio Estadual Jardim Europa<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 424:<br></div><div>URNA N.º 497 - ABADIA CESAR DO CARMO / CLEUSA APARECIDA DE ARAUJO CUNHA<br></div><div>URNA N.º 498 - CLEUSA GONCALVES LOURENCO / GENAIR GONCALVES RODRIGUES DE FREITAS<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 425:<br></div><div>URNA N.º 499 - GENANCI DA SILVA SOUZA / KAIO HENRIQUE RAZOTTO<br></div><div>URNA N.º 500 - KAIO MINAS SOUSA / MARIA MARIA DE SOUZA CHAVES<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 426:<br></div><div>URNA N.º 501 - MARIA MARLENE RODRIGUES / RODOLFO AMBROZINI JUNIOR<br></div><div>URNA N.º 502 - RODOLFO CARLOS ALVES FERREIRA / ZULMIRA ROSA FERREIRA<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.31278962931097</longitude>
+			<latitude>-16.71350701614372</latitude>
+			<altitude>787.2748504623257</altitude>
+			<heading>61.07420546976867</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999962213181</gx:fovy>
+			<range>323.7299205488671</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_1EE03374BE434F92D228</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.31220131165286,-16.71344626136053,788.8318333896459 -49.31221796156713,-16.71294939898139,788.6773172597311 -49.31226561272744,-16.71290489853107,788.2991828787951 -49.31333487630398,-16.71292983820687,785.2639525500214 -49.31337715393148,-16.71296137258793,785.0620295081085 -49.31330322474417,-16.71353254335189,785.7098119328725 -49.31220131165286,-16.71344626136053,788.8318333896459 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="01983FA44E2B576F3472">
+		<name>Colégio Estadual Jardim Europa</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.31366142723348</longitude>
+			<latitude>-16.70350737083506</latitude>
+			<altitude>783.5546934866705</altitude>
+			<heading>-1.483159168140547</heading>
+			<tilt>20.81831012099898</tilt>
+			<gx:fovy>34.99999949728311</gx:fovy>
+			<range>192.4379521499213</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.31420310186474,-16.70379755563926,778.1956908134445 -49.31308603196151,-16.70377134438024,782.0146743043027 -49.31302996588129,-16.70371099856156,782.3295251813383 -49.31303006317189,-16.70334452432813,782.1897434533795 -49.3130803632716,-16.7033105195164,781.9593384238377 -49.3142255605956,-16.70331347152637,777.7052136153285 -49.31426551553928,-16.70335486259155,777.731137074108 -49.31420310186474,-16.70379755563926,778.1956908134445 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="00A64EFC6B2B57700B12">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.31281757440195</longitude>
+			<latitude>-16.71335733163518</latitude>
+			<altitude>797.5307178588528</altitude>
+			<heading>-1.483160651228403</heading>
+			<tilt>20.56773136156146</tilt>
+			<gx:fovy>34.99999949728311</gx:fovy>
+			<range>134.1533936943051</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_2E12D7A9EC434F92D22C</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.31354906530374,-16.70359018154812,780.6443992783887 -49.31286879091268,-16.71301593874517,786.4418227821593 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="04FD6B020D2B577494CA">
+		<name> 1333 - ESCOLA MUNICIPAL ENGENHEIRO ROBINHO MARTINS DE  AZEVEDO</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1333 | ESCOLA MUNICIPAL ENGENHEIRO ROBINHO MARTINS DE<br></div><div>(RUA BL-01, QD. B-01, CONJUNTO BALIZA)<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 427:<br></div><div>URNA N.º 503 - ABGAIL VAZ DOS SANTOS / EDUARDA NASCIMENTO DA SILVA NEVES<br></div><div>URNA N.º 504 - EDUARDO CAVALCANTE FERNANDES / JOSINEIDE BISPO GOMES MONTEIRO DE CASTRO<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 428:<br></div><div>URNA N.º 505 - JOSIVALDO DE ASSIS / MURILO SOARES DE MOURA<br></div><div>URNA N.º 506 - MURILO SUZARTE SILVA /&nbsp; ZULMIRA ROSA DA SILVA PENA<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.35857969882312</longitude>
+			<latitude>-16.77367899323785</latitude>
+			<altitude>895.8199046116241</altitude>
+			<heading>-20.43974488842739</heading>
+			<tilt>31.78966656423647</tilt>
+			<gx:fovy>34.99999999977428</gx:fovy>
+			<range>184.0158267489642</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_1EE03374BE434F92D228</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.35900302400011,-16.77378155170695,891.4043061437883 -49.35851676575922,-16.77408157021194,892.6579362681072 -49.35781566805635,-16.77373279149989,893.7173965630629 -49.35780769891534,-16.77370938454117,893.6141841098071 -49.35780558965645,-16.77368299130522,893.5109716565514 -49.35782909479111,-16.77363691553004,893.3045467500399 -49.35858122976294,-16.77320044474457,891.457579210837 -49.35864575972892,-16.77321501147337,891.3118852187778 -49.35900302400011,-16.77378155170695,891.4043061437883 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="063CF554762B5776BC2D">
+		<name>1759 - ESCOLA MUNICIPAL EVA VIEIRA DE ALMEIDA</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1759 | ESCOLA MUNICIPAL EVA VIEIRA DE ALMEIDA<br></div><div>(RUA ROVIGO, QD. 20, N.º 280, VILA ALVORADA)<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 429:<br></div><div>URNA N.º 513 - ABNER ALESSANDRO DOS SANTOS DE SOUZA / KENIA DE PAULA MARQUES LIMA VERDE<br></div><div>URNA N.º 514 - KENIA ELIANA ROSA DA SILVA / ZULMIRAN CARDOSO FERNANDES<br></div><div><br></div>]]></description>
+		<LookAt>
+			<longitude>-49.30844749115796</longitude>
+			<latitude>-16.70522394951424</latitude>
+			<altitude>799.3654530861364</altitude>
+			<heading>-9.289633807969777</heading>
+			<tilt>6.841878795465454</tilt>
+			<gx:fovy>34.99999996434597</gx:fovy>
+			<range>161.5765266392009</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_1EE03374BE434F92D228</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.30885922368967,-16.70546508147199,794.2436119856927 -49.30882656400421,-16.70549026821369,794.0655857334095 -49.30825996787564,-16.70545912935863,795.2002376676018 -49.30821343966112,-16.70543259744812,795.2500630384528 -49.30824459331297,-16.70498850768226,795.5237242756881 -49.30828068462316,-16.7049517253213,795.5141404897201 -49.308838772605,-16.70498117222872,794.562643424602 -49.30886677677002,-16.70501447249813,794.3783063126416 -49.30885922368967,-16.70546508147199,794.2436119856927 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="036B4098DC2B577AB6E1">
+		<name>1821 - ESCOLA MUNICIPAL FREI NAZARENO CONFALONI</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1821 | ESCOLA MUNICIPAL FREI NAZARENO CONFALONI<br></div><div>(RUA U-64, ESQUINA COM A RUA U-60, N.º 141, SETOR UNIÃO)<br></div><div>- Escola Educandário Rainha da Paz<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 430:<br></div><div>URNA N.º 519 - ABADIA AMANCIO DE SOUSA / CRISALVA SA VIANA<br></div><div>URNA N.º 520 - CRISLEY FERNANDO DO NASCIMENTO / GESSIONE PEREIRA DA CUNHA<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 431:<br></div><div>URNA N.º 521 - GESUI HELRIGHEL MENDES / KENIA CRISTINA CARDOSO<br></div><div>URNA N.º 522 - KENIA CRISTINA DE SOUSA / MARIA LUZIA BEZERRA DOS SANTOS<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 432:<br></div><div>URNA N.º 523 - MARIA LUZIA DA SILVA / ROGERIA ALVES DOS SANTOS GODINHO<br></div><div>URNA N.º 524 - ROGERILDO GENTIL DE MELO / ZULMIRON NUNES CARVALHO DE OLIVEIRA<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.30379666945468</longitude>
+			<latitude>-16.70905135260582</latitude>
+			<altitude>786.9225280248506</altitude>
+			<heading>-128.0881700694608</heading>
+			<tilt>15.15768921011981</tilt>
+			<gx:fovy>34.99999956191278</gx:fovy>
+			<range>238.1220898351967</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_1EE03374BE434F92D228</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.30413578165822,-16.70945159064804,787.6532080776082 -49.30349616372312,-16.70928472316663,785.7070880726501 -49.30380108014643,-16.70832508928497,788.3176015089905 -49.30427619368446,-16.70844825107534,789.5031007645248 -49.30429987165251,-16.70849526711095,789.2982754497626 -49.30413578165822,-16.70945159064804,787.6532080776082 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="051203F9D72B577C4F30">
+		<name>1678 - ESCOLA MUNICIPAL GEORGETA RIVALINO DUARTE</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1678 | ESCOLA MUNICIPAL GEORGETA RIVALINO DUARTE<br></div><div>(AVENIDA GENERAL CUNHA MATOS, QD. 27, LTS. 2/7, VILA MAUÁ)<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 433:<br></div><div>URNA N.º 525 - ABADIA DE FRANCA SANTANA / JULIO CESAR PEREIRA E SILVA<br></div><div>URNA N.º 526 - JULIO KARLOS TOME / ZORA YONARA GUERRA DE ARAUJO PAIXAO<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.31600895290953</longitude>
+			<latitude>-16.69970452077444</latitude>
+			<altitude>772.6348639001789</altitude>
+			<heading>4.109501758896369</heading>
+			<tilt>17.96433303490002</tilt>
+			<gx:fovy>34.9999928556682</gx:fovy>
+			<range>225.2707367853873</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_1EE03374BE434F92D228</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.31582816385475,-16.69953084340438,768.4534725925803 -49.31641072797937,-16.69954281976008,765.6851246006979 -49.31643598602409,-16.69956751530222,765.5509277093946 -49.31641696369022,-16.70008630169723,766.1303954884006 -49.31579268659871,-16.70007272523398,769.0665939898053 -49.31582816385475,-16.69953084340438,768.4534725925803 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="05895D93872B577E0B0D">
+		<name>1724 - ESCOLA MUNICIPAL JAIME CÂMARA,</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1724 | ESCOLA MUNICIPAL JAIME CÂMARA<br></div><div>(RUA GRANADA, N.º 140, JARDIM EUROPA)<br></div><div>- Escola Municipal Francisco Matias<br></div><div>- Escola Municipal Vila Rosa<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 434:<br></div><div>URNA N.º 549 - ABADIA JUSTINO DA CUNHA - CLERISTON MAGALHAES BATISTA<br></div><div>URNA N.º 550 - CLESIA RODRIGUES SOBRINHO / GENI FERREIRA DE BRITO<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 435:<br></div><div>URNA N.º 551 - GENI GIMENEZ VENDITI DE FREITAS / JULIANE PUGAS<br></div><div>URNA N.º 552 - JULIANNA MACHADO RODOVALHO / MARIA ESPERANCA FERRO<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 436:<br></div><div>URNA N.º 553 - MARIA EUGENIA COSTA / ROBERTO EUSTAQUIO ALVES PACHECO<br></div><div>URNA N.º 554 - ROBERTO GALDINO BORGES / ZULMA DA COSTA BESSA<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.30805294961496</longitude>
+			<latitude>-16.72744110047636</latitude>
+			<altitude>818.87132724833</altitude>
+			<heading>-16.67640886811642</heading>
+			<tilt>29.62087394696571</tilt>
+			<gx:fovy>34.99999950783844</gx:fovy>
+			<range>294.5204900213139</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_1EE03374BE434F92D228</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.30913591252813,-16.7270129404488,810.5101655910244 -49.30841111471697,-16.72796170705218,814.5757380809602 -49.30834095985322,-16.7279891970056,814.8872785392786 -49.30747729664035,-16.72774858601843,817.4738118235884 -49.30748264265152,-16.72769150144406,817.4681185513039 -49.30752824835098,-16.72765457117681,817.1916527368379 -49.30815698799447,-16.72750462990687,814.9181674535466 -49.30869813689071,-16.72729217067878,812.6528216935751 -49.30913591252813,-16.7270129404488,810.5101655910244 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0B713DEF2D2B577F05FA">
+		<name>Escola Sonho Brilhante</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.36079101585408</longitude>
+			<latitude>-16.78609589053172</latitude>
+			<altitude>887.7892019937227</altitude>
+			<heading>0.3041925810220055</heading>
+			<tilt>0.1397410189504976</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>120.7021580178662</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0A8864CA80434F92D22C</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.36063960850485,-16.78626602456723,887.2478238506027 -49.36048371850288,-16.78616066239892,886.3854026965513 -49.36046644685653,-16.78614427311942,886.3454881320479 -49.36045692683058,-16.78612069069801,886.3055735675448 -49.36045972723144,-16.78609369395694,886.2656590030417 -49.36047585049332,-16.78607375375841,886.2257444385388 -49.36068953607239,-16.78592905867709,887.1290170394709 -49.36081656739577,-16.78602444666928,887.5378900240387 -49.36063960850485,-16.78626602456723,887.2478238506027 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0EA6F028EC2B577F4413">
+		<name>1279 - CEPI - PROFESSOR SEBASTIÃO FRANÇA</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1279 | ESCOLA/COLÉGIO ESTADUAL PROFESSOR SEBASTIÃO FRANÇA,<br></div><div>(RUA PRESIDENTE CLIVELAND VENCESLAU, QD. 38, LT. 08, JARDIM PRESIDENTE)<br></div><div>- Escola Municipal Olegário Moreira Borges<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 419:<br></div><div>URNA N.º 379 - ABEL MENDES DE OLIVEIRA / ELIZABETE VIEIRA DE ANDRADE<br></div><div>URNA N.º 380 - ELIZABETH ABADIA PACHECO BARBOSA / KACIANE DE SOUSA VERISSIMO<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 420:<br></div><div>URNA N.º 381 - KADISON ANDRE DOS SANTOS / NICACIO RAMOS DA CRUZ<br></div><div>URNA N.º 382 - NICILVIA SARDINHA SILVA / ZULEIKA TEIXEIRA SILVA<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.32821446113593</longitude>
+			<latitude>-16.74292893162497</latitude>
+			<altitude>840.4589061263765</altitude>
+			<heading>27.46657043817266</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>210.2879485208541</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_01FBBCF597434F92D22B</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.32833789872689,-16.74241297577721,838.8860172065163 -49.32841612319436,-16.74263692153359,839.5241321101518 -49.32845921234021,-16.74274825615583,839.8431895619693 -49.32847996331807,-16.74280419287771,840.0027182878783 -49.32849764537418,-16.74286175604632,840.1622470137872 -49.32850189675815,-16.74289612876125,840.2895049783052 -49.32850117762899,-16.74291397600188,840.3531339605643 -49.32849837436002,-16.74292858950441,840.4167629428232 -49.32848595281994,-16.74310547233262,840.9002189594227 -49.32774884230793,-16.742924104446,839.7783614618371 -49.32792458635691,-16.74263905482012,839.1133619285924 -49.32807470728068,-16.74251960346862,838.8815321458187 -49.32827282867569,-16.74239369403824,838.7606318913037 -49.32828930820992,-16.74238400284147,838.791978220107 -49.3283076065258,-16.74238430074375,838.8233245489099 -49.32832689702307,-16.74239241416869,838.8546708777129 -49.32833520127063,-16.74240175797301,838.8703440421145 -49.32833789872689,-16.74241297577721,838.8860172065163 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0A33609F422B577FD320">
+		<name>Deslocamento</name>
+		<LookAt>
+			<longitude>-49.36788896227884</longitude>
+			<latitude>-16.78581926141107</latitude>
+			<altitude>882.4378575295041</altitude>
+			<heading>0.304192586207123</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>28.74708667272444</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.36065209913664,-16.78609291070667,888.0010489879573 -49.36790712062422,-16.78585133278841,882.4560996738237 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="00E01004E22B5780CA23">
+		<name>Escola Municipal Luzia de Souza Fiuza</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.36359889555622</longitude>
+			<latitude>-16.7801498945796</latitude>
+			<altitude>885.7619879752345</altitude>
+			<heading>0.3041925856140418</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>102.0598470016193</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0A8864CA80434F92D22C</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.36301248785993,-16.78042024645925,887.1738873482551 -49.36266871833681,-16.77993727776635,886.0531593399024 -49.3631749061143,-16.77959567965957,884.2004370209174 -49.36351772291375,-16.78007973340601,885.446240936829 -49.36301248785993,-16.78042024645925,887.1738873482551 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="04EE3098BB2B578118A8">
+		<name>Centro de Ensino em Período Integral do Setor Sudoeste</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.30610318053477</longitude>
+			<latitude>-16.70448917539773</latitude>
+			<altitude>802.9145633268002</altitude>
+			<heading>-3.910144404690526</heading>
+			<tilt>13.57662271428565</tilt>
+			<gx:fovy>34.99999680976794</gx:fovy>
+			<range>280.6788276836597</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.30650769468893,-16.70422825388119,797.6651818159686 -49.30646401591767,-16.70508749094319,797.6209604304538 -49.30634655038408,-16.705106287875,797.4872585684792 -49.30551758425965,-16.70471652282849,797.3978859023739 -49.30549779563685,-16.70465173927135,797.2887754931252 -49.30582257185616,-16.70416926109379,797.3313393619899 -49.30589102935817,-16.70414460049162,797.4076189535529 -49.30645167178912,-16.70417437279792,797.5351098031488 -49.30650769468893,-16.70422825388119,797.6651818159686 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="01D912CD3C2B578148BD">
+		<name>Caminho sem título</name>
+		<LookAt>
+			<longitude>-49.36791317943385</longitude>
+			<latitude>-16.78583896288292</latitude>
+			<altitude>882.5271429669745</altitude>
+			<heading>0.3041925854271314</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>25.00039876421852</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.3631029553439,-16.78000291972181,886.0885663426643 -49.36790677219226,-16.78585131561327,882.4546400028254 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="05CA917F662B57816C6A">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.30610318057882</longitude>
+			<latitude>-16.70448917552451</latitude>
+			<altitude>802.9145821911367</altitude>
+			<heading>-3.910144404887949</heading>
+			<tilt>13.576622714162</tilt>
+			<gx:fovy>34.99999680976794</gx:fovy>
+			<range>280.6788045060603</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_1927FBAE58434F92D22C</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.30599659362073,-16.70452864077743,797.6781358574516 -49.30625313211527,-16.70394839842945,797.4858786482844 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0964D7D9DA2B5782FCCC">
+		<name>1627 - ESCOLA MUNICIPAL TARGINO DE AGUIAR</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1627 | ESCOLA MUNICIPAL TARGINO DE AGUIAR<br></div><div>(ALAMEDA CÂMARA FILHO, QD. 134, LT. 16, PARQUE OESTE INDUSTRIAL)<br></div><div>- Rede de Ensino Integração, antigo Centro Educacional Doce Mel<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 447:<br></div><div>URNA N.º 713 - ABADIA FRANCISCA DA SILVA / ELEONE MAGDA DE CARVALHO<br></div><div>URNA N.º 714 - ELETEIA CAETANO DE SOUZA / JULIO CESAR RODRIGUES RIBEIRO<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 448:<br></div><div>URNA N.º 715 - JULIO FERREIRA GOMES DA SILVEIRA / NILVA SIQUEIRA CAIXETA<br></div><div>URNA N.º 716 - NILZA DE BARROS SILVA / ZINARLEY APARECIDA ALVES SOUSA<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.3274744949806</longitude>
+			<latitude>-16.70143183754261</latitude>
+			<altitude>770.5244124311029</altitude>
+			<heading>0.3041925869152259</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>190.4706143386647</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_01FBBCF597434F92D22B</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.32764433927372,-16.70153436981688,766.7413261837502 -49.32692438799898,-16.70143071404913,765.9890343154076 -49.32690982423381,-16.70143079558404,766.0040075711969 -49.32689690065769,-16.70142348886473,766.0189808269862 -49.32688749577911,-16.70141358647758,766.0339540827754 -49.32688429558075,-16.70139897662634,766.0489273385647 -49.32694664131438,-16.70103302264058,765.0258912804238 -49.32771633484647,-16.70114445000345,764.9711487148143 -49.32764433927372,-16.70153436981688,766.7413261837502 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0A6942E7C02B57831EF9">
+		<name> 1554 - ESCOLA MUNICIPAL JOÃO ALVES DE QUEIROZ</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1554 | ESCOLA MUNICIPAL JOÃO ALVES DE QUEIROZ<br></div><div>(RUA EF-9, QD. APM-3, RESIDENCIAL ELI FORTE)<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 439:<br></div><div>URNA N.º 572 - ABADIA MOREIRA DOS SANTOS / JULIO SILVA RAMOS<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 440:<br></div><div>URNA N.º 573 - JULLYA SOUSA SILVA / ZEZITO DO NASCIMENTO<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.35300568113591</longitude>
+			<latitude>-16.73554825363193</latitude>
+			<altitude>819.6247778226389</altitude>
+			<heading>-4.594081157897902</heading>
+			<tilt>8.421807406972841</tilt>
+			<gx:fovy>34.99999978542681</gx:fovy>
+			<range>293.5164132394493</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_1EE03374BE434F92D228</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.35294714538824,-16.73603693941688,819.3843017838303 -49.352541547493,-16.73534546225467,822.4525596541255 -49.35314162383789,-16.73500154281966,818.8882696320917 -49.35319232142734,-16.73500275741882,818.6366196491487 -49.35377250799639,-16.73553194876752,815.0736572958566 -49.35375159146609,-16.73556439295291,815.3430725763551 -49.35371081021477,-16.73559010501589,815.6124878568532 -49.35358347863206,-16.73566218727932,816.15131841785 -49.35336138366907,-16.73579383276673,817.2289795398434 -49.35294714538824,-16.73603693941688,819.3843017838303 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0A2DF540992B5785BFA2">
+		<name>Rede de Ensino Integração</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.32446207539643</longitude>
+			<latitude>-16.69754860716723</latitude>
+			<altitude>770.7290421608212</altitude>
+			<heading>0.2973811661671965</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99994386456051</gx:fovy>
+			<range>45.50403035505042</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0A8864CA80434F92D22C</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.32452435080063,-16.69762997276852,759.3355320681661 -49.32437547354657,-16.69786684096074,759.8428451963371 -49.32426206127997,-16.69782363116143,759.7750453467899 -49.32421385875296,-16.69792116197398,760.0600189854568 -49.32390074542128,-16.69779121617623,759.4827181195989 -49.32407614812855,-16.697420712288,758.6512407794906 -49.32409285327878,-16.69740568196427,758.6935181962011 -49.32411703301343,-16.69739954265985,758.7357956129116 -49.32413904687313,-16.69740267438118,759.0260747616641 -49.32415991909878,-16.69741083572089,759.3163539104164 -49.32452435080063,-16.69762997276852,759.3355320681661 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0355A2F8E82B5785DD7E">
+		<name>1309 - ESCOLA MUNICIPAL PROFESSORA DEUSHAYDES RODRIGUES DE  OLIVEIRA</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>| 1309 | ESCOLA MUNICIPAL PROFESSORA DEUSHAYDES RODRIGUES DE<br></div><div>OLIVEIRA<br></div><div>(RUA CP-26, QD. 26, N.º 125, CELINA PARK)<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 441:<br></div><div>URNA N.º 669 - ABADIO WAILDO RIBEIRO DOS PASSOS / ELICIMONE MARTINS LOPES ARAUJO<br></div><div>URNA N.º 670 - ELIEL MARTINS ALVES / KAMYLA DE MESQUITA RIBEIRO<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 442:<br></div><div>URNA N.º 671 - KAMYLLA EVANGELISTA BORGES TELES / ODILIANA RIBEIRO DE SOUZA<br></div><div>URNA N.º 672 - ODILON ANTONIO MENDANHA FILHO / ZULEILA SPINDOLA DE OLIVEIRA<br></div><div><br></div>]]></description>
+		<LookAt>
+			<longitude>-49.32292814521904</longitude>
+			<latitude>-16.70536516329565</latitude>
+			<altitude>772.2039033396233</altitude>
+			<heading>1.946722989303906</heading>
+			<tilt>8.215885642237366</tilt>
+			<gx:fovy>34.99999786164508</gx:fovy>
+			<range>203.7022886163686</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_1EE03374BE434F92D228</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.32333422605461,-16.70575930314397,772.411359459036 -49.32286711389755,-16.7057746379411,772.1635573084195 -49.32283798519217,-16.70490047626887,770.3254397756457 -49.32332587251936,-16.70488101306913,770.7807593848296 -49.32333422605461,-16.70575930314397,772.411359459036 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0E21DA5F6C2B5786ABA1">
+		<name>Deslocamento</name>
+		<LookAt>
+			<longitude>-49.32729585726314</longitude>
+			<latitude>-16.70120434776721</latitude>
+			<altitude>770.4145992655546</altitude>
+			<heading>0.2973811658031973</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99994386456051</gx:fovy>
+			<range>101.1232633890904</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.32424724610498,-16.69767969439436,759.3870565845257 -49.32727999384632,-16.70129414711995,765.3394023878153 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="040F133EEB2B578838F7">
+		<name>Escola Municipal Olegário Moreira Borges</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.32367079289209</longitude>
+			<latitude>-16.73701819728001</latitude>
+			<altitude>814.7803691616677</altitude>
+			<heading>18.44434515177624</heading>
+			<tilt>0.9488481654926415</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>96.83109647405217</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.32386061624138,-16.73707528798084,815.8735582931126 -49.32388368915842,-16.73708980530289,816.0345932685561 -49.32388325942011,-16.7371214559861,816.1956282439997 -49.32326740156119,-16.73821514002746,817.2690548830274 -49.32325975721801,-16.73823287812038,817.1901974089869 -49.32324795556625,-16.73824943317524,817.1113399349466 -49.32323395030014,-16.73826323355109,817.0324824609063 -49.32321760269672,-16.73827286899003,816.9536249868657 -49.32318779059933,-16.73827469994265,816.7959100387849 -49.32315375767659,-16.73826372856686,816.6381950907041 -49.32274824687949,-16.738044613171,813.9687831417624 -49.32271383004714,-16.73801914212053,813.8012965335649 -49.32270491767087,-16.73800908028828,813.7594248815155 -49.3227033477166,-16.73798985343209,813.7175532294661 -49.32271843719345,-16.7379563400447,813.6338099253674 -49.32279015534517,-16.73783799053853,813.5416483747259 -49.32285509585342,-16.7377145222225,813.4494868240848 -49.32298439953509,-16.73746564595732,813.2651637228021 -49.32324376029047,-16.73697777917333,812.8965175202366 -49.32328092498336,-16.73694967405315,812.9558831709586 -49.32386061624138,-16.73707528798084,815.8735582931126 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0F16C41DC62B578866FD">
+		<name>1325 - ESCOLA MUNICIPAL RESIDENCIAL MONTE CARLO</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1325 | ESCOLA MUNICIPAL RESIDENCIAL MONTE CARLO<br></div><div>(RUA MC-03, ÁREA 10, N.º 46, RESIDÊNCIAL MONTE CARLO)<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 449:<br></div><div>URNA N.º 723 - AARON PEREIRA MARQUES / JULIANA GOMES MIRANDA PROENCA<br></div><div>URNA N.º 724 - JULIANA MARCELLA MATOS REIS DA SILVA MIRANDA / ZULEIDE ALVES BABUGEM<br></div><div><br></div>]]></description>
+		<LookAt>
+			<longitude>-49.33806068931113</longitude>
+			<latitude>-16.72701707541225</latitude>
+			<altitude>814.1883241794632</altitude>
+			<heading>0.2973811650372057</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99994386456051</gx:fovy>
+			<range>98.49107614019886</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_06EFB7D71D434F92D230</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.3373713685238,-16.72724424231889,814.806242742774 -49.33734703237753,-16.72724928645439,814.8062428633726 -49.33732011926469,-16.72724738734357,814.8062429839715 -49.33729989196548,-16.72724175670268,814.8062431045703 -49.33728709387581,-16.72722543590676,814.8062432251691 -49.33705970587053,-16.72685300025856,813.4092224421425 -49.33704554869615,-16.72683163888956,813.2613571992696 -49.33704271510785,-16.72680097566491,813.1134919563967 -49.33705804277298,-16.72677325501925,812.9656267135238 -49.33707951768789,-16.72675075444667,812.8177614706509 -49.33779326067776,-16.72635198141264,811.3163735972847 -49.33781556858409,-16.72634489017536,811.3514434030393 -49.33783915838761,-16.72634342550441,811.3865132087944 -49.33786164348485,-16.72634994537599,811.4215830145494 -49.33787917371686,-16.72636273271957,811.4566528203044 -49.33817044862617,-16.72682937829271,813.3057965782124 -49.33817664864016,-16.72685113508377,813.4004450853356 -49.33817531729474,-16.72687380061838,813.4950935924589 -49.33816616322621,-16.72689140259281,813.5897420995825 -49.33814761121069,-16.72690269562417,813.6843906067058 -49.3373713685238,-16.72724424231889,814.806242742774 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0ECD2380E62B5788997F">
+		<name> 1414 - ESCOLA MUNICIPAL RESIDENCIAL ITAIPU</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1414 | ESCOLA MUNICIPAL RESIDENCIAL ITAIPU<br></div><div>(RUA RI-24, QD. 44, RESIDENCIAL ITAIPU)<br></div><div>- Escola Sonho Brilhante<br></div><div>- Escola Municipal Luzia de Souza Fiuza<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 445:<br></div><div>URNA N.º 695 - ABADIA SOUZA BATISTA / ELIANE LIMA DE ARAUJO<br></div><div>URNA N.º 696 - ELIANE PEREIRA RODRIGUES / JUAN VYTOR SOUSA BORGES<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 446:<br></div><div>URNA N.º 697 - JUARES DA SILVA MORAIS / NEUMA RODRIGUES DOS SANTOS<br></div><div>URNA N.º 698 - NEURIA DE ALMEIDA / ZULEIDE MARTA VIEIRA DE SOUZA<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.36793645736355</longitude>
+			<latitude>-16.78595348199462</latitude>
+			<altitude>881.9737237907891</altitude>
+			<heading>-44.46594909948647</heading>
+			<tilt>2.680035521608932</tilt>
+			<gx:fovy>34.99999981965622</gx:fovy>
+			<range>151.5923585181918</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_1EE03374BE434F92D228</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.36852351804185,-16.78592996285703,878.8985046083125 -49.36816091998558,-16.78641602758841,879.7810753322905 -49.36753428374301,-16.78598299394499,881.0832753637876 -49.36752186383047,-16.78593503092616,881.203292801311 -49.36782404733214,-16.78551108718307,880.5488950392656 -49.36791119404766,-16.78551370068551,880.4651328828551 -49.36852351804185,-16.78592996285703,878.8985046083125 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="04C90AE9D62B578B012F">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.32771790347984</longitude>
+			<latitude>-16.7426711755714</latitude>
+			<altitude>839.1013112292347</altitude>
+			<heading>-59.60889575572646</heading>
+			<tilt>0.1551151932890713</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>153.1167376392841</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.32315787867726,-16.73771486036329,815.9405779202141 -49.32810874114886,-16.74268943231527,839.422420683372 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="03D9B0F93F2B578EB7E8">
+		<name>1708 - SESI JARDIM PLANALTO</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1708 | ESCOLA DO SESI JARDIM PLANALTO<br></div><div>(PRAÇA ITAPUÃ, QD. 30, N.º 150, JARDIM PLANALTO)<br></div><div>- Colégio Fractal<br></div><div>- Colégio Meta<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 450:<br></div><div>URNA N.º 725 - ABADIA DAS DORES DE MELO CICARI / CLERIA ALVES RODRIGUES DE MORAIS<br></div><div>URNA N.º 726 - CLERISTON TELES DE OLIVEIRA / GERALDO DOS SANTOS<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 451:<br></div><div>URNA N.º 727 - GERALDO FERREIRA DE ALMEIDA / KARLA RAMOS DE OLIVEIRA<br></div><div>URNA N.º 728 - KARLA ROBERTA DIAS / MARIA LUIZA CUNHA REZENDE<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 452<br></div><div>URNA N.º 729 - MARIA LUIZA DA SILVA / ROBERTO DOS SANTOS ALVES<br></div><div>URNA N.º 730 - ROBERTO FARAH / ZVANILDO ANTONIO RIBEIRO<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.30328330388896</longitude>
+			<latitude>-16.7142692351585</latitude>
+			<altitude>786.2039096774154</altitude>
+			<heading>0.2973811644109309</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99994386456051</gx:fovy>
+			<range>79.2631598985281</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_01FBBCF597434F92D22B</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.3031806602464,-16.71433780979608,786.0991112961453 -49.30316073608811,-16.71436429973444,786.0736934245695 -49.30313162487437,-16.71438034268514,786.0482755529931 -49.30309528169226,-16.71439070901463,786.0228576814169 -49.30305706163723,-16.71439217740043,785.997439809841 -49.3026507118452,-16.71427463355761,785.5511179501356 -49.30262826385211,-16.7142558802401,785.5121307000355 -49.30261174927878,-16.71422888932616,785.4731434499359 -49.3025955228274,-16.71419581880153,785.434156199836 -49.30259285431309,-16.71415661060777,785.3951689497362 -49.30286855414813,-16.71327123297392,784.2011792744202 -49.30288314986335,-16.71323667446813,784.1794662920232 -49.30291043056795,-16.71320709781655,784.1577533096261 -49.30295086849851,-16.71319726143692,784.1360403272292 -49.30299053363316,-16.71319699223426,784.1143273448323 -49.30339685494606,-16.71330933183384,785.1679568297277 -49.30343234469232,-16.71333525525269,785.2273937500822 -49.30345446829767,-16.71336397678557,785.286830670437 -49.30346683684432,-16.7134017840234,785.3462675907917 -49.30346484758697,-16.7134403922566,785.4057045111466 -49.3031806602464,-16.71433780979608,786.0991112961453 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0141D34EB32B57910D0D">
+		<name>Colégio Fractal</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.3037841444004</longitude>
+			<latitude>-16.71151939028616</latitude>
+			<altitude>788.5306681522445</altitude>
+			<heading>0.2973811637258281</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99994386456051</gx:fovy>
+			<range>77.42907010599085</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0A8864CA80434F92D22C</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.30386027666651,-16.71153805787167,785.2047173793943 -49.30382100170823,-16.71180599434786,785.0097738802368 -49.30381200257121,-16.71181948066467,784.9819292681026 -49.30379673230694,-16.71182905305237,784.9540846559682 -49.30377804354163,-16.71183345606257,784.9262400438338 -49.30375780502868,-16.71183278899484,784.8983954316993 -49.30320016464059,-16.71176117820683,783.3106984533849 -49.30323125913202,-16.71156135647413,784.0070646333204 -49.30311064369552,-16.71154501415234,784.2954249628878 -49.3030797873318,-16.71174206486291,783.0077746255346 -49.3029634447003,-16.71172562856199,782.7941833231412 -49.30300944373232,-16.71142116796834,784.6684481654034 -49.30386027666651,-16.71153805787167,785.2047173793943 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="009A80A5B52B5791B4BA">
+		<name>Deslocamento</name>
+		<LookAt>
+			<longitude>-49.302986022647</longitude>
+			<latitude>-16.71382585546657</latitude>
+			<altitude>788.4278744890249</altitude>
+			<heading>0.297381163483162</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99994386456051</gx:fovy>
+			<range>24.99893857545886</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.30338290809022,-16.71161827108018,784.0023739789418 -49.30298169106278,-16.71384129412962,785.5209919585781 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0CF1A89D1F2B5793AE0D">
+		<name>Colégio Meta</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.31263623526512</longitude>
+			<latitude>-16.70859205820513</latitude>
+			<altitude>790.6676240988315</altitude>
+			<heading>0.2698014415949043</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>54.42445675904311</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0A8864CA80434F92D22C</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.31268660041447,-16.7091162604869,784.8914756224725 -49.31268120082434,-16.70914120623626,784.8968301048561 -49.31267015815084,-16.70915991801216,784.9021845872396 -49.31265419927722,-16.70917026803117,784.9075390696231 -49.31263547749788,-16.70917114507406,784.9128935520067 -49.31237727082673,-16.709166835577,785.7129050941326 -49.31239759845303,-16.70888494157041,787.1054271056893 -49.31232758174738,-16.70888204314193,787.2573731490772 -49.31235452567959,-16.70853180400501,789.3275629509214 -49.31272000962685,-16.708557440648,784.6958018704946 -49.31268660041447,-16.7091162604869,784.8914756224725 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="06813BFD8B2B57946D42">
+		<name>Deslocamento</name>
+		<LookAt>
+			<longitude>-49.30300321414071</longitude>
+			<latitude>-16.7138168494948</latitude>
+			<altitude>789.0831909760823</altitude>
+			<heading>0.2698014413517481</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>25.15252204041644</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.31253161251374,-16.70884423141377,786.9738669534868 -49.30298008968785,-16.71384293587455,785.5274435503072 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0ADD8522E62B57B00ADE">
+		<name>Escola Educandário Rainha da Paz</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.30563917901058</longitude>
+			<latitude>-16.70936825592369</latitude>
+			<altitude>798.7574935032563</altitude>
+			<heading>173.2952279451583</heading>
+			<tilt>18.41168014532458</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>179.6446358089088</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.30523503227688,-16.70944069594237,790.6182825292449 -49.30528978543052,-16.70907750446178,791.3366183643218 -49.30533219480283,-16.70905477729162,791.4083006329342 -49.30563669962713,-16.70910185641809,792.0548393469245 -49.30557112914602,-16.70953198150111,791.1898068056863 -49.30524945878196,-16.70948867125632,790.4144768774872 -49.30523503227688,-16.70944069594237,790.6182825292449 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="00796016102B57B025D6">
+		<name>1287 - EM DR. NICANOR DE ASSIS ALBERNAZ</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1287 | ESCOLA MUNICIPAL DR. NICANOR DE ASSIS ALBERNAZ,<br></div><div>(AVENIDA ALPHA 14, QD. 6, N.º 333, CONDOMINIO ALPHAVILE II)<br></div><div>- Escola Municipal Vereador Carlos Eurico Camargo Alves<br></div><div>- Colégio Esperança<br></div><div>- Escola Magia do Saber<br></div><div>- Colégio Estadual Roberto Civita<br></div><div>- Escola Municipal João Vieira da Paixão<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 421:<br></div><div>URNA N.º 481 - ABADIA APARECIDA FLORIANO NOGUEIRA / CRISTIANO JOSE DE ALMEIDA<br></div><div>URNA N.º 482 - CRISTIANO NARCIZO FERREIRA / GEICY PEREIRA DE MACEDO<br></div><div>MESA RECEPTORA DE VOTOS N.º 422:<br></div><div>URNA N.º 483 - GEISA ANDRADE DE OLIVEIRA / JULIA MARIA COSTA DE ARAUJO<br></div><div>URNA N.º 484 - JULIA MARINELLI AMORIM / MARIA EDUARDA RODRIGUES DA SILVA<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 423:<br></div><div>URNA N.º 485 -MARIA EDUARDA RODRIGUES MARCELINO DE MORAIS / RODRIGO SOARES MARCONDES<br></div><div>URNA N.º 486 - RODRIGO VALERIANO MOREIRA / ZUZILENE BORGES DA COSTA<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.37527138840308</longitude>
+			<latitude>-16.72718467269264</latitude>
+			<altitude>843.9099144206003</altitude>
+			<heading>40.07631814490606</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999958859721</gx:fovy>
+			<range>178.1607247762986</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_01FBBCF597434F92D22B</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.37562758628961,-16.72690955821226,842.974580727737 -49.37539075531745,-16.72755878841053,842.7449454607308 -49.37529910344698,-16.72758754805257,842.8440427056859 -49.37484764804613,-16.72743548113808,842.319457642921 -49.37480008780868,-16.72736832880222,842.2333524185144 -49.37503872751792,-16.72670884365984,843.2395963120056 -49.37508707423355,-16.72668770924943,842.3641917253083 -49.37559406562182,-16.72685662475723,842.593524359412 -49.37562758628961,-16.72690955821226,842.974580727737 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="05FB3C39802B57B0659D">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.30467247712446</longitude>
+			<latitude>-16.7091657702639</latitude>
+			<altitude>789.1409429798157</altitude>
+			<heading>173.2949068121962</heading>
+			<tilt>18.41204737866913</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>308.9515355330878</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_1927FBAE58434F92D22C</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.30545491100847,-16.70933855330673,791.1805035869353 -49.30393186840964,-16.70904077694631,787.4410059896496 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="09648159252B57B207D2">
+		<name>EM Vereador Carlos Eurico Camargo Alves</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.36783348023585</longitude>
+			<latitude>-16.72393626517049</latitude>
+			<altitude>818.0692982350984</altitude>
+			<heading>13.98887067503373</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999961883179</gx:fovy>
+			<range>133.8346437591099</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.36778512022162,-16.72391377827442,817.6045278253839 -49.36697400421533,-16.72345366941899,814.9624727956145 -49.36742235393864,-16.72273612626506,816.2748425024456 -49.36823784498073,-16.72320186471705,817.6404783049381 -49.36778512022162,-16.72391377827442,817.6045278253839 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0BBD7B2FC82B57B24B28">
+		<name>Escola Municipal Francisco Matias</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.29843851372673</longitude>
+			<latitude>-16.72394604320849</latitude>
+			<altitude>797.5248902105316</altitude>
+			<heading>-1.166994543590743</heading>
+			<tilt>2.601094031871842</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>203.35107845327</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.29820338256253,-16.7233808567709,794.230060771608 -49.2992310676912,-16.72382461650167,799.2296410115364 -49.29930253271173,-16.72386788822953,799.0436839460848 -49.29920882773957,-16.72407513420171,799.0947050414213 -49.29914410211669,-16.72409529943726,798.8912053441608 -49.29804627753158,-16.72378184619143,793.6224797330783 -49.29820338256253,-16.7233808567709,794.230060771608 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0B7F0ADACC2B57B2C1CB">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.30811262366759</longitude>
+			<latitude>-16.72780709276523</latitude>
+			<altitude>820.31658069343</altitude>
+			<heading>-1.166994808165943</heading>
+			<tilt>2.601050908711638</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>97.67499286674141</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_2E12D7A9EC434F92D22C</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.29889232204765,-16.7238204381015,798.1040054025707 -49.30822955203841,-16.72776589427017,814.9205810573262 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0869ACE9302B57B45BE8">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.36685974331509</longitude>
+			<latitude>-16.72354340288263</latitude>
+			<altitude>814.6650469874475</altitude>
+			<heading>351.5127302877905</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999961310986</gx:fovy>
+			<range>160.2788476174464</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.37539952272258,-16.72725186331471,843.3140299227871 -49.36715124423525,-16.7233664181083,816.1069391077076 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0E7CB16AA62B57B4643A">
+		<name>Escola Municipal Vila Rosa</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.2988711278952</longitude>
+			<latitude>-16.7438562576993</latitude>
+			<altitude>857.4668324935082</altitude>
+			<heading>3.192861189575612</heading>
+			<tilt>5.696826988534176</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>199.2667682492902</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.29910063233058,-16.74372471736331,848.5217734620334 -49.29899503247299,-16.74404728856482,849.7095117424176 -49.2982364974704,-16.74381145758587,846.906979992829 -49.29834298797246,-16.74348134276042,845.7559862299009 -49.29910063233058,-16.74372471736331,848.5217734620334 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="07382A60BE2B57B6054A">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.30813101547974</longitude>
+			<latitude>-16.72771207594615</latitude>
+			<altitude>814.9831860619031</altitude>
+			<heading>-0.2993592766483649</heading>
+			<tilt>0.5456601699496428</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>25.02072841605695</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_2E12D7A9EC434F92D22C</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.29867460774643,-16.74375354362313,848.2284399671437 -49.30817602366691,-16.72774348475842,814.9518519167593 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0930C4A41E2B57B65D94">
+		<name>COLÉGIO ESPERANÇA</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.37433960656007</longitude>
+			<latitude>-16.72407692070631</latitude>
+			<altitude>834.5282085602096</altitude>
+			<heading>351.5152700493301</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999961310986</gx:fovy>
+			<range>150.6932994390263</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.37396752837859,-16.7237987426284,833.2475296214811 -49.37435988784409,-16.72315712233467,830.8023263567773 -49.37506878684766,-16.72356897580176,833.65957228847 -49.37509078133353,-16.72358393225481,833.750238393777 -49.37510909130634,-16.723610780389,833.8409044990841 -49.37511167715337,-16.72362257157052,833.8862375517376 -49.37510050530958,-16.72363665838139,833.9315706043911 -49.37507895546047,-16.72365292749636,834.0222367096979 -49.37452858169002,-16.72409622058711,835.6064574725029 -49.37452214751283,-16.72409780423915,835.5616879464535 -49.37451388193418,-16.72409777572368,835.5169184204042 -49.37450573736982,-16.72409776991984,835.4721488943549 -49.37449861400184,-16.72409555726262,835.4273793683055 -49.37436322151033,-16.72402577871885,834.8824169315994 -49.37422974882101,-16.72394816212856,834.3374544948936 -49.37396752837859,-16.7237987426284,833.2475296214811 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="01BD44477E2B57B7DD11">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.3739530023793</longitude>
+			<latitude>-16.72675409767761</latitude>
+			<altitude>840.5626079231354</altitude>
+			<heading>351.5152716849495</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999961310986</gx:fovy>
+			<range>1028.407327726891</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.37455132171,-16.72346136805125,833.0741263213334 -49.37537782441193,-16.72725093871114,843.5475258954202 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0B38EA555B2B57BB6F9F">
+		<name>ESCOLA MAGIA DO SABER</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.37532082256011</longitude>
+			<latitude>-16.74818122848378</latitude>
+			<altitude>868.1828949024347</altitude>
+			<heading>124.606297687342</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.9999984959406</gx:fovy>
+			<range>98.22595916992213</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.37550502042328,-16.74819531880059,866.9320277533664 -49.37530003957987,-16.7483504104681,869.2003200335596 -49.37512722356472,-16.74812919511879,868.2131959397557 -49.37533575337235,-16.7479814727616,865.9665084344424 -49.37550502042328,-16.74819531880059,866.9320277533664 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0E04D0EC712B57BC51E8">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.37542648076528</longitude>
+			<latitude>-16.72726559734355</latitude>
+			<altitude>843.0631272462509</altitude>
+			<heading>124.6037882208944</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.9999984959406</gx:fovy>
+			<range>120.1465098396148</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.37544100588401,-16.74822922631881,868.0876074060566 -49.37537666121588,-16.72724006703593,843.4801238251976 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0A187B2A7F2B57E1B006">
+		<name>COLÉGIO ESTADUAL ROBERTO CIVITA</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.35889696548081</longitude>
+			<latitude>-16.73594449727985</latitude>
+			<altitude>815.9782240694857</altitude>
+			<heading>348.5888585431714</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>295.1284848077194</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.35912165895067,-16.73537737442027,815.7474786373438 -49.35929349598691,-16.7355915715751,816.5353923907106 -49.35940222129573,-16.73567604169617,817.0827117770036 -49.35958511278461,-16.73578712048479,817.6271691569995 -49.35961101584002,-16.73580203334559,817.6869975332005 -49.3596273096711,-16.73582105175932,817.7468259094015 -49.3596319031879,-16.73583106970938,817.7767400975021 -49.35963428043704,-16.73584249696088,817.8066542856025 -49.35962993379146,-16.73586387021685,817.8664826618033 -49.35869839328275,-16.73650568538564,810.4111224011993 -49.35865112072349,-16.73652641185244,810.1340613621027 -49.35861189096955,-16.73649740208377,809.8570003230058 -49.35823056107368,-16.73597008918929,808.5040631811794 -49.35912165895067,-16.73537737442027,815.7474786373438 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0A4E7CF35D2B57E330B7">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.37512007687301</longitude>
+			<latitude>-16.72723226168934</latitude>
+			<altitude>843.8874379959632</altitude>
+			<heading>348.5917845532416</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>140.8557064563684</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.35920590248271,-16.73551508655553,816.4645896160806 -49.37537746203907,-16.72723840933457,843.4857738248022 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="098895F81C2B57E53266">
+		<name>EM JOÃO VIEIRA DA PAIXÃO</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.36323881045727</longitude>
+			<latitude>-16.7307273243784</latitude>
+			<altitude>817.8291020731583</altitude>
+			<heading>348.5892602268576</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>72.30045839645754</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.36328510456678,-16.73090114902019,818.1069550013062 -49.36282190772872,-16.73096429456619,818.4417263883997 -49.36287948166092,-16.73138655113592,819.4175912121364 -49.36225013659038,-16.73146329030341,818.6304846981704 -49.36214734139129,-16.73061949404458,816.3905882422015 -49.36214712688977,-16.73060314207306,816.2340223939169 -49.36215322127929,-16.73058781596435,816.0774565456322 -49.36216617080284,-16.73057244201655,815.9208906973479 -49.36218188793369,-16.73056168098359,815.7643248490633 -49.3629873884991,-16.73045755701659,816.619075294274 -49.36301801268371,-16.73046031540941,816.9467254884532 -49.3630464327775,-16.73046931463845,817.2743756826326 -49.36306124298444,-16.73047948879361,817.3990999326486 -49.36307452688781,-16.73049062047379,817.5238241826647 -49.36328510456678,-16.73090114902019,818.1069550013062 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="054654D4372B57EB45E8">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.37498482678434</longitude>
+			<latitude>-16.72718480076595</latitude>
+			<altitude>843.486311562366</altitude>
+			<heading>348.5918081107806</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>421.3965694798389</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.36258875599737,-16.73051361464725,815.8887029275431 -49.3754009118311,-16.72724340954173,843.3503239511194 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0FAAB0BB182B57F32B3D">
+		<name>1872 - EM JARBAS JAYME</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1872 | ESCOLA MUNICIPAL JARBAS JAYME<br></div><div>(PRAÇA C-10 ESQUINA COM A RUA C-93, N.º 243 (AO FUNDO DO 20º DISTRITO POLICIAL), SETOR<br></div><div>SUDOESTE)<br></div><div>- Centro de Ensino em Período Integral do Setor Sudoeste (Antigo Colégio Estadual do Setor Sudoeste)<br></div><div>- Coordenadoria Regional de Educação Jarbas Jayme<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 437:<br></div><div>URNA N.º 559 - ABADE DO CARMO JUNIOR / ELIANE AZEVEDO DA SILVEIRA<br></div><div>URNA N.º 560 - ELIANE CARLOS RIBEIRO BORGES / KECI DIONE REIS DA SILVA<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 438:<br></div><div>URNA N.º 561 - KEDILLA DIAS DE SOUSA / NORMA CRISTINA DA SILVA<br></div><div>URNA N.º 562 - NORMA RIBEIRO REIS / ZULEICA ROBERTO MORATO<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.30604758496023</longitude>
+			<latitude>-16.70396895927287</latitude>
+			<altitude>797.4220801218294</altitude>
+			<heading>113.9303101820437</heading>
+			<tilt>0.3582094394996938</tilt>
+			<gx:fovy>34.99999981153429</gx:fovy>
+			<range>51.41755726130214</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_01FBBCF597434F92D22B</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.30612014005796,-16.70407399516422,797.5505885987508 -49.306093739468,-16.70405650395816,797.5031130225486 -49.3060696053968,-16.70403006468086,797.4556374463466 -49.30605282462003,-16.70399232693352,797.4081618701446 -49.30605258039225,-16.70397370071532,797.3844240820437 -49.30605394394828,-16.70395702235009,797.3606862939425 -49.30610685071703,-16.70324495717823,797.1643795122699 -49.30611323020844,-16.70322855052675,797.1366821194114 -49.3061255406683,-16.70321432675859,797.1089847265529 -49.30614263072966,-16.70320581913356,797.0812873336943 -49.30616248435172,-16.70320017626801,797.0535899408359 -49.30655597283514,-16.70322400452247,797.0107359007063 -49.30656888029859,-16.7032277473917,797.0401329738103 -49.30658156319557,-16.70323742016926,797.0695300469147 -49.30659250072294,-16.70325391496102,797.0989271200187 -49.30659723226609,-16.70327076028283,797.1283241931229 -49.30656154437143,-16.70405779463177,797.2751361803969 -49.3065556743159,-16.70408219537032,797.3287286927371 -49.30654031833048,-16.70410262412834,797.3823212050772 -49.3065004330229,-16.70410628302787,797.4895062297577 -49.30616617350157,-16.70408789734217,797.462293255304 -49.30612014005796,-16.70407399516422,797.5505885987508 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="085C1A5D152B57F933AB">
+		<name>CEPI SETOR SUDOESTE </name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.30649261962328</longitude>
+			<latitude>-16.70498655621914</latitude>
+			<altitude>796.9164029284326</altitude>
+			<heading>213.2137699793045</heading>
+			<tilt>0</tilt>
+			<gx:fovy>34.99999981153429</gx:fovy>
+			<range>105.9415386319961</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.30637935589169,-16.70515217215961,797.1859093532242 -49.30591591158695,-16.70494354884195,797.04854363324 -49.30545526817716,-16.70472972897733,796.9111779132559 -49.30583694169713,-16.70415947264936,797.1868407138757 -49.30585121381493,-16.70412700612125,797.2675710976935 -49.30649813385188,-16.70416640666818,797.5169480136874 -49.30651185863657,-16.7041724362056,797.5546015693506 -49.30652439505573,-16.70418129066616,797.592255125014 -49.30653526686176,-16.70419210447104,797.6299086806774 -49.30654712902685,-16.7042106427598,797.6675622363407 -49.30649856664127,-16.70508311853775,797.3274843404201 -49.30649199483462,-16.70509910724776,797.3276475445156 -49.30648106956016,-16.70511375903826,797.3278107486112 -49.30646922236389,-16.70512874631095,797.3279739527067 -49.30645537012811,-16.70514033684286,797.328137156802 -49.30644635827997,-16.70514467838279,797.3103586813547 -49.30643726724561,-16.70514747218346,797.2925802059075 -49.30641806519042,-16.7051516615968,797.2570232550131 -49.30639860710903,-16.70515294002428,797.2214663041186 -49.30637935589169,-16.70515217215961,797.1859093532242 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0C8A71612A2B57FB27E6">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.30641995882711</longitude>
+			<latitude>-16.70462335848157</latitude>
+			<altitude>808.2162841617613</altitude>
+			<heading>156.6532186403421</heading>
+			<tilt>0.2035834199567295</tilt>
+			<gx:fovy>34.99999981153429</gx:fovy>
+			<range>74.26987060285683</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.30640175256809,-16.70331087074437,797.0948354762237 -49.30640498500493,-16.70449937937621,797.5599303100847 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="0D6BFFCED52B57FC5952">
+		<name>Coordenadoria Regional de Educação Jarbas Jayme</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.30620233837772</longitude>
+			<latitude>-16.70322515963618</latitude>
+			<altitude>797.1720728073869</altitude>
+			<heading>156.6529912666668</heading>
+			<tilt>0.203586202303353</tilt>
+			<gx:fovy>34.99999981153429</gx:fovy>
+			<range>161.4619365879662</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0656D96E74434F92D233</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.30612675664351,-16.70338800089992,797.318447031714 -49.30613720236978,-16.70328192530687,797.2503080074813 -49.30618777826694,-16.70324284353311,797.2036325875356 -49.30630437587428,-16.70324263915989,797.1524207551555 -49.30629638511073,-16.70340673392068,797.1720973713417 -49.30612675664351,-16.70338800089992,797.318447031714 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="08EE6C07412B57FDAA12">
+		<name>DESLOCAMENTO</name>
+		<LookAt>
+			<longitude>-49.30606044725218</longitude>
+			<latitude>-16.7031411611</latitude>
+			<altitude>797.1291158657328</altitude>
+			<heading>156.6529908512069</heading>
+			<tilt>0.2035896256663059</tilt>
+			<gx:fovy>34.99999981153429</gx:fovy>
+			<range>268.6143077769157</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_09F3DCE228434F92D22E</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.30623338159081,-16.70332696426436,797.2047507426055 -49.30640964998872,-16.70334584268478,797.0948290763544 -49.30642117943326,-16.7033523346633,797.1768277136812 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="044C66664E2B581EE415">
+		<name>1503 - ESCOLA MUNICIPAL RENASCER</name>
+		<visibility>0</visibility>
+		<description><![CDATA[<div>1503 | ESCOLA MUNICIPAL RENASCER<br></div><div>(RUA RC-07 ESQUINA COM A RUA RC-16, APM 8, RESIDENCIAL REAL CONQUISTA)<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 443:<br></div><div>URNA N.º 691 - ABADIA MARIA DE JESUS /&nbsp; ELIAS ALVES PEREIRA<br></div><div>URNA N.º 692 - ELIAS ANTONIO DOS SANTOS / JULY CLEIA PEREIRA DE OLIVEIRA<br></div><div><br></div><div>MESA RECEPTORA DE VOTOS N.º 444:<br></div><div>URNA N.º 693 - JUNIOR CESAR DE OLIVEIRA / NILVANIA PEREIRA DE MATOS<br></div><div>URNA N.º 694 - NILVANIO DE SOUZA MOURA / ZULEIDE PAIXAO DE SOUSA<br></div>]]></description>
+		<LookAt>
+			<longitude>-49.38831265151953</longitude>
+			<latitude>-16.77958094937336</latitude>
+			<altitude>877.9194106826779</altitude>
+			<heading>49.08132431083207</heading>
+			<tilt>4.191360617358032</tilt>
+			<gx:fovy>34.99999998257529</gx:fovy>
+			<range>72.62865899779173</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_01FBBCF597434F92D22B</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.38840851808392,-16.77959826876717,878.1573616193641 -49.3891782053642,-16.78031327656807,873.4822533608639 -49.38918338219363,-16.7803211467048,873.4057162856092 -49.38918705662893,-16.78033143609044,873.3291792103546 -49.38918756878888,-16.78034155495008,873.2526421350999 -49.38918493065994,-16.78035056763975,873.1761050598452 -49.38865811651723,-16.78087840569758,873.2872813947367 -49.38783860009958,-16.78011684563094,877.9638810364083 -49.38835635158255,-16.77960340159803,878.0659448881778 -49.38836910551358,-16.77959628147635,878.0887990709745 -49.3883818960079,-16.77959389629905,878.1116532537709 -49.38839540426303,-16.77959328691035,878.1345074365674 -49.38840851808392,-16.77959826876717,878.1573616193641 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0BA5A2DE672B58307CE6">
+		<name>ESCOLA SONHO BRILHANTE</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.36064975657692</longitude>
+			<latitude>-16.78606716177569</latitude>
+			<altitude>887.965192919208</altitude>
+			<heading>312.9537777776453</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>90.36510251506115</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.36063933894468,-16.78626498434972,887.3026723535721 -49.36047194493376,-16.78615222370312,886.2153050534143 -49.3604617669653,-16.78613762009917,886.1802424818177 -49.36045676973578,-16.78611775923982,886.145179910221 -49.36045672185764,-16.78610004743754,886.1101173386244 -49.36046315075913,-16.78608413879995,886.0750547670277 -49.36069746556491,-16.78592418597016,887.1211747691458 -49.36082425388873,-16.78601623762092,887.4498105333031 -49.36063933894468,-16.78626498434972,887.3026723535721 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="07A94797E72B58327980">
+		<name>DESLOCAMENTO</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.36790415432776</longitude>
+			<latitude>-16.78595496984765</latitude>
+			<altitude>881.8124511034873</altitude>
+			<heading>312.9573248957414</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>198.075439642198</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.36051379047998,-16.78608867564504,886.758403295815 -49.36791915944499,-16.78584484070883,882.5321831427768 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="08AC2834682B5833837D">
+		<name>EM LUIZA DE SOUZA FIUZA</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.36300851441254</longitude>
+			<latitude>-16.78010188550188</latitude>
+			<altitude>886.519420217511</altitude>
+			<heading>22.7704953488266</heading>
+			<tilt>4.016500812569529</tilt>
+			<gx:fovy>34.99999999021954</gx:fovy>
+			<range>181.4979282425157</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_069DA079ED434F92D229</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-49.36317646705461,-16.77959502925059,884.2049738718929 -49.3635198165858,-16.78008300403792,885.4206887610096 -49.36301538810935,-16.78042116497599,887.1641908445175 -49.36266481983593,-16.77993290190615,886.0212508998509 -49.36317646705461,-16.77959502925059,884.2049738718929 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="0E645B8CE12B583446C6">
+		<name>DESLOCAMENTO</name>
+		<visibility>0</visibility>
+		<LookAt>
+			<longitude>-49.36790604952686</longitude>
+			<latitude>-16.78585771438431</latitude>
+			<altitude>882.4331868527901</altitude>
+			<heading>22.77140191824751</heading>
+			<tilt>4.016414824078972</tilt>
+			<gx:fovy>34.99999999021955</gx:fovy>
+			<range>44.96760220106808</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0FAFF612AB434F92D228</styleUrl>
+		<LineString>
+			<coordinates>
+				-49.36283613330181,-16.77991300659606,886.2830326908195 -49.36791911644098,-16.78584515364625,882.5308343505053 
+			</coordinates>
+		</LineString>
+	</Placemark>
+	<Placemark id="05C243ADED2C37074D9E">
+		<name>10</name>
+		<LookAt>
+			<longitude>-49.37191518127979</longitude>
+			<latitude>-16.82161068551799</latitude>
+			<altitude>829.1783426355696</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>525.5690314855019</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.37286546963384,-16.82198788235236,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="08322CCCCD2C3708A265">
+		<name>38</name>
+		<LookAt>
+			<longitude>-49.36853421533515</longitude>
+			<latitude>-16.7857350242485</latitude>
+			<altitude>879.5660340195327</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>576.1772733323596</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.36807844045963,-16.78593138320431,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="03543B81D22C3709EB21">
+		<name>13</name>
+		<LookAt>
+			<longitude>-49.35916438628758</longitude>
+			<latitude>-16.78465166502858</latitude>
+			<altitude>890.4800003085634</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>883.3000730983622</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.35945052390684,-16.78508326035166,891.4763825578785</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="09FC41CFD42C370A9B92">
+		<name>8</name>
+		<LookAt>
+			<longitude>-49.38867151676081</longitude>
+			<latitude>-16.78028212567416</latitude>
+			<altitude>877.5809319590636</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>913.1590326703736</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_00C58E577B434F92D231</styleUrl>
+		<Point>
+			<coordinates>-49.38857668586059,-16.78025809234995,879.0401387953375</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="04FA7AF8722C370B15E9">
+		<name>4</name>
+		<LookAt>
+			<longitude>-49.35770133789399</longitude>
+			<latitude>-16.77451928967963</latitude>
+			<altitude>891.0958698767436</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>1699.9460059579</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.35850260820203,-16.77372720251741,889.3972146665493</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="0E4D474D292C371488B9">
+		<name>16</name>
+		<LookAt>
+			<longitude>-49.35007547958472</longitude>
+			<latitude>-16.76113157470657</latitude>
+			<altitude>900.4140532750704</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>772.4451383556881</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.34947666604744,-16.76175686430551,902.3571775450904</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="05BAA182902C37151B16">
+		<name>1</name>
+		<LookAt>
+			<longitude>-49.37570553453018</longitude>
+			<latitude>-16.72764523332649</latitude>
+			<altitude>843.8284780961094</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>1663.970107073256</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.37522778843474,-16.72716336546125,845.1893549100214</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="0CEE38404C2C37159818">
+		<name>5</name>
+		<LookAt>
+			<longitude>-49.35135428064986</longitude>
+			<latitude>-16.73664359613332</latitude>
+			<altitude>822.4139997990144</altitude>
+			<heading>359.9999999995895</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>1673.2072148117</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.35307854843947,-16.73551819307739,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="0112D6DC722C3716C312">
+		<name>20</name>
+		<LookAt>
+			<longitude>-49.3282431619356</longitude>
+			<latitude>-16.74270887747935</latitude>
+			<altitude>836.5332165032721</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>360.8803442810677</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.3282167077975,-16.7427648203899,837.5939251261443</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="08FDEE4FE72C371754EA">
+		<name>11</name>
+		<LookAt>
+			<longitude>-49.33695323573288</longitude>
+			<latitude>-16.72623018255778</latitude>
+			<altitude>807.3580168468756</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>1226.384540703002</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.33765585846041,-16.72676348546095,811.5475056080094</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="03362600BC2C371834C3">
+		<name>47</name>
+		<LookAt>
+			<longitude>-49.33262460537424</longitude>
+			<latitude>-16.71756469484308</latitude>
+			<altitude>796.0943809666571</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>975.6883946167363</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.33249363866221,-16.71771008068208,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="0781AC26F92C37190913">
+		<name>194</name>
+		<LookAt>
+			<longitude>-49.32291439066137</longitude>
+			<latitude>-16.73056452208511</latitude>
+			<altitude>795.2584188120002</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>707.5663558726228</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.32179941135505,-16.7308992268072,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="0FF8031DC92C3719C08D">
+		<name>208</name>
+		<LookAt>
+			<longitude>-49.3181726983156</longitude>
+			<latitude>-16.72057692739428</latitude>
+			<altitude>787.3747775386166</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>787.3002180477486</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.31786088605237,-16.72093298357533,790.4529321541197</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="05AFC9F3102C371AB3AC">
+		<name>37</name>
+		<LookAt>
+			<longitude>-49.30880877397951</longitude>
+			<latitude>-16.72751238506681</latitude>
+			<altitude>809.0761125779356</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>179.6192215712108</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.30833191223284,-16.72766409430116,812.6381788757191</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="03D722755E2C371B7E59">
+		<name>10</name>
+		<LookAt>
+			<longitude>-49.31304441805778</longitude>
+			<latitude>-16.71108750147532</latitude>
+			<altitude>780.4255216273227</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>2044.321002294892</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.31284482558874,-16.71319624371127,783.9390101738827</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="09864793812C371C1876">
+		<name>28</name>
+		<LookAt>
+			<longitude>-49.30279477305474</longitude>
+			<latitude>-16.71491360101808</latitude>
+			<altitude>782.2255662085738</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>1756.612269659818</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.30293441670063,-16.71386936692156,781.6185834197717</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="06F08B51D02C371D3D62">
+		<name>12</name>
+		<LookAt>
+			<longitude>-49.30389637994192</longitude>
+			<latitude>-16.70913316978763</latitude>
+			<altitude>783.12162379711</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>416.5638082373335</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.30394470726863,-16.70890782578919,784.2537760449043</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="0854731A512C371E0062">
+		<name>7</name>
+		<LookAt>
+			<longitude>-49.3001628373679</longitude>
+			<latitude>-16.70083161794719</latitude>
+			<altitude>772.0912274463071</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>983.9711415239435</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.29948370938433,-16.70185338488372,773.2253407017631</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="04CF9829962C371F4F1B">
+		<name>7</name>
+		<LookAt>
+			<longitude>-49.30616884590846</longitude>
+			<latitude>-16.70360744810652</latitude>
+			<altitude>793.5279190731447</altitude>
+			<heading>4.258210675133619e-13</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>415.2848683046614</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.30633869039057,-16.7035698136163,794.7802941881213</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="0F52DBC2EF2C371FD771">
+		<name>8</name>
+		<LookAt>
+			<longitude>-49.30936742842356</longitude>
+			<latitude>-16.70523732747208</latitude>
+			<altitude>789.5389146654347</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>1028.527573112369</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.30855424464337,-16.70521674828018,791.9605929153</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="0E01CF98CF2C37204C04">
+		<name>1</name>
+		<LookAt>
+			<longitude>-49.31618542836728</longitude>
+			<latitude>-16.7000179261637</latitude>
+			<altitude>764.3091861600685</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>490.1716918360763</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.31612553999847,-16.69980998754676,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="0173A131F52C3720DA61">
+		<name>3</name>
+		<LookAt>
+			<longitude>-49.32150842509269</longitude>
+			<latitude>-16.70434858089711</latitude>
+			<altitude>760.5977197528945</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>1504.477814467682</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.32310009288698,-16.70535176102024,768.7178063760808</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="0D7E5032952C372147D3">
+		<name>2</name>
+		<LookAt>
+			<longitude>-49.32725148254828</longitude>
+			<latitude>-16.7020612596244</latitude>
+			<altitude>763.1756929855991</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>672.0982781899511</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0E40038F2A434F92D22F</styleUrl>
+		<Point>
+			<coordinates>-49.32735421968727,-16.70133504480163,763.4950874347451</coordinates>
+		</Point>
+	</Placemark>
+</Document>
+</kml>

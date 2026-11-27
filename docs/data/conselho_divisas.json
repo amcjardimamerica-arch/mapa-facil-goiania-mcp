@@ -1,1 +1,389 @@
-{"divisas":[{"conselhos":["Centro-Sul","Oeste"],"extensao_m":11737,"referencias":[{"nome":"Córrego Cascavel","m":4826},{"nome":"AV Rio Verde","m":3474},{"nome":"Av Padre Orlando Morais","m":2917},{"nome":"AV C 7","m":2336},{"nome":"AV Leblon","m":2321},{"nome":"AV C 107","m":1639},{"nome":"AV C 4","m":1342},{"nome":"AV Vera Cruz","m":1335},{"nome":"AV C 1","m":865},{"nome":"AV Guarapari","m":816},{"nome":"Av Campinas","m":698},{"nome":"AV T 32","m":446},{"nome":"AV T 9","m":365},{"nome":"AV T 63","m":256},{"nome":"AV C 12","m":245},{"nome":"AV C 10","m":213},{"nome":"Córrego Vaca Brava","m":80}],"bairros_na_divisa":["Bro Anhanguera","Bro Jardim América","Gleba","Jd Atlântico","Prq Amazônia","Prq Anhanguera","Res Manhattan","S Sol Nascente","S Sudoeste","Vl Alpes","Vl Americano do Brasil","Vl Rosa","Vl Santa Efigênia"]},{"conselhos":["Centro-Sul","Norte"],"extensao_m":9234,"referencias":[{"nome":"Rio Meia Ponte","m":7125},{"nome":"AV Laurício Pedro Rasmussem","m":1226},{"nome":"AV Pampulha","m":423},{"nome":"Fer Rffsa - Desativado","m":419},{"nome":"Ribeirão Anicuns","m":306},{"nome":"AV Goiás","m":153}],"bairros_na_divisa":["Bro Feliz","Bro Santa Genoveva","Ch Retiro","Gleba","Grj Agrícola Jacirema","Lot Goiânia 2","Prq Industrial de Goiânia","S Criméia Leste","S Jaó","S Morais","S Negrão de Lima","S Urias Magalhães","Vl Froes","Vl Monticelli","Vl Roriz"]},{"conselhos":["Centro-Sul","Leste"],"extensao_m":8745,"referencias":[{"nome":"RDV BR 153","m":22075},{"nome":"AV C","m":1675},{"nome":"AV Cuiabá","m":554},{"nome":"TRV BR 153","m":147},{"nome":"AV Brasil","m":143},{"nome":"Pça Trevo Piratininga","m":130},{"nome":"ACS Serradourada - BR 153","m":118}],"bairros_na_divisa":["Bro Alto da Glória","Gleba","Jd Goiás","Jd Novo Mundo","Jd Santo Antônio","Jd da Luz","S Leste Universitário","S Morais","Vl Alto da Glória","Vl Bandeirantes","Vl Morais","Vl Redenção"]},{"conselhos":["Centro-Sul","Campinas"],"extensao_m":9879,"referencias":[{"nome":"Av Perimetral","m":4955},{"nome":"AV Oeste","m":3658},{"nome":"AV Anhangüera","m":3071},{"nome":"AV João Luiz de Almeida","m":2152},{"nome":"AV Independência","m":2129},{"nome":"AV Goiás","m":2041},{"nome":"Córrego Capim Puba","m":1401},{"nome":"AV T 2","m":1338},{"nome":"Av Campinas","m":904},{"nome":"AV República do Líbano","m":782},{"nome":"Av D Lourdes Estivalete Teixeira","m":423},{"nome":"AV T 6","m":412},{"nome":"Mrg Botafogo","m":145},{"nome":"R Z1","m":117},{"nome":"Av Assis Chateaubriand","m":111},{"nome":"Pça Prof. Joao Setubal.","m":109},{"nome":"R Bandeirantes","m":105},{"nome":"Vla Capim Puba","m":100},{"nome":"Pça T 17","m":90}],"bairros_na_divisa":["Gleba","S Aeroporto","S Bueno","S Central","S Coimbra","S Criméia Oeste","S Norte Ferroviário","S Norte Ferroviário II","S Oeste","S Sol Nascente","S dos Funcionários","Vl Aguiar","Vl Bethel","Vl Boa Sorte"]},{"conselhos":["Oeste","Campinas"],"extensao_m":22301,"referencias":[{"nome":"AV Guapó","m":19613},{"nome":"Av Pedro Ludovico","m":6067},{"nome":"AV Pedro Ludovico","m":4405},{"nome":"AV C 17","m":2803},{"nome":"AV Araxá","m":1909},{"nome":"AV T 2","m":1621},{"nome":"AV C 15","m":1296},{"nome":"AV E 6","m":1158},{"nome":"RDV BR 060","m":996},{"nome":"ANEL VIÁRIO METROPOLITANO","m":976},{"nome":"AV Fusijama","m":808},{"nome":"AV A","m":730},{"nome":"AV Wenceslau Brás","m":725},{"nome":"AV Consolação","m":623},{"nome":"R JAV2","m":578},{"nome":"Anel Viário","m":542},{"nome":"Córrego Taquaral","m":352},{"nome":"R Paralela PSR","m":340},{"nome":"R Doutor Solon De Almeida","m":293},{"nome":"AV B","m":273},{"nome":"R Carnauba","m":269},{"nome":"R R 2","m":239},{"nome":"R JAV14","m":197},{"nome":"AV R2","m":136},{"nome":"R Pinheiro Chagas","m":118},{"nome":"Córrego Santa Rita","m":98},{"nome":"Córrego Salinas","m":89},{"nome":"R PSR1","m":89},{"nome":"R Francisco Serrano","m":83}],"bairros_na_divisa":["Bro Cidade Jardim","Bro Jardim Botânico","Bro Recreio do Funcionário Publico","Ch Salinos","Cjr Romildo F. R. do Amaral","Gleba","Jd Alphaville","Jd Alphavilly I","Jd Ana Lúcia","Lot Alphaville Residencial","Prq Oeste Industrial","Prq Santa Rita","Res Alphaville","Res Brasil Central","Res Portal Santa Rita","S Solar Santa Rita","S Sudoeste","Vl Adélia","Vl Adélia I e III","Vl Anchieta","Vl Canaã","Vl Lucy","Vl Mauá","Vl Nova Canaã","Vl Rizzo","Vlg Santa Rita"]},{"conselhos":["Noroeste","Norte"],"extensao_m":21264,"referencias":[{"nome":"Ribeirão Caveiras","m":4655},{"nome":"Rio Meia Ponte","m":4201},{"nome":"Vertente Córrego do Capim","m":3484},{"nome":"ANEL VIÁRIO METROPOLITANO A IMPLANTAR","m":1774},{"nome":"AV Maria de Oliveira Sampaio","m":1191},{"nome":"RDV Gyn 10","m":1049},{"nome":"R SM 7","m":1032},{"nome":"R Dona Carlota Joaquina","m":855},{"nome":"Rio Meia Ponte - ilha","m":799},{"nome":"R União Postal Universal","m":664},{"nome":"AL Samambaia","m":572},{"nome":"R Joaquim Nabuco","m":545},{"nome":"Represa","m":535},{"nome":"ACS Perimetral Norte","m":202},{"nome":"R Da Divisa","m":171},{"nome":"Tanque de piscicultura","m":166},{"nome":"Av Genesio De Lima Brito","m":147},{"nome":"AV Perimetral Norte","m":132}],"bairros_na_divisa":["Ch Maria Dilce","Ch Samambaia","Con Samambaia","Gleba","Jd Balneário Meia Ponte","Lot Capuava Residencial Privê","Lot Privê Elza Fronza","Lot Recanto Barravento","Res Barravento","Res Maria Lourença","Res Mirante","Res Recanto do Bosque","Res Recreio Panorama","Res Senador Albino Boaventura","S Alto do Vale","S Marabá","Sir Mansões do Campus","Sir Panorama","Vl Finsocial","Vl João Vaz"]},{"conselhos":["Noroeste","Campinas"],"extensao_m":36792,"referencias":[{"nome":"Ribeirão Anicuns","m":15691},{"nome":"RDV GO 060","m":9750},{"nome":"AV Anhangüera","m":3286},{"nome":"AV Castelo Branco","m":3167},{"nome":"AV Rezende","m":3078},{"nome":"AV Consolação","m":2437},{"nome":"Av Maceio","m":1686},{"nome":"Av Dos Pirineus","m":1108},{"nome":"Av Tirol","m":1094},{"nome":"AV Maria-S","m":1037},{"nome":"AV Goianazes","m":1032},{"nome":"AV Xavantes","m":852},{"nome":"Córrego Samambaia","m":641},{"nome":"AV Bandeirantes","m":602},{"nome":"AV Trindade","m":538},{"nome":"AV Macambira","m":477},{"nome":"AV Nízia Floresta","m":446},{"nome":"ANEL VIÁRIO METROPOLITANO A IMPLANTAR","m":427},{"nome":"AV Valmir Alves de Queiroz","m":413},{"nome":"AV Pirineus","m":410},{"nome":"VIA Itajubá","m":374},{"nome":"R Estrada de Ferro","m":371},{"nome":"R José da Barra-S","m":326},{"nome":"Represa Córrego Samambaia","m":320},{"nome":"R Jonh Kennedy","m":311},{"nome":"R Santa Rosa","m":280},{"nome":"R Orlando Teodoro Rodrigues","m":267},{"nome":"R Anicuns","m":234},{"nome":"AV A-1","m":220},{"nome":"R Do Cafe","m":183},{"nome":"Córrego dos Romeiros","m":161},{"nome":"AV Tuiuti","m":159},{"nome":"R Dos Missionarios","m":140},{"nome":"Córrego Taquaral","m":126},{"nome":"Av D Lourdes Estivalete Teixeira","m":111},{"nome":"R Belém","m":109},{"nome":"R Lago 1","m":82}],"bairros_na_divisa":["Bro Cidade Jardim","Bro Goiá","Bro Goiá IV","Bro Industrial Mooca","Bro Ipiranga","Bro Rodoviário","Bro São Francisco","Bro dos Aeroviários","Ch Maringá","Ch Santa Rita","Cj Vera Cruz","Cjr Rodoviário","Con Santa Rita","Con do Lago","Con do Lago 2ª Etapa","Esp do Anicuns","Gleba","Jd Leblon","Jd Leblon II","Jd Mirabel","Jd Pampulha","Jd Petrópolis","Jd Real","Lot Quinta da Boa Vista Fechad","Lot Tropical Verde","Lot Tropical Ville","Prq Buriti","Prq Industrial João Braz","Prq Industrial João Braz 2","Res Cidade Verde","Res Dezopi","Res Jardim Leblon","Res Junqueira","Res Parque Mendanha","Res Petrópolis","Res Serra Azul","Res São Bernardo","S Barra da Tijuca","S São José","Vl João Vaz","Vl Mooca","Vl Mooca - Complemento","Vl Santa Rita Acréscimo","Vl São José - Complemento","Vl São José - Extensão","Vlg Maringá"]},{"conselhos":["Norte","Leste"],"extensao_m":12421,"referencias":[{"nome":"RDV BR 153","m":32213},{"nome":"R 3","m":199},{"nome":"AV Floresta","m":165}],"bairros_na_divisa":["Ch Nossa Senhora da Piedade","Ch Retiro","Gleba","Jd Guanabara","Sir Mansões Bernardo Sayão"]},{"conselhos":["Norte","Campinas"],"extensao_m":7183,"referencias":[{"nome":"Ribeirão Anicuns","m":5741},{"nome":"AV Perim","m":920},{"nome":"Av Dos Guaicurus","m":711},{"nome":"R S","m":507},{"nome":"AV João Damaceno","m":420},{"nome":"R SP 1","m":363}],"bairros_na_divisa":["Ch Tocafundo","Gleba","Res Bethel","Res Itamaraca","Res Itamaracá I","Res Morumbi","Res Perim","S Criméia Oeste","S Gentil Meirelles","S Perim","S Progresso","S São José","S Urias Magalhães","Vl Clemente","Vl Fernandes","Vl Irany","Vl Jacaré","Vl Nossa Senhora Aparecida","Vl Ofugi","Vl Perdiz","Vl Santa Helena","Vl Santana","Vl São José - Extensão","Vl São Luiz","Vl Vera Cruz","Vl Viandelli"]}]}
+{
+ "divisas": [
+  {
+   "conselhos": [
+    "Centro-Sul",
+    "Leste"
+   ],
+   "extensao_m": 8733,
+   "referencias": [
+    {
+     "nome": "RDV BR 153",
+     "m": 17714
+    },
+    {
+     "nome": "AV Cuiabá",
+     "m": 610
+    },
+    {
+     "nome": "AV Paranaguá",
+     "m": 230
+    },
+    {
+     "nome": "AV Gonzaga Jaime",
+     "m": 193
+    }
+   ]
+  },
+  {
+   "conselhos": [
+    "Centro-Sul",
+    "Oeste"
+   ],
+   "extensao_m": 7833,
+   "referencias": [
+    {
+     "nome": "Córrego Cascavel",
+     "m": 8241
+    },
+    {
+     "nome": "Av Padre Orlando Morais",
+     "m": 3610
+    },
+    {
+     "nome": "AV Rio Verde",
+     "m": 1132
+    },
+    {
+     "nome": "AV C 107",
+     "m": 335
+    },
+    {
+     "nome": "Córrego Serrinha",
+     "m": 249
+    },
+    {
+     "nome": "AV T 63",
+     "m": 176
+    },
+    {
+     "nome": "AV T 9",
+     "m": 171
+    },
+    {
+     "nome": "AV C 7",
+     "m": 169
+    }
+   ]
+  },
+  {
+   "conselhos": [
+    "Centro-Sul",
+    "Norte"
+   ],
+   "extensao_m": 7416,
+   "referencias": [
+    {
+     "nome": "Rio Meia Ponte",
+     "m": 7815
+    },
+    {
+     "nome": "Córrego Botafogo",
+     "m": 1565
+    },
+    {
+     "nome": "Av Dr. Jose Neto Carneiro",
+     "m": 872
+    },
+    {
+     "nome": "Córrego Capim Puba",
+     "m": 632
+    },
+    {
+     "nome": "AV Laurício Pedro Rasmussem",
+     "m": 477
+    },
+    {
+     "nome": "Av Desembargador Emilio F. Povoa",
+     "m": 423
+    },
+    {
+     "nome": "AV Goiás",
+     "m": 294
+    },
+    {
+     "nome": "Mrg Botafogo",
+     "m": 218
+    },
+    {
+     "nome": "AV Pedro Paulo de Souza",
+     "m": 170
+    }
+   ]
+  },
+  {
+   "conselhos": [
+    "Centro-Sul",
+    "Campinas"
+   ],
+   "extensao_m": 7317,
+   "referencias": [
+    {
+     "nome": "Córrego Capim Puba",
+     "m": 5602
+    },
+    {
+     "nome": "Av Perimetral",
+     "m": 2230
+    },
+    {
+     "nome": "AV T 2",
+     "m": 1767
+    },
+    {
+     "nome": "AV Anhangüera",
+     "m": 1614
+    },
+    {
+     "nome": "AV República do Líbano",
+     "m": 428
+    },
+    {
+     "nome": "AV Fusijama",
+     "m": 414
+    },
+    {
+     "nome": "AV Goiás",
+     "m": 405
+    },
+    {
+     "nome": "AV T 6",
+     "m": 335
+    },
+    {
+     "nome": "AV Independência",
+     "m": 207
+    },
+    {
+     "nome": "AV Castelo Branco",
+     "m": 203
+    },
+    {
+     "nome": "Mrg Botafogo",
+     "m": 185
+    },
+    {
+     "nome": "Av Assis Chateaubriand",
+     "m": 174
+    },
+    {
+     "nome": "Córrego Cascavel",
+     "m": 172
+    }
+   ]
+  },
+  {
+   "conselhos": [
+    "Leste",
+    "Norte"
+   ],
+   "extensao_m": 12183,
+   "referencias": [
+    {
+     "nome": "RDV BR 153",
+     "m": 27691
+    },
+    {
+     "nome": "AV Floresta",
+     "m": 192
+    },
+    {
+     "nome": "Rio Meia Ponte",
+     "m": 184
+    },
+    {
+     "nome": "Córrego do Pião",
+     "m": 177
+    }
+   ]
+  },
+  {
+   "conselhos": [
+    "Noroeste",
+    "Norte"
+   ],
+   "extensao_m": 16673,
+   "referencias": [
+    {
+     "nome": "Rio Meia Ponte",
+     "m": 21670
+    },
+    {
+     "nome": "Rio Meia Ponte - ilha",
+     "m": 4938
+    },
+    {
+     "nome": "Vertente Córrego do Capim",
+     "m": 4222
+    },
+    {
+     "nome": "ACS Perimetral Norte",
+     "m": 840
+    },
+    {
+     "nome": "AV C",
+     "m": 596
+    },
+    {
+     "nome": "ANEL VIÁRIO METROPOLITANO A IMPLANTAR",
+     "m": 268
+    },
+    {
+     "nome": "Ribeirão Caveiras",
+     "m": 179
+    },
+    {
+     "nome": "Ribeirão Anicuns",
+     "m": 177
+    }
+   ]
+  },
+  {
+   "conselhos": [
+    "Noroeste",
+    "Campinas"
+   ],
+   "extensao_m": 17243,
+   "referencias": [
+    {
+     "nome": "RDV GO 060",
+     "m": 16399
+    },
+    {
+     "nome": "Ribeirão Anicuns",
+     "m": 12721
+    },
+    {
+     "nome": "AV Bandeirantes",
+     "m": 1705
+    },
+    {
+     "nome": "Córrego Café",
+     "m": 494
+    },
+    {
+     "nome": "AV Rezende",
+     "m": 302
+    },
+    {
+     "nome": "AV Anhangüera",
+     "m": 280
+    },
+    {
+     "nome": "Av Santa Rita",
+     "m": 194
+    },
+    {
+     "nome": "AV Castelo Branco",
+     "m": 180
+    },
+    {
+     "nome": "Córrego Samambaia",
+     "m": 180
+    },
+    {
+     "nome": "AV Maria-S",
+     "m": 171
+    }
+   ]
+  },
+  {
+   "conselhos": [
+    "Oeste",
+    "Campinas"
+   ],
+   "extensao_m": 13956,
+   "referencias": [
+    {
+     "nome": "AV Guapó",
+     "m": 20190
+    },
+    {
+     "nome": "Av Pedro Ludovico",
+     "m": 7135
+    },
+    {
+     "nome": "AV Pedro Ludovico",
+     "m": 1926
+    },
+    {
+     "nome": "RDV BR 060",
+     "m": 673
+    },
+    {
+     "nome": "Vertente",
+     "m": 438
+    },
+    {
+     "nome": "AV Wenceslau Brás",
+     "m": 369
+    },
+    {
+     "nome": "Córrego Taquaral",
+     "m": 325
+    },
+    {
+     "nome": "AV Brasil Central",
+     "m": 300
+    },
+    {
+     "nome": "Córrego Santa Rita",
+     "m": 226
+    },
+    {
+     "nome": "Córrego Salinas",
+     "m": 202
+    },
+    {
+     "nome": "Córrego Macambira",
+     "m": 175
+    }
+   ]
+  },
+  {
+   "conselhos": [
+    "Norte",
+    "Campinas"
+   ],
+   "extensao_m": 8648,
+   "referencias": [
+    {
+     "nome": "Ribeirão Anicuns",
+     "m": 9018
+    },
+    {
+     "nome": "AV Goiás",
+     "m": 1822
+    },
+    {
+     "nome": "AV João Luiz de Almeida",
+     "m": 1110
+    },
+    {
+     "nome": "Córrego Capim Puba",
+     "m": 609
+    },
+    {
+     "nome": "AV Perim",
+     "m": 534
+    },
+    {
+     "nome": "Av Dos Guaicurus",
+     "m": 393
+    },
+    {
+     "nome": "Córrego Botafogo",
+     "m": 302
+    },
+    {
+     "nome": "AV João Damaceno",
+     "m": 271
+    },
+    {
+     "nome": "Mrg Botafogo",
+     "m": 207
+    }
+   ]
+  }
+ ]
+}

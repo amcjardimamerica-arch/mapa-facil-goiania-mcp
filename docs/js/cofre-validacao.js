@@ -1,6 +1,6 @@
 // Página de validação: liberar os dados complementares (cofre) para esta conta, por 24 horas.
 import { iniciarBanco, cofreDisponivel, cofreAberto, abrirCofre, fecharCofre, cofreLiberadoAte } from './banco.js';
-import { gravacaoDisponivel, gravacaoAberta, gravacaoAte, abrirGravacao, fecharGravacao, restaurarGravacao, trocarSenhaGravacao } from './gravacao.js';
+import { gravacaoDisponivel, gravacaoAberta, gravacaoAte, abrirGravacao, fecharGravacao, restaurarGravacao, trocarSenhaGravacao, gravacaoUnificada, unificarComCofre } from './gravacao.js';
 import { el } from './util.js';
 
 const corpo = document.querySelector('#cofre-corpo');
@@ -18,7 +18,12 @@ function montar() {
   const campo = el('input', { type: 'password', class: 'campo', placeholder: 'Senha dos dados complementares', autocomplete: 'off', 'aria-label': 'Senha dos dados complementares' });
   const msg = el('p', { class: 'nota' }, '🔒 Bloqueados. A senha libera, para esta conta e por 24 horas, os dados complementares em todo o mapa.');
   const liberar = async () => {
-    try { await abrirCofre(campo.value); campo.value = ''; montar(); }
+    try {
+      const senha = campo.value;
+      await abrirCofre(senha);
+      if (await gravacaoDisponivel()) await abrirGravacao(senha).catch(() => {}); // senha única: abre os dois
+      campo.value = ''; montar(); montarGravacao();
+    }
     catch (e) { msg.textContent = `🔒 ${e.message}`; msg.classList.add('erro'); }
   };
   campo.addEventListener('keydown', (e) => { if (e.key === 'Enter') liberar(); });
@@ -50,11 +55,28 @@ async function montarGravacao() {
     };
     caixaG.append(msg, el('div', { class: 'linha-botoes' }, el('a', { class: 'botao', href: 'sistema.html' }, 'Voltar ao mapa'),
       el('button', { class: 'botao-texto', onclick: () => { fecharGravacao(); montarGravacao(); } }, 'Fechar a gravação agora')),
-    el('details', {}, el('summary', {}, 'Trocar a senha de gravação'), el('div', { class: 'linha-botoes' }, atual, nova, el('button', { class: 'botao', onclick: trocar }, 'Trocar')), aviso2));
+    el('details', {}, el('summary', {}, 'Trocar a senha de gravação (só se não for usar a do cofre)'), el('div', { class: 'linha-botoes' }, atual, nova, el('button', { class: 'botao', onclick: trocar }, 'Trocar')), aviso2));
     return;
   }
-  msg.textContent = '🔒 Gravação fechada: o que for escrito fica só neste aparelho. A senha de gravação libera, por 24 horas, salvar no banco de dados da Associação.';
-  const campo = el('input', { type: 'password', class: 'campo', placeholder: 'Senha de gravação', autocomplete: 'off', 'aria-label': 'Senha de gravação' });
+  if (!(await gravacaoUnificada())) {
+    // Uma única vez: a gravação passa a usar a mesma senha do cofre.
+    msg.textContent = '🔒 Gravação fechada. Para usar uma senha só (a do cofre) também na gravação, faça uma única vez: digite a senha do cofre e a senha provisória de gravação recebida na implantação.';
+    const sc = el('input', { type: 'password', class: 'campo', placeholder: 'Senha do cofre', autocomplete: 'off', 'aria-label': 'Senha do cofre' });
+    const sp = el('input', { type: 'password', class: 'campo', placeholder: 'Senha provisória de gravação', autocomplete: 'off', 'aria-label': 'Senha provisória de gravação' });
+    const unificar = async () => {
+      msg.textContent = 'Unificando as senhas…';
+      try {
+        await unificarComCofre(sc.value, sp.value, async (x) => { await abrirCofre(x); });
+        sc.value = sp.value = '';
+        msg.textContent = 'Pronto: a senha do cofre agora libera também a gravação (vale em todos os computadores em 1 a 2 minutos).';
+        montar(); setTimeout(montarGravacao, 1500);
+      } catch (e) { msg.textContent = `🔒 Não unificou: ${e.message}`; msg.classList.add('erro'); }
+    };
+    caixaG.append(msg, el('div', { class: 'linha-botoes' }, sc, sp, el('button', { class: 'botao', onclick: unificar }, 'Usar a senha do cofre também na gravação')));
+    return;
+  }
+  msg.textContent = '🔒 Gravação fechada: a mesma senha do cofre libera, por 24 horas, salvar no banco de dados da Associação.';
+  const campo = el('input', { type: 'password', class: 'campo', placeholder: 'Senha do cofre', autocomplete: 'off', 'aria-label': 'Senha do cofre (libera a gravação)' });
   const liberar = async () => { try { await abrirGravacao(campo.value); campo.value = ''; montarGravacao(); } catch (e) { msg.textContent = `🔒 ${e.message}`; msg.classList.add('erro'); } };
   campo.addEventListener('keydown', (e) => { if (e.key === 'Enter') liberar(); });
   caixaG.append(msg, el('div', { class: 'linha-botoes' }, campo, el('button', { class: 'botao', onclick: liberar }, 'Liberar a gravação por 24 horas')));

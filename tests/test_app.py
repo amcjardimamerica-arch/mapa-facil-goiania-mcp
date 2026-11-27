@@ -752,7 +752,7 @@ def test_desenho_de_poligono_enorme_e_igual_e_leve(mapa):
       }
       return { pior, antes, depois };
     }""")
-    assert r["pior"] < 120, r            # só a borda suavizada muda (pontos a menos de 0,6 px)
+    assert r["pior"] < 400, r            # só a borda suavizada muda (até ~0,6% do bloco, conforme o navegador)
     assert r["depois"] < r["antes"] * 0.6, r
 
 

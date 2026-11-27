@@ -116,14 +116,14 @@ export async function gravarDado(caminho, mesclar, mensagem, { repo, texto = fal
 }
 
 /** Troca a senha de gravação: cifra a mesma chave de acesso com a senha nova e grava no site. */
-export async function trocarSenhaGravacao(senhaAtual, senhaNova) {
-  if (String(senhaNova).length < 12) throw new Error('a senha nova precisa de pelo menos 12 caracteres');
+export async function trocarSenhaGravacao(senhaAtual, senhaNova, { minimo = 12, unificada = false } = {}) {
+  if (String(senhaNova).length < minimo) throw new Error(`a senha nova precisa de pelo menos ${minimo} caracteres`);
   await abrirGravacao(senhaAtual);
   const cfg = await config();
   const sal = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
   const chave = await derivar(senhaNova, sal, cfg.iteracoes);
   const cifra = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, chave, new TextEncoder().encode(JSON.stringify({ token: estado.token, teste: 'bussola-gravacao' }))));
-  const novo = { ...cfg, sal: paraB64(sal), iv: paraB64(iv), cifra: paraB64(cifra) };
+  const novo = { ...cfg, sal: paraB64(sal), iv: paraB64(iv), cifra: paraB64(cifra), unificada: unificada || cfg.unificada || false };
   await gravarDado('docs/acesso/gravacao.json', () => novo, 'Senha de gravação trocada', { repo: cfg.repo_site });
   estado.cfg = novo;
   await abrirGravacao(senhaNova);
@@ -131,4 +131,15 @@ export async function trocarSenhaGravacao(senhaAtual, senhaNova) {
 }
 
 export const quemGrava = usuario;
+/** A gravação já usa a mesma senha do cofre? */
+export const gravacaoUnificada = async () => { try { return !!(await config()).unificada; } catch { return false; } };
+/**
+ * Passa a gravação para a MESMA senha do cofre (pedido do titular): confere a senha do cofre, abre a gravação com
+ * a senha provisória uma única vez e cifra a chave de novo com a senha do cofre. Depois disso, uma senha só.
+ */
+export async function unificarComCofre(senhaCofre, senhaProvisoria, conferirCofre) {
+  await conferirCofre(senhaCofre); // lança erro se a senha do cofre estiver errada
+  await trocarSenhaGravacao(senhaProvisoria, senhaCofre, { minimo: 1, unificada: true });
+  return true;
+}
 export const repoDoSite = async () => (await config()).repo_site;
