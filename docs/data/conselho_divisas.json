@@ -3,38 +3,13 @@
   {
    "conselhos": [
     "Centro-Sul",
-    "Leste"
-   ],
-   "extensao_m": 8733,
-   "referencias": [
-    {
-     "nome": "RDV BR 153",
-     "m": 17714
-    },
-    {
-     "nome": "AV Cuiabá",
-     "m": 610
-    },
-    {
-     "nome": "AV Paranaguá",
-     "m": 230
-    },
-    {
-     "nome": "AV Gonzaga Jaime",
-     "m": 193
-    }
-   ]
-  },
-  {
-   "conselhos": [
-    "Centro-Sul",
     "Oeste"
    ],
-   "extensao_m": 7833,
+   "extensao_m": 7952,
    "referencias": [
     {
      "nome": "Córrego Cascavel",
-     "m": 8241
+     "m": 8240
     },
     {
      "nome": "Av Padre Orlando Morais",
@@ -45,8 +20,16 @@
      "m": 1132
     },
     {
+     "nome": "Av Dona Maria Cardoso",
+     "m": 471
+    },
+    {
      "nome": "AV C 107",
      "m": 335
+    },
+    {
+     "nome": "Av Alexandre De Morais",
+     "m": 264
     },
     {
      "nome": "Córrego Serrinha",
@@ -71,43 +54,52 @@
     "Centro-Sul",
     "Norte"
    ],
-   "extensao_m": 7416,
+   "extensao_m": 7190,
    "referencias": [
     {
      "nome": "Rio Meia Ponte",
-     "m": 7815
+     "m": 10844
     },
     {
-     "nome": "Córrego Botafogo",
-     "m": 1565
-    },
-    {
-     "nome": "Av Dr. Jose Neto Carneiro",
-     "m": 872
-    },
-    {
-     "nome": "Córrego Capim Puba",
-     "m": 632
+     "nome": "Ribeirão Anicuns",
+     "m": 806
     },
     {
      "nome": "AV Laurício Pedro Rasmussem",
-     "m": 477
+     "m": 476
     },
     {
-     "nome": "Av Desembargador Emilio F. Povoa",
-     "m": 423
-    },
-    {
-     "nome": "AV Goiás",
-     "m": 294
-    },
-    {
-     "nome": "Mrg Botafogo",
-     "m": 218
+     "nome": "Córrego Botafogo",
+     "m": 192
     },
     {
      "nome": "AV Pedro Paulo de Souza",
-     "m": 170
+     "m": 181
+    }
+   ]
+  },
+  {
+   "conselhos": [
+    "Centro-Sul",
+    "Leste"
+   ],
+   "extensao_m": 8737,
+   "referencias": [
+    {
+     "nome": "RDV BR 153",
+     "m": 17712
+    },
+    {
+     "nome": "AV Cuiabá",
+     "m": 610
+    },
+    {
+     "nome": "AV Paranaguá",
+     "m": 226
+    },
+    {
+     "nome": "AV Gonzaga Jaime",
+     "m": 189
     }
    ]
   },
@@ -116,11 +108,15 @@
     "Centro-Sul",
     "Campinas"
    ],
-   "extensao_m": 7317,
+   "extensao_m": 8721,
    "referencias": [
     {
      "nome": "Córrego Capim Puba",
-     "m": 5602
+     "m": 5821
+    },
+    {
+     "nome": "Córrego Botafogo",
+     "m": 2375
     },
     {
      "nome": "Av Perimetral",
@@ -135,20 +131,24 @@
      "m": 1614
     },
     {
+     "nome": "AV Goiás",
+     "m": 441
+    },
+    {
      "nome": "AV República do Líbano",
-     "m": 428
+     "m": 427
     },
     {
      "nome": "AV Fusijama",
      "m": 414
     },
     {
-     "nome": "AV Goiás",
-     "m": 405
-    },
-    {
      "nome": "AV T 6",
      "m": 335
+    },
+    {
+     "nome": "Mrg Botafogo",
+     "m": 218
     },
     {
      "nome": "AV Independência",
@@ -159,12 +159,8 @@
      "m": 203
     },
     {
-     "nome": "Mrg Botafogo",
-     "m": 185
-    },
-    {
      "nome": "Av Assis Chateaubriand",
-     "m": 174
+     "m": 175
     },
     {
      "nome": "Córrego Cascavel",
@@ -174,125 +170,10 @@
   },
   {
    "conselhos": [
-    "Leste",
-    "Norte"
-   ],
-   "extensao_m": 12183,
-   "referencias": [
-    {
-     "nome": "RDV BR 153",
-     "m": 27691
-    },
-    {
-     "nome": "AV Floresta",
-     "m": 192
-    },
-    {
-     "nome": "Rio Meia Ponte",
-     "m": 184
-    },
-    {
-     "nome": "Córrego do Pião",
-     "m": 177
-    }
-   ]
-  },
-  {
-   "conselhos": [
-    "Noroeste",
-    "Norte"
-   ],
-   "extensao_m": 16673,
-   "referencias": [
-    {
-     "nome": "Rio Meia Ponte",
-     "m": 21670
-    },
-    {
-     "nome": "Rio Meia Ponte - ilha",
-     "m": 4938
-    },
-    {
-     "nome": "Vertente Córrego do Capim",
-     "m": 4222
-    },
-    {
-     "nome": "ACS Perimetral Norte",
-     "m": 840
-    },
-    {
-     "nome": "AV C",
-     "m": 596
-    },
-    {
-     "nome": "ANEL VIÁRIO METROPOLITANO A IMPLANTAR",
-     "m": 268
-    },
-    {
-     "nome": "Ribeirão Caveiras",
-     "m": 179
-    },
-    {
-     "nome": "Ribeirão Anicuns",
-     "m": 177
-    }
-   ]
-  },
-  {
-   "conselhos": [
-    "Noroeste",
-    "Campinas"
-   ],
-   "extensao_m": 17243,
-   "referencias": [
-    {
-     "nome": "RDV GO 060",
-     "m": 16399
-    },
-    {
-     "nome": "Ribeirão Anicuns",
-     "m": 12721
-    },
-    {
-     "nome": "AV Bandeirantes",
-     "m": 1705
-    },
-    {
-     "nome": "Córrego Café",
-     "m": 494
-    },
-    {
-     "nome": "AV Rezende",
-     "m": 302
-    },
-    {
-     "nome": "AV Anhangüera",
-     "m": 280
-    },
-    {
-     "nome": "Av Santa Rita",
-     "m": 194
-    },
-    {
-     "nome": "AV Castelo Branco",
-     "m": 180
-    },
-    {
-     "nome": "Córrego Samambaia",
-     "m": 180
-    },
-    {
-     "nome": "AV Maria-S",
-     "m": 171
-    }
-   ]
-  },
-  {
-   "conselhos": [
     "Oeste",
     "Campinas"
    ],
-   "extensao_m": 13956,
+   "extensao_m": 13985,
    "referencias": [
     {
      "nome": "AV Guapó",
@@ -300,7 +181,7 @@
     },
     {
      "nome": "Av Pedro Ludovico",
-     "m": 7135
+     "m": 7167
     },
     {
      "nome": "AV Pedro Ludovico",
@@ -312,7 +193,7 @@
     },
     {
      "nome": "Vertente",
-     "m": 438
+     "m": 437
     },
     {
      "nome": "AV Wenceslau Brás",
@@ -320,11 +201,7 @@
     },
     {
      "nome": "Córrego Taquaral",
-     "m": 325
-    },
-    {
-     "nome": "AV Brasil Central",
-     "m": 300
+     "m": 326
     },
     {
      "nome": "Córrego Santa Rita",
@@ -342,46 +219,137 @@
   },
   {
    "conselhos": [
+    "Noroeste",
+    "Norte"
+   ],
+   "extensao_m": 16636,
+   "referencias": [
+    {
+     "nome": "Rio Meia Ponte",
+     "m": 21658
+    },
+    {
+     "nome": "Rio Meia Ponte - ilha",
+     "m": 4938
+    },
+    {
+     "nome": "Vertente Córrego do Capim",
+     "m": 4222
+    },
+    {
+     "nome": "ACS Perimetral Norte",
+     "m": 835
+    },
+    {
+     "nome": "AV C",
+     "m": 596
+    },
+    {
+     "nome": "ANEL VIÁRIO METROPOLITANO A IMPLANTAR",
+     "m": 268
+    },
+    {
+     "nome": "Ribeirão Caveiras",
+     "m": 178
+    },
+    {
+     "nome": "Ribeirão Anicuns",
+     "m": 172
+    }
+   ]
+  },
+  {
+   "conselhos": [
+    "Noroeste",
+    "Campinas"
+   ],
+   "extensao_m": 16461,
+   "referencias": [
+    {
+     "nome": "RDV GO 060",
+     "m": 16399
+    },
+    {
+     "nome": "Ribeirão Anicuns",
+     "m": 11254
+    },
+    {
+     "nome": "AV Bandeirantes",
+     "m": 1705
+    },
+    {
+     "nome": "AV Rezende",
+     "m": 280
+    },
+    {
+     "nome": "AV Anhangüera",
+     "m": 280
+    },
+    {
+     "nome": "Córrego Café",
+     "m": 265
+    },
+    {
+     "nome": "Av Santa Rita",
+     "m": 194
+    },
+    {
+     "nome": "AV Castelo Branco",
+     "m": 180
+    },
+    {
+     "nome": "Córrego Samambaia",
+     "m": 180
+    },
+    {
+     "nome": "AV Maria-S",
+     "m": 172
+    }
+   ]
+  },
+  {
+   "conselhos": [
+    "Norte",
+    "Leste"
+   ],
+   "extensao_m": 12160,
+   "referencias": [
+    {
+     "nome": "RDV BR 153",
+     "m": 27691
+    },
+    {
+     "nome": "AV Floresta",
+     "m": 191
+    },
+    {
+     "nome": "Rio Meia Ponte",
+     "m": 183
+    },
+    {
+     "nome": "Córrego do Pião",
+     "m": 177
+    }
+   ]
+  },
+  {
+   "conselhos": [
     "Norte",
     "Campinas"
    ],
-   "extensao_m": 8648,
+   "extensao_m": 5254,
    "referencias": [
     {
      "nome": "Ribeirão Anicuns",
-     "m": 9018
+     "m": 10728
     },
     {
      "nome": "AV Goiás",
-     "m": 1822
-    },
-    {
-     "nome": "AV João Luiz de Almeida",
-     "m": 1110
-    },
-    {
-     "nome": "Córrego Capim Puba",
-     "m": 609
-    },
-    {
-     "nome": "AV Perim",
-     "m": 534
-    },
-    {
-     "nome": "Av Dos Guaicurus",
-     "m": 393
+     "m": 259
     },
     {
      "nome": "Córrego Botafogo",
-     "m": 302
-    },
-    {
-     "nome": "AV João Damaceno",
-     "m": 271
-    },
-    {
-     "nome": "Mrg Botafogo",
-     "m": 207
+     "m": 188
     }
    ]
   }

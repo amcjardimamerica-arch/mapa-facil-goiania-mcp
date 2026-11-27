@@ -306,7 +306,11 @@ async function iniciar() {
   const refazerVetoriais = app.refazerMapas = () => {
     novasQuadras();
     if (globo.chaveBase === 'mapa') globo.definirBase('mapa').catch(() => {});
-    if (globo.camadaRealce) { globo.definirRealce(false); globo.definirRealce(realce.checked); marcarBase(); }
+    // A Base Cadastral é desenhada na camada "Ruas e quadras": ligada a Base, a camada entra junto (1.35).
+    const precisa = realce.checked || BASE.ligado;
+    if (globo.camadaRealce) globo.definirRealce(false);
+    if (precisa) globo.definirRealce(true);
+    marcarBase();
     lotes._atualizarCamada?.();
   };
   levantamento.aoMudarFiltroMapa = refazerVetoriais;
