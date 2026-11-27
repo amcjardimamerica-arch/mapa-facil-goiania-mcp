@@ -32,11 +32,13 @@ import { relatorio as relatorioDesempenho, zerar as zerarDesempenho } from './de
 const Cesium = window.Cesium;
 // Vias e Mobilidade: estado das opções (guardado no aparelho) e o que cada uma liga.
 const TRANSITO_GRUPOS = [
-  ['Sinalização Semafórica', ['semaforos', 'semaforos_novos', 'direita_livre', 'estudo_cruzamentos']],
+  ['Sinalização Semafórica', ['semaforos', 'direita_livre', 'estudo_cruzamentos']],
   ['Sinalização Horizontal e Dispositivos', ['faixas', 'faixas_novas', 'quebra_molas', 'quebra_molas_novos', 'pare', 'pare_novos', 'rotatorias',
     'retencao', 'setas', 'bicicleta', 'ciclovias', 'faixas_onibus', 'estudo_escolas', 'estudo_saude', 'estudo_onibus']],
   ['Fiscalização Eletrônica', ['fiscalizacao', 'licitacao_2023', 'videomonitoramento', 'radares_fora_set', 'cameras_mapillary']],
 ];
+// Camadas que andam juntas com outra numa opção só (1.37.1: semáforos da SET/OSM e do Mapillary = "Cruzamentos semaforizados").
+const TRANSITO_JUNTOS = { semaforos_novos: 'semaforos' };
 // Estudos (onde ainda não há a sinalização): ícone de alerta e nome curto; notícias ficam de fora.
 const TRANSITO_NOMES = { estudo_cruzamentos: '⚠ Cruzamentos sem semáforo', estudo_escolas: '⚠ Escolas sem faixa de pedestres',
   estudo_saude: '⚠ Unidades de saúde sem faixa de pedestres', estudo_onibus: '⚠ Pontos de ônibus sem travessia',
@@ -432,7 +434,8 @@ async function iniciar() {
     for (const cam of T.indice.camadas) {
       if (TRANSITO_NOMES[cam.chave]) cam.titulo = TRANSITO_NOMES[cam.chave];
       if (cam.chave.startsWith('estudo_')) cam.icone = 'alerta';
-      const quer = on && !!est.t[cam.chave] && TRANSITO_GRUPOS.some(([, l]) => l.includes(cam.chave));
+      const k = TRANSITO_JUNTOS[cam.chave] || cam.chave;
+      const quer = on && !!est.t[k] && TRANSITO_GRUPOS.some(([, l]) => l.includes(k));
       if (quer !== T.ligada(cam.chave)) await T.ligar(cam.chave, quer);
     }
   };
