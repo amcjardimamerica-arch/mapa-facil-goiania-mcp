@@ -48,7 +48,12 @@ function montar(liberado = false) {
     const s = campo.value;
     campo.value = '';
     if (!s) return;
-    if (await tentar(s)) montar(true);
+    if (await tentar(s)) {
+      // A mesma senha serve de chave de leitura dos logs (um campo só na página).
+      try { sessionStorage.setItem('bussola:chave-logs', s); } catch { /* */ }
+      const lc = document.querySelector('#logs-chave'); if (lc) lc.value = s;
+      montar(true);
+    }
   };
   campo.addEventListener('keydown', (e) => { if (e.key === 'Enter') enviar(); });
   corpo.append(msg, el('div', { class: 'linha-botoes' }, campo, el('button', { class: 'botao', onclick: enviar }, 'Enviar')));
