@@ -23,9 +23,9 @@ export const ORGANIZACAO = [
   { chave: 'conselho', titulo: 'Conselho Tutelar', especial: 'conselho', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
   { chave: 'energia', titulo: 'Energia', fontes: [{ tema: 'Mapa_Energia', ids: [1, 3, 4, 5, 6, 7, 8] }] }, // 1.36: sem "Tipo de Lâmpada"
   { chave: 'saneamento', titulo: 'Saneamento', fontes: [{ tema: 'Mapa_Sanemanento' }] },
-  { chave: 'viario', titulo: 'Sistema Viário', especial: 'viario', fontes: [{ tema: 'Mapa_RedeViaria' }] },
-  // Trânsito (sinalização sem placas verticais): dados próprios em dados/transito (transito.js), sem servidor.
-  { chave: 'transito', titulo: 'Trânsito', especial: 'transito', proprio: true, independente: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
+  // Vias e Mobilidade (1.37): avenidas, transporte coletivo, vias sem asfalto e propostas (viario.js) e o Trânsito
+  // (transito.js) num só projeto, com desenho próprio (sem as escalas nem os rótulos do Mapa Fácil).
+  { chave: 'viario', titulo: 'Vias e Mobilidade', especial: 'viario', proprio: true, independente: true, fontes: [{ tema: 'Mapa_RedeViaria', ids: [16] }] },
   { chave: 'edificacoes', titulo: 'Edificações', especial: 'edificacoes', fontes: [
     { tema: 'Mapa_Edificios' },
     { tema: 'Mapa_PontosNotaveis', ids: [0, 1, 2, 3], sub: 'Equipamentos públicos e patrimônio' },

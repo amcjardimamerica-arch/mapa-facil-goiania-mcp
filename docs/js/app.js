@@ -24,11 +24,34 @@ import { Geo360 } from './geo360.js';
 import { Eleicoes } from './eleicoes.js';
 import { Comparador } from './comparar.js';
 import { Energia3D } from './energia3d.js';
+import { Vias } from './viario.js';
 import { restaurarGravacao, gravacaoAberta, gravacaoAte } from './gravacao.js';
 import { sincronizarManutencao } from './manutencao.js';
 import { relatorio as relatorioDesempenho, zerar as zerarDesempenho } from './desempenho.js';
 
 const Cesium = window.Cesium;
+// Vias e Mobilidade: estado das opções (guardado no aparelho) e o que cada uma liga.
+const TRANSITO_GRUPOS = [
+  ['Sinalização Semafórica', ['semaforos', 'semaforos_novos', 'direita_livre', 'estudo_cruzamentos']],
+  ['Sinalização Horizontal e Dispositivos', ['faixas', 'faixas_novas', 'quebra_molas', 'quebra_molas_novos', 'pare', 'pare_novos', 'rotatorias',
+    'retencao', 'setas', 'bicicleta', 'ciclovias', 'faixas_onibus', 'estudo_escolas', 'estudo_saude', 'estudo_onibus']],
+  ['Fiscalização Eletrônica', ['fiscalizacao', 'licitacao_2023', 'videomonitoramento', 'radares_fora_set', 'cameras_mapillary']],
+];
+// Estudos (onde ainda não há a sinalização): ícone de alerta e nome curto; notícias ficam de fora.
+const TRANSITO_NOMES = { estudo_cruzamentos: '⚠ Cruzamentos sem semáforo', estudo_escolas: '⚠ Escolas sem faixa de pedestres',
+  estudo_saude: '⚠ Unidades de saúde sem faixa de pedestres', estudo_onibus: '⚠ Pontos de ônibus sem travessia',
+  semaforos: 'Cruzamentos semaforizados', semaforos_novos: 'Semáforos (Mapillary)', faixas_novas: 'Faixas de pedestres (Mapillary)',
+  quebra_molas_novos: 'Quebra-molas (Mapillary)', pare_novos: 'PARE (Mapillary)', retencao: 'Linhas de retenção', setas: 'Setas no pavimento',
+  bicicleta: 'Símbolos de bicicleta', fiscalizacao: 'Radares e lombadas eletrônicas (SET)', cameras_mapillary: 'Câmeras (Mapillary)' };
+const viasEstado = () => {
+  const padrao = { avenidas: true, rotas: false, paradas: false, semAsfalto: false, propostas: false,
+    t: { semaforos: true, direita_livre: true, faixas: true, quebra_molas: true, fiscalizacao: true } };
+  try { const d = JSON.parse(localStorage.getItem('bussola:vias') || 'null'); return d ? { ...padrao, ...d, t: { ...padrao.t, ...(d.t || {}) } } : padrao; } catch { return padrao; }
+};
+const viasGravar = (e) => { try { localStorage.setItem('bussola:vias', JSON.stringify(e)); } catch { /* */ } };
+let viasLigado = false;
+let aplicarVias = () => {};
+
 // Módulo Trânsito (transito.js): espera ele se ligar ao globo.
 const esperarTransito = async () => {
   for (let i = 0; i < 120 && !(window.BussolaTransito?.indice); i++) await new Promise((ok) => setTimeout(ok, 250));
@@ -107,37 +130,36 @@ async function iniciar() {
     },
     baseLigar: (ligado) => { BASE.ligado = ligado; gravarBase(); app.refazerMapas?.(); },
     // Sistema Viário: destaque amarelo das avenidas e vias principais sobre o satélite (desligável).
-    viario: (caixa) => caixa.append(el('label', { class: 'linha-chave' },
-      el('span', {}, el('strong', {}, 'Avenidas principais em destaque (amarelo)'), el('small', {}, 'Avenidas, rodovias e vias arteriais pintadas sobre a foto; desligue para deixá-las brancas como as demais ruas')),
-      el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', id: 'base-avenidas', checked: BASE.avenidas !== false,
-        onchange: (e) => { BASE.avenidas = e.target.checked; gravarBase(); app.refazerMapas?.(); } }), el('span', {})))),
+    // Vias e Mobilidade: avenidas, transporte coletivo, vias sem asfalto e propostas, e a sinalização de trânsito.
+    viario: async (caixa) => {
+      const est = viasEstado();
+      const chave = (titulo, ligado, aoMudar, sub = false) => el('label', { class: `linha-chave${sub ? ' dren-sub-linha' : ''}` },
+        el('span', {}, sub ? titulo : el('strong', {}, titulo)),
+        el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', checked: !!ligado, onchange: (e) => aoMudar(e.target.checked) }), el('span', {})));
+      const mudar = (k) => (v) => { est[k] = v; viasGravar(est); aplicarVias(); };
+      const marcar = (x) => { x.setAttribute('data-tc', '1'); return x; };
+      caixa.append(
+        chave('Avenidas Principais', est.avenidas, mudar('avenidas')),
+        chave('Transporte Coletivo', est.rotas || est.paradas, (v) => { est.rotas = est.paradas = v; viasGravar(est); aplicarVias(); caixa.querySelectorAll('[data-tc] input').forEach((x) => { x.checked = v; }); }),
+        marcar(chave('Rotas de ônibus', est.rotas, mudar('rotas'), true)),
+        marcar(chave('Pontos e paradas de ônibus', est.paradas, mudar('paradas'), true)),
+        chave('Vias sem asfalto', est.semAsfalto, mudar('semAsfalto')),
+        chave('Vias propostas (sem abertura)', est.propostas, mudar('propostas')));
+      const T = await esperarTransito();
+      for (const [g, itens] of TRANSITO_GRUPOS) {
+        caixa.append(el('h4', { class: 'subtitulo' }, g));
+        for (const k of itens) {
+          const cam = T.indice.camadas.find((x) => x.chave === k);
+          if (!cam) continue;
+          caixa.append(chave(TRANSITO_NOMES[k] || cam.titulo, est.t[k], (v) => { est.t[k] = v; viasGravar(est); aplicarVias(); }, true));
+        }
+      }
+    },
+    viarioLigar: (ligado) => { viasLigado = ligado; aplicarVias(); },
     // Mapas de eleição: Zonas Eleitorais (TSE) e Conselho Tutelar (regiões e locais da eleição de 2023).
     eleitoral: (caixa) => caixa.append(el('p', { class: 'nota' }, 'Zonas eleitorais do TSE e os colégios de votação. O clique seleciona a zona inteira ou o colégio.')),
     eleitoralLigar: (ligado) => { eleicoes.definir(ligado ? 'zonas' : '').catch(() => {}); levantamento.definirEleicao(ligado ? 'geral' : '').catch(() => {}); },
     // Trânsito: um botão por camada (semáforos, faixas, quebra-molas, PARE, rotatórias, ciclovias, fiscalização…)
-    transito: async (caixa) => {
-      const T = await esperarTransito();
-      const filtro = el('input', { type: 'search', class: 'campo', placeholder: 'Filtrar por bairro (ex.: Jardim América)', oninput: (e) => T.filtrarBairro(e.target.value) });
-      caixa.append(el('p', { class: 'nota' }, 'Sinalização de trânsito (sem placas verticais). O que não é da base oficial da SET vem de mapeamento colaborativo e notícias: conferir em campo.'), filtro);
-      const grupos = new Map();
-      for (const cam of T.indice.camadas) {
-        if (!grupos.has(cam.grupo)) { const g = el('div', {}, el('h4', { class: 'subtitulo' }, cam.grupo)); grupos.set(cam.grupo, g); caixa.append(g); }
-        const ent = el('input', { type: 'checkbox', checked: T.ligada(cam.chave), onchange: (e) => T.ligar(cam.chave, e.target.checked) });
-        grupos.get(cam.grupo).append(el('label', { class: 'linha-chave' },
-          el('span', {}, el('span', { class: 'lv-cor', style: `background:${cam.cor}` }), ` ${cam.titulo} `, el('small', {}, (cam.quantidade || 0).toLocaleString('pt-BR'))),
-          el('span', { class: 'interruptor' }, ent, el('span', {}))));
-        cam._caixa = ent;
-      }
-      caixa.append(el('p', { class: 'nota' }, `Fontes: ${T.indice.fontes.map((f) => f.nome).join(' · ')}. Dados de ${T.indice.gerado_em}.`));
-    },
-    transitoLigar: async (ligado) => {
-      const T = await esperarTransito();
-      for (const cam of T.indice.camadas) {
-        const on = ligado && cam.ligada;
-        if (ligado ? on : T.ligada(cam.chave)) await T.ligar(cam.chave, on);
-        if (cam._caixa) cam._caixa.checked = T.ligada(cam.chave);
-      }
-    },
     conselho: (caixa) => caixa.append(el('p', { class: 'nota' }, 'Regiões da eleição do Conselho Tutelar (juntam zonas inteiras ou partes delas), com os colégios de votação e as transferências de seções.'),
       CFG.conselhoEditavel ? el('div', { class: 'linha-botoes' },
         el('button', { class: 'botao', onclick: async (e) => {
@@ -398,6 +420,23 @@ async function iniciar() {
   // Energia: postes 3D em toda Goiânia (no lugar dos marcadores de poste e de iluminação).
   const energia3d = new Energia3D({ globo, identificar });
   camadas.energia3d = energia3d;
+  // Vias e Mobilidade: desenho próprio (viario.js) + avenidas (Base) + sinalização de trânsito (transito.js).
+  const vias = new Vias({ globo });
+  app.vias = vias;
+  aplicarVias = async () => {
+    const est = viasEstado(), on = viasLigado;
+    if (BASE.avenidas !== (on && est.avenidas)) { BASE.avenidas = on && est.avenidas; gravarBase(); app.refazerMapas?.(); }
+    vias.definir({ rotas: on && est.rotas, paradas: on && est.paradas, semAsfalto: on && est.semAsfalto, propostas: on && est.propostas });
+    const T = await esperarTransito().catch(() => null);
+    if (!T) return;
+    for (const cam of T.indice.camadas) {
+      if (TRANSITO_NOMES[cam.chave]) cam.titulo = TRANSITO_NOMES[cam.chave];
+      if (cam.chave.startsWith('estudo_')) cam.icone = 'alerta';
+      const quer = on && !!est.t[cam.chave] && TRANSITO_GRUPOS.some(([, l]) => l.includes(cam.chave));
+      if (quer !== T.ligada(cam.chave)) await T.ligar(cam.chave, quer);
+    }
+  };
+  esperarTransito().then((T) => { for (const cam of T.indice.camadas) { if (TRANSITO_NOMES[cam.chave]) cam.titulo = TRANSITO_NOMES[cam.chave]; if (cam.chave.startsWith('estudo_')) cam.icone = 'alerta'; } }).catch(() => {});
   app.energia3d = energia3d;
   const maos = new Cesium.ScreenSpaceEventHandler(globo.cena.canvas);
   // Ctrl + clique: o lote abre numa janela própria, ao lado das outras, para comparar (até 3).

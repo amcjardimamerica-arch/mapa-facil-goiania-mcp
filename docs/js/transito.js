@@ -116,7 +116,7 @@ const T = {
       fonte = new C.CustomDataSource(`transito-${chave}`);
       const cor = C.Color.fromCssColorString(d.cor || '#fff');
       if (d.tipo === 'ponto') {
-        const img = icone(d.icone, d.cor);
+        const img = icone(this.indice.camadas.find((c) => c.chave === chave)?.icone || d.icone, d.cor); // estudos: ícone de alerta
         const iBairro = d.campos.indexOf('bairro');
         const ddc = d.distancia_max ? new C.DistanceDisplayCondition(0, d.distancia_max) : undefined;
         for (const it of d.itens) {

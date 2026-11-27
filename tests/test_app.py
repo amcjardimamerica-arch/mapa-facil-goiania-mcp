@@ -245,7 +245,7 @@ def test_camadas_organizadas_em_projetos(mapa):
         edificiosDesligados: !bussola.edificios.ativo && !bussola.edificios.primitiva,
       };
     }""")
-    assert r["ordem"] == ["Base Cadastral", "Drenagem Pluvial", "Geo360 (atualização 2024-2025)", "Zonas Eleitorais", "Conselho Tutelar", "Energia", "Saneamento", "Sistema Viário"], r["ordem"]
+    assert r["ordem"] == ["Base Cadastral", "Drenagem Pluvial", "Geo360 (atualização 2024-2025)", "Zonas Eleitorais", "Conselho Tutelar", "Energia", "Saneamento", "Vias e Mobilidade"], r["ordem"]
     assert "Zonas Municipais" in r["titulos"] and "Pontos Notáveis" not in r["titulos"] and "PUAMA" not in r["titulos"]
     assert "Simplifica Goiânia – Uso do Solo" not in r["titulos"] and "Documentação de Bairros" not in r["titulos"]
     assert r["eleitoral"] == [["Mapa_Limites", [10], ""]] and all(10 not in f[1] for f in r["limites"]), r["limites"]
@@ -997,18 +997,20 @@ def test_conselho_divisa_norte_leste_pela_br153():
 
 
 def test_transito_no_painel_camadas(mapa):
-    """1.31: Trânsito como projeto do painel Camadas — um botão por camada, filtro por bairro e ficha do sistema."""
+    """1.37: Vias e Mobilidade — avenidas, transporte coletivo, vias sem asfalto, propostas e o Trânsito em 3 subdivisões."""
     r = mapa.evaluate("""async () => {
-      const cam = bussola.camadas; cam.ligar('transito', true);
-      for (let i = 0; i < 80 && !(window.BussolaTransito?.ligada('semaforos')); i++) await new Promise((o) => setTimeout(o, 250));
-      const T = window.BussolaTransito; const g = cam.grupo('transito');
+      const cam = bussola.camadas; const g = cam.grupo('viario');
       if (!g.corpo.dataset.pronto) { await cam._montarCorpo(g, g.corpo); g.corpo.dataset.pronto = '1'; }
-      T.filtrarBairro('jardim américa'); const ja = T.fontes.semaforos.entities.values.filter((e) => e.show).length; T.filtrarBairro('');
-      const f = T.linhas(T.fontes.semaforos.entities.values[0]);
-      cam.ligar('transito', false);
+      cam.ligar('viario', true);
+      for (let i = 0; i < 80 && !(window.BussolaTransito?.ligada('semaforos')); i++) await new Promise((o) => setTimeout(o, 250));
+      const T = window.BussolaTransito;
+      const r = { titulo: g.titulo, transito: !!cam.grupos.find((x) => x.chave === 'transito'), subt: [...g.corpo.querySelectorAll('h4')].map((x) => x.textContent),
+        notas: g.corpo.querySelectorAll('.nota').length, semaforos: T.ligada('semaforos'), noticias: g.corpo.textContent.includes('Notícias') };
+      cam.ligar('viario', false);
       for (let i = 0; i < 40 && T.ligada('semaforos'); i++) await new Promise((o) => setTimeout(o, 250));
-      return { camadas: T.indice.camadas.length, botoes: g.corpo.querySelectorAll('input[type=checkbox]').length, ja, titulo: f.titulo,
-        flutuante: !!document.querySelector('#transito-botao'), desligado: !T.ligada('semaforos') };
+      r.desligado = !T.ligada('semaforos');
+      return r;
     }""")
-    assert r["camadas"] == 25 and r["botoes"] == 25 and r["ja"] >= 43 and r["titulo"] == "Cruzamentos semaforizados", r
-    assert not r["flutuante"] and r["desligado"], r
+    assert r["titulo"] == "Vias e Mobilidade" and not r["transito"] and not r["notas"] and not r["noticias"], r
+    assert r["subt"] == ["Sinalização Semafórica", "Sinalização Horizontal e Dispositivos", "Fiscalização Eletrônica"], r
+    assert r["semaforos"] and r["desligado"], r
