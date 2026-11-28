@@ -438,6 +438,7 @@ async function iniciar() {
   // Energia: postes 3D em toda Goiânia (no lugar dos marcadores de poste e de iluminação).
   const energia3d = new Energia3D({ globo, identificar });
   camadas.energia3d = energia3d;
+  camadas.geo360 = geo360;
   // Vias e Mobilidade: desenho próprio (viario.js) + avenidas (Base) + sinalização de trânsito (transito.js).
   const equipamentos = new Equipamentos({ globo, identificar });
   aplicarEquipamentos = () => equipamentos.definir({ grande: !!(BASE.ligado && BASE.eq_grande), educacao: !!(BASE.ligado && BASE.eq_educacao),

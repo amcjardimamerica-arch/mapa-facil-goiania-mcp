@@ -79,7 +79,7 @@ class ProvedorGeo360 extends ProvedorCanvas {
   requestImage(x, y, nivel) {
     const ret = this._grade.tileXYToNativeRectangle(x, y, nivel);
     const T = this._T, q = new Quadro(ret, T), tela = this._tela(), g = tela.getContext('2d');
-    const d = this.geo, op = d.opcoes, folga = (ret.east - ret.west) * 0.08;
+    const d = this.geo, op = d.efetivas(), folga = (ret.east - ret.west) * 0.08;
     const itens = d.indice.busca(ret.west - folga, ret.south - folga, ret.east + folga, ret.north + folga);
     g.lineCap = 'round'; g.lineJoin = 'round';
     const porLinha = (lista) => lista.map((it) => it.aneis);
@@ -136,6 +136,9 @@ export class Geo360 {
     Object.assign(this, { globo, identificar });
     this.opcoes = { ...PADRAO, ...memoria.ler('bussola:geo360', {}) };
     this.ligado = false;
+    // 1.40: Planta de Valores (Edificações) e Risco Geológico (Meio Ambiente) usam estes dados nas camadas que já
+    // existiam; condomínios entram na ficha do lote. O projeto "Serviços Públicos" mostra os equipamentos.
+    this.externo = { planta: false, risco: false };
     this.camada = null;
   }
 
@@ -194,9 +197,25 @@ export class Geo360 {
     return this.equipamentos.map((it) => ({ n: it.v.n, r: it.v.t, c: it.v.c, b: it.v.b, k: 'eq360' }));
   }
 
+  /** O que desenhar: equipamentos pelo projeto; Planta e Risco pelas camadas de Edificações e Meio Ambiente. */
+  efetivas() {
+    const op = this.opcoes, lig = this.ligado;
+    return { ...op, condominios: false, planta: this.externo.planta, risco: this.externo.risco,
+      gcm: lig && op.gcm, cultura: lig && op.cultura, assist: lig && op.assist };
+  }
+  get ativo() { return this.ligado || this.externo.planta || this.externo.risco; }
+
+  /** Edificações → Planta de Valores e Meio Ambiente → Risco Geológico ligam estes dados (versão 2016-2025). */
+  async definirExterno(ext) {
+    Object.assign(this.externo, ext);
+    if (!this.ativo) { this._tirar(); return; }
+    try { await this.carregar(); } catch { return; }
+    this.redesenhar();
+  }
+
   async ligar(ligado) {
     this.ligado = ligado;
-    if (!ligado) { this._tirar(); return; }
+    if (!ligado) { if (this.ativo) this.redesenhar(); else this._tirar(); return; }
     try { await this.carregar(); } catch (e) { aviso(`Geo360 indisponível: ${e.message}`, 'alerta'); return; }
     if (this.ligado) { this.redesenhar(); this._montarPainel(); }
   }
@@ -208,7 +227,7 @@ export class Geo360 {
 
   redesenhar() {
     this._tirar();
-    if (!this.ligado || !this.indice) return;
+    if (!this.ativo || !this.indice) return;
     this.camada = this.globo.viewer.imageryLayers.addImageryProvider(new ProvedorGeo360(this, this.globo.ret));
     this.globo.camadaGeo360 = this.camada;
     this.globo.organizarPilha();
@@ -230,34 +249,27 @@ export class Geo360 {
       el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', checked: !!op[id], onchange: (e) => { op[id] = e.target.checked; this._gravar(); this.redesenhar(); } }), el('span', {})));
     const grupo = (titulo, ...itens) => el('details', { class: 'dren-grupo', open: true }, el('summary', {}, titulo), ...itens);
     const nC = (f) => (this.condominios ? this.condominios.filter(f).length : null);
-    c.append(el('p', { class: 'nota' }, this.indice
-      ? `${fmtNum(this.condominios.length)} condomínios, ${fmtNum(this.planta.length)} setores da Planta de Valores (até ${this.anosPv.at(-1) || 2025}), ${fmtNum(this.risco.length)} setores de risco e ${fmtNum(this.equipamentos.length)} equipamentos. Condomínios a partir de ~1,5 km de altura.`
-      : 'Ligue o projeto para carregar os dados do Geo360.'));
     c.append(
-      grupo('Condomínios',
-        chave('condominios', 'Condomínios', COR.condHorizontal, this.condominios?.length, 'contorno oficial por tipo'),
-        el('div', { class: 'dren-sub' },
-          chave('condHorizontal', 'Horizontal e horizontal fechado', COR.condHorizontalFechado, nC((x) => x.tp.startsWith('Horizontal'))),
-          chave('condVertical', 'Vertical', COR.condVertical, nC((x) => x.tp === 'Vertical')),
-          chave('condInformal', 'Vertical informal', COR.condVerticalInformal, nC((x) => x.tp === 'Vertical informal')))),
-      grupo('Planta de Valores',
-        chave('planta', 'Valor do m² (2016-2025)', COR.pvAlto, this.planta?.length, 'verde: mais barato · vermelho: mais caro (fundo)', 'faixa')),
-      grupo('Risco geológico',
-        chave('risco', 'Setores de risco', COR.riscoAlto, this.risco?.length, 'CPRM / Defesa Civil, por grau de risco')),
-      grupo('Equipamentos municipais',
-        chave('gcm', 'Guarda Civil Municipal', COR.gcm, this.equipamentos?.filter((e) => e.t === 'gcm').length, null, 'circulo'),
-        chave('cultura', 'Cultura', COR.cultura, this.equipamentos?.filter((e) => e.t === 'cultura').length, null, 'circulo'),
-        chave('assist', 'Assistência Social (CRAS, CREAS)', COR.assist, this.equipamentos?.filter((e) => e.t === 'assist').length, null, 'circulo')),
-      el('p', { class: 'nota' }, 'Dados públicos do portal Geo360 Goiânia (Prefeitura de Goiânia, recadastramento 2024-2025), obtidos pela Lei de Acesso à Informação. Complementam o que já vinha do Mapa Fácil.'));
+      chave('gcm', 'Guarda Civil Municipal', COR.gcm, this.equipamentos?.filter((e) => e.t === 'gcm').length, null, 'circulo'),
+      chave('cultura', 'Cultura', COR.cultura, this.equipamentos?.filter((e) => e.t === 'cultura').length, null, 'circulo'),
+      chave('assist', 'Assistência Social (CRAS, CREAS)', COR.assist, this.equipamentos?.filter((e) => e.t === 'assist').length, null, 'circulo'));
+  }
+
+  /** Condomínio oficial (2024-2025) que contém o ponto [lon, lat], para a ficha do lote. */
+  async condominioEm(lon, lat) {
+    try { await this.carregar(); } catch { return null; }
+    const x = mx(lon), y = my(lat);
+    for (const it of this.indice.busca(x - 1, y - 1, x + 1, y + 1)) if (it.k === 'cond' && dentroAneis(it.aneis, x, y)) return it.v;
+    return null;
   }
 
   // ------------------------------------------------------------------ clique
   aoClicar(ponto) {
-    if (!this.ligado || !this.indice || !ponto) return false;
+    if (!this.ativo || !this.indice || !ponto) return false;
     const mpp = (this.globo.metrosPorPixel() || 1) / Math.cos((ponto.lat * Math.PI) / 180);
     const x = mx(ponto.lon), y = my(ponto.lat), tol = Math.max(3, mpp * 10);
     const perto = this.indice.busca(x - tol, y - tol, x + tol, y + tol);
-    const op = this.opcoes;
+    const op = this.efetivas();
     // Equipamento mais perto (ponto).
     let eq = null, de = tol;
     for (const it of perto) if (it.k === 'eq') {

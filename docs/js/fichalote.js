@@ -194,6 +194,9 @@ export async function fichaLote(ident, { lote, quadra, bairro, ponto, extra = nu
 
   // 6. Cadastro imobiliário e dados complementares (lote, quadra, bairro, cadastro e levantamento unificados)
   const s6 = ident.secao('🔒 Cadastro imobiliário e dados complementares (somente leitura)', { aberto: true });
+  // Condomínio oficial do recadastramento 2024-2025 (Serviços Públicos): atualiza os campos de condomínio do lote.
+  const cond = ponto ? await window.bussola?.geo360?.condominioEm?.(ponto.lon, ponto.lat).catch?.(() => null) : null;
+  if (n !== ident.pedido) return;
   const linhas = [];
   const por = new Set();
   const add = (rotulo, valor) => { if (vazio(valor) || por.has(rotulo)) return; por.add(rotulo); linhas.push([rotulo, String(valor)]); };
@@ -203,10 +206,11 @@ export async function fichaLote(ident, { lote, quadra, bairro, ponto, extra = nu
   add('Lote', nl || t(u0.nrlote));
   add('Bairro', nb || nomeBairro(t(u0.nmbairro)));
   add('CEP', CEP);
-  add('Edifício / condomínio', t(u0.nmedificio) || t(a.nm_cond));
+  add('Edifício / condomínio', t(cond?.n) || t(u0.nmedificio) || t(a.nm_cond)); // nome oficial 2024-2025 primeiro
   add('Cartório', t(a.in_cart));
   add('Vistoriado', simNao(a.in_vist));
-  add('Condomínio horizontal', simNao(a.in_cond));
+  add('Condomínio horizontal', cond ? (/^horizontal/i.test(cond.tp || '') ? 'Sim' : 'Não') : simNao(a.in_cond));
+  add('Tipo de condomínio', cond?.tp && cond.tp !== 'Sem categoria' ? cond.tp : '');
   add('Inscrições no lote', us.length ? fmtNum(us.length) : '');
   add('Área do terreno', u0.areaterr ? `${fmtNum(u0.areaterr, 2)} m²` : '');
   add('Área total edificada', u0.areattedif ? `${fmtNum(u0.areattedif, 2)} m²` : '');

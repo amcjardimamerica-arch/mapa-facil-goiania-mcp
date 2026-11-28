@@ -17,7 +17,7 @@ export const ORGANIZACAO = [
   // Drenagem Pluvial: base própria da A.M.C. (drenagem.js), ligada à parte, sem desligar os mapas de eleição.
   { chave: 'drenagem', titulo: 'Drenagem Pluvial', especial: 'drenagem', proprio: true, independente: true, semConta: true, fontes: [{ tema: 'Mapa_Sanemanento', ids: [] }] },
   // Geo360 (atualização 2024-2025): dados públicos do portal da Prefeitura que não vinham do Mapa Fácil (geo360.js).
-  { chave: 'geo360', titulo: 'Geo360 (atualização 2024-2025)', especial: 'geo360', proprio: true, independente: true, semConta: true, fontes: [{ tema: 'Mapa_Sanemanento', ids: [] }] },
+  { chave: 'geo360', titulo: 'Serviços Públicos', especial: 'geo360', proprio: true, independente: true, semConta: true, fontes: [{ tema: 'Mapa_Sanemanento', ids: [] }] },
   // Mapas de eleição: desenho próprio (eleicoes.js), um de cada vez.
   { chave: 'eleitoral', titulo: 'Zonas Eleitorais', especial: 'eleitoral', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
   { chave: 'conselho', titulo: 'Conselho Tutelar', especial: 'conselho', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
@@ -329,6 +329,7 @@ export class Camadas {
         if (f.tema.chave !== chave) continue;
         for (const id of f.sel) {
           if (chave === 'Mapa_Energia' && id <= 4) continue; // postes e iluminação: desenho 3D (energia3d.js)
+          if ((chave === 'Mapa_Edificios' && id === 7) || (chave === 'Mapa_MeioAmbiente' && id === 14)) continue; // versão 2016-2025 (geo360.js)
           if (!(g.marcadores && this.servicos?.ehMarcador(chave, id))) ids.add(id);
         }
       }
@@ -352,6 +353,10 @@ export class Camadas {
 
   _aplicar(chave) {
     const e = this.porTema.get(chave), t = e.tema;
+    if ((chave === 'Mapa_Edificios' || chave === 'Mapa_MeioAmbiente') && this.geo360) {
+      const sel = (k, tema, id) => { const g = this.grupos.find((x) => x.chave === k); const f = g?.fontes.find((y) => y.tema.chave === tema); return !!(g?.ligado && f?.sel.has(id)); };
+      this.geo360.definirExterno({ planta: sel('edificacoes', 'Mapa_Edificios', 7), risco: sel('meio', 'Mapa_MeioAmbiente', 14) });
+    }
     if (chave === 'Mapa_Energia' && this.energia3d) {
       const g = this.grupos.find((x) => x.chave === 'energia');
       const sel = g?.ligado ? [...(g.fontes[0]?.sel || [])] : [];
