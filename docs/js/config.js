@@ -1,5 +1,5 @@
 // Configuração da Bússola. Tudo que depende de endereço externo fica aqui.
-export const VERSAO = '1.47.0';
+export const VERSAO = '1.47.1';
 
 // Endereços do Mapa Fácil: servem só de NOME das consultas, que o banco local responde (banco.js). A política de
 // segurança das páginas (CSP) não deixa o navegador se conectar a eles.

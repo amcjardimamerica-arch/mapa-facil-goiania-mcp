@@ -22,10 +22,14 @@ class PostesCidade extends Postes {
   /** Ficha do poste da cidade: só o que o cadastro traz (barramento, potência e tensão); sem manutenção. */
   abrir(p) {
     const id = this.identificar;
-    id.abrir({ titulo: p.iluminacao ? 'Poste com iluminação pública' : 'Poste', subtitulo: 'Energia · Goiânia', ponto: { lon: p.lon, lat: p.lat, alt: NaN } });
+    id.abrir({ titulo: p.numero ? `Poste ${p.numero}` : (p.iluminacao ? 'Poste com iluminação pública' : 'Poste'), subtitulo: 'Energia · Goiânia', ponto: { lon: p.lon, lat: p.lat, alt: NaN } });
     id.corpo.textContent = '';
-    const linhas = [['Barramento', p.barramento || '—'], ['Potência da lâmpada', p.potencia ? `${p.potencia} W` : (p.iluminacao ? '—' : 'Sem iluminação')],
+    const linhas = [['Número do poste (cadastro)', p.numero || '—'], ['Barramento', p.barramento || '—'],
+      ['Potência da lâmpada', p.potencia ? `${p.potencia} W` : (p.iluminacao ? '—' : 'Sem iluminação')],
       ['Tensão da rede', p.tensao ? `${p.tensao} tensão` : 'Não identificada']];
+    if (p.tipoPoste) linhas.push(['Tipo de poste', p.tipoPoste]);
+    if (p.luminaria) linhas.push(['Luminária', p.luminaria]);
+    if (p.cadastro) linhas.push(['Código no cadastro', p.cadastro]);
     id.corpo.append(id.tabela(linhas));
   }
 }
@@ -87,7 +91,7 @@ export class Energia3D {
       inSR: '4326', outSR: '4326', spatialRel: 'esriSpatialRelIntersects', returnGeometry: String(geo), outFields: campos })
       .then((r) => r.features || []).catch(() => []);
     const [postes, luz, prim, sec] = await Promise.all([
-      q(4, 'OBJECTID,id,pgf_barram'), this.comLuz ? q(1, 'OBJECTID,Cod_Cad,Pot_Lamp,Qtd_Lamp') : [], q(7, 'OBJECTID'), q(8, 'OBJECTID'),
+      q(4, 'OBJECTID,id,pgf_barram,pgf_label,tb_pg_desc'), this.comLuz ? q(1, 'OBJECTID,Cod_Cad,Pot_Lamp,Qtd_Lamp,Barramento,Tipo_Lumin') : [], q(7, 'OBJECTID'), q(8, 'OBJECTID'),
     ]);
     if (vez !== this._vez) return;
     const primarias = prim.map((f) => f.geometry?.paths || []).flat();
@@ -97,8 +101,11 @@ export class Energia3D {
       if (!f.geometry || f.geometry.x == null) continue;
       const pt = [f.geometry.x, f.geometry.y];
       const tensao = pertoDeLinha(pt, primarias, 0.00006) ? 'Alta' : pertoDeLinha(pt, secundarias, 0.00006) ? 'Baixa' : '';
-      lista.push({ lon: pt[0], lat: pt[1], codigo: `CID-${f.attributes.id || f.attributes.OBJECTID}`, tensao, material: 'R',
-        barramento: f.attributes.pgf_barram, iluminacao: false, bairro: '' });
+      const a = f.attributes;
+      const limpo = (v) => String(v ?? '').trim();
+      lista.push({ lon: pt[0], lat: pt[1], codigo: `CID-${a.id || a.OBJECTID}`, tensao, material: 'R',
+        numero: limpo(a.pgf_label) || limpo(a.pgf_barram), barramento: limpo(a.pgf_barram), tipoPoste: limpo(a.tb_pg_desc),
+        cadastro: limpo(a.id), iluminacao: false, bairro: '' });
     }
     // Iluminação: no poste mais próximo (até ~12 m); sem poste perto, vira um poste com luminária.
     for (const f of luz) {
@@ -106,8 +113,10 @@ export class Energia3D {
       const pt = [f.geometry.x, f.geometry.y], kx = Math.cos((pt[1] * Math.PI) / 180);
       let melhor = null, d = 0.00011 ** 2;
       for (const p of lista) { const dd = dist2([p.lon, p.lat], pt, kx); if (dd < d) { d = dd; melhor = p; } }
-      if (melhor) { melhor.iluminacao = true; melhor.potencia = f.attributes.Pot_Lamp; }
-      else lista.push({ lon: pt[0], lat: pt[1], codigo: `IP-${f.attributes.Cod_Cad || f.attributes.OBJECTID}`, tensao: '', material: 'R', iluminacao: true, potencia: f.attributes.Pot_Lamp, bairro: '' });
+      const bar = String(f.attributes.Barramento ?? '').trim();
+      if (melhor) { melhor.iluminacao = true; melhor.potencia = f.attributes.Pot_Lamp; melhor.luminaria = f.attributes.Tipo_Lumin; if (!melhor.barramento) melhor.barramento = bar; if (!melhor.numero) melhor.numero = bar; }
+      else lista.push({ lon: pt[0], lat: pt[1], codigo: `IP-${f.attributes.Cod_Cad || f.attributes.OBJECTID}`, tensao: '', material: 'R', iluminacao: true,
+        potencia: f.attributes.Pot_Lamp, luminaria: f.attributes.Tipo_Lumin, barramento: bar, numero: bar, bairro: '' });
     }
     const mostrar = this.comPostes ? lista : lista.filter((p) => p.iluminacao);
     mostrar.forEach((p, i) => { p.i = i; });
