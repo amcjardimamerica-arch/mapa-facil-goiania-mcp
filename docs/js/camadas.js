@@ -21,8 +21,8 @@ export const ORGANIZACAO = [
   // Mapas de eleição: desenho próprio (eleicoes.js), um de cada vez.
   { chave: 'eleitoral', titulo: 'Zonas Eleitorais', especial: 'eleitoral', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
   { chave: 'conselho', titulo: 'Conselho Tutelar', especial: 'conselho', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
-  { chave: 'energia', titulo: 'Energia', fontes: [{ tema: 'Mapa_Energia', ids: [1, 3, 4, 5, 6, 7, 8] }] }, // 1.36: sem "Tipo de Lâmpada"
-  { chave: 'saneamento', titulo: 'Saneamento', fontes: [{ tema: 'Mapa_Sanemanento' }] },
+  { chave: 'energia', titulo: 'Energia', semFerramentas: true, fontes: [{ tema: 'Mapa_Energia', ids: [1, 3, 4, 5, 6, 7, 8] }] }, // 1.36: sem "Tipo de Lâmpada"
+  { chave: 'saneamento', titulo: 'Saneamento', semFerramentas: true, fontes: [{ tema: 'Mapa_Sanemanento' }] },
   // Vias e Mobilidade (1.37): avenidas, transporte coletivo, vias sem asfalto e propostas (viario.js) e o Trânsito
   // (transito.js) num só projeto, com desenho próprio (sem as escalas nem os rótulos do Mapa Fácil).
   { chave: 'viario', titulo: 'Vias e Mobilidade', especial: 'viario', proprio: true, independente: true, fontes: [{ tema: 'Mapa_RedeViaria', ids: [16] }] },
@@ -166,8 +166,9 @@ export class Camadas {
       const legenda = el('div', { class: 'legenda', hidden: true });
       corpo.append(el('div', { class: 'tema-ferramentas' },
         el('label', { class: 'rotulo-faixa' }, 'Opacidade', faixa),
-        el('button', { class: 'botao-texto', onclick: () => this._alternarLegenda(g, legenda) }, 'Legenda'),
-        el('button', { class: 'botao-texto', title: 'Voltar à seleção padrão do portal', onclick: () => this.restaurar(g.chave) }, 'Padrão')), legenda);
+        // Energia e Saneamento: sem "Legenda" e "Padrão" (1.38.2)
+        g.semFerramentas ? null : el('button', { class: 'botao-texto', onclick: () => this._alternarLegenda(g, legenda) }, 'Legenda'),
+        g.semFerramentas ? null : el('button', { class: 'botao-texto', title: 'Voltar à seleção padrão do portal', onclick: () => this.restaurar(g.chave) }, 'Padrão')), legenda);
       if (g.marcadores) corpo.append(el('p', { class: 'nota' }, 'Os pontos aparecem como marcadores com ícone por tipo; clique em um marcador para ver os dados.'));
     }
     // Base Cadastral: as camadas são controladas pelas opções do próprio projeto (sem lista repetida).

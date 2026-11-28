@@ -1004,7 +1004,7 @@ def test_transito_no_painel_camadas(mapa):
       cam.ligar('viario', true);
       for (let i = 0; i < 80 && !(window.BussolaTransito?.ligada('semaforos')); i++) await new Promise((o) => setTimeout(o, 250));
       const T = window.BussolaTransito;
-      const r = { titulo: g.titulo, transito: !!cam.grupos.find((x) => x.chave === 'transito'), subt: [...g.corpo.querySelectorAll('h4')].map((x) => x.textContent),
+      const r = { titulo: g.titulo, transito: !!cam.grupos.find((x) => x.chave === 'transito'), subt: [...g.corpo.querySelectorAll('.linha-chave:not(.dren-sub-linha) > span:first-child')].map((x) => x.textContent).filter((t) => /^Sinaliza|^Fiscaliza/.test(t)),
         notas: g.corpo.querySelectorAll('.nota').length, semaforos: T.ligada('semaforos'), noticias: g.corpo.textContent.includes('Notícias') };
       cam.ligar('viario', false);
       for (let i = 0; i < 40 && T.ligada('semaforos'); i++) await new Promise((o) => setTimeout(o, 250));

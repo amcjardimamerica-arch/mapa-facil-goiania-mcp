@@ -36,18 +36,20 @@ let botoesEdicao = () => null;
 // Vias e Mobilidade: estado das opções (guardado no aparelho) e o que cada uma liga.
 const TRANSITO_GRUPOS = [
   ['Sinalização Semafórica', ['semaforos', 'direita_livre', 'estudo_cruzamentos']],
-  ['Sinalização Horizontal e Dispositivos', ['faixas', 'faixas_novas', 'quebra_molas', 'quebra_molas_novos', 'pare', 'pare_novos', 'rotatorias',
-    'retencao', 'setas', 'bicicleta', 'ciclovias', 'faixas_onibus', 'estudo_escolas', 'estudo_saude', 'estudo_onibus']],
-  ['Fiscalização Eletrônica', ['fiscalizacao', 'licitacao_2023', 'videomonitoramento', 'radares_fora_set', 'cameras_mapillary']],
+  ['Sinalização Horizontal e Dispositivos', ['faixas', 'quebra_molas', 'pare', 'rotatorias', 'retencao', 'setas', 'ciclovias', 'faixas_onibus',
+    'estudo_escolas', 'estudo_saude', 'estudo_onibus']],
+  ['Fiscalização Eletrônica', ['fiscalizacao', 'videomonitoramento', 'licitacao_2023']],
 ];
-// Camadas que andam juntas com outra numa opção só (1.37.1: semáforos da SET/OSM e do Mapillary = "Cruzamentos semaforizados").
-const TRANSITO_JUNTOS = { semaforos_novos: 'semaforos' };
-// Estudos (onde ainda não há a sinalização): ícone de alerta e nome curto; notícias ficam de fora.
-const TRANSITO_NOMES = { estudo_cruzamentos: '⚠ Cruzamentos sem semáforo', estudo_escolas: '⚠ Escolas sem faixa de pedestres',
-  estudo_saude: '⚠ Unidades de saúde sem faixa de pedestres', estudo_onibus: '⚠ Pontos de ônibus sem travessia',
-  semaforos: 'Cruzamentos semaforizados', semaforos_novos: 'Semáforos (Mapillary)', faixas_novas: 'Faixas de pedestres (Mapillary)',
-  quebra_molas_novos: 'Quebra-molas (Mapillary)', pare_novos: 'PARE (Mapillary)', retencao: 'Linhas de retenção', setas: 'Setas no pavimento',
-  bicicleta: 'Símbolos de bicicleta', fiscalizacao: 'Radares e lombadas eletrônicas (SET)', cameras_mapillary: 'Câmeras (Mapillary)' };
+// Mesmo indicador de fontes diferentes = um botão só (1.38.2): o que importa é o ponto, não a fonte.
+const TRANSITO_JUNTOS = { semaforos_novos: 'semaforos', faixas_novas: 'faixas', quebra_molas_novos: 'quebra_molas', pare_novos: 'pare',
+  radares_fora_set: 'fiscalizacao', cameras_mapillary: 'videomonitoramento', bicicleta: 'ciclovias' };
+// Nomes do painel. Estudos (onde ainda não há a sinalização): ícone de alerta; notícias ficam de fora.
+const TRANSITO_NOMES = { semaforos: 'Cruzamentos semaforizados', direita_livre: 'Direita Livre e Esquerda Livre',
+  estudo_cruzamentos: '⚠ Cruzamentos sem semáforo', faixas: 'Faixas de pedestres', quebra_molas: 'Quebra-molas e faixas elevadas',
+  pare: 'PARE (parada obrigatória)', rotatorias: 'Rotatórias', retencao: 'Linhas de retenção', setas: 'Setas no pavimento',
+  ciclovias: 'Ciclovias, ciclofaixas e sinalização de bicicleta', faixas_onibus: 'Faixas exclusivas de ônibus',
+  estudo_escolas: '⚠ Escolas sem faixa de pedestres', estudo_saude: '⚠ Unidades de saúde sem faixa de pedestres', estudo_onibus: '⚠ Pontos de ônibus sem travessia',
+  fiscalizacao: 'Radares e lombadas eletrônicas', videomonitoramento: 'Câmeras de monitoramento', licitacao_2023: 'Locais previstos para fiscalização (licitação 2023)' };
 const viasEstado = () => {
   const padrao = { avenidas: true, rotas: false, paradas: false, semAsfalto: false, propostas: false,
     t: { semaforos: true, direita_livre: true, faixas: true, quebra_molas: true, fiscalizacao: true } };
@@ -152,11 +154,20 @@ async function iniciar() {
         chave('Vias propostas (sem abertura)', est.propostas, mudar('propostas')));
       const T = await esperarTransito();
       for (const [g, itens] of TRANSITO_GRUPOS) {
-        caixa.append(el('h4', { class: 'subtitulo' }, g));
-        for (const k of itens) {
-          const cam = T.indice.camadas.find((x) => x.chave === k);
-          if (!cam) continue;
-          caixa.append(chave(TRANSITO_NOMES[k] || cam.titulo, est.t[k], (v) => { est.t[k] = v; viasGravar(est); aplicarVias(); }, true));
+        const presentes = itens.filter((k) => T.indice.camadas.some((x) => x.chave === k));
+        const subs = [];
+        const geral = chave(g, presentes.some((k) => est.t[k]), (v) => {
+          for (const k of presentes) est.t[k] = v;
+          subs.forEach((x) => { x.querySelector('input').checked = v; });
+          viasGravar(est); aplicarVias();
+        });
+        caixa.append(geral);
+        for (const k of presentes) {
+          const linha = chave(TRANSITO_NOMES[k] || k, est.t[k], (v) => {
+            est.t[k] = v; viasGravar(est); aplicarVias();
+            geral.querySelector('input').checked = presentes.some((x) => est.t[x]);
+          }, true);
+          subs.push(linha); caixa.append(linha);
         }
       }
     },
