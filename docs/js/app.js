@@ -470,7 +470,7 @@ async function iniciar() {
       if (links.length) identificar.corpo.append(el('div', { class: 'linha-botoes centro' }, ...links.map(([r, v]) => el('a', { class: 'botao-texto', href: String(v), target: '_blank', rel: 'noopener' }, r))));
       return;
     }
-    if (energia3d.postes.aoClicar(pego) || poligonos.aoClicar(pego) || edificios.aoClicar(pego) || servicos.aoClicar(pego) || marcadores.aoClicar(pego) || drenagem.aoClicar(ponto) || geo360.aoClicar(ponto) || levantamento.aoClicar(pego, ponto)) return;
+    if (energia3d.aoClicar(pego) || poligonos.aoClicar(pego) || edificios.aoClicar(pego) || servicos.aoClicar(pego) || marcadores.aoClicar(pego) || drenagem.aoClicar(ponto) || geo360.aoClicar(ponto) || levantamento.aoClicar(pego, ponto)) return;
     if (eleicoes.aoClicar(ponto)) return; // mapa de eleição ligado: zona ou região inteira, nunca quadra ou lote
     if (ponto) identificar.emPonto(ponto);
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);

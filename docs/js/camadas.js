@@ -98,6 +98,8 @@ export class Camadas {
         const padrao = t.somente_consulta
           ? CFG.consultaPadrao.filter((id) => folhas.has(id))
           : [...folhas].filter((id) => { const c = t._porId.get(id); return c.visivel && this._paisVisiveis(t, c); });
+        // Energia: ao ligar o projeto, já vêm os postes e a iluminação pública (desenho 3D, energia3d.js).
+        if (t.chave === 'Mapa_Energia') for (const id of [1, 4]) if (folhas.has(id) && !padrao.includes(id)) padrao.push(id);
         fontes.push({ tema: t, sub: f.sub || '', folhas, nos, padrao, sel: new Set(padrao) });
       }
       if (!fontes.length) return;

@@ -5,17 +5,20 @@
 //  - Barramento e Potência da lâmpada (Mapa_Energia/1 e /3): o braço com a luminária (no poste mais próximo).
 //  - Tensão (bola do topo): poste na rede primária = alta (laranja); só na secundária = baixa (amarelo).
 // Por serem dezenas de milhares, o desenho 3D é montado para a área vista, de perto (até ~2,5 km de altura).
-import { Postes } from './postes.js';
+import { Postes, escalaMostrador } from './postes.js';
 import { consultarOuServidor } from './banco.js';
 
 const Cesium = window.Cesium;
-const ALTURA_MAX = 2500;   // m de câmera: acima disso o 3D não é montado
-const RAIO = 0.012;        // graus em torno do centro da vista (~1,3 km)
+const ALTURA_3D = 2500;    // m de câmera: até aqui, o poste em 3D
+const ALTURA_MAX = 7000;   // até aqui, os postes como pontos (crescem até 5 km); acima, somem
+const RAIO = 0.012;        // graus em torno do centro da vista (~1,3 km) para o 3D
 
 /** Postes da cidade: o desenho de postes.js com dados montados a partir do cadastro da Prefeitura. */
 class PostesCidade extends Postes {
   carregar() { return Promise.resolve(this.dados); }
   _corAtual(p, parte) { return parte === 'lampada' ? '#00ffff' : super._corAtual(p, parte); }
+  /** A luminária cresce até 5 km (e fica assim até 7 km). */
+  escalaLamp(h) { return escalaMostrador(h, { ate: 5000 }); }
   /** Ficha do poste da cidade: só o que o cadastro traz (barramento, potência e tensão); sem manutenção. */
   abrir(p) {
     const id = this.identificar;
@@ -48,7 +51,15 @@ export class Energia3D {
     this.postes = new PostesCidade({ globo, identificar });
     this.ativo = false; this.comPostes = false; this.comLuz = false;
     this._vez = 0;
+    // De 2,5 km a 7 km: os postes como pontos (luminária ciano; sem luminária, a cor da tensão), crescendo até 5 km.
+    this.pontos = globo.cena.primitives.add(new Cesium.PointPrimitiveCollection());
     globo.camera.moveEnd.addEventListener(() => this.atualizar());
+  }
+
+  /** Clique: poste em 3D ou ponto de longe abrem a mesma ficha (sem manutenção). */
+  aoClicar(pego) {
+    if (pego?.collection === this.pontos && pego.id?.poste) { this.postes.abrir(pego.id.poste); return true; }
+    return this.postes.aoClicar(pego);
   }
 
   /** Liga ou desliga: postes (camada Poste) e/ou iluminação (Barramento ou Potência). */
@@ -62,12 +73,16 @@ export class Energia3D {
   async atualizar() {
     const vez = ++this._vez;
     const h = this.globo.camera.positionCartographic.height;
-    if (!this.ativo || h > ALTURA_MAX) { this.postes.mostrar(false); this._chave = null; return; }
+    if (!this.ativo || h > ALTURA_MAX) { this.postes.mostrar(false); this.pontos.removeAll(); this._chave = null; this.globo.redesenhar(); return; }
+    const em3d = h <= ALTURA_3D;
     const c = this.globo.camera.positionCartographic;
     const lon = Cesium.Math.toDegrees(c.longitude), lat = Cesium.Math.toDegrees(c.latitude);
-    const chave = `${Math.round(lon / (RAIO / 2))}:${Math.round(lat / (RAIO / 2))}:${this.comPostes}:${this.comLuz}`;
+    const raio = em3d ? RAIO : Math.min(0.07, Math.max(RAIO, (h / 111000) * 0.9)); // a vista inteira, até ~7 km
+    const passo = em3d ? RAIO / 2 : raio / 3;
+    const tam = em3d ? 0 : Math.round(4 + 5 * Math.min(1, (h - ALTURA_3D) / (5000 - ALTURA_3D))); // px: cresce até 5 km
+    const chave = `${em3d}:${Math.round(lon / passo)}:${Math.round(lat / passo)}:${Math.round(raio * 100)}:${tam}:${this.comPostes}:${this.comLuz}`;
     if (chave === this._chave) return;
-    const env = [lon - RAIO, lat - RAIO, lon + RAIO, lat + RAIO].join(',');
+    const env = [lon - raio, lat - raio, lon + raio, lat + raio].join(',');
     const q = (id, campos, geo = true) => consultarOuServidor('Mapa_Energia', id, { f: 'json', where: '1=1', geometry: env, geometryType: 'esriGeometryEnvelope',
       inSR: '4326', outSR: '4326', spatialRel: 'esriSpatialRelIntersects', returnGeometry: String(geo), outFields: campos })
       .then((r) => r.features || []).catch(() => []);
@@ -96,9 +111,22 @@ export class Energia3D {
     }
     const mostrar = this.comPostes ? lista : lista.filter((p) => p.iluminacao);
     mostrar.forEach((p, i) => { p.i = i; });
+    this._chave = chave;
+    if (!em3d) {
+      // longe: pontos leves (sem o 3D), do mesmo jeito para a cidade inteira vista
+      this.postes.mostrar(false);
+      this.pontos.removeAll();
+      const COR = { Alta: Cesium.Color.fromCssColorString('#ff9800'), Baixa: Cesium.Color.fromCssColorString('#ffeb3b'), '': Cesium.Color.fromCssColorString('#bdbdbd') };
+      const luz = Cesium.Color.fromCssColorString('#00ffff');
+      for (const p of mostrar) this.pontos.add({ position: Cesium.Cartesian3.fromDegrees(p.lon, p.lat, 780), pixelSize: p.iluminacao ? tam : Math.max(3, tam - 2),
+        color: p.iluminacao ? luz : COR[p.tensao || ''], outlineColor: Cesium.Color.BLACK, outlineWidth: 1, disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        id: { poste: p } });
+      this.globo.redesenhar();
+      return;
+    }
+    this.pontos.removeAll();
     this.postes.dados = { postes: mostrar };
     this.postes._alt = null; this.postes._rumos = null; this.postes._assinatura = null;
-    this._chave = chave;
     await this.postes.mostrar(true);
   }
 }

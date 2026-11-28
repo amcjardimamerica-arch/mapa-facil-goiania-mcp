@@ -76,6 +76,9 @@ function deslocar(lon, lat, d, rumo) {
 }
 
 export class Postes {
+  /** Escala da luminária para a altura da câmera (a dos postes da cidade cresce até 5 km). */
+  escalaLamp(h) { return escalaLampada(h); }
+
   constructor({ globo, identificar }) {
     this.globo = globo;
     this.identificar = identificar;
@@ -161,11 +164,11 @@ export class Postes {
     this._ids = new Map(instancias.map((g) => [`${g.id.poste.i}:${g.id.parte}`, g.id]));
     this._lampadas = lampadas;
     this._escala = null;
-    this._montarLampadas(escalaLampada(this.globo.camera.positionCartographic.height));
+    this._montarLampadas(this.escalaLamp(this.globo.camera.positionCartographic.height));
     if (!this._ouvinte) {
       this.globo.camera.percentageChanged = Math.min(this.globo.camera.percentageChanged, 0.05);
       this._ouvinte = this.globo.camera.changed.addEventListener(() => {
-        if (this._lampadas?.length) this._montarLampadas(escalaLampada(this.globo.camera.positionCartographic.height));
+        if (this._lampadas?.length) this._montarLampadas(this.escalaLamp(this.globo.camera.positionCartographic.height));
       });
     }
     // A cena só redesenha quando pedida: insiste até a montagem assíncrona dos postes terminar.
