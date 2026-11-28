@@ -159,7 +159,7 @@ export class Camadas {
     const corpo = el('div', { class: 'tema-corpo', hidden: true });
     const titulo = el('button', { class: 'tema-titulo', 'aria-expanded': 'false', onclick: () => {
       const abre = corpo.hidden;
-      if (abre && !corpo.dataset.pronto) { this._montarCorpo(g, corpo); corpo.dataset.pronto = '1'; }
+      if (abre && !corpo.dataset.pronto) { this._montarCorpo(g, corpo); corpo.dataset.pronto = '1'; corpo.addEventListener('change', () => this._atualizarConta(g)); }
       corpo.hidden = !abre;
       titulo.setAttribute('aria-expanded', String(abre));
       if (abre) this.atualizarEscala();
@@ -267,12 +267,46 @@ export class Camadas {
     this._atualizarConta(g);
   }
 
+  /**
+   * Itens do projeto, contados como aparecem no painel (1.45): cada camada final da lista e cada opção própria do
+   * projeto; títulos e subtítulos (que só ligam e desligam os seus itens) não contam.
+   */
+  _itensDoPainel(g) {
+    const itens = [];
+    for (const lab of g.corpo.querySelectorAll('label')) {
+      const inp = lab.querySelector(':scope input[type=checkbox], :scope > span > input[type=checkbox]');
+      if (!inp || lab.classList.contains('titulo-sub')) continue;
+      const li = lab.closest('li');
+      if (lab.closest('.arvore')) { if (li?.classList.contains('no-folha')) itens.push(inp); continue; }
+      const prox = lab.nextElementSibling;
+      const titulo = lab.classList.contains('linha-chave') && !lab.classList.contains('dren-sub-linha') && prox
+        && (prox.classList.contains('dren-sub-linha') || prox.classList.contains('item-marcacao'));
+      if (!titulo) itens.push(inp);
+    }
+    return itens;
+  }
+
   _atualizarConta(g) {
     if (!g.conta) return;
-    if (g.semConta) { g.conta.textContent = ''; g.no.classList.toggle('ligado', !!g.ligado); return; }
-    const sel = g.fontes.reduce((s, f) => s + f.sel.size, 0);
-    g.conta.textContent = g.ligado && !g.consulta ? `${sel}/${this._total(g)}` : `${this._total(g)}`;
     g.no.classList.toggle('ligado', g.ligado && !g.consulta);
+    if (!g.corpo?.dataset.pronto) { g.conta.textContent = ''; return; }
+    const itens = this._itensDoPainel(g);
+    if (!itens.length) { g.conta.textContent = ''; return; }
+    const marcados = itens.filter((i) => i.checked).length;
+    g.conta.textContent = g.ligado && marcados ? `${marcados}/${itens.length}` : `${itens.length}`;
+  }
+
+  /** Monta o corpo de todos os projetos (escondido) para a contagem dos itens ficar certa desde a abertura. */
+  async montarTodos() {
+    for (const g of this.grupos) {
+      if (!g.corpo.dataset.pronto) {
+        try { await this._montarCorpo(g, g.corpo); } catch { /* um projeto com erro não impede os outros */ }
+        g.corpo.dataset.pronto = '1';
+        g.corpo.addEventListener('change', () => this._atualizarConta(g));
+      }
+      this._atualizarConta(g);
+    }
+    setTimeout(() => this.grupos.forEach((g) => this._atualizarConta(g)), 4000); // painéis que terminam depois (Trânsito)
   }
 
   _filtrar(texto) {

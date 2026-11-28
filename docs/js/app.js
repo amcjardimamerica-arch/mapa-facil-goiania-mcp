@@ -639,6 +639,7 @@ async function iniciar() {
   if (hash.v && globo.aplicarVisao(hash.v)) globo.liberarLimites();
   else { await globo.chegada(); globo.liberarLimites(); }
   app.pronto = true;
+  camadas.montarTodos().catch(() => {}); // contagem de itens certa em todos os projetos
   aoParar();
   (window.requestIdleCallback || ((f) => setTimeout(f, 1200)))(() => {
     levantamento.associacaoDoAcesso().then((a) => a && levantamento.carregar()).catch(() => {});
