@@ -196,28 +196,34 @@ export class Camadas {
     // Base Cadastral: as camadas são controladas pelas opções do próprio projeto (sem lista repetida).
     for (const f of (g.proprio || g.chave === 'base' ? [] : g.fontes)) {
       const filhosDe = (pai) => f.tema.camadas.filter((c) => c.pai === pai && f.nos.has(c.id));
-      const montar = (pai) => {
+      // Padrão (1.47): o que está no nível de título/subtítulo tem interruptor — inclusive itens soltos ao lado de
+      // subtítulos (ex.: Glebas, Vazios Urbanos em Uso do Solo) e itens logo abaixo do título do projeto; só os itens
+      // DENTRO de um subtítulo (todos do mesmo nível sem pastas) usam caixa de marcação.
+      const montar = (pai, dentroDeSub) => {
         // pasta com uma camada só, de mesmo nome (ex.: Planta de Valores): uma marcação só
         const itens = filhosDe(pai).map((c) => {
           const f1 = c.grupo ? filhosDe(c.id) : [];
           return f1.length === 1 && String(f1[0].nome || '').trim() === String(c.nome || '').trim() ? f1[0] : c;
         });
         if (!itens.length) return null;
-        // Padrão (1.43): título/subtítulo com interruptor horizontal; itens como marcação (checklist); sem faixa de escala.
+        const misto = itens.some((c) => c.grupo);
         return el('ul', { class: 'arvore' }, itens.map((c) => {
           const caixa = el('input', { type: 'checkbox', dataset: { tema: f.tema.chave, id: c.id },
             onchange: (ev) => this._marcar(g, f, c, ev.target.checked) });
           const faixa = this._faixaEscala(f.tema, c);
-          const rotulo = c.grupo
+          const comoTitulo = c.grupo || !dentroDeSub || misto;
+          const rotulo = comoTitulo
             ? el('label', { class: 'linha-chave' }, el('span', {}, el('strong', {}, c.nome || `Camada ${c.id}`)), el('span', { class: 'interruptor' }, caixa, el('span', {})))
             : el('label', {}, caixa, el('span', {}, c.nome || `Camada ${c.id}`));
-          return el('li', { class: c.grupo ? 'no-grupo' : 'no-folha', dataset: { min: faixa.min, max: faixa.max } }, rotulo, montar(c.id));
+          return el('li', { class: c.grupo ? 'no-grupo' : 'no-folha', dataset: { min: faixa.min, max: faixa.max } }, rotulo, c.grupo ? montar(c.id, true) : null);
         }));
       };
-      // subtópico com uma pasta só, do mesmo assunto (ex.: PBZPA): os itens dela direto no subtópico
       let inicio = -1;
       if (f.sub) for (let r = filhosDe(-1); r.length === 1 && r[0].grupo; r = filhosDe(r[0].id)) inicio = r[0].id;
-      const arvore = montar(inicio);
+      // subtítulo que junta mais de uma fonte (ex.: Uso do Solo + Simplifica Goiânia): o primeiro nível de cada fonte fica
+      // no nível de subtítulo (interruptor), para todas ficarem iguais
+      const subCompartilhado = !!f.sub && g.fontes.filter((x) => x.sub === f.sub).length > 1;
+      const arvore = montar(inicio, !!f.sub && !subCompartilhado);
       if (!arvore) continue;
       if (f.sub) {
         // fontes com o mesmo título ficam juntas no mesmo subtópico, com um interruptor que liga e desliga todos os itens

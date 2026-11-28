@@ -131,7 +131,8 @@ async function iniciar() {
   const especiais = {
     // Base Cadastral: opções do desenho cadastral da cidade inteira.
     base: (caixa) => {
-      const op = (k, titulo) => el('label', { class: 'linha-chave dren-sub-linha' }, el('span', {}, titulo),
+      // itens logo abaixo do título do projeto: nível de subtítulo, com interruptor (1.47)
+      const op = (k, titulo) => el('label', { class: 'linha-chave' }, el('span', {}, el('strong', {}, titulo)),
         el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', checked: !!BASE[k], onchange: (e) => { BASE[k] = e.target.checked; gravarBase(); app.refazerMapas?.(); } }), el('span', {})));
       caixa.append(op('ruas', 'Nomes das ruas'), op('quadras', 'Quadras'), op('lotes', 'Lotes'), op('divisas', 'Divisas dos bairros'),
         op('nomesBairros', 'Nomes dos bairros'),
