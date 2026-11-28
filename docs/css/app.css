@@ -546,3 +546,11 @@ body:has(#ficha:not([hidden])) #topo #caixa-busca { width: min(560px, calc(100vw
 .tema-corpo h4.subtitulo { margin: 6px 0 0; font-size: 13px; }
 .tema-corpo .arvore label.linha-chave > span.interruptor { flex: 0 0 auto; }
 .tema-corpo .arvore label.linha-chave > span:first-child { flex: 1; }
+/* 1.46: item dentro de título/subtítulo = caixa de marcação à esquerda (mesmo nos painéis próprios) */
+.tema-corpo .dren-sub-linha { flex-direction: row-reverse; justify-content: flex-end; padding-left: 14px; font-weight: 400; }
+.tema-corpo .dren-sub-linha > span:first-child { flex: 1; }
+.tema-corpo .dren-sub-linha strong { font-weight: 400; }
+.tema-corpo .dren-sub-linha .interruptor { width: 16px; height: 16px; }
+.tema-corpo .dren-sub-linha .interruptor input { position: static; opacity: 1; width: 16px; height: 16px; accent-color: var(--acento); }
+.tema-corpo .dren-sub-linha .interruptor span { display: none; }
+.tema-corpo .tema-ferramentas { margin: 0 0 6px; }

@@ -249,10 +249,18 @@ export class Geo360 {
       el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', checked: !!op[id], onchange: (e) => { op[id] = e.target.checked; this._gravar(); this.redesenhar(); } }), el('span', {})));
     const grupo = (titulo, ...itens) => el('details', { class: 'dren-grupo', open: true }, el('summary', {}, titulo), ...itens);
     const nC = (f) => (this.condominios ? this.condominios.filter(f).length : null);
-    c.append(
-      chave('gcm', 'Guarda Civil Municipal', COR.gcm, this.equipamentos?.filter((e) => e.t === 'gcm').length, null, 'circulo'),
-      chave('cultura', 'Cultura', COR.cultura, this.equipamentos?.filter((e) => e.t === 'cultura').length, null, 'circulo'),
-      chave('assist', 'Assistência Social (CRAS, CREAS)', COR.assist, this.equipamentos?.filter((e) => e.t === 'assist').length, null, 'circulo'));
+    // Padrão (1.46): subtítulo com interruptor; os três equipamentos como itens (caixa de marcação).
+    const itens = [['gcm', 'Guarda Civil Municipal'], ['cultura', 'Cultura'], ['assist', 'Assistência Social (CRAS, CREAS)']];
+    const linhas = itens.map(([id, rot]) => {
+      const l = chave(id, rot, COR[id], this.equipamentos?.filter((e) => e.t === id).length, null, 'circulo');
+      l.classList.add('dren-sub-linha');
+      return l;
+    });
+    const geral = el('input', { type: 'checkbox', checked: itens.some(([id]) => op[id]), onchange: (e) => {
+      for (const [id] of itens) op[id] = e.target.checked;
+      linhas.forEach((l) => { l.querySelector('input').checked = e.target.checked; });
+      this._gravar(); this.redesenhar(); } });
+    c.append(el('label', { class: 'linha-chave' }, el('span', {}, el('strong', {}, 'Segurança, cultura e assistência social')), el('span', { class: 'interruptor' }, geral, el('span', {}))), ...linhas);
   }
 
   /** Condomínio oficial (2024-2025) que contém o ponto [lon, lat], para a ficha do lote. */

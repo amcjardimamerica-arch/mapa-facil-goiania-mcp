@@ -19,7 +19,7 @@ export const ORGANIZACAO = [
   // Valores, Patrimônio Histórico, Regularização Fundiária, Documentação de Bairros e Uso do Solo, num título só.
   { chave: 'edificacoes', titulo: 'Cadastro Imobiliário', especial: 'cadastro', semFerramentas: true, fontes: [
     { tema: 'Mapa_Edificios', ids: [7] },
-    { tema: 'Mapa_Limites', ids: [3], sub: 'Circunscrição Cartorária (Registro de Imóveis)' },
+    { tema: 'Mapa_Limites', ids: [3], sub: 'Circunscrição do Registro de Imóveis' },
     { tema: 'Mapa_PatrimonioHistorico', sub: 'Patrimônio Histórico' },
     { tema: 'Mapa_PontosNotaveis', ids: [3], sub: 'Patrimônio Histórico' },
     { tema: 'Mapa_OcupacaoIlegal', sub: 'Regularização Fundiária' },
@@ -124,7 +124,7 @@ export class Camadas {
         if (t.chave === 'Mapa_Energia') for (const id of [1, 4]) if (folhas.has(id) && !padrao.includes(id)) padrao.push(id);
         // 1.43: nada marcado de saída (o mapa só mostra o que a pessoa marcar); só a Energia já vem com postes e
         // iluminação, a pedido do titular. O "padrão do portal" continua guardado em `padrao`.
-        fontes.push({ tema: t, sub: f.sub || '', folhas, nos, padrao, sel: new Set(t.chave === 'Mapa_Energia' ? padrao : []) });
+        fontes.push({ tema: t, sub: f.sub || '', folhas, nos, padrao, sel: new Set() }); // nada marcado de saída: cada item é independente
       }
       if (!fontes.length) return;
       const consulta = fontes.every((f) => f.tema.somente_consulta);
@@ -191,7 +191,7 @@ export class Camadas {
       const legenda = el('div', { class: 'legenda', hidden: true });
       // 1.44: padrão único — só a opacidade, no fim do projeto (sem Legenda, Padrão nem textos)
       void legenda;
-      noFim = () => corpo.append(el('div', { class: 'tema-ferramentas' }, el('label', { class: 'rotulo-faixa' }, 'Opacidade', faixa)));
+      noFim = () => corpo.prepend(el('div', { class: 'tema-ferramentas' }, el('label', { class: 'rotulo-faixa' }, 'Opacidade', faixa))); // primeira opção, logo abaixo do título
     }
     // Base Cadastral: as camadas são controladas pelas opções do próprio projeto (sem lista repetida).
     for (const f of (g.proprio || g.chave === 'base' ? [] : g.fontes)) {
@@ -355,6 +355,8 @@ export class Camadas {
     if (ligado && g.proprio && !g.independente) for (const o of this.grupos) if (o !== g && o.proprio && !o.independente && o.ligado) { o.ligado = false; o.liga.checked = false; this._aoLigar(o, false); }
     g.ligado = ligado;
     // 1.43.1: ligar o projeto não marca nada sozinho (antes marcava o padrão do portal ou tudo): só o que a pessoa marcar.
+    // Energia: ligar o PROJETO sem nada marcado traz postes e iluminação (pedido do titular); marcar um item liga só ele.
+    if (ligado && g.chave === 'energia' && g.fontes.every((f) => !f.sel.size)) for (const f of g.fontes) for (const id of [1, 4]) if (f.folhas.has(id)) f.sel.add(id);
     g.liga.checked = ligado;
     if (g.corpo.dataset.pronto) this._sincronizarCaixas(g); else this._atualizarConta(g);
     this._aoLigar(g, ligado);
