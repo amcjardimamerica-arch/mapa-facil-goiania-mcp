@@ -181,12 +181,18 @@ async function iniciar() {
     conselho: (caixa) => caixa.append(botoesEdicao() || ''),
     conselhoLigar: (ligado) => { if (!ligado) eleicoes.pararEdicao(); eleicoes.definir(ligado ? 'conselho' : '').catch(() => {}); levantamento.definirEleicao(ligado ? 'ct' : '').catch(() => {}); },
     cadastro: (caixa) => {
-      const op = (k, titulo, sub = false) => el('label', { class: `linha-chave${sub ? ' dren-sub-linha' : ''}` }, el('span', {}, titulo),
-        el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', checked: !!BASE[k], onchange: (e) => {
-          BASE[k] = e.target.checked; gravarBase(); app.refazerMapas?.(); aplicarEquipamentos(); } }), el('span', {})));
-      caixa.append(op('areasVerdes', 'Áreas verdes e praças (verde)'), op('imoveisPublicos', 'Imóveis públicos (azul)'),
-        op('eq_grande', 'Grande equipamento', true), op('condContornos', 'Contornos dos condomínios do recadastramento'));
-      const ed = el('div', {}, el('h4', { class: 'subtitulo' }, 'Edificações'));
+      // Padrão (1.44): subtítulo com interruptor que liga e desliga os seus itens; itens com marcação.
+      const mudou = () => { gravarBase(); app.refazerMapas?.(); aplicarEquipamentos(); };
+      const bloco = (titulo, itens) => {
+        const caixas = itens.map(([k, rot]) => el('input', { type: 'checkbox', checked: !!BASE[k], onchange: (e) => { BASE[k] = e.target.checked; geral.checked = itens.some(([x]) => BASE[x]); mudou(); } }));
+        const geral = el('input', { type: 'checkbox', checked: itens.some(([k]) => BASE[k]), onchange: (e) => {
+          itens.forEach(([k], n) => { BASE[k] = e.target.checked; caixas[n].checked = e.target.checked; }); mudou(); } });
+        caixa.append(el('label', { class: 'linha-chave' }, el('span', {}, el('strong', {}, titulo)), el('span', { class: 'interruptor' }, geral, el('span', {}))));
+        if (itens.length > 1) itens.forEach(([, rot], n) => caixa.append(el('label', { class: 'item-marcacao' }, caixas[n], el('span', {}, rot))));
+      };
+      bloco('Áreas públicas', [['areasVerdes', 'Áreas verdes e praças (verde)'], ['imoveisPublicos', 'Imóveis públicos (azul)'], ['eq_grande', 'Grande equipamento']]);
+      bloco('Contornos dos condomínios do recadastramento', [['condContornos', 'Contornos dos condomínios do recadastramento']]);
+      const ed = el('div', {});
       caixa.append(ed);
       edificios.montarEm(ed);
     },

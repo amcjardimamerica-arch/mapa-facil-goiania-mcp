@@ -178,6 +178,7 @@ export class Camadas {
       corpo.append(caixa);
       this.especiais[g.especial](caixa, g);
     }
+    let noFim = null;
     if (g.consulta && g.chave === 'base') {
       // opções montadas pelo especial "base" (app.js)
     } else if (g.consulta) {
@@ -188,12 +189,9 @@ export class Camadas {
       const faixa = el('input', { type: 'range', min: 10, max: 100, value: Math.round(g.opacidade * 100),
         'aria-label': 'Opacidade', oninput: (ev) => this.opacidade(g.chave, ev.target.value / 100) });
       const legenda = el('div', { class: 'legenda', hidden: true });
-      corpo.append(el('div', { class: 'tema-ferramentas' },
-        el('label', { class: 'rotulo-faixa' }, 'Opacidade', faixa),
-        // Energia e Saneamento: sem "Legenda" e "Padrão" (1.38.2)
-        g.semFerramentas ? null : el('button', { class: 'botao-texto', onclick: () => this._alternarLegenda(g, legenda) }, 'Legenda'),
-        g.semFerramentas ? null : el('button', { class: 'botao-texto', title: 'Voltar à seleção padrão do portal', onclick: () => this.restaurar(g.chave) }, 'Padrão')), legenda);
-      if (g.marcadores) corpo.append(el('p', { class: 'nota' }, 'Os pontos aparecem como marcadores com ícone por tipo; clique em um marcador para ver os dados.'));
+      // 1.44: padrão único — só a opacidade, no fim do projeto (sem Legenda, Padrão nem textos)
+      void legenda;
+      noFim = () => corpo.append(el('div', { class: 'tema-ferramentas' }, el('label', { class: 'rotulo-faixa' }, 'Opacidade', faixa)));
     }
     // Base Cadastral: as camadas são controladas pelas opções do próprio projeto (sem lista repetida).
     for (const f of (g.proprio || g.chave === 'base' ? [] : g.fontes)) {
@@ -236,8 +234,11 @@ export class Camadas {
           corpo.append(caixaSub);
         }
         caixaSub.append(arvore);
+        const itensSub = caixaSub.querySelectorAll('ul.arvore input[data-id]');
+        if (itensSub.length === 1) arvore.hidden = true; // um item só: o interruptor do subtópico basta
       } else corpo.append(arvore);
     }
+    noFim?.();
     this._sincronizarCaixas(g);
   }
 

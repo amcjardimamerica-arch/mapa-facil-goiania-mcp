@@ -273,8 +273,8 @@ export class Edificios {
     this.caixaBairros = el('div', { class: 'edi-bairros' });
     this.detalhes = el('div', { id: 'edi-detalhes' });
     caixa.append(
-      el('label', { class: 'linha-chave destaque-linha' },
-        el('span', {}, el('strong', {}, 'Edificações em 3D')),
+      el('label', { class: 'linha-chave' },
+        el('span', {}, el('strong', {}, 'Edificações')),
         el('span', { class: 'interruptor' }, this.chave, el('span', {}))),
       this.caixaBairros, this.detalhes);
     this._sincronizar();

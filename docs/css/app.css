@@ -529,3 +529,20 @@ body:has(#ficha:not([hidden])) #topo #caixa-busca { width: min(560px, calc(100vw
 .compartimento { margin: 6px 0; }
 .compartimento > .titulo-sub { padding: 4px 0; border-top: 1px solid var(--linha); }
 .compartimento > ul.arvore { padding-left: 14px; }
+
+/* 1.44 — padrão único do painel de Camadas: sem quadros; título/subtítulo = interruptor; item = marcação */
+.tema-corpo .compartimento { border: 0; border-radius: 0; padding: 0; margin: 4px 0 0; }
+.tema-corpo .compartimento > .titulo-sub { border-top: 0; padding: 3px 0; }
+.tema-corpo .tema-especial { border-bottom: 0; padding-bottom: 0; margin-bottom: 4px; gap: 2px; }
+.tema-corpo .arvore .arvore { border-left: 0; margin-left: 0; padding-left: 14px; }
+.tema-corpo .compartimento > ul.arvore { padding-left: 14px; }
+.tema-corpo .linha-chave { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 3px 0; font-size: 13px; }
+.tema-corpo .linha-chave > span:first-child { flex: 1; min-width: 0; }
+.tema-corpo .linha-chave strong { font-weight: 600; }
+.tema-corpo .dren-sub-linha { padding-left: 14px; }
+.tema-corpo .item-marcacao { display: flex; align-items: center; gap: 8px; padding: 3px 0 3px 14px; font-size: 13px; cursor: pointer; }
+.tema-corpo #edi-detalhes, .tema-corpo .edi-cartao, .tema-corpo .cartao { border: 0; background: none; padding: 0; box-shadow: none; }
+.tema-corpo .tema-ferramentas { margin-top: 6px; }
+.tema-corpo h4.subtitulo { margin: 6px 0 0; font-size: 13px; }
+.tema-corpo .arvore label.linha-chave > span.interruptor { flex: 0 0 auto; }
+.tema-corpo .arvore label.linha-chave > span:first-child { flex: 1; }
