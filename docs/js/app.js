@@ -134,16 +134,10 @@ async function iniciar() {
       const op = (k, titulo) => el('label', { class: 'linha-chave' }, el('span', {}, el('strong', {}, titulo)),
         el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', checked: !!BASE[k], onchange: (e) => { BASE[k] = e.target.checked; gravarBase(); app.refazerMapas?.(); } }), el('span', {})));
       caixa.append(op('ruas', 'Nomes das ruas'), op('quadras', 'Quadras'), op('lotes', 'Lotes'), op('divisas', 'Divisas dos bairros'),
-        op('nomesBairros', 'Nomes dos bairros'), op('areasVerdes', 'Áreas verdes e praças (verde)'), op('imoveisPublicos', 'Imóveis públicos (azul)'));
-      // Equipamentos públicos (1.39): dentro de Imóveis públicos, como marcadores; Grande equipamento é marcador novo.
-      const eq = (k, titulo) => el('label', { class: 'linha-chave dren-sub-linha' }, el('span', {}, titulo),
-        el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', checked: !!BASE[`eq_${k}`], onchange: (e) => {
-          BASE[`eq_${k}`] = e.target.checked; gravarBase(); aplicarEquipamentos(); } }), el('span', {})));
-      caixa.append(eq('grande', 'Grande equipamento'), eq('educacao', 'Educação municipal'), eq('saude', 'Saúde'),
-        eq('social', 'Segurança, cultura e assistência social'),
+        op('nomesBairros', 'Nomes dos bairros'),
         op('atividades', 'Cadastro de Atividade Econômica'), op('npo', 'Número Predial Oficial'));
     },
-    baseLigar: (ligado) => { BASE.ligado = ligado; gravarBase(); app.refazerMapas?.(); aplicarEquipamentos(); },
+    baseLigar: (ligado) => { BASE.ligado = ligado; gravarBase(); app.refazerMapas?.(); },
     // Sistema Viário: destaque amarelo das avenidas e vias principais sobre o satélite (desligável).
     // Vias e Mobilidade: avenidas, transporte coletivo, vias sem asfalto e propostas, e a sinalização de trânsito.
     viario: async (caixa) => {
@@ -186,7 +180,18 @@ async function iniciar() {
     // Trânsito: um botão por camada (semáforos, faixas, quebra-molas, PARE, rotatórias, ciclovias, fiscalização…)
     conselho: (caixa) => caixa.append(botoesEdicao() || ''),
     conselhoLigar: (ligado) => { if (!ligado) eleicoes.pararEdicao(); eleicoes.definir(ligado ? 'conselho' : '').catch(() => {}); levantamento.definirEleicao(ligado ? 'ct' : '').catch(() => {}); },
-    edificacoes: (caixa) => edificios.montarEm(caixa),
+    cadastro: (caixa) => {
+      const op = (k, titulo, sub = false) => el('label', { class: `linha-chave${sub ? ' dren-sub-linha' : ''}` }, el('span', {}, titulo),
+        el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', checked: !!BASE[k], onchange: (e) => {
+          BASE[k] = e.target.checked; gravarBase(); app.refazerMapas?.(); aplicarEquipamentos(); } }), el('span', {})));
+      caixa.append(op('areasVerdes', 'Áreas verdes e praças (verde)'), op('imoveisPublicos', 'Imóveis públicos (azul)'),
+        op('eq_grande', 'Grande equipamento', true), op('eq_educacao', 'Educação municipal', true), op('eq_saude', 'Saúde', true),
+        op('eq_social', 'Segurança, cultura e assistência social', true));
+      const ed = el('div', {});
+      caixa.append(ed);
+      edificios.montarEm(ed);
+    },
+    cadastroLigar: (ligado) => { BASE.cadastroLigado = ligado; gravarBase(); app.refazerMapas?.(); aplicarEquipamentos(); },
     // Drenagem Pluvial: base própria da A.M.C. (bocas de lobo, galerias, pontos de inspeção e análises).
     drenagem: (caixa) => drenagem.montarEm(caixa),
     drenagemLigar: (ligado) => { drenagem.ligar(ligado).catch(() => {}); },
@@ -348,7 +353,7 @@ async function iniciar() {
     novasQuadras();
     if (globo.chaveBase === 'mapa') globo.definirBase('mapa').catch(() => {});
     // A Base Cadastral é desenhada na camada "Ruas e quadras": ligada a Base, a camada entra junto (1.35).
-    const precisa = realce.checked || BASE.ligado;
+    const precisa = realce.checked || BASE.ligado || (BASE.cadastroLigado && (BASE.areasVerdes || BASE.imoveisPublicos));
     if (globo.camadaRealce) globo.definirRealce(false);
     if (precisa) globo.definirRealce(true);
     marcarBase();
@@ -441,8 +446,9 @@ async function iniciar() {
   camadas.geo360 = geo360;
   // Vias e Mobilidade: desenho próprio (viario.js) + avenidas (Base) + sinalização de trânsito (transito.js).
   const equipamentos = new Equipamentos({ globo, identificar });
-  aplicarEquipamentos = () => equipamentos.definir({ grande: !!(BASE.ligado && BASE.eq_grande), educacao: !!(BASE.ligado && BASE.eq_educacao),
-    saude: !!(BASE.ligado && BASE.eq_saude), social: !!(BASE.ligado && BASE.eq_social) }).catch(() => {});
+  BASE.cadastroLigado = false; // o projeto Cadastro Imobiliário começa desligado (mapa limpo)
+  aplicarEquipamentos = () => { const on = !!BASE.cadastroLigado; return equipamentos.definir({ grande: on && !!BASE.eq_grande, educacao: on && !!BASE.eq_educacao,
+    saude: on && !!BASE.eq_saude, social: on && !!BASE.eq_social }).catch(() => {}); };
   aplicarEquipamentos();
   const vias = new Vias({ globo });
   app.vias = vias;

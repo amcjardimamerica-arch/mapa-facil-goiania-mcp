@@ -26,13 +26,16 @@ export const ORGANIZACAO = [
   // Vias e Mobilidade (1.37): avenidas, transporte coletivo, vias sem asfalto e propostas (viario.js) e o Trânsito
   // (transito.js) num só projeto, com desenho próprio (sem as escalas nem os rótulos do Mapa Fácil).
   { chave: 'viario', titulo: 'Vias e Mobilidade', especial: 'viario', proprio: true, independente: true, fontes: [{ tema: 'Mapa_RedeViaria', ids: [16] }] },
-  // Edificações (1.39): 3D com a barra de pavimentos (sem as faixas de altura do portal), Planta de Valores numa marcação
-  // só, e os títulos Patrimônio Histórico e Regularização Fundiária com os seus itens. Equipamentos: na Base Cadastral.
-  { chave: 'edificacoes', titulo: 'Edificações', especial: 'edificacoes', semFerramentas: true, fontes: [
+  // Cadastro Imobiliário (1.41): áreas verdes e imóveis públicos (com os equipamentos), edificações em 3D, Planta de
+  // Valores, Patrimônio Histórico, Regularização Fundiária, Documentação de Bairros e Uso do Solo, num título só.
+  { chave: 'edificacoes', titulo: 'Cadastro Imobiliário', especial: 'cadastro', semFerramentas: true, fontes: [
     { tema: 'Mapa_Edificios', ids: [7] },
     { tema: 'Mapa_PatrimonioHistorico', sub: 'Patrimônio Histórico' },
     { tema: 'Mapa_PontosNotaveis', ids: [3], sub: 'Patrimônio Histórico' },
     { tema: 'Mapa_OcupacaoIlegal', sub: 'Regularização Fundiária' },
+    { tema: 'Mapa_Documentacao', sub: 'Documentação de Bairros' },
+    { tema: 'Mapa_UsoDoSoloNew', sub: 'Uso do Solo' },
+    { tema: 'Mapa_Simplifica_Goiania_UsoDoSolo', sub: 'Uso do Solo' },
   ] },
   { chave: 'meio', titulo: 'Meio Ambiente', fontes: [{ tema: 'Mapa_MeioAmbiente' }, { tema: 'Mapa_PUAMA', sub: 'PUAMA' }] },
   { chave: 'telecom', titulo: 'Telecomunicação', fontes: [{ tema: 'Mapa_TelecomunicacaoNew' }] },
@@ -42,13 +45,11 @@ export const ORGANIZACAO = [
   { chave: 'legislacao', titulo: 'Regulação e Arrecadação', semFerramentas: true, fontes: [
     { tema: 'Mapa_Legislacao', sub: 'Legislação Municipal' },
     { tema: 'Mapa_ModeloEspacial', sub: 'Modelo Espacial (LC 171/2007)' },
-    { tema: 'Mapa_Documentacao', sub: 'Documentação de Bairros' },
     { tema: 'Mapa_Tributario_Web', sub: 'Tributário' },
     { tema: 'Mapa_Fiscalizacao', sub: 'Fiscalização' },
   ] },
   { chave: 'limites', titulo: 'Limites Administrativos', fontes: [{ tema: 'Mapa_Limites', ids: [0, 3, 4, 5, 6, 7] }] },
   { chave: 'servicos', titulo: 'Acessibilidade e Serviços', marcadores: true, fontes: [{ tema: 'Mapa_Acessibilidade' }] },
-  { chave: 'uso', titulo: 'Uso do Solo', fontes: [{ tema: 'Mapa_UsoDoSoloNew' }, { tema: 'Mapa_Simplifica_Goiania_UsoDoSolo', sub: 'Simplifica Goiânia' }] },
 ];
 
 export class Camadas {

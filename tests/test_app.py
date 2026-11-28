@@ -237,7 +237,7 @@ def test_camadas_organizadas_em_projetos(mapa):
         ordem: C.grupos.map((x) => x.titulo).slice(0, 8),
         titulos: C.grupos.map((x) => x.titulo),
         eleitoral: fontes('eleitoral'), limites: fontes('limites'), edificacoes: fontes('edificacoes'),
-        meio: fontes('meio'), uso: fontes('uso'), zonas: fontes('zonas'),
+        meio: fontes('meio'), uso: fontes('edificacoes').filter((f) => /UsoDoSolo/.test(f[0])), zonas: fontes('zonas'),
         texto: document.querySelector('#lista-camadas').textContent,
         lotesNaBusca: !!document.querySelector('#busca-opcoes #painel-lotes') && !!document.querySelector('#busca-opcoes #realce-liga'),
         semEdificiosNoTrilho: !document.querySelector('#trilho [data-painel=edificios]'),
@@ -251,11 +251,12 @@ def test_camadas_organizadas_em_projetos(mapa):
     temas_edif = [f[0] for f in r["edificacoes"]]
     # 1.39: Planta de Valores numa marcação só; Patrimônio Histórico e Regularização Fundiária como títulos;
     # equipamentos na Base Cadastral; documentação em Regulação e Arrecadação.
-    assert temas_edif == ["Mapa_Edificios", "Mapa_PatrimonioHistorico", "Mapa_PontosNotaveis", "Mapa_OcupacaoIlegal"]
+    # 1.41: Cadastro Imobiliário reúne edificações, patrimônio, regularização, documentação de bairros e uso do solo
+    assert temas_edif == ["Mapa_Edificios", "Mapa_PatrimonioHistorico", "Mapa_PontosNotaveis", "Mapa_OcupacaoIlegal", "Mapa_Documentacao", "Mapa_UsoDoSoloNew", "Mapa_Simplifica_Goiania_UsoDoSolo"]
     assert r["edificacoes"][0][1] == [7] and r["edificacoes"][2][1] == [3] and all(i >= 6 for i in r["zonas"][0][1])
     assert "Regulação e Arrecadação" in r["titulos"] and "Tributário" not in r["titulos"] and "Modelo Espacial (LC 171/2007)" not in r["titulos"]
     assert [f[0] for f in r["meio"]] == ["Mapa_MeioAmbiente", "Mapa_PUAMA"] and r["meio"][1][2] == "PUAMA"
-    assert [f[0] for f in r["uso"]] == ["Mapa_UsoDoSoloNew", "Mapa_Simplifica_Goiania_UsoDoSolo"] and r["uso"][1][2] == "Simplifica Goiânia"
+    assert [f[0] for f in r["uso"]] == ["Mapa_UsoDoSoloNew", "Mapa_Simplifica_Goiania_UsoDoSolo"] and r["uso"][1][2] == "Uso do Solo"  # 1.41: subpasta Uso do Solo no Cadastro Imobiliário
     assert "Projetos" in r["texto"] and "Temas do portal" not in r["texto"] and "Outros temas do servidor" not in r["texto"]
     assert "CELG" not in r["texto"] and "SANEAGO" not in r["texto"]
     assert r["lotesNaBusca"] and r["semEdificiosNoTrilho"] and r["edificiosDesligados"], r
@@ -874,10 +875,11 @@ def test_base_cadastral_opcoes_sem_repeticao_e_funcionando(mapa):
       const texto = base.corpo.textContent;
       const repetidos = ['Divisas de Lote', 'Divisas de Quadra', 'Divisas de Bairro', 'Área Pública', 'Segmento de Logradouro',
         'Setor Cadastral', 'Logradouro por Bairro'].filter((t) => texto.includes(t));
-      const novos = ['Número Predial Oficial', 'Áreas verdes e praças', 'Imóveis públicos'].filter((t) => texto.includes(t));
+      const cad = bussola.camadas.grupo('edificacoes'); if (!cad.corpo.dataset.pronto) { bussola.camadas._montarCorpo(cad, cad.corpo); cad.corpo.dataset.pronto = '1'; }
+      const novos = ['Número Predial Oficial'].filter((t) => texto.includes(t)).concat(['Áreas verdes e praças', 'Imóveis públicos'].filter((t) => cad.corpo.textContent.includes(t) && !texto.includes(t)));
       const semCadastro = !texto.includes('Cadastro Imobiliário (na ficha do lote)'); // 1.34: opção retirada
       const antes = { ...m.BASE };
-      Object.assign(m.BASE, { ligado: true, npo: true, areasVerdes: true, imoveisPublicos: true, atividades: true });
+      Object.assign(m.BASE, { ligado: true, cadastroLigado: true, npo: true, areasVerdes: true, imoveisPublicos: true, atividades: true });
       const alturaAntes = m.ALTURA.camera; m.ALTURA.camera = 1500; // atividades: só abaixo de 5 km
       const ids = bussola.camadas.consultaBase().ids;
       const prov = new m.ProvedorVetorial({ modo: 'mapa', retangulo: bussola.globo.ret });
@@ -977,7 +979,8 @@ def test_versao_1_25_1_fundos_base_cadastral_e_divisas(mapa):
       const t = base.corpo.textContent;
       const painel = document.querySelector('[data-secao=imagens]').textContent;
       return { bases: bussola.globo.basesDisponiveis().filter((b) => b.tipo !== 'historico').map((b) => b.chave),
-        verdes: t.includes('Áreas verdes e praças'), imoveis: t.includes('Imóveis públicos'),
+        verdes: (() => { const c = bussola.camadas.grupo('edificacoes'); if (!c.corpo.dataset.pronto) { bussola.camadas._montarCorpo(c, c.corpo); c.corpo.dataset.pronto = '1'; } return c.corpo.textContent.includes('Áreas verdes e praças'); })(),
+        imoveis: bussola.camadas.grupo('edificacoes').corpo.textContent.includes('Imóveis públicos'),
         retirados: ['Setor Cadastral', 'Logradouro por Bairro', 'Áreas públicas (verde)'].filter((x) => t.includes(x)),
         textos: ['ortofoto da Prefeitura', 'Arraste a barra vertical', 'municípios limítrofes aparecem só'].filter((x) => painel.includes(x)) };
     }""")

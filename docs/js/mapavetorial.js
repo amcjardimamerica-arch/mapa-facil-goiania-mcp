@@ -369,7 +369,8 @@ export class ProvedorVetorial extends ProvedorCanvas {
     const noFiltro = blocoNoFiltro(ret);
     const ver = { quadras: baseVe('quadras') && noFiltro && mostraNaAltura('quadras', nivel), lotes: baseVe('lotes') && noFiltro && mostraNaAltura('lotes', nivel),
       numeroQuadra: mostraNaAltura('numeroQuadra', nivel), numeroLote: baseVe('lotes') && mostraNaAltura('numeroLote', nivel),
-      ruas: !BASE.ligado || BASE.ruas, nomesBairros: baseVe('nomesBairros'), areas: (baseVe('areasVerdes') || baseVe('imoveisPublicos')) && nivel >= 12,
+      // áreas verdes e imóveis públicos: projeto Cadastro Imobiliário (1.41), independente da Base Cadastral
+      ruas: !BASE.ligado || BASE.ruas, nomesBairros: baseVe('nomesBairros'), areas: BASE.cadastroLigado && (BASE.areasVerdes || BASE.imoveisPublicos) && nivel >= 12,
       // Cadastro de Atividade Econômica: a partir de 5 km de altura (como quadras e lotes).
       atividades: baseVe('atividades') && ALTURA.camera <= 5000 && nivel >= 13,
       npo: baseVe('npo') && nivel >= 17 };
