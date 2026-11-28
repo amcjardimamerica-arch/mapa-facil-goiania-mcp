@@ -319,9 +319,7 @@ export class Camadas {
     // Zonas Eleitorais e Conselho Tutelar: um mapa de eleição de cada vez.
     if (ligado && g.proprio && !g.independente) for (const o of this.grupos) if (o !== g && o.proprio && !o.independente && o.ligado) { o.ligado = false; o.liga.checked = false; this._aoLigar(o, false); }
     g.ligado = ligado;
-    if (ligado && g.fontes.every((f) => !f.sel.size)) {
-      for (const f of g.fontes) { f.padrao.forEach((id) => f.sel.add(id)); if (!f.sel.size) f.folhas.forEach((id) => f.sel.add(id)); }
-    }
+    // 1.43.1: ligar o projeto não marca nada sozinho (antes marcava o padrão do portal ou tudo): só o que a pessoa marcar.
     g.liga.checked = ligado;
     if (g.corpo.dataset.pronto) this._sincronizarCaixas(g); else this._atualizarConta(g);
     this._aoLigar(g, ligado);
