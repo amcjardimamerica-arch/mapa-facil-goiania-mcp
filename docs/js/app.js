@@ -185,9 +185,8 @@ async function iniciar() {
         el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', checked: !!BASE[k], onchange: (e) => {
           BASE[k] = e.target.checked; gravarBase(); app.refazerMapas?.(); aplicarEquipamentos(); } }), el('span', {})));
       caixa.append(op('areasVerdes', 'Áreas verdes e praças (verde)'), op('imoveisPublicos', 'Imóveis públicos (azul)'),
-        op('eq_grande', 'Grande equipamento', true), op('eq_educacao', 'Educação municipal', true), op('eq_saude', 'Saúde', true),
-        op('eq_social', 'Segurança, cultura e assistência social', true));
-      const ed = el('div', {});
+        op('eq_grande', 'Grande equipamento', true));
+      const ed = el('div', {}, el('h4', { class: 'subtitulo' }, 'Edificações'));
       caixa.append(ed);
       edificios.montarEm(ed);
     },
@@ -447,8 +446,8 @@ async function iniciar() {
   // Vias e Mobilidade: desenho próprio (viario.js) + avenidas (Base) + sinalização de trânsito (transito.js).
   const equipamentos = new Equipamentos({ globo, identificar });
   BASE.cadastroLigado = false; // o projeto Cadastro Imobiliário começa desligado (mapa limpo)
-  aplicarEquipamentos = () => { const on = !!BASE.cadastroLigado; return equipamentos.definir({ grande: on && !!BASE.eq_grande, educacao: on && !!BASE.eq_educacao,
-    saude: on && !!BASE.eq_saude, social: on && !!BASE.eq_social }).catch(() => {}); };
+  aplicarEquipamentos = () => { const on = !!BASE.cadastroLigado; return equipamentos.definir({ grande: on && !!BASE.eq_grande, educacao: false,
+    saude: false, social: false }).catch(() => {}); };
   aplicarEquipamentos();
   const vias = new Vias({ globo });
   app.vias = vias;

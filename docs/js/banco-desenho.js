@@ -39,6 +39,26 @@ function imagemDe(sim) {
   return r;
 }
 
+/** Ícone de árvore (3: existente), muda (4: plantio previsto/feito) e toco (5: remoção de toco). */
+const _iconesArvore = new Map();
+function iconeArvore(id) {
+  if (_iconesArvore.has(id)) return _iconesArvore.get(id);
+  // o desenho dos temas pode rodar num trabalhador (sem document): OffscreenCanvas quando houver
+  const c = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(32, 32) : Object.assign(document.createElement('canvas'), { width: 32, height: 32 });
+  const g = c.getContext('2d');
+  if (id === 5) { g.fillStyle = '#6d4c41'; g.strokeStyle = '#3e2723'; g.lineWidth = 2; g.beginPath(); g.ellipse(16, 18, 9, 7, 0, 0, 7); g.fill(); g.stroke();
+    g.strokeStyle = '#a1887f'; g.beginPath(); g.ellipse(16, 18, 4.5, 3.4, 0, 0, 7); g.stroke(); }
+  else {
+    const muda = id === 4;
+    g.fillStyle = '#5d4037'; g.fillRect(14.5, muda ? 16 : 18, 3, muda ? 13 : 11);
+    g.fillStyle = muda ? '#9ccc65' : '#2e7d32'; g.strokeStyle = muda ? '#33691e' : '#1b5e20'; g.lineWidth = 1.6;
+    g.beginPath(); g.arc(16, muda ? 13 : 13, muda ? 7.5 : 11, 0, 7); g.fill(); g.stroke();
+    if (!muda) { g.fillStyle = 'rgba(255,255,255,.18)'; g.beginPath(); g.arc(12.5, 9.5, 4, 0, 7); g.fill(); }
+  }
+  _iconesArvore.set(id, c);
+  return c;
+}
+
 function simboloDe(renderer, valores, campos) {
   if (!renderer) return null;
   const v = (nome) => { if (!nome) return undefined; const k = campos.findIndex((c) => c.toLowerCase() === String(nome).toLowerCase() || c.toLowerCase().endsWith(`.${String(nome).toLowerCase()}`)); return k >= 0 ? valores[k] : undefined; };
@@ -197,6 +217,10 @@ export class ProvedorTema {
       // feições): só de perto, a partir de um nível abaixo do bloco do banco (~3 km de altura). Com "z - 4" (cidade
       // inteira) o Saneamento travava a tela por minutos (1.29.0).
       if (info.z != null && info.zv == null && nivel < info.z - 1) continue;
+      // Meio Ambiente (1.42): árvores, plantios e tocos só de perto (nível 16+, ~1,5 km), com ícone próprio do tamanho
+      // da copa, para não cobrirem o mapa nem aparecerem fora do lugar ao afastar.
+      const arvore = info._s === 'Mapa_MeioAmbiente' && [3, 4, 5].includes(Number(info._id));
+      if (arvore && nivel < 14) continue;
       const campos = camposDoDesenho(meta, info);
       let d;
       try { d = await fornecer(info._s, info._id, caixa, campos, opcoes); }
@@ -229,6 +253,11 @@ export class ProvedorTema {
         }
         const sim = simboloDe(ren, valores, campos);
         if (!sim) continue;
+        if (tipo === 'ponto' && arvore) {
+          const icone = iconeArvore(Number(info._id)), t = nivel >= 19 ? 18 : nivel >= 18 ? 14 : nivel >= 17 ? 10 : nivel >= 16 ? 7 : nivel >= 15 ? 5 : 4;
+          for (let k = p0; k < p1; k++) for (let a = ini(k); a < partes[k]; a++) g.drawImage(icone, pxX(xy[a * 2]) - t / 2, pxY(xy[a * 2 + 1]) - t / 2, t, t);
+          continue;
+        }
         if (tipo === 'ponto') { for (let k = p0; k < p1; k++) for (let a = ini(k); a < partes[k]; a++) desenharMarcador(g, sim, pxX(xy[a * 2]), pxY(xy[a * 2 + 1]), alfa); continue; }
         if (tipo === 'area') {
           g.beginPath();

@@ -197,9 +197,9 @@ def test_geo360_atualizacao(mapa):
     Geológico (Meio Ambiente) passam a usar a versão 2016-2025; condomínios entram na ficha do lote."""
     r = mapa.evaluate("""async () => {
       const g = bussola.geo360, cam = bussola.camadas;
-      cam.ligar('geo360', true); await g.carregar(); await new Promise((ok) => setTimeout(ok, 300));
+      cam.ligar('servicos', true); await g.carregar(); await new Promise((ok) => setTimeout(ok, 300));
       const eq = g.equipamentos.some((e) => e.t === 'gcm') && g.equipamentos.some((e) => e.t === 'cultura') && g.equipamentos.some((e) => e.t === 'assist');
-      const titulo = cam.grupo('geo360').titulo;
+      const titulo = cam.grupo('servicos').titulo;
       const meio = cam.grupo('meio'); meio.fontes.find((f) => f.tema.chave === 'Mapa_MeioAmbiente').sel.add(14); cam.ligar('meio', true); cam._aplicar('Mapa_MeioAmbiente');
       await new Promise((ok) => setTimeout(ok, 1500));
       const R = 6378137, paraLon = (x) => (x / R) * (180 / Math.PI), paraLat = (y) => (2 * Math.atan(Math.exp(y / R)) - Math.PI / 2) * (180 / Math.PI);
@@ -209,10 +209,10 @@ def test_geo360_atualizacao(mapa):
       const corpoRisco = document.querySelector('#ficha-corpo').textContent;
       const riscoNoMeio = g.externo.risco && ![...cam._desenhadas('Mapa_MeioAmbiente')].includes(14);
       const cond = await g.condominioEm(paraLon(g.condominios[0].centro[0]), paraLat(g.condominios[0].centro[1]));
-      bussola.identificar.fechar(); cam.ligar('meio', false); cam.ligar('geo360', false);
+      bussola.identificar.fechar(); cam.ligar('meio', false); cam.ligar('servicos', false);
       return { titulo, eq, eqN: g.equipamentos.length, pv: g.planta.length, clicouRisco, corpoRisco, riscoNoMeio, cond: !!cond, desligou: !g.camada };
     }""")
-    assert r["titulo"] == "Serviços Públicos" and r["eq"] and r["eqN"] > 50 and r["pv"] > 1000, r
+    assert r["titulo"] == "Acessibilidade e Serviços" and r["eq"] and r["eqN"] > 50 and r["pv"] > 1000, r
     assert r["clicouRisco"] and ("risco" in r["corpoRisco"].lower() or "Grau" in r["corpoRisco"]) and r["riscoNoMeio"], r
     assert r["cond"] and r["desligou"], r
 
@@ -244,7 +244,7 @@ def test_camadas_organizadas_em_projetos(mapa):
         edificiosDesligados: !bussola.edificios.ativo && !bussola.edificios.primitiva,
       };
     }""")
-    assert r["ordem"] == ["Base Cadastral", "Drenagem Pluvial", "Serviços Públicos", "Zonas Eleitorais", "Conselho Tutelar", "Energia", "Saneamento", "Vias e Mobilidade"], r["ordem"]
+    assert r["ordem"] == ["Base Cadastral", "Drenagem Pluvial", "Zonas Eleitorais", "Conselho Tutelar", "Energia", "Saneamento", "Vias e Mobilidade", "Cadastro Imobiliário"], r["ordem"]
     assert "Zonas Municipais" in r["titulos"] and "Pontos Notáveis" not in r["titulos"] and "PUAMA" not in r["titulos"]
     assert "Simplifica Goiânia – Uso do Solo" not in r["titulos"] and "Documentação de Bairros" not in r["titulos"]
     assert r["eleitoral"] == [["Mapa_Limites", [10], ""]] and all(10 not in f[1] for f in r["limites"]), r["limites"]
@@ -252,8 +252,8 @@ def test_camadas_organizadas_em_projetos(mapa):
     # 1.39: Planta de Valores numa marcação só; Patrimônio Histórico e Regularização Fundiária como títulos;
     # equipamentos na Base Cadastral; documentação em Regulação e Arrecadação.
     # 1.41: Cadastro Imobiliário reúne edificações, patrimônio, regularização, documentação de bairros e uso do solo
-    assert temas_edif == ["Mapa_Edificios", "Mapa_PatrimonioHistorico", "Mapa_PontosNotaveis", "Mapa_OcupacaoIlegal", "Mapa_Documentacao", "Mapa_UsoDoSoloNew", "Mapa_Simplifica_Goiania_UsoDoSolo"]
-    assert r["edificacoes"][0][1] == [7] and r["edificacoes"][2][1] == [3] and all(i >= 6 for i in r["zonas"][0][1])
+    assert temas_edif == ["Mapa_Edificios", "Mapa_Limites", "Mapa_PatrimonioHistorico", "Mapa_PontosNotaveis", "Mapa_OcupacaoIlegal", "Mapa_Documentacao", "Mapa_UsoDoSoloNew", "Mapa_Simplifica_Goiania_UsoDoSolo"]
+    assert r["edificacoes"][0][1] == [7] and r["edificacoes"][1][1] == [3] and r["edificacoes"][3][1] == [3] and all(i >= 6 for i in r["zonas"][0][1])
     assert "Regulação e Arrecadação" in r["titulos"] and "Tributário" not in r["titulos"] and "Modelo Espacial (LC 171/2007)" not in r["titulos"]
     assert [f[0] for f in r["meio"]] == ["Mapa_MeioAmbiente", "Mapa_PUAMA"] and r["meio"][1][2] == "PUAMA"
     assert [f[0] for f in r["uso"]] == ["Mapa_UsoDoSoloNew", "Mapa_Simplifica_Goiania_UsoDoSolo"] and r["uso"][1][2] == "Uso do Solo"  # 1.41: subpasta Uso do Solo no Cadastro Imobiliário

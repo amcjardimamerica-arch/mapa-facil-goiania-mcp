@@ -17,7 +17,6 @@ export const ORGANIZACAO = [
   // Drenagem Pluvial: base própria da A.M.C. (drenagem.js), ligada à parte, sem desligar os mapas de eleição.
   { chave: 'drenagem', titulo: 'Drenagem Pluvial', especial: 'drenagem', proprio: true, independente: true, semConta: true, fontes: [{ tema: 'Mapa_Sanemanento', ids: [] }] },
   // Geo360 (atualização 2024-2025): dados públicos do portal da Prefeitura que não vinham do Mapa Fácil (geo360.js).
-  { chave: 'geo360', titulo: 'Serviços Públicos', especial: 'geo360', proprio: true, independente: true, semConta: true, fontes: [{ tema: 'Mapa_Sanemanento', ids: [] }] },
   // Mapas de eleição: desenho próprio (eleicoes.js), um de cada vez.
   { chave: 'eleitoral', titulo: 'Zonas Eleitorais', especial: 'eleitoral', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
   { chave: 'conselho', titulo: 'Conselho Tutelar', especial: 'conselho', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
@@ -30,6 +29,7 @@ export const ORGANIZACAO = [
   // Valores, Patrimônio Histórico, Regularização Fundiária, Documentação de Bairros e Uso do Solo, num título só.
   { chave: 'edificacoes', titulo: 'Cadastro Imobiliário', especial: 'cadastro', semFerramentas: true, fontes: [
     { tema: 'Mapa_Edificios', ids: [7] },
+    { tema: 'Mapa_Limites', ids: [3], sub: 'Circunscrição Cartorária (Registro de Imóveis)' },
     { tema: 'Mapa_PatrimonioHistorico', sub: 'Patrimônio Histórico' },
     { tema: 'Mapa_PontosNotaveis', ids: [3], sub: 'Patrimônio Histórico' },
     { tema: 'Mapa_OcupacaoIlegal', sub: 'Regularização Fundiária' },
@@ -48,8 +48,12 @@ export const ORGANIZACAO = [
     { tema: 'Mapa_Tributario_Web', sub: 'Tributário' },
     { tema: 'Mapa_Fiscalizacao', sub: 'Fiscalização' },
   ] },
-  { chave: 'limites', titulo: 'Limites Administrativos', fontes: [{ tema: 'Mapa_Limites', ids: [0, 3, 4, 5, 6, 7] }] },
-  { chave: 'servicos', titulo: 'Acessibilidade e Serviços', marcadores: true, fontes: [{ tema: 'Mapa_Acessibilidade' }] },
+  { chave: 'limites', titulo: 'Limites Administrativos', fontes: [{ tema: 'Mapa_Limites', ids: [0, 4, 5, 6, 7] }] },
+  // Acessibilidade e Serviços (1.42): incorpora Serviços Públicos (Guarda Civil, Cultura, CRAS e CREAS, do recadastramento)
+  // e deixa de repetir o que já está em outro marcador: endereços duplicados (43-46: educação, saúde, shopping e escolas
+  // SIEG) e as plataformas e linhas de ônibus (41-42), que ficam em Vias e Mobilidade → Transporte Coletivo.
+  { chave: 'servicos', titulo: 'Acessibilidade e Serviços', marcadores: true, especial: 'geo360', fontes: [{ tema: 'Mapa_Acessibilidade',
+    ids: [1, 2, 3, 5, 6, 7, 8, 9, 11, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 28, 29, 30, 33, 35, 36, 37, 40] }] },
 ];
 
 export class Camadas {
