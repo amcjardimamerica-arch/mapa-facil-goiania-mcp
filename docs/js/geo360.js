@@ -138,7 +138,7 @@ export class Geo360 {
     this.ligado = false;
     // 1.40: Planta de Valores (Edificações) e Risco Geológico (Meio Ambiente) usam estes dados nas camadas que já
     // existiam; condomínios entram na ficha do lote. O projeto "Serviços Públicos" mostra os equipamentos.
-    this.externo = { planta: false, risco: false };
+    this.externo = { planta: false, risco: false, condominios: false };
     this.camada = null;
   }
 
@@ -200,10 +200,10 @@ export class Geo360 {
   /** O que desenhar: equipamentos pelo projeto; Planta e Risco pelas camadas de Edificações e Meio Ambiente. */
   efetivas() {
     const op = this.opcoes, lig = this.ligado;
-    return { ...op, condominios: false, planta: this.externo.planta, risco: this.externo.risco,
+    return { ...op, condominios: this.externo.condominios, condHorizontal: true, condVertical: true, condInformal: true, planta: this.externo.planta, risco: this.externo.risco,
       gcm: lig && op.gcm, cultura: lig && op.cultura, assist: lig && op.assist };
   }
-  get ativo() { return this.ligado || this.externo.planta || this.externo.risco; }
+  get ativo() { return this.ligado || this.externo.planta || this.externo.risco || this.externo.condominios; }
 
   /** Edificações → Planta de Valores e Meio Ambiente → Risco Geológico ligam estes dados (versão 2016-2025). */
   async definirExterno(ext) {

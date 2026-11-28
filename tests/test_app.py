@@ -219,10 +219,12 @@ def test_geo360_atualizacao(mapa):
 
 def test_temas_e_link(mapa):
     estado = mapa.evaluate("""() => {
+      // 1.43: nada vem marcado; marca uma camada e liga o projeto
+      const g = bussola.camadas.grupo('meio'); g.fontes[0].sel.add(11);
       bussola.camadas.ligar('meio', true);
       const ativos = bussola.camadas.ativos().map((a) => a.tema.chave).sort();
       const serie = bussola.camadas.serializar();
-      bussola.camadas.ligar('meio', false);
+      bussola.camadas.ligar('meio', false); g.fontes[0].sel.delete(11);
       return { ativos, serie, depois: bussola.camadas.ativos().length };
     }""")
     assert "Mapa_MeioAmbiente" in estado["ativos"] and estado["serie"].startswith("meio:Mapa_MeioAmbiente="), estado
@@ -236,7 +238,7 @@ def test_camadas_organizadas_em_projetos(mapa):
       return {
         ordem: C.grupos.map((x) => x.titulo).slice(0, 8),
         titulos: C.grupos.map((x) => x.titulo),
-        eleitoral: fontes('eleitoral'), limites: fontes('limites'), edificacoes: fontes('edificacoes'),
+        eleitoral: fontes('eleitoral'), limites: fontes('zonas').filter((f) => f[0] === 'Mapa_Limites'), edificacoes: fontes('edificacoes'),
         meio: fontes('meio'), uso: fontes('edificacoes').filter((f) => /UsoDoSolo/.test(f[0])), zonas: fontes('zonas'),
         texto: document.querySelector('#lista-camadas').textContent,
         lotesNaBusca: !!document.querySelector('#busca-opcoes #painel-lotes') && !!document.querySelector('#busca-opcoes #realce-liga'),
@@ -244,7 +246,7 @@ def test_camadas_organizadas_em_projetos(mapa):
         edificiosDesligados: !bussola.edificios.ativo && !bussola.edificios.primitiva,
       };
     }""")
-    assert r["ordem"] == ["Base Cadastral", "Drenagem Pluvial", "Zonas Eleitorais", "Conselho Tutelar", "Energia", "Saneamento", "Vias e Mobilidade", "Cadastro Imobiliário"], r["ordem"]
+    assert r["ordem"] == ["Base Cadastral", "Cadastro Imobiliário", "Energia", "Saneamento", "Drenagem Pluvial", "Vias e Mobilidade", "Acessibilidade e Serviços", "Telecomunicação"], r["ordem"]  # 1.43
     assert "Zonas Municipais" in r["titulos"] and "Pontos Notáveis" not in r["titulos"] and "PUAMA" not in r["titulos"]
     assert "Simplifica Goiânia – Uso do Solo" not in r["titulos"] and "Documentação de Bairros" not in r["titulos"]
     assert r["eleitoral"] == [["Mapa_Limites", [10], ""]] and all(10 not in f[1] for f in r["limites"]), r["limites"]

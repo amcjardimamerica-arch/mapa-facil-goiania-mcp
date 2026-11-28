@@ -13,18 +13,8 @@ import { idsDaFicha } from './mapavetorial.js';
 
 /** Organização dos projetos. `ids` lista camadas (folhas ou grupos) do serviço; sem `ids`, entra o serviço todo. */
 export const ORGANIZACAO = [
+
   { chave: 'base', titulo: 'Base Cadastral', especial: 'base', fontes: [{ tema: 'Feature_Base' }] },
-  // Drenagem Pluvial: base própria da A.M.C. (drenagem.js), ligada à parte, sem desligar os mapas de eleição.
-  { chave: 'drenagem', titulo: 'Drenagem Pluvial', especial: 'drenagem', proprio: true, independente: true, semConta: true, fontes: [{ tema: 'Mapa_Sanemanento', ids: [] }] },
-  // Geo360 (atualização 2024-2025): dados públicos do portal da Prefeitura que não vinham do Mapa Fácil (geo360.js).
-  // Mapas de eleição: desenho próprio (eleicoes.js), um de cada vez.
-  { chave: 'eleitoral', titulo: 'Zonas Eleitorais', especial: 'eleitoral', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
-  { chave: 'conselho', titulo: 'Conselho Tutelar', especial: 'conselho', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
-  { chave: 'energia', titulo: 'Energia', semFerramentas: true, fontes: [{ tema: 'Mapa_Energia', ids: [1, 3, 4, 5, 6, 7, 8] }] }, // 1.36: sem "Tipo de Lâmpada"
-  { chave: 'saneamento', titulo: 'Saneamento', semFerramentas: true, fontes: [{ tema: 'Mapa_Sanemanento' }] },
-  // Vias e Mobilidade (1.37): avenidas, transporte coletivo, vias sem asfalto e propostas (viario.js) e o Trânsito
-  // (transito.js) num só projeto, com desenho próprio (sem as escalas nem os rótulos do Mapa Fácil).
-  { chave: 'viario', titulo: 'Vias e Mobilidade', especial: 'viario', proprio: true, independente: true, fontes: [{ tema: 'Mapa_RedeViaria', ids: [16] }] },
   // Cadastro Imobiliário (1.41): áreas verdes e imóveis públicos (com os equipamentos), edificações em 3D, Planta de
   // Valores, Patrimônio Histórico, Regularização Fundiária, Documentação de Bairros e Uso do Solo, num título só.
   { chave: 'edificacoes', titulo: 'Cadastro Imobiliário', especial: 'cadastro', semFerramentas: true, fontes: [
@@ -37,10 +27,21 @@ export const ORGANIZACAO = [
     { tema: 'Mapa_UsoDoSoloNew', sub: 'Uso do Solo' },
     { tema: 'Mapa_Simplifica_Goiania_UsoDoSolo', sub: 'Uso do Solo' },
   ] },
-  { chave: 'meio', titulo: 'Meio Ambiente', fontes: [{ tema: 'Mapa_MeioAmbiente' }, { tema: 'Mapa_PUAMA', sub: 'PUAMA' }] },
+  { chave: 'energia', titulo: 'Energia', semFerramentas: true, fontes: [{ tema: 'Mapa_Energia', ids: [1, 3, 4, 5, 6, 7, 8] }] }, // 1.36: sem "Tipo de Lâmpada"
+  { chave: 'saneamento', titulo: 'Saneamento', semFerramentas: true, fontes: [{ tema: 'Mapa_Sanemanento' }] },
+  // Drenagem Pluvial: base própria da A.M.C. (drenagem.js), ligada à parte, sem desligar os mapas de eleição.
+  { chave: 'drenagem', titulo: 'Drenagem Pluvial', especial: 'drenagem', proprio: true, independente: true, semConta: true, fontes: [{ tema: 'Mapa_Sanemanento', ids: [] }] },
+  // Vias e Mobilidade (1.37): avenidas, transporte coletivo, vias sem asfalto e propostas (viario.js) e o Trânsito
+  // (transito.js) num só projeto, com desenho próprio (sem as escalas nem os rótulos do Mapa Fácil).
+  { chave: 'viario', titulo: 'Vias e Mobilidade', especial: 'viario', proprio: true, independente: true, fontes: [{ tema: 'Mapa_RedeViaria', ids: [16] }] },
+  // Acessibilidade e Serviços (1.42): incorpora Serviços Públicos (Guarda Civil, Cultura, CRAS e CREAS, do recadastramento)
+  // e deixa de repetir o que já está em outro marcador: endereços duplicados (43-46: educação, saúde, shopping e escolas
+  // SIEG) e as plataformas e linhas de ônibus (41-42), que ficam em Vias e Mobilidade → Transporte Coletivo.
+  { chave: 'servicos', titulo: 'Acessibilidade e Serviços', marcadores: true, especial: 'geo360', fontes: [{ tema: 'Mapa_Acessibilidade',
+    ids: [1, 2, 3, 5, 6, 7, 8, 9, 11, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 28, 29, 30, 33, 35, 36, 37, 40] },
+    { tema: 'Mapa_COMURG', sub: 'COMURG' }] },
   { chave: 'telecom', titulo: 'Telecomunicação', fontes: [{ tema: 'Mapa_TelecomunicacaoNew' }] },
-  { chave: 'comurg', titulo: 'COMURG', fontes: [{ tema: 'Mapa_COMURG' }] },
-  { chave: 'zonas', titulo: 'Zonas Municipais', fontes: [{ tema: 'Mapa_PontosNotaveis', ids: [4] }] },
+  { chave: 'meio', titulo: 'Meio Ambiente', fontes: [{ tema: 'Mapa_MeioAmbiente' }, { tema: 'Mapa_PUAMA', sub: 'PUAMA' }] },
   // Regulação e Arrecadação (1.39): legislação, Modelo Espacial, documentação de bairros, tributário e fiscalização.
   { chave: 'legislacao', titulo: 'Regulação e Arrecadação', semFerramentas: true, fontes: [
     { tema: 'Mapa_Legislacao', sub: 'Legislação Municipal' },
@@ -48,12 +49,19 @@ export const ORGANIZACAO = [
     { tema: 'Mapa_Tributario_Web', sub: 'Tributário' },
     { tema: 'Mapa_Fiscalizacao', sub: 'Fiscalização' },
   ] },
-  { chave: 'limites', titulo: 'Limites Administrativos', fontes: [{ tema: 'Mapa_Limites', ids: [0, 4, 5, 6, 7] }] },
-  // Acessibilidade e Serviços (1.42): incorpora Serviços Públicos (Guarda Civil, Cultura, CRAS e CREAS, do recadastramento)
-  // e deixa de repetir o que já está em outro marcador: endereços duplicados (43-46: educação, saúde, shopping e escolas
-  // SIEG) e as plataformas e linhas de ônibus (41-42), que ficam em Vias e Mobilidade → Transporte Coletivo.
-  { chave: 'servicos', titulo: 'Acessibilidade e Serviços', marcadores: true, especial: 'geo360', fontes: [{ tema: 'Mapa_Acessibilidade',
-    ids: [1, 2, 3, 5, 6, 7, 8, 9, 11, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 28, 29, 30, 33, 35, 36, 37, 40] }] },
+  // Geo360 (atualização 2024-2025): dados públicos do portal da Prefeitura que não vinham do Mapa Fácil (geo360.js).
+  // Mapas de eleição: desenho próprio (eleicoes.js), um de cada vez.
+  { chave: 'eleitoral', titulo: 'Zonas Eleitorais', especial: 'eleitoral', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
+  { chave: 'conselho', titulo: 'Conselho Tutelar', especial: 'conselho', proprio: true, fontes: [{ tema: 'Mapa_Limites', ids: [10] }] },
+  // Zonas Municipais (1.43): os quatro planos de proteção do espaço aéreo como subtópicos (sem a pasta PZPA, que não
+  // tinha concorrente) e os Limites Administrativos.
+  { chave: 'zonas', titulo: 'Zonas Municipais', semFerramentas: true, fontes: [
+    { tema: 'Mapa_PontosNotaveis', ids: [5], sub: 'Plano Básico de Zona e Proteção de Aeródromo (PBZPA)' },
+    { tema: 'Mapa_PontosNotaveis', ids: [20], sub: 'Plano Básico de Zona e Proteção de Heliponto (PBZPH)' },
+    { tema: 'Mapa_PontosNotaveis', ids: [25], sub: 'Plano Específico de Zoneamento de Ruído (PEZR)' },
+    { tema: 'Mapa_PontosNotaveis', ids: [31], sub: 'Plano de Zona de Proteção de Auxílios à Navegação Aérea (PZPANA)' },
+    { tema: 'Mapa_Limites', ids: [0, 4, 5, 6, 7], sub: 'Limites Administrativos' },
+  ] },
 ];
 
 export class Camadas {
@@ -74,7 +82,11 @@ export class Camadas {
       this.porTema.set(t.chave, { tema: t, camada: null, opacidade: 1, legenda: null });
     }
     this.grupos = this._organizar();
-    this._redesenhar = debounce((chave) => this._aplicar(chave), 350);
+    // Redesenho adiado POR SERVIÇO: antes um único adiamento fazia cada serviço cancelar o anterior, e num projeto com
+    // várias fontes (ex.: Cadastro Imobiliário) só o último era desenhado (1.43).
+    const pendentes = new Set();
+    const aplicarPendentes = debounce(() => { const lista = [...pendentes]; pendentes.clear(); for (const c of lista) this._aplicar(c); }, 350);
+    this._redesenhar = (chave) => { pendentes.add(chave); aplicarPendentes(); };
     this._montar();
   }
 
@@ -110,7 +122,9 @@ export class Camadas {
           : [...folhas].filter((id) => { const c = t._porId.get(id); return c.visivel && this._paisVisiveis(t, c); });
         // Energia: ao ligar o projeto, já vêm os postes e a iluminação pública (desenho 3D, energia3d.js).
         if (t.chave === 'Mapa_Energia') for (const id of [1, 4]) if (folhas.has(id) && !padrao.includes(id)) padrao.push(id);
-        fontes.push({ tema: t, sub: f.sub || '', folhas, nos, padrao, sel: new Set(padrao) });
+        // 1.43: nada marcado de saída (o mapa só mostra o que a pessoa marcar); só a Energia já vem com postes e
+        // iluminação, a pedido do titular. O "padrão do portal" continua guardado em `padrao`.
+        fontes.push({ tema: t, sub: f.sub || '', folhas, nos, padrao, sel: new Set(t.chave === 'Mapa_Energia' ? padrao : []) });
       }
       if (!fontes.length) return;
       const consulta = fontes.every((f) => f.tema.somente_consulta);
@@ -191,23 +205,36 @@ export class Camadas {
           return f1.length === 1 && String(f1[0].nome || '').trim() === String(c.nome || '').trim() ? f1[0] : c;
         });
         if (!itens.length) return null;
+        // Padrão (1.43): título/subtítulo com interruptor horizontal; itens como marcação (checklist); sem faixa de escala.
         return el('ul', { class: 'arvore' }, itens.map((c) => {
           const caixa = el('input', { type: 'checkbox', dataset: { tema: f.tema.chave, id: c.id },
             onchange: (ev) => this._marcar(g, f, c, ev.target.checked) });
           const faixa = this._faixaEscala(f.tema, c);
-          const dica = !c.grupo && (faixa.min || faixa.max)
-            ? el('small', { class: 'dica-escala', title: 'Faixa de escala em que a camada é desenhada' },
-              faixa.min ? `a partir de 1:${fmtNum(faixa.min)}` : `até 1:${fmtNum(faixa.max)}`) : null;
-          return el('li', { class: c.grupo ? 'no-grupo' : 'no-folha', dataset: { min: faixa.min, max: faixa.max } },
-            el('label', {}, caixa, el('span', {}, c.nome || `Camada ${c.id}`), dica), montar(c.id));
+          const rotulo = c.grupo
+            ? el('label', { class: 'linha-chave' }, el('span', {}, el('strong', {}, c.nome || `Camada ${c.id}`)), el('span', { class: 'interruptor' }, caixa, el('span', {})))
+            : el('label', {}, caixa, el('span', {}, c.nome || `Camada ${c.id}`));
+          return el('li', { class: c.grupo ? 'no-grupo' : 'no-folha', dataset: { min: faixa.min, max: faixa.max } }, rotulo, montar(c.id));
         }));
       };
-      const arvore = montar(-1);
+      // subtópico com uma pasta só, do mesmo assunto (ex.: PBZPA): os itens dela direto no subtópico
+      let inicio = -1;
+      if (f.sub) for (let r = filhosDe(-1); r.length === 1 && r[0].grupo; r = filhosDe(r[0].id)) inicio = r[0].id;
+      const arvore = montar(inicio);
       if (!arvore) continue;
       if (f.sub) {
-        // fontes com o mesmo título ficam juntas na mesma subpasta
-        let caixaSub = [...corpo.querySelectorAll(':scope > details.compartimento')].find((d) => d.dataset.sub === f.sub);
-        if (!caixaSub) { caixaSub = el('details', { class: 'compartimento', open: true, dataset: { sub: f.sub } }, el('summary', {}, f.sub)); corpo.append(caixaSub); }
+        // fontes com o mesmo título ficam juntas no mesmo subtópico, com um interruptor que liga e desliga todos os itens
+        let caixaSub = [...corpo.querySelectorAll(':scope > .compartimento')].find((d) => d.dataset.sub === f.sub);
+        if (!caixaSub) {
+          const chaveSub = el('input', { type: 'checkbox', onchange: (ev) => {
+            for (const c of caixaSub.querySelectorAll(':scope > ul.arvore > li > label input[data-id]')) {
+              if (c.checked !== ev.target.checked) { c.checked = ev.target.checked; c.dispatchEvent(new Event('change')); }
+            }
+          } });
+          caixaSub = el('div', { class: 'compartimento', dataset: { sub: f.sub } },
+            el('label', { class: 'linha-chave titulo-sub' }, el('span', {}, el('strong', {}, f.sub)), el('span', { class: 'interruptor' }, chaveSub, el('span', {}))));
+          caixaSub._chave = chaveSub;
+          corpo.append(caixaSub);
+        }
         caixaSub.append(arvore);
       } else corpo.append(arvore);
     }
@@ -226,12 +253,16 @@ export class Camadas {
 
   _sincronizarCaixas(g) {
     for (const caixa of $$('.arvore input', g.corpo)) {
-      const f = g.fontes.find((x) => x.tema.chave === caixa.dataset.tema);
+      const id = +caixa.dataset.id;
+      // a mesma fonte pode aparecer em mais de um subtópico (ex.: planos do espaço aéreo): a que contém este item
+      const f = g.fontes.find((x) => x.tema.chave === caixa.dataset.tema && (x.folhas.has(id) || x.nos?.has?.(id)))
+        || g.fontes.find((x) => x.tema.chave === caixa.dataset.tema);
       const folhas = this._folhasSob(f.tema, +caixa.dataset.id).filter((id) => f.folhas.has(id));
       const marcadas = folhas.filter((id) => f.sel.has(id)).length;
       caixa.checked = marcadas > 0 && marcadas === folhas.length;
       caixa.indeterminate = marcadas > 0 && marcadas < folhas.length;
     }
+    for (const sub of g.corpo.querySelectorAll('.compartimento')) if (sub._chave) sub._chave.checked = !!sub.querySelector('ul.arvore input:checked');
     this._atualizarConta(g);
   }
 
