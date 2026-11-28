@@ -26,23 +26,28 @@ export const ORGANIZACAO = [
   // Vias e Mobilidade (1.37): avenidas, transporte coletivo, vias sem asfalto e propostas (viario.js) e o Trânsito
   // (transito.js) num só projeto, com desenho próprio (sem as escalas nem os rótulos do Mapa Fácil).
   { chave: 'viario', titulo: 'Vias e Mobilidade', especial: 'viario', proprio: true, independente: true, fontes: [{ tema: 'Mapa_RedeViaria', ids: [16] }] },
-  { chave: 'edificacoes', titulo: 'Edificações', especial: 'edificacoes', fontes: [
-    { tema: 'Mapa_Edificios' },
-    { tema: 'Mapa_PontosNotaveis', ids: [0, 1, 2, 3], sub: 'Equipamentos públicos e patrimônio' },
+  // Edificações (1.39): 3D com a barra de pavimentos (sem as faixas de altura do portal), Planta de Valores numa marcação
+  // só, e os títulos Patrimônio Histórico e Regularização Fundiária com os seus itens. Equipamentos: na Base Cadastral.
+  { chave: 'edificacoes', titulo: 'Edificações', especial: 'edificacoes', semFerramentas: true, fontes: [
+    { tema: 'Mapa_Edificios', ids: [7] },
     { tema: 'Mapa_PatrimonioHistorico', sub: 'Patrimônio Histórico' },
+    { tema: 'Mapa_PontosNotaveis', ids: [3], sub: 'Patrimônio Histórico' },
     { tema: 'Mapa_OcupacaoIlegal', sub: 'Regularização Fundiária' },
-    { tema: 'Mapa_Documentacao', sub: 'Documentação de Bairros' },
   ] },
   { chave: 'meio', titulo: 'Meio Ambiente', fontes: [{ tema: 'Mapa_MeioAmbiente' }, { tema: 'Mapa_PUAMA', sub: 'PUAMA' }] },
   { chave: 'telecom', titulo: 'Telecomunicação', fontes: [{ tema: 'Mapa_TelecomunicacaoNew' }] },
   { chave: 'comurg', titulo: 'COMURG', fontes: [{ tema: 'Mapa_COMURG' }] },
   { chave: 'zonas', titulo: 'Zonas Municipais', fontes: [{ tema: 'Mapa_PontosNotaveis', ids: [4] }] },
-  { chave: 'legislacao', titulo: 'Legislação Municipal', fontes: [{ tema: 'Mapa_Legislacao' }] },
-  { chave: 'modelo', titulo: 'Modelo Espacial (LC 171/2007)', fontes: [{ tema: 'Mapa_ModeloEspacial' }] },
+  // Regulação e Arrecadação (1.39): legislação, Modelo Espacial, documentação de bairros, tributário e fiscalização.
+  { chave: 'legislacao', titulo: 'Regulação e Arrecadação', semFerramentas: true, fontes: [
+    { tema: 'Mapa_Legislacao', sub: 'Legislação Municipal' },
+    { tema: 'Mapa_ModeloEspacial', sub: 'Modelo Espacial (LC 171/2007)' },
+    { tema: 'Mapa_Documentacao', sub: 'Documentação de Bairros' },
+    { tema: 'Mapa_Tributario_Web', sub: 'Tributário' },
+    { tema: 'Mapa_Fiscalizacao', sub: 'Fiscalização' },
+  ] },
   { chave: 'limites', titulo: 'Limites Administrativos', fontes: [{ tema: 'Mapa_Limites', ids: [0, 3, 4, 5, 6, 7] }] },
   { chave: 'servicos', titulo: 'Acessibilidade e Serviços', marcadores: true, fontes: [{ tema: 'Mapa_Acessibilidade' }] },
-  { chave: 'fiscalizacao', titulo: 'Fiscalização', fontes: [{ tema: 'Mapa_Fiscalizacao' }] },
-  { chave: 'tributario', titulo: 'Tributário', fontes: [{ tema: 'Mapa_Tributario_Web' }] },
   { chave: 'uso', titulo: 'Uso do Solo', fontes: [{ tema: 'Mapa_UsoDoSoloNew' }, { tema: 'Mapa_Simplifica_Goiania_UsoDoSolo', sub: 'Simplifica Goiânia' }] },
 ];
 
@@ -175,7 +180,11 @@ export class Camadas {
     for (const f of (g.proprio || g.chave === 'base' ? [] : g.fontes)) {
       const filhosDe = (pai) => f.tema.camadas.filter((c) => c.pai === pai && f.nos.has(c.id));
       const montar = (pai) => {
-        const itens = filhosDe(pai);
+        // pasta com uma camada só, de mesmo nome (ex.: Planta de Valores): uma marcação só
+        const itens = filhosDe(pai).map((c) => {
+          const f1 = c.grupo ? filhosDe(c.id) : [];
+          return f1.length === 1 && String(f1[0].nome || '').trim() === String(c.nome || '').trim() ? f1[0] : c;
+        });
         if (!itens.length) return null;
         return el('ul', { class: 'arvore' }, itens.map((c) => {
           const caixa = el('input', { type: 'checkbox', dataset: { tema: f.tema.chave, id: c.id },
@@ -190,8 +199,12 @@ export class Camadas {
       };
       const arvore = montar(-1);
       if (!arvore) continue;
-      if (f.sub) corpo.append(el('details', { class: 'compartimento', open: g.fontes.length <= 2 }, el('summary', {}, f.sub), arvore));
-      else corpo.append(arvore);
+      if (f.sub) {
+        // fontes com o mesmo título ficam juntas na mesma subpasta
+        let caixaSub = [...corpo.querySelectorAll(':scope > details.compartimento')].find((d) => d.dataset.sub === f.sub);
+        if (!caixaSub) { caixaSub = el('details', { class: 'compartimento', open: true, dataset: { sub: f.sub } }, el('summary', {}, f.sub)); corpo.append(caixaSub); }
+        caixaSub.append(arvore);
+      } else corpo.append(arvore);
     }
     this._sincronizarCaixas(g);
   }

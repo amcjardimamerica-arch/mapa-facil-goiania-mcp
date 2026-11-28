@@ -271,10 +271,10 @@ export class Edificios {
     this.raiz = caixa;
     this.chave = el('input', { type: 'checkbox', id: 'edi-liga', checked: this.cidade, onchange: (ev) => this.ligar(ev.target.checked) });
     this.caixaBairros = el('div', { class: 'edi-bairros' });
-    this.detalhes = el('div', { id: 'edi-detalhes' }, el('p', { class: 'nota' }, 'O cadastro de edifícios é carregado ao ligar.'));
+    this.detalhes = el('div', { id: 'edi-detalhes' });
     caixa.append(
       el('label', { class: 'linha-chave destaque-linha' },
-        el('span', {}, el('strong', {}, 'Edificações em 3D'), el('small', {}, 'volumes na cidade inteira; por bairro, use a busca no topo')),
+        el('span', {}, el('strong', {}, 'Edificações em 3D')),
         el('span', { class: 'interruptor' }, this.chave, el('span', {}))),
       this.caixaBairros, this.detalhes);
     this._sincronizar();
@@ -312,10 +312,12 @@ export class Edificios {
       el('li', {}, el('button', { onclick: () => this.irPara(e) },
         el('span', {}, e.n), el('small', {}, `${e.p} pav. · ~${fmtNum(e.p * this.mpp)} m`)))));
     alvo.textContent = '';
+    // 1.39: só a barra de pavimentos (sem legenda de cores, lista dos mais altos nem textos explicativos)
+    void legenda; void altos;
     alvo.append(
-      el('label', { class: 'rotulo-faixa bloco' }, el('span', {}, 'Mostrar a partir de ', saida), faixa),
-      el('h3', { class: 'subtitulo' }, 'Cor pelo uso'), legenda,
-      el('h3', { class: 'subtitulo' }, 'Os mais altos do cadastro'), altos,
+      el('label', { class: 'rotulo-faixa bloco' }, el('span', {}, 'Mostrar a partir de ', saida), faixa));
+    return;
+    alvo.append(
       el('p', { class: 'nota' }, `${fmtNum(total)} edifícios: o tema “Edificações” do cadastro municipal e, no Jardim América e no Nova Suíça, ${fmtNum(this.conferidos || 0)} prédios e condomínios conferidos pelo IPTU de cada lote.`), el('p', { class: 'nota' }, ` Altura = pavimentos × ${fmtNum(this.mpp, 1)} m. ` +
         'Prédios que já estavam no cadastro municipal mantêm o desenho anterior; os novos têm a base estimada pela construção vista na imagem de satélite, ' +
         'só a torre sobe (estacionamento e lote agregado ficam no chão). É um modelo aproximado, não um levantamento das construções.'));

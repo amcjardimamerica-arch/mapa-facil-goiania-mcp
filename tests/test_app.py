@@ -250,8 +250,11 @@ def test_camadas_organizadas_em_projetos(mapa):
     assert "Simplifica Goiânia – Uso do Solo" not in r["titulos"] and "Documentação de Bairros" not in r["titulos"]
     assert r["eleitoral"] == [["Mapa_Limites", [10], ""]] and all(10 not in f[1] for f in r["limites"]), r["limites"]
     temas_edif = [f[0] for f in r["edificacoes"]]
-    assert temas_edif == ["Mapa_Edificios", "Mapa_PontosNotaveis", "Mapa_PatrimonioHistorico", "Mapa_OcupacaoIlegal", "Mapa_Documentacao"]
-    assert r["edificacoes"][1][1] == [0, 1, 2, 3] and all(i >= 6 for i in r["zonas"][0][1])
+    # 1.39: Planta de Valores numa marcação só; Patrimônio Histórico e Regularização Fundiária como títulos;
+    # equipamentos na Base Cadastral; documentação em Regulação e Arrecadação.
+    assert temas_edif == ["Mapa_Edificios", "Mapa_PatrimonioHistorico", "Mapa_PontosNotaveis", "Mapa_OcupacaoIlegal"]
+    assert r["edificacoes"][0][1] == [7] and r["edificacoes"][2][1] == [3] and all(i >= 6 for i in r["zonas"][0][1])
+    assert "Regulação e Arrecadação" in r["titulos"] and "Tributário" not in r["titulos"] and "Modelo Espacial (LC 171/2007)" not in r["titulos"]
     assert [f[0] for f in r["meio"]] == ["Mapa_MeioAmbiente", "Mapa_PUAMA"] and r["meio"][1][2] == "PUAMA"
     assert [f[0] for f in r["uso"]] == ["Mapa_UsoDoSoloNew", "Mapa_Simplifica_Goiania_UsoDoSolo"] and r["uso"][1][2] == "Simplifica Goiânia"
     assert "Projetos" in r["texto"] and "Temas do portal" not in r["texto"] and "Outros temas do servidor" not in r["texto"]

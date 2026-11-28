@@ -25,6 +25,7 @@ import { Eleicoes } from './eleicoes.js';
 import { Comparador } from './comparar.js';
 import { Energia3D } from './energia3d.js';
 import { Vias } from './viario.js';
+import { Equipamentos } from './equipamentos.js';
 import { restaurarGravacao, gravacaoAberta, gravacaoAte } from './gravacao.js';
 import { sincronizarManutencao } from './manutencao.js';
 import { relatorio as relatorioDesempenho, zerar as zerarDesempenho } from './desempenho.js';
@@ -32,6 +33,7 @@ import { relatorio as relatorioDesempenho, zerar as zerarDesempenho } from './de
 const Cesium = window.Cesium;
 // Botões de edição das divisas (Conselho Tutelar e Zonas Eleitorais), enquanto as divisas não forem travadas.
 let botoesEdicao = () => null;
+let aplicarEquipamentos = () => {};
 
 // Vias e Mobilidade: estado das opções (guardado no aparelho) e o que cada uma liga.
 const TRANSITO_GRUPOS = [
@@ -132,10 +134,16 @@ async function iniciar() {
       const op = (k, titulo) => el('label', { class: 'linha-chave' }, el('span', {}, el('strong', {}, titulo)),
         el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', checked: !!BASE[k], onchange: (e) => { BASE[k] = e.target.checked; gravarBase(); app.refazerMapas?.(); } }), el('span', {})));
       caixa.append(op('ruas', 'Nomes das ruas'), op('quadras', 'Quadras'), op('lotes', 'Lotes'), op('divisas', 'Divisas dos bairros'),
-        op('nomesBairros', 'Nomes dos bairros'), op('areasVerdes', 'Áreas verdes e praças (verde)'), op('imoveisPublicos', 'Imóveis públicos (azul)'), op('atividades', 'Cadastro de Atividade Econômica'),
-        op('npo', 'Número Predial Oficial'));
+        op('nomesBairros', 'Nomes dos bairros'), op('areasVerdes', 'Áreas verdes e praças (verde)'), op('imoveisPublicos', 'Imóveis públicos (azul)'));
+      // Equipamentos públicos (1.39): dentro de Imóveis públicos, como marcadores; Grande equipamento é marcador novo.
+      const eq = (k, titulo) => el('label', { class: 'linha-chave dren-sub-linha' }, el('span', {}, titulo),
+        el('span', { class: 'interruptor' }, el('input', { type: 'checkbox', checked: !!BASE[`eq_${k}`], onchange: (e) => {
+          BASE[`eq_${k}`] = e.target.checked; gravarBase(); aplicarEquipamentos(); } }), el('span', {})));
+      caixa.append(eq('grande', 'Grande equipamento'), eq('educacao', 'Educação municipal'), eq('saude', 'Saúde'),
+        eq('social', 'Segurança, cultura e assistência social'),
+        op('atividades', 'Cadastro de Atividade Econômica'), op('npo', 'Número Predial Oficial'));
     },
-    baseLigar: (ligado) => { BASE.ligado = ligado; gravarBase(); app.refazerMapas?.(); },
+    baseLigar: (ligado) => { BASE.ligado = ligado; gravarBase(); app.refazerMapas?.(); aplicarEquipamentos(); },
     // Sistema Viário: destaque amarelo das avenidas e vias principais sobre o satélite (desligável).
     // Vias e Mobilidade: avenidas, transporte coletivo, vias sem asfalto e propostas, e a sinalização de trânsito.
     viario: async (caixa) => {
@@ -431,6 +439,10 @@ async function iniciar() {
   const energia3d = new Energia3D({ globo, identificar });
   camadas.energia3d = energia3d;
   // Vias e Mobilidade: desenho próprio (viario.js) + avenidas (Base) + sinalização de trânsito (transito.js).
+  const equipamentos = new Equipamentos({ globo, identificar });
+  aplicarEquipamentos = () => equipamentos.definir({ grande: !!(BASE.ligado && BASE.eq_grande), educacao: !!(BASE.ligado && BASE.eq_educacao),
+    saude: !!(BASE.ligado && BASE.eq_saude), social: !!(BASE.ligado && BASE.eq_social) }).catch(() => {});
+  aplicarEquipamentos();
   const vias = new Vias({ globo });
   app.vias = vias;
   aplicarVias = async () => {
@@ -481,7 +493,7 @@ async function iniciar() {
       if (links.length) identificar.corpo.append(el('div', { class: 'linha-botoes centro' }, ...links.map(([r, v]) => el('a', { class: 'botao-texto', href: String(v), target: '_blank', rel: 'noopener' }, r))));
       return;
     }
-    if (energia3d.aoClicar(pego) || poligonos.aoClicar(pego) || edificios.aoClicar(pego) || servicos.aoClicar(pego) || marcadores.aoClicar(pego) || drenagem.aoClicar(ponto) || geo360.aoClicar(ponto) || levantamento.aoClicar(pego, ponto)) return;
+    if (equipamentos.aoClicar(pego) || energia3d.aoClicar(pego) || poligonos.aoClicar(pego) || edificios.aoClicar(pego) || servicos.aoClicar(pego) || marcadores.aoClicar(pego) || drenagem.aoClicar(ponto) || geo360.aoClicar(ponto) || levantamento.aoClicar(pego, ponto)) return;
     if (eleicoes.aoClicar(ponto)) return; // mapa de eleição ligado: zona ou região inteira, nunca quadra ou lote
     if (ponto) identificar.emPonto(ponto);
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
